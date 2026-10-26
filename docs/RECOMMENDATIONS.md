@@ -98,6 +98,8 @@ Implementation verification on 2026-10-26: all nine offline checks passed; fixtu
 
 Repository configuration on 2026-10-26: the maintainer supplied a public request contact, metadata polling is enabled, Pages uses GitHub Actions, and the optional Anthropic key is stored only as an Actions secret. `ANTHROPIC_MODEL` is `claude-sonnet-5-5`, verified against the [official Sonnet model page](https://platform.claude.com/docs/en/models/sonnet-5-5/overview). No paid inference request has been made; scheduled refreshes continue to use deterministic ordering.
 
+The first [workflow run](https://github.com/missingems/Honbako/actions/runs/40345649084) was blocked before runner startup by GitHub's account payment/spending-limit check. Consequently Pages has not deployed yet. The same free metadata refresh succeeded locally and its validated output is committed on `main`; the app continues to show the bundled editorial seed until a public deployment succeeds. Resolve the account's GitHub Actions billing restriction, then rerun the workflow with Sonnet unchecked. No billing settings were changed during implementation.
+
 ## Primary references checked 2026-10-26
 
 - [Open Library catalog ownership and CC0 contributions](https://openlibrary.org/help/faq/using)

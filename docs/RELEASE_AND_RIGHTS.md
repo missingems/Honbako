@@ -24,6 +24,7 @@ Primary references: [App Review Guidelines](https://developer.apple.com/app-stor
 
 - Configure the Pro product in App Store Connect, including product type and pricing. If it is an auto-renewable subscription, add the required period, renewal, terms and privacy disclosures to its purchase presentation before enabling sales.
 - Confirm signing capabilities and iCloud container provisioning for `com.missingems.honbaku`.
+- Resolve GitHub's account payment/spending-limit restriction so the scheduled recommendation job and Pages deployment can start.
 - Resolve distribution licensing and publisher/provider authorizations before submitting to Apple.
 
 The optional Anthropic key is configured only as an Actions secret, with an explicitly selected Sonnet model. The maintainer supplied a public Open Library request contact and enabled the daily metadata poll. Neither credential is embedded in the app; scheduled runs make no paid model requests.
