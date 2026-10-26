@@ -18,6 +18,8 @@ struct SumiSpotlightResultRow: View {
     @State private var adding = false
     @State private var metadata: SumiSearchMetadataService.Metadata?
     @State private var metadataBookID: MangaIdentifier?
+    @State private var languageContext: SumiSearchLanguageService.Context?
+    @State private var presentedLanguages: SumiSearchLanguageInfo?
     @State private var metadataHeight: CGFloat = 66
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -36,6 +38,12 @@ struct SumiSpotlightResultRow: View {
         let authors = enrichedMetadata?.authors ?? []
         return authors.isEmpty ? nil : authors.joined(separator: ", ")
     }
+    private var languages: SumiSearchLanguageInfo? {
+        guard metadataBookID == book.id else { return nil }
+        return SumiSearchLanguageInfo(chapterLanguages: languageContext?.chapterLanguages ?? [],
+            translatedLanguages: enrichedMetadata?.translatedLanguages ?? [],
+            sourceLanguages: languageContext?.sourceLanguages ?? [])
+    }
     var body: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
@@ -44,7 +52,7 @@ struct SumiSpotlightResultRow: View {
             Button(action: selectBook) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(book.title).font(.body).lineLimit(2)
-                    SumiSearchResultSubtitle(author: author, presentation: presentation)
+                    SumiSearchResultSubtitle(author: author, presentation: presentation, languages: languages)
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
@@ -64,6 +72,9 @@ struct SumiSpotlightResultRow: View {
             .hoverEffect(.highlight)
             .contextMenu {
                 if !isInLibrary { Button("Add to Library", action: getBook) }
+                if let languages {
+                    Button("Languages", systemImage: "character.bubble") { presentedLanguages = languages }
+                }
                 if editions.count > 1 {
                     ForEach(editions) { edition in
                         Button(sourceName(edition.sourceKey)) { openBook(edition, nil) }
@@ -72,12 +83,16 @@ struct SumiSpotlightResultRow: View {
             }
             .accessibilityRepresentation {
                 Button(book.title, action: selectBook)
-                    .accessibilityValue([presentation.publicationSubtitle, presentation.publicationBadge, author, presentation.readingPosition]
+                    .accessibilityValue([presentation.publicationSubtitle, presentation.publicationBadge, author,
+                        languages?.accessibilityText, presentation.readingPosition]
                         .compactMap { $0 }.joined(separator: ", "))
                     .accessibilityHint("Open manga")
                     .accessibilityIdentifier("Sumi.Search.Book.\(book.presentation.id)")
                     .accessibilityActions {
                         if !isInLibrary { Button("Add to Library", action: getBook) }
+                        if let languages {
+                            Button("Show Languages") { presentedLanguages = languages }
+                        }
                         if editions.count > 1 {
                             ForEach(editions) { edition in
                                 Button("Read from \(sourceName(edition.sourceKey))") { openBook(edition, nil) }
@@ -96,15 +111,18 @@ struct SumiSpotlightResultRow: View {
             }
         }
         .contentShape(.rect(cornerRadius: 14))
+        .popover(item: $presentedLanguages) { SumiSearchLanguageDetailsView(info: $0) }
         .task(id: isSearchActive ? book.id : nil) { await loadMetadata() }
     }
 
     private func loadMetadata() async {
         guard isSearchActive else { return }
         let id = book.id
-        if metadataBookID != id { metadata = nil; metadataBookID = id }
-        guard book.releaseDateLabel == nil || book.author == nil || book.manga.status == .unknown,
-              let result = await SumiSearchMetadataService.shared.metadata(for: book),
+        if metadataBookID != id { metadata = nil; languageContext = nil; metadataBookID = id }
+        let context = await SumiSearchLanguageService.shared.context(for: id)
+        guard !Task.isCancelled, metadataBookID == id else { return }
+        withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.18)) { languageContext = context }
+        guard let result = await SumiSearchMetadataService.shared.metadata(for: book),
               !Task.isCancelled, metadataBookID == id else { return }
         withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.18)) { metadata = result }
     }

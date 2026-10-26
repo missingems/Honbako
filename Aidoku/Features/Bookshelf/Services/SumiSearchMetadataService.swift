@@ -3,20 +3,23 @@ import AidokuRunner
 import Foundation
 
 /// The source runner does not expose publication dates. Enrich only an exact
-/// MangaDex entity with its documented release year, publication status, and authors.
+/// MangaDex entity with publication metadata and title-specific chapter languages.
 actor SumiSearchMetadataService {
     struct Metadata: Equatable, Sendable {
         let authors: [String]
         let releaseYear: Int?
         let isOngoing: Bool?
         let publishingStatus: AidokuRunner.PublishingStatus?
+        let translatedLanguages: [String]
 
-        init(authors: [String], releaseYear: Int?, isOngoing: Bool? = nil, publishingStatus: AidokuRunner.PublishingStatus? = nil) {
+        init(authors: [String], releaseYear: Int?, isOngoing: Bool? = nil, publishingStatus: AidokuRunner.PublishingStatus? = nil,
+             translatedLanguages: [String] = []) {
             self.authors = authors
             self.releaseYear = releaseYear
             let knownStatus = publishingStatus.flatMap { $0 == .unknown ? nil : $0 }
             self.publishingStatus = knownStatus
             self.isOngoing = knownStatus.map { $0 == .ongoing } ?? isOngoing
+            self.translatedLanguages = translatedLanguages
         }
     }
 
@@ -129,7 +132,8 @@ actor SumiSearchMetadataService {
         case "cancelled": publishingStatus = .cancelled
         default: publishingStatus = nil
         }
-        return Metadata(authors: names, releaseYear: year, publishingStatus: publishingStatus)
+        return Metadata(authors: names, releaseYear: year, publishingStatus: publishingStatus,
+            translatedLanguages: response.data.attributes.availableTranslatedLanguages?.compactMap { $0 } ?? [])
     }
 
     private struct Response: Decodable {
@@ -144,6 +148,7 @@ actor SumiSearchMetadataService {
         struct Attributes: Decodable {
             let year: Int?
             let status: String?
+            let availableTranslatedLanguages: [String?]?
         }
         struct Relationship: Decodable {
             let type: String

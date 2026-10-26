@@ -439,19 +439,13 @@ extension SourceManager {
     }
 
     func installExternalSources(keys: Set<String>) async -> (AsyncStream<String>, Int)? {
-        guard
-            !keys.isEmpty,
-            let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-                else {
-            return nil
-        }
+        guard !keys.isEmpty else { return nil }
 
         let missingKeys = await missingExternalSourceKeys(in: keys)
         guard !missingKeys.isEmpty else { return nil }
 
         let (stream, continuation) = AsyncStream<String>.makeStream()
 
-        let appVersion = SemanticVersion(appVersionString)
         var sourcesByKey: [String: ExternalSourceInfo] = [:]
 
         for state in sourceListStates.values {
@@ -459,18 +453,8 @@ extension SourceManager {
 
             for source in sourceList.sources where missingKeys.contains(source.id) && source.fileURL != nil {
                 // check version availability
-                if let minAppVersion = source.minAppVersion {
-                    let minAppVersion = SemanticVersion(minAppVersion)
-                    if minAppVersion > appVersion {
-                        continue
-                    }
-                }
-                if let maxAppVersion = source.maxAppVersion {
-                    let maxAppVersion = SemanticVersion(maxAppVersion)
-                    if maxAppVersion < appVersion {
-                        continue
-                    }
-                }
+                guard SourcePackageCompatibility.supports(minimum: source.minAppVersion,
+                    maximum: source.maxAppVersion) else { continue }
                 if let existing = sourcesByKey[source.id] {
                     if source.version > existing.version {
                         sourcesByKey[source.id] = source

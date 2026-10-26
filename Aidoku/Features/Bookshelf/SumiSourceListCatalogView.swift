@@ -8,12 +8,11 @@ struct SumiSourceListCatalogView: View {
     @State private var loaded = false
 
     private var available: [SourceInfo] {
-        let version = SemanticVersion(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0")
         var seen: Set<String> = []
         return list.sources.filter { entry in
             guard seen.insert(entry.id).inserted, !installed.contains(entry.id) else { return false }
-            if let minimum = entry.minAppVersion, SemanticVersion(minimum) > version { return false }
-            if let maximum = entry.maxAppVersion, SemanticVersion(maximum) < version { return false }
+            guard SourcePackageCompatibility.supports(minimum: entry.minAppVersion,
+                maximum: entry.maxAppVersion) else { return false }
             return true
         }.map { $0.toInfo() }
             .filter { query.isEmpty || $0.name.localizedStandardContains(query) }

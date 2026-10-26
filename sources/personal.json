@@ -1,0 +1,210 @@
+{
+  "name": "Honbako Sources",
+  "sources": [
+    {
+      "id": "multi.mangaplus",
+      "name": "MANGA Plus",
+      "version": 6,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/multi.mangaplus-v6.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/multi.mangaplus-v6.aix",
+      "languages": [
+        "en",
+        "es",
+        "fr",
+        "id",
+        "pt-BR",
+        "ru",
+        "th",
+        "vi",
+        "de"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://mangaplus.shueisha.co.jp",
+      "minAppVersion": "0.7.2"
+    },
+    {
+      "id": "multi.webtoon",
+      "name": "WEBTOON",
+      "version": 5,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/multi.webtoon-v5.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/multi.webtoon-v5.aix",
+      "languages": [
+        "en",
+        "zh-Hant",
+        "th",
+        "id",
+        "es",
+        "fr",
+        "de"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://www.webtoons.com",
+      "minAppVersion": "0.7.2"
+    },
+    {
+      "id": "multi.mangadex",
+      "name": "MangaDex",
+      "version": 14,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/multi.mangadex-v14.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/multi.mangadex-v14.aix",
+      "languages": [
+        "en",
+        "sq",
+        "ar",
+        "az",
+        "bn",
+        "bg",
+        "my",
+        "ca",
+        "zh-Hans",
+        "zh-Hant",
+        "hr",
+        "cs",
+        "da",
+        "nl",
+        "eo",
+        "et",
+        "fil",
+        "fi",
+        "fr",
+        "ka",
+        "de",
+        "el",
+        "he",
+        "hi",
+        "hu",
+        "id",
+        "it",
+        "ja",
+        "kk",
+        "ko",
+        "la",
+        "lt",
+        "ms",
+        "mn",
+        "ne",
+        "no",
+        "fa",
+        "pl",
+        "pt",
+        "pt-BR",
+        "ro",
+        "ru",
+        "sr",
+        "sk",
+        "sl",
+        "es",
+        "es-419",
+        "sv",
+        "ta",
+        "te",
+        "th",
+        "tr",
+        "uk",
+        "vi"
+      ],
+      "contentRating": 1,
+      "baseURL": "https://mangadex.org",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "en.weebcentral",
+      "name": "Weeb Central",
+      "version": 8,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/en.weebcentral-v8.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/en.weebcentral-v8.aix",
+      "languages": [
+        "en"
+      ],
+      "contentRating": 1,
+      "baseURL": "https://weebcentral.com",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "multi.mangafire",
+      "name": "MangaFire",
+      "version": 8,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/multi.mangafire-v8.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/multi.mangafire-v8.aix",
+      "languages": [
+        "en",
+        "es",
+        "es-419",
+        "fr",
+        "ja",
+        "pt",
+        "pt-BR"
+      ],
+      "contentRating": 1,
+      "baseURL": "https://mangafire.to",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "ko.naverwebtoon",
+      "name": "Naver Webtoon",
+      "version": 1,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/ko.naverwebtoon-v1.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/ko.naverwebtoon-v1.aix",
+      "languages": [
+        "ko"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://comic.naver.com",
+      "minAppVersion": "0.7.2"
+    },
+    {
+      "id": "ja.shonenjumpplus",
+      "name": "少年ジャンプ＋",
+      "version": 2,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/ja.shonenjumpplus-v2.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/ja.shonenjumpplus-v2.aix",
+      "languages": [
+        "ja"
+      ],
+      "contentRating": 1,
+      "altNames": [
+        "Shonen Jump+"
+      ],
+      "baseURL": "https://shonenjumpplus.com",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "ja.comicdays",
+      "name": "コミックDAYS",
+      "version": 2,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/ja.comicdays-v2.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/ja.comicdays-v2.aix",
+      "languages": [
+        "ja"
+      ],
+      "contentRating": 0,
+      "altNames": [
+        "Comic Days"
+      ],
+      "baseURL": "https://comic-days.com",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "ja.comicaction",
+      "name": "webアクション",
+      "version": 1,
+      "iconURL": "https://aidoku-community.github.io/sources/icons/ja.comicaction-v1.png",
+      "downloadURL": "https://aidoku-community.github.io/sources/sources/ja.comicaction-v1.aix",
+      "languages": [
+        "ja"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://comic-action.com",
+      "minAppVersion": "0.7.1"
+    }
+  ],
+  "attribution": {
+    "catalog": "Community-maintained source package metadata",
+    "upstream": "https://github.com/Aidoku-Community/sources",
+    "licenses": [
+      "MIT",
+      "Apache-2.0"
+    ],
+    "note": "Personal-device setup catalog. Provider access terms and package licenses remain applicable."
+  }
+}

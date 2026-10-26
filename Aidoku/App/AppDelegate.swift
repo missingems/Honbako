@@ -214,6 +214,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task {
             #if SUMI
             await SumiCatalogBootstrap.shared.prepare()
+            #if DEBUG
+            await HonbakoDeviceSourceSetup.runIfRequested()
+            #endif
             #else
             await SourceManager.shared.start()
             #endif

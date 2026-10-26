@@ -8,7 +8,7 @@ struct SumiReaderChaptersView: View {
     let manga: AidokuRunner.Manga?
     let languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)?
     let canRead: (AidokuRunner.Chapter) -> Bool
-    let select: (AidokuRunner.Chapter) -> Void
+    let select: (AidokuRunner.Chapter, Bool) -> Void
     let close: () -> Void
 
     @State private var chapters: [AidokuRunner.Chapter]
@@ -16,13 +16,14 @@ struct SumiReaderChaptersView: View {
     @State private var loading = false
     @State private var committing = false
     @State private var errorMessage: String?
+    @State private var languageNotice: String?
     @State private var retry = 0
 
     init(chapters: [AidokuRunner.Chapter], currentKey: String,
          source: AidokuRunner.Source? = nil, manga: AidokuRunner.Manga? = nil,
          languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)? = nil,
          canRead: @escaping (AidokuRunner.Chapter) -> Bool,
-         select: @escaping (AidokuRunner.Chapter) -> Void, close: @escaping () -> Void) {
+         select: @escaping (AidokuRunner.Chapter, Bool) -> Void, close: @escaping () -> Void) {
         self.currentKey = currentKey
         self.source = source
         self.manga = manga
@@ -46,8 +47,9 @@ struct SumiReaderChaptersView: View {
 
     private var languages: [String] {
         var values = SumiChapterLanguage.languages(in: chapters)
-        if let source, SumiLanguageChapterLoader.supports(source) {
-            values += source.languages.compactMap { SumiChapterLanguage.normalized($0) }
+        if let source {
+            values += SumiLanguageChapterLoader.translationLanguages(sourceKey: source.key,
+                advertisedLanguages: source.languages, hasPackage: source.url != nil)
         }
         return Array(Set(values)).sorted {
             SourceLanguage.displayName(for: $0).localizedStandardCompare(SourceLanguage.displayName(for: $1)) == .orderedAscending
@@ -58,27 +60,27 @@ struct SumiReaderChaptersView: View {
         Array(SumiChapterLanguage.filter(chapters, language: selectedLanguage).reversed())
     }
 
+    private var currentChapter: AidokuRunner.Chapter? { chapters.first { $0.key == currentKey } }
+
+    private var currentLanguage: String { SumiChapterLanguage.normalized(currentChapter?.language) ?? "" }
+
     var body: some View {
         NavigationStack {
             List {
+                languageSection
                 if let manga, let current = chapters.first(where: { $0.key == currentKey }) {
                     HonbakoReaderActionsView(manga: manga, chapter: current,
-                        chapters: SumiChapterLanguage.filter(chapters, language: selectedLanguage), sourceAvailable: source != nil)
+                        chapters: SumiChapterLanguage.filter(chapters, language: currentLanguage), sourceAvailable: source != nil)
                 }
-                if !languages.isEmpty {
+                if let languageNotice, !loading {
                     Section {
-                        Picker("Language", selection: $selectedLanguage) {
-                            if selectedLanguage.isEmpty { Text("Current Edition").tag("") }
-                            ForEach(languages, id: \.self) { code in
-                                Text(SourceLanguage.displayName(for: code)).tag(code)
-                            }
-                        }
-                        .disabled(committing)
-                        .accessibilityIdentifier("Sumi.Reader.Language")
+                        Text(languageNotice).foregroundStyle(.secondary)
                     }
                 }
                 if loading {
-                    Section { ProgressView("Loading chapters…") }
+                    Section {
+                        ProgressView("Finding Chapters in \(SourceLanguage.displayName(for: selectedLanguage))…")
+                    }
                 } else if let errorMessage {
                     Section {
                         Text(errorMessage).foregroundStyle(.secondary)
@@ -90,7 +92,7 @@ struct SumiReaderChaptersView: View {
                 } else {
                     Section {
                         ForEach(visibleChapters, id: \.key) { chapter in
-                            Button { choose(chapter) } label: {
+                            Button { Task { await choose(chapter, resumingTranslation: false) } } label: {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(chapter.chapterNumber.map { "Chapter \(String(format: "%g", Double($0)))" } ?? chapter.title ?? "Chapter")
@@ -126,19 +128,63 @@ struct SumiReaderChaptersView: View {
         .interactiveDismissDisabled(committing)
     }
 
+    private var languageSection: some View {
+        Section {
+            if languages.count > 1 || (languages.count == 1 && selectedLanguage.isEmpty) {
+                Picker("Language", selection: $selectedLanguage) {
+                    if selectedLanguage.isEmpty { Text("Original Edition").tag("") }
+                    ForEach(languages, id: \.self) { code in
+                        Text(SourceLanguage.displayName(for: code)).tag(code)
+                    }
+                }
+                .pickerStyle(.navigationLink)
+                .disabled(committing)
+                .accessibilityIdentifier("Sumi.Reader.Language")
+                .accessibilityHint("Continues the matching chapter in the selected language when available.")
+            } else {
+                LabeledContent("Language", value: languages.first.map(SourceLanguage.displayName(for:)) ?? "Original Edition")
+                    .accessibilityIdentifier("Sumi.Reader.Language")
+            }
+        } header: {
+            Text("Reading Language")
+        } footer: {
+            if source == nil {
+                Text("Languages available in your downloaded chapters.")
+            } else if languages.count > 1 {
+                Text("Translations are provided by the source; availability varies by title. Your place is saved when you switch.")
+            } else {
+                Text("This source hasn’t provided other languages for this title.")
+            }
+        }
+    }
+
     private func loadLanguage() async {
         errorMessage = nil
+        languageNotice = nil
         loading = false
-        guard !selectedLanguage.isEmpty, visibleChapters.isEmpty,
-              let source, let manga, SumiLanguageChapterLoader.supports(source) else { return }
         let language = selectedLanguage
-        loading = true
+        guard !language.isEmpty else { return }
         do {
-            let fetched = try await SumiLanguageChapterLoader.load(source: source, manga: manga, language: language)
+            let missingEquivalent = language != currentLanguage && currentChapter.map {
+                SumiChapterLanguage.equivalent(to: $0, in: chapters, language: language) == nil
+            } == true
+            if visibleChapters.isEmpty || missingEquivalent, let source, let manga, SumiLanguageChapterLoader.supports(source) {
+                loading = true
+                let fetched = try await SumiLanguageChapterLoader.load(source: source, manga: manga, language: language)
+                try Task.checkCancellation()
+                guard selectedLanguage == language else { return }
+                chapters = SumiChapterLanguage.merge(chapters, with: fetched)
+            }
             try Task.checkCancellation()
             guard selectedLanguage == language else { return }
-            chapters = SumiChapterLanguage.merge(chapters, with: fetched)
             loading = false
+            guard language != currentLanguage, let currentChapter, !visibleChapters.isEmpty else { return }
+            let readable = chapters.filter(canRead)
+            if let translated = SumiChapterLanguage.equivalent(to: currentChapter, in: readable, language: language) {
+                await choose(translated, resumingTranslation: true)
+            } else {
+                languageNotice = "Your current chapter isn’t available in \(SourceLanguage.displayName(for: language)). Choose a chapter below to continue."
+            }
         } catch is CancellationError { }
         catch {
             guard !Task.isCancelled, selectedLanguage == language else { return }
@@ -147,19 +193,19 @@ struct SumiReaderChaptersView: View {
         }
     }
 
-    private func choose(_ chapter: AidokuRunner.Chapter) {
+    private func choose(_ chapter: AidokuRunner.Chapter, resumingTranslation: Bool) async {
         guard !committing else { return }
         committing = true
-        Task {
-            do {
-                let language = SumiChapterLanguage.normalized(selectedLanguage) ?? SumiChapterLanguage.normalized(chapter.language)
-                if let manga { try await SumiChapterLanguage.persist(language: language, chapters: chapters, manga: manga) }
-                languageSelection?(language, chapters)
-                select(chapter)
-            } catch {
-                errorMessage = "Your language choice couldn’t be saved. Try again."
-            }
-            committing = false
+        defer { committing = false }
+        do {
+            let language = SumiChapterLanguage.normalized(selectedLanguage) ?? SumiChapterLanguage.normalized(chapter.language)
+            if let manga { try await SumiChapterLanguage.persist(language: language, chapters: chapters, manga: manga) }
+            try Task.checkCancellation()
+            languageSelection?(language, chapters)
+            select(chapter, resumingTranslation)
+        } catch is CancellationError { }
+        catch {
+            errorMessage = "Your language choice couldn’t be saved. Try again."
         }
     }
 }

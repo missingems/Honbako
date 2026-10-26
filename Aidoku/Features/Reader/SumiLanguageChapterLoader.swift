@@ -20,12 +20,28 @@ enum SumiLanguageChapterLoader {
     }
 
     static func supports(_ source: AidokuRunner.Source) -> Bool {
-        source.url != nil && source.languages.compactMap(SumiChapterLanguage.normalized).count > 1
+        !translationLanguages(sourceKey: source.key, advertisedLanguages: source.languages, hasPackage: source.url != nil).isEmpty
+    }
+
+    /// Source.languages can describe its entire catalog, not editions of one
+    /// title. Only advertise unfetched editions for reviewed per-title chapter
+    /// language contracts. Other sources still expose actual chapter labels.
+    static func translationLanguages(sourceKey: String, advertisedLanguages: [String], hasPackage: Bool) -> [String] {
+        guard hasPackage, ["multi.mangadex", "multi.mangafire"].contains(sourceKey) else { return [] }
+        let values = Array(Set(advertisedLanguages.compactMap(SumiChapterLanguage.normalized)))
+        return values.count > 1 ? values : []
+    }
+
+    /// Pass the source's advertised value to its settings, even when its chapter
+    /// responses use an alias. The provider owns conversion to its API codes.
+    static func providerLanguage(for language: String, advertisedLanguages: [String]) -> String? {
+        guard let requested = SumiChapterLanguage.normalized(language) else { return nil }
+        return advertisedLanguages.first { SumiChapterLanguage.normalized($0) == requested }
     }
 
     static func load(source: AidokuRunner.Source, manga: AidokuRunner.Manga, language: String) async throws -> [AidokuRunner.Chapter] {
         guard let package = source.url, supports(source),
-              let providerLanguage = source.languages.first(where: { SumiChapterLanguage.normalized($0) == SumiChapterLanguage.normalized(language) }) else {
+              let providerLanguage = Self.providerLanguage(for: language, advertisedLanguages: source.languages) else {
             throw LanguageError.unsupported
         }
         let scope = SumiLanguagePreferenceScope(sourceKey: source.key, language: providerLanguage)
@@ -40,9 +56,7 @@ enum SumiLanguageChapterLoader {
         guard result.key == manga.key || result.key.isEmpty else { throw LanguageError.mismatchedTitle }
         // The source may ignore a language selection. Never relabel another
         // explicit translation as the requested one.
-        return (result.chapters ?? []).filter {
-            SumiChapterLanguage.normalized($0.language) == SumiChapterLanguage.normalized(language)
-        }
+        return SumiChapterLanguage.filter(result.chapters ?? [], language: language)
     }
 
     private enum LanguageError: LocalizedError {

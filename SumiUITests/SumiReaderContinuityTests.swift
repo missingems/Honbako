@@ -82,11 +82,16 @@ final class SumiReaderContinuityTests: XCTestCase {
         let spanish = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Spanish")).firstMatch
         XCTAssertTrue(spanish.waitForExistence(timeout: 5), app.debugDescription)
         spanish.tap()
+        let chapterPanel = item("Sumi.Reader.Chapters", app)
+        XCTAssertTrue(wait(NSPredicate(format: "exists == false"), chapterPanel),
+                      "Selecting a translation continues the equivalent chapter immediately")
+        let reader = item("Sumi.DirectReader", app)
+        XCTAssertTrue(wait(NSPredicate(format: "value CONTAINS %@", "Chapter 1"), reader))
+        app.buttons["Sumi.Reader.ChaptersButton"].tap()
         let translated = app.buttons["Sumi.Reader.Chapter.chapter-2-es"]
         XCTAssertTrue(translated.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Sumi.Reader.Chapter.chapter-2"].exists)
         translated.tap()
-        let reader = item("Sumi.DirectReader", app)
         XCTAssertTrue(wait(NSPredicate(format: "value CONTAINS %@", "Chapter 2"), reader))
         app.buttons["Sumi.Reader.ChaptersButton"].tap()
         XCTAssertTrue(app.buttons["Sumi.Reader.Chapter.chapter-3-es"].waitForExistence(timeout: 5))

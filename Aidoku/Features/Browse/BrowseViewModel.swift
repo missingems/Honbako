@@ -128,8 +128,7 @@ class BrowseViewModel {
     }
 
     func loadUpdates() {
-        guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
-        let appVersion = SemanticVersion(appVersionString)
+        let appVersion = SemanticVersion(SourcePackageCompatibility.versionString)
         let installedSources = storedInstalledSources ?? installedSources
         let pinnedSources = storedPinnedSources ?? pinnedSources
 

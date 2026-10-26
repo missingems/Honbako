@@ -40,6 +40,93 @@ struct SumiChapterLanguageTests {
         #expect(SumiChapterLanguage.merge([], with: entries).map(\.key) == entries.map(\.key))
     }
 
+    @Test("A language change continues the same numbered chapter and volume, preserving the source's edition order")
+    func translatedChapterMatch() {
+        let current = AidokuRunner.Chapter(key: "english", chapterNumber: 2, volumeNumber: 3, language: "en")
+        let chapters: [AidokuRunner.Chapter] = [
+            .init(key: "wrong-volume", chapterNumber: 2, volumeNumber: 2, language: "fr"),
+            .init(key: "fr-first-edition", chapterNumber: 2, volumeNumber: 3, language: "fr"),
+            .init(key: "fr-second-edition", chapterNumber: 2, volumeNumber: 3, language: "fr"),
+            .init(key: "wrong-language", chapterNumber: 2, volumeNumber: 3, language: "pt")
+        ]
+        #expect(SumiChapterLanguage.equivalent(to: current, in: chapters, language: "fr")?.key == "fr-first-edition")
+        #expect(SumiChapterLanguage.equivalent(to: current, in: chapters, language: "pt-BR") == nil)
+    }
+
+    @Test("Missing volume metadata can match an unambiguous translation but cannot cross an explicit volume reset")
+    func translatedVolumeAmbiguity() {
+        let numberedVolume = AidokuRunner.Chapter(key: "current-v2", chapterNumber: 1, volumeNumber: 2, language: "en")
+        let missingVolume = AidokuRunner.Chapter(key: "fr-no-volume", chapterNumber: 1, language: "fr")
+        #expect(SumiChapterLanguage.equivalent(to: numberedVolume, in: [missingVolume], language: "fr")?.key == missingVolume.key)
+        let otherVolume = AidokuRunner.Chapter(key: "fr-v1", chapterNumber: 1, volumeNumber: 1, language: "fr")
+        #expect(SumiChapterLanguage.equivalent(to: numberedVolume, in: [otherVolume, missingVolume], language: "fr") == nil)
+        let noVolume = AidokuRunner.Chapter(key: "current-no-volume", chapterNumber: 1, language: "en")
+        let secondVolume = AidokuRunner.Chapter(key: "fr-v2", chapterNumber: 1, volumeNumber: 2, language: "fr")
+        #expect(SumiChapterLanguage.equivalent(to: noVolume, in: [otherVolume, secondVolume], language: "fr") == nil)
+    }
+
+    @Test("An unnumbered special needs a matching title, never just the same list position")
+    func translatedSpecials() {
+        let special = AidokuRunner.Chapter(key: "extra-en", title: "Bonus  Chapter", language: "en")
+        let matching = AidokuRunner.Chapter(key: "extra-fr", title: "  BONUS Chapter ", language: "fr")
+        let different = AidokuRunner.Chapter(key: "different-fr", title: "Afterword", language: "fr")
+        #expect(SumiChapterLanguage.equivalent(to: special, in: [different, matching], language: "fr")?.key == matching.key)
+        #expect(SumiChapterLanguage.equivalent(to: special, in: [different], language: "fr") == nil)
+        #expect(SumiChapterLanguage.equivalent(to: chapter("unknown", language: "en"), in: [matching], language: "fr") == nil)
+    }
+
+    @Test("Language switches prefer the translation's own bookmark and otherwise keep the current page")
+    func translatedPageProgress() {
+        #expect(SumiChapterLanguage.resumePage(savedPage: 7, currentPage: 19) == 7)
+        #expect(SumiChapterLanguage.resumePage(savedPage: nil, currentPage: 19) == 19)
+        #expect(SumiChapterLanguage.resumePage(savedPage: 0, currentPage: 19) == 19)
+        #expect(SumiChapterLanguage.resumePage(savedPage: nil, currentPage: -1) == 1)
+    }
+
+    @Test("Catalog-wide source languages cannot advertise nonexistent translations of one title")
+    func scopedTranslationDiscovery() {
+        let languages = ["en", "ja", "PT_br", "pt-BR"]
+        for source in ["multi.mangadex", "multi.mangafire"] {
+            #expect(Set(SumiLanguageChapterLoader.translationLanguages(sourceKey: source,
+                advertisedLanguages: languages, hasPackage: true)) == ["en", "ja", "pt-br"])
+        }
+        for source in ["multi.mangaplus", "multi.webtoon", "unreviewed-source"] {
+            #expect(SumiLanguageChapterLoader.translationLanguages(sourceKey: source,
+                advertisedLanguages: languages, hasPackage: true).isEmpty)
+        }
+        #expect(SumiLanguageChapterLoader.translationLanguages(sourceKey: "multi.mangadex",
+            advertisedLanguages: languages, hasPackage: false).isEmpty)
+        #expect(SumiLanguageChapterLoader.translationLanguages(sourceKey: "multi.mangadex",
+            advertisedLanguages: ["en", "EN"], hasPackage: true).isEmpty)
+    }
+
+    @Test("MangaFire's returned es-la chapters match requested es-419 without mixing other regional editions")
+    func mangaFireRegionalAlias() throws {
+        let advertised = ["en", "es", "es-419", "pt", "pt-BR"]
+        let providerValue = try #require(SumiLanguageChapterLoader.providerLanguage(for: "es-419", advertisedLanguages: advertised))
+        #expect(providerValue == "es-419")
+        #expect(SumiLanguageChapterLoader.providerLanguage(for: "es-la", advertisedLanguages: advertised) == "es-419")
+        #expect(SumiLanguageChapterLoader.providerLanguage(for: "es-419", advertisedLanguages: ["es-la", "es"]) == "es-la")
+        #expect(Set(SumiLanguageChapterLoader.translationLanguages(sourceKey: "multi.mangafire",
+            advertisedLanguages: ["en", "es-la", "es-419", "es", "pt", "pt-BR"], hasPackage: true))
+            == ["en", "es-419", "es", "pt", "pt-br"])
+        let returned = [chapter("latam", language: "es-la"), chapter("spain", language: "es"),
+                        chapter("brazil", language: "pt-br"), chapter("portugal", language: "pt")]
+        #expect(SumiChapterLanguage.filter(returned, language: "es-419").map(\.key) == ["latam"])
+        #expect(SumiChapterLanguage.filter(returned, language: "es").map(\.key) == ["spain"])
+        #expect(SumiChapterLanguage.filter(returned, language: "pt-BR").map(\.key) == ["brazil"])
+        #expect(SumiChapterLanguage.filter(returned, language: "pt").map(\.key) == ["portugal"])
+
+        let suite = "Sumi.MangaFireLanguageTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(["en"], forKey: "multi.mangafire.languages")
+        let scope = SumiLanguagePreferenceScope(sourceKey: "multi.mangafire", language: providerValue, defaults: defaults)
+        defer { scope.remove() }
+        #expect(defaults.stringArray(forKey: scope.namespace + ".languages") == ["es-419"])
+        #expect(defaults.stringArray(forKey: "multi.mangafire.languages") == ["en"])
+    }
+
     @Test("Concurrent language fetch preferences are isolated and cleaned without changing source settings")
     func isolatedPreferences() throws {
         let suite = "Sumi.LanguageScopeTests.\(UUID().uuidString)"

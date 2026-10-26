@@ -161,13 +161,21 @@ class ReaderViewController: BaseObservingViewController {
         hideBars()
     }
 
-    private func sumiGoToChapter(_ selected: AidokuRunner.Chapter) {
+    private func sumiGoToChapter(_ selected: AidokuRunner.Chapter, resumingTranslation: Bool = false) {
+        let startPage: Int
+        if resumingTranslation {
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: selected.key)
+            let savedPage = CoreDataManager.shared.getProgress(chapterId: identifier).progress
+            startPage = SumiChapterLanguage.resumePage(savedPage: savedPage, currentPage: currentPage)
+        } else {
+            startPage = 1
+        }
         if selected.key == chapter.key {
             chapter = selected
-            reader?.setChapter(selected, startPage: 1)
+            reader?.setChapter(selected, startPage: startPage)
         } else {
             setChapter(selected)
-            forceStartPage = 1
+            forceStartPage = startPage
             loadCurrentChapter()
         }
         showBars()
@@ -226,8 +234,8 @@ class ReaderViewController: BaseObservingViewController {
                 let id = ChapterIdentifier(sourceKey: self.manga.sourceKey, mangaKey: self.manga.key, chapterKey: chapter.key)
                 return DownloadManager.shared.getDownloadStatus(for: id) == .finished
                     || (source != nil && !chapter.locked)
-            }, select: { [weak self] chapter in
-                self?.dismiss(animated: true) { self?.sumiGoToChapter(chapter) }
+            }, select: { [weak self] chapter, resumingTranslation in
+                self?.dismiss(animated: true) { self?.sumiGoToChapter(chapter, resumingTranslation: resumingTranslation) }
             }, close: { [weak self] in self?.dismiss(animated: true) }
         ))
         panel.view.tintColor = .label

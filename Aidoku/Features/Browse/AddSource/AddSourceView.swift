@@ -319,9 +319,7 @@ struct AddSourceView: View {
     }
 
     func filterExternalSources() async -> ([SourceInfo], allSourcesInstalled: Bool) {
-        guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        else { return ([], true) }
-        let appVersion = SemanticVersion(appVersionString)
+        let appVersion = SemanticVersion(SourcePackageCompatibility.versionString)
         let selectedLanguages = AppSettings.browse.languages.get()
         let contentRatings = AppSettings.browse.contentRatings.get()
 

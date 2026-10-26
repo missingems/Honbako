@@ -8,7 +8,10 @@ enum SumiChapterLanguage {
         guard let code else { return nil }
         let result = code.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "_", with: "-").lowercased()
-        return result.isEmpty || result == "multi" ? nil : result
+        if result.isEmpty || result == "multi" { return nil }
+        // MangaFire returns es-la for the es-419 source preference. They name
+        // the same regional edition; do not collapse it into Spanish (es).
+        return result == "es-la" ? "es-419" : result
     }
 
     static func languages(in chapters: [AidokuRunner.Chapter]) -> [String] {
@@ -32,6 +35,46 @@ enum SumiChapterLanguage {
     static func filter(_ chapters: [AidokuRunner.Chapter], language: String?) -> [AidokuRunner.Chapter] {
         guard let language = normalized(language) else { return chapters }
         return chapters.filter { normalized($0.language) == language }
+    }
+
+    /// Match an edition of the same chapter, never a chapter's position in the
+    /// source response. Specials and volume-based numbering can differ between
+    /// translations, so an ambiguous match stays in the chapter picker.
+    static func equivalent(to current: AidokuRunner.Chapter, in chapters: [AidokuRunner.Chapter],
+                           language: String) -> AidokuRunner.Chapter? {
+        guard let language = normalized(language) else { return nil }
+        let translated = filter(chapters, language: language)
+        if let exact = translated.first(where: { $0.key == current.key }) { return exact }
+        let candidates: [AidokuRunner.Chapter]
+        if let number = current.chapterNumber {
+            candidates = translated.filter { $0.chapterNumber == number }
+        } else if let title = matchingTitle(current.title) {
+            candidates = translated.filter { $0.chapterNumber == nil && matchingTitle($0.title) == title }
+        } else {
+            return nil
+        }
+        if let volume = current.volumeNumber {
+            if let exactVolume = candidates.first(where: { $0.volumeNumber == volume }) { return exactVolume }
+            // Some translations omit volume metadata entirely. A response with
+            // another explicit volume is insufficient evidence of equivalence.
+            return candidates.allSatisfy { $0.volumeNumber == nil } ? candidates.first : nil
+        }
+        if let unnumberedVolume = candidates.first(where: { $0.volumeNumber == nil }) { return unnumberedVolume }
+        return Set(candidates.compactMap(\.volumeNumber)).count <= 1 ? candidates.first : nil
+    }
+
+    /// A translation's own bookmark wins. Otherwise keep the visible canonical
+    /// page; the reader clamps it to the translated chapter's real page count.
+    static func resumePage(savedPage: Int?, currentPage: Int) -> Int {
+        if let savedPage, savedPage > 0 { return savedPage }
+        return max(1, currentPage)
+    }
+
+    private static func matchingTitle(_ title: String?) -> String? {
+        guard let title else { return nil }
+        let result = title.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+            .split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        return result.isEmpty ? nil : result
     }
 
     static func merge(_ existing: [AidokuRunner.Chapter], with fetched: [AidokuRunner.Chapter]) -> [AidokuRunner.Chapter] {

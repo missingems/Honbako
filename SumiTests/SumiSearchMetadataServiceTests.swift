@@ -19,6 +19,21 @@ struct SumiSearchMetadataServiceTests {
         #expect(missing.releaseYear == nil)
     }
 
+    @Test("Title translation languages come from chapter availability, never the original publication language")
+    func titleTranslationLanguages() throws {
+        let data = Data("""
+        {"result":"ok","data":{"id":"\(Self.id.uuidString)","type":"manga",
+        "attributes":{"originalLanguage":"ja","availableTranslatedLanguages":["en","pt-br",null]}}}
+        """.utf8)
+        let value = try SumiSearchMetadataService.decode(data, requestedID: Self.id)
+        #expect(value.translatedLanguages == ["en", "pt-br"])
+        let originalOnly = Data("""
+        {"result":"ok","data":{"id":"\(Self.id.uuidString)","type":"manga",
+        "attributes":{"originalLanguage":"ja"}}}
+        """.utf8)
+        #expect(try SumiSearchMetadataService.decode(originalOnly, requestedID: Self.id).translatedLanguages.isEmpty)
+    }
+
     @Test("Publication metadata distinguishes completed, ongoing, paused, and cancelled titles")
     func publicationStatus() throws {
         let statuses: [(String, AidokuRunner.PublishingStatus)] = [
