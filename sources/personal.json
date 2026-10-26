@@ -169,22 +169,6 @@
       "minAppVersion": "0.7.1"
     },
     {
-      "id": "ja.comicdays",
-      "name": "コミックDAYS",
-      "version": 2,
-      "iconURL": "https://aidoku-community.github.io/sources/icons/ja.comicdays-v2.png",
-      "downloadURL": "https://aidoku-community.github.io/sources/sources/ja.comicdays-v2.aix",
-      "languages": [
-        "ja"
-      ],
-      "contentRating": 0,
-      "altNames": [
-        "Comic Days"
-      ],
-      "baseURL": "https://comic-days.com",
-      "minAppVersion": "0.7.1"
-    },
-    {
       "id": "ja.comicaction",
       "name": "webアクション",
       "version": 1,
@@ -205,6 +189,6 @@
       "MIT",
       "Apache-2.0"
     ],
-    "note": "Personal-device setup catalog. Provider access terms and package licenses remain applicable."
+    "note": "Personal-device catalog. Eight connectors returned public listings in the native reader. Provider terms and package licenses remain applicable; chapter availability varies."
   }
 }

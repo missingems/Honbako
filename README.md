@@ -12,7 +12,7 @@ Use one shared DerivedData directory per checkout. Do not put build caches in th
 
 Source-package compatibility uses `SourceEngineVersion` (currently `0.9.0`) independently of Honbako's product version. Preserve that boundary when updating the reader engine.
 
-The explicitly requested personal-device catalog is [Honbako Sources](https://gist.github.com/missingems/a88a113d1b28b9149289c04bf0840d8b), mirrored as `sources/personal.json`. It contains nine reviewed connector manifests and absolute links to the maintainer's packages, with attribution. This catalog is not automatically added on ordinary launches. Debug builds support an explicit developer setup operation using `--honbako-source-list=<raw JSON URL> --honbako-add-sources=<comma-separated source IDs>`; `--honbako-check-sources` additionally checks one public listing per source. The receipt is stored under `Library/Caches/HonbakoSourceSetup.json`. This operation never adds manga or modifies reading history.
+The explicitly requested personal-device catalog is [Honbako Sources](https://gist.github.com/missingems/a88a113d1b28b9149289c04bf0840d8b), mirrored as `sources/personal.json`. It contains eight reviewed connector manifests and absolute links to the maintainer's packages, with attribution. This catalog is not automatically added on ordinary launches. Debug builds support an explicit developer setup operation using `--honbako-source-list=<raw JSON URL> --honbako-add-sources=<comma-separated source IDs>`; `--honbako-check-sources` additionally checks one public listing per source. The receipt is stored under `Library/Caches/HonbakoSourceSetup.json`. This operation never adds manga or modifies reading history.
 
 ## Recommendations
 
