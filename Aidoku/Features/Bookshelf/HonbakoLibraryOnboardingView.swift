@@ -33,13 +33,6 @@ struct HonbakoLibraryOnboardingView: View {
                 Text("Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading.")
             }
 
-            Section {
-                Link("Aidoku Community", destination: URL(string: "https://aidoku.app")!)
-            } header: {
-                Text("Find a Community")
-            } footer: {
-                Text("Use content you own or have permission to access. Community source suggestions do not grant content rights.")
-            }
         }
         .navigationTitle("Getting Started")
         .navigationBarTitleDisplayMode(.inline)

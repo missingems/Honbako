@@ -14,13 +14,22 @@ struct LocalSetupView: View {
     @EnvironmentObject private var path: NavigationCoordinator
     #endif
 
+    private var localFilesDescription: String {
+        let description = NSLocalizedString("LOCAL_FILES_INFO")
+        #if SUMI
+        return description.replacingOccurrences(of: "Aidoku", with: "Honbako")
+        #else
+        return description
+        #endif
+    }
+
     var body: some View {
         List {
             Section {
                 SettingHeaderView(
                     icon: .raw(Image(.local)),
                     title: NSLocalizedString("LOCAL_FILES"),
-                    subtitle: NSLocalizedString("LOCAL_FILES_INFO")
+                    subtitle: localFilesDescription
                 )
             }
         }
