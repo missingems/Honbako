@@ -1,0 +1,99 @@
+name: Refresh recommendations
+
+on:
+  schedule:
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+    inputs:
+      sonnet:
+        description: 'Permit one paid Sonnet reorder (requires API key and model variable)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: recommendations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pages: read
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify offline behavior
+        run: python -m unittest discover -s scripts -p 'test_recommendations.py' -v
+      - name: Refresh reviewed metadata
+        env:
+          OPEN_LIBRARY_ENABLED: ${{ vars.OPEN_LIBRARY_ENABLED }}
+          OPEN_LIBRARY_CONTACT: ${{ vars.OPEN_LIBRARY_CONTACT }}
+        shell: bash
+        run: |
+          args=()
+          if [[ "$OPEN_LIBRARY_ENABLED" == 'true' ]]; then
+            args+=(--fetch-open-library)
+          fi
+          python scripts/update_recommendations.py "${args[@]}"
+      - name: Optional Sonnet reorder
+        if: github.event_name == 'workflow_dispatch' && inputs.sonnet
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+        run: python scripts/update_recommendations.py --sonnet
+      - name: Validate public feed
+        run: python scripts/update_recommendations.py --validate-only
+      - name: Commit changed public feed
+        shell: bash
+        run: |
+          if ! git diff --quiet -- recommendations/public/recommendations.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add recommendations/public/recommendations.json
+            git commit -m 'Refresh reviewed recommendations'
+            git push origin HEAD:main
+          fi
+      - name: Check Pages availability
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.build_type' | grep -qx 'workflow'; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Pages is not configured for GitHub Actions or is unavailable on this private-repository plan. Feed remains committed; bundled recommendations continue to work.'
+          fi
+      - uses: actions/upload-pages-artifact@v4
+        if: steps.pages.outputs.enabled == 'true'
+        with:
+          path: recommendations/public
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.pages_enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy metadata feed
+        id: deployment
+        uses: actions/deploy-pages@v4

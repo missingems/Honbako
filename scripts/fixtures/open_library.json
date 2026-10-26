@@ -1,0 +1,11 @@
+{
+  "docs": [
+    {"key": "/works/OL1W", "title": "Haikyu!!, Vol. 1", "author_name": ["Haruichi Furudate"], "trending_z_score": 4.25},
+    {"key": "/works/OL2W", "title": "Haikyu!!, Vol. 2", "author_name": ["Haruichi Furudate"], "trending_z_score": 3.9},
+    {"key": "/works/OL3W", "title": "Spy x Family", "author_name": ["Unrelated author"], "trending_z_score": 3.2},
+    {"key": "/works/OL4W", "title": "Spy x Family, Vol. 3", "author_name": ["Tatsuya Endo"], "trending_z_score": 2.5},
+    {"key": "/works/OL5W", "title": "Unreviewed Adult Title", "author_name": ["Unknown"], "trending_z_score": 2.1},
+    {"key": "/works/OL6W", "title": "One Piece", "author_name": ["Eiichiro Oda"], "trending_z_score": 0},
+    {"key": "/works/OL7W", "title": "One Piece Fan Guide", "author_name": ["Eiichiro Oda"], "trending_z_score": 1.0}
+  ]
+}

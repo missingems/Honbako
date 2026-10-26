@@ -1,0 +1,74 @@
+//
+//  DownsampleProcessor.swift
+//  Aidoku (iOS)
+//
+//  Created by Skitty on 8/17/22.
+//
+
+import Nuke
+import UIKit
+
+struct DownsampleProcessor: ImageProcessing {
+    private let size: CGSize
+    let scaleFactor: CGFloat
+
+    @MainActor
+    init(size: CGSize, scaleFactor: CGFloat? = nil) {
+        self.size = size
+        self.scaleFactor = scaleFactor ?? UIScreen.main.scale
+    }
+
+    @MainActor
+    init(width: CGFloat, scaleFactor: CGFloat? = nil) {
+        self.size = CGSize(width: width, height: CGFloat.infinity)
+        self.scaleFactor = scaleFactor ?? UIScreen.main.scale
+    }
+
+    var identifier: String {
+        "com.github.Aidoku/Aidoku/downsample?s=\(size)&scale=\(scaleFactor)"
+    }
+
+    func process(_ image: PlatformImage) -> PlatformImage? {
+        let scaleHor = size.width / image.size.width
+        let scaleVert = size.height / image.size.height
+        let scale = min(scaleHor, scaleVert)
+
+        if scale == 1 {
+            return image // no need to scale
+        } else if scale > 1 {
+            return image // don't want to upscale
+        }
+
+        let finalSize = CGSize(
+            width: CGFloat(round(image.size.width * scale)),
+            height: CGFloat(round(image.size.height * scale))
+        )
+
+        var data = image.pngData()
+        if data == nil {
+            data = image.jpegData(compressionQuality: 1)
+            if data == nil {
+                return nil
+            }
+        }
+
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let imageSource = CGImageSourceCreateWithData(data! as CFData, imageSourceOptions) else {
+            return nil
+        }
+
+        let maxDimension = round(max(finalSize.width, finalSize.height) * scaleFactor)
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ] as [CFString: Any] as CFDictionary
+
+        guard let output = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options) else {
+            return nil
+        }
+
+        return PlatformImage(cgImage: output, scale: scaleFactor, orientation: image.imageOrientation)
+    }
+}

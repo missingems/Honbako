@@ -1,0 +1,36 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/*.xcworkspace/
+
+*.xcodeproj/*.xcworkspace/*
+!*.xcodeproj/*.xcworkspace/contents.xcworkspacedata
+!*.xcodeproj/*.xcworkspace/xcshareddata/
+
+*.xcodeproj/*.xcworkspace/xcshareddata/*
+!*.xcodeproj/*.xcworkspace/xcshareddata/swiftpm/
+
+# Other
+.DS_Store
+build/
+
+# Zed
+.zed
+
+# Xcode-Build-Server
+buildServer.json
+
+# Signing settings for this checkout
+/Aidoku/LocalSigning.xcconfig
+
+# Local artifacts and secrets
+__pycache__/
+*.pyc
+.env
+.env.*
+*.p12
+*.mobileprovision
+work/
+output/
+outputs/
