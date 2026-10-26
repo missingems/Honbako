@@ -2,26 +2,48 @@
 import SwiftUI
 
 struct HonbakoLibraryOnboardingView: View {
-    let connect: () -> Void
+    let localFilesAdded: Bool
+    let importSource: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Your Library Starts Here").font(.title2.bold())
-            Label("Add your own files or connect a personal server.", systemImage: "1.circle")
-            Label("For another provider, add a source list or source file you trust.", systemImage: "2.circle")
-            Label("Pull down to search, then choose Add to keep a manga here.", systemImage: "3.circle")
-            Button("Add a Connection", systemImage: "link", action: connect)
-                .buttonStyle(.borderedProminent)
-            Link("Aidoku Community", destination: URL(string: "https://aidoku.app")!)
-            Text("Use content you own or have permission to access. Community source suggestions do not grant content rights.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+        List {
+            Section {
+                NavigationLink { LocalSetupView() } label: {
+                    Label("Local Files", systemImage: "folder")
+                }
+                .disabled(localFilesAdded)
+                NavigationLink { SumiPersonalLibrariesView() } label: {
+                    Label("Personal Server", systemImage: "externaldrive")
+                }
+                NavigationLink { SumiSourceListsView() } label: {
+                    Label("Source Lists", systemImage: "link")
+                }
+                Button("Import Source File", systemImage: "square.and.arrow.down", action: importSource)
+            } header: {
+                Text("1. Choose a Connection")
+            } footer: {
+                Text("Add your own files, connect a personal server, or choose a source list or source file you trust. Honbako includes no source lists or manga.")
+            }
+
+            Section("2. Find Manga") {
+                Text("Return to your library and pull down to search. Search uses the connections you enable in Settings.")
+            }
+
+            Section("3. Build Your Library") {
+                Text("Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading.")
+            }
+
+            Section {
+                Link("Aidoku Community", destination: URL(string: "https://aidoku.app")!)
+            } header: {
+                Text("Find a Community")
+            } footer: {
+                Text("Use content you own or have permission to access. Community source suggestions do not grant content rights.")
+            }
         }
-        .font(.body)
-        .frame(maxWidth: 540, alignment: .leading)
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .accessibilityIdentifier("Honbako.Library.Onboarding")
+        .navigationTitle("Getting Started")
+        .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier("Honbako.Settings.GettingStarted")
     }
 }
 #endif

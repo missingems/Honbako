@@ -41,7 +41,7 @@ struct SumiSpotlightSearchView: View {
                             isActive: presentation.isPresented && !sourcesPresented, dismiss: dismiss)
                             .frame(minHeight: 52)
                         Button { sourcesPresented = true } label: {
-                            Label("Connections", systemImage: "link")
+                            Label("Settings", systemImage: "link")
                                 .labelStyle(.iconOnly)
                                 .frame(width: 44, height: 44)
                                 .contentShape(.rect)
@@ -74,7 +74,7 @@ struct SumiSpotlightSearchView: View {
                                         } description: {
                                             Text("Add your files, a personal server, or a source to search.")
                                         } actions: {
-                                            Button("Connections") { sourcesPresented = true }
+                                            Button("Settings") { sourcesPresented = true }
                                         }
                                     } else if let error = store.errorMessage, previewBooks == nil {
                                         ContentUnavailableView {

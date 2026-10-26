@@ -15,6 +15,17 @@ struct SumiSourcesView: View {
         NavigationStack {
             List {
                 Section {
+                    NavigationLink {
+                        HonbakoLibraryOnboardingView(
+                            localFilesAdded: sources.contains { $0.sourceId == LocalSourceRunner.sourceKey },
+                            importSource: { importing = true }
+                        )
+                    } label: {
+                        Label("Getting Started", systemImage: "book.closed")
+                    }
+                }
+
+                Section {
                     if sources.isEmpty {
                         Text("No connections yet").foregroundStyle(.secondary)
                     }
@@ -58,7 +69,7 @@ struct SumiSourcesView: View {
                     NavigationLink { SumiCloudSyncView() } label: { Label("iCloud Sync", systemImage: "icloud") }
                 }
             }
-            .navigationTitle("Connections")
+            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $proPresented) { HonbakoProView(feature: nil) }
             .toolbar {
@@ -69,25 +80,25 @@ struct SumiSourcesView: View {
             .task { await reload() }
             .onReceive(NotificationCenter.default.publisher(for: .sourceLoaded)) { _ in Task { await reload() } }
             .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in Task { await reload() } }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "aix") ?? .zip]) { result in
-                switch result {
-                case let .success(url):
-                    Task {
-                        let scoped = url.startAccessingSecurityScopedResource()
-                        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                        if await SourceManager.shared.importSource(from: url) == nil {
-                            errorMessage = "This source couldn’t be imported. Choose a compatible .aix file and try again."
-                        }
-                        await reload()
-                    }
-                case let .failure(error): errorMessage = error.localizedDescription
-                }
-            }
-            .alert("Connection Unavailable", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-                Button("OK", role: .cancel) { errorMessage = nil }
-            } message: { Text(errorMessage ?? "") }
         }
         .tint(.primary)
+        .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "aix") ?? .zip]) { result in
+            switch result {
+            case let .success(url):
+                Task {
+                    let scoped = url.startAccessingSecurityScopedResource()
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    if await SourceManager.shared.importSource(from: url) == nil {
+                        errorMessage = "This source couldn’t be imported. Choose a compatible .aix file and try again."
+                    }
+                    await reload()
+                }
+            case let .failure(error): errorMessage = error.localizedDescription
+            }
+        }
+        .alert("Connection Unavailable", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button("OK", role: .cancel) { errorMessage = nil }
+        } message: { Text(errorMessage ?? "") }
     }
 
     private func reload() async {

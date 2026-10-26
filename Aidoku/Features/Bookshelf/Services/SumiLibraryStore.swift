@@ -701,7 +701,7 @@ final class SumiLibraryStore: ObservableObject {
         providerFailures = bootstrap.failures.filter { byKey[$0.key] == nil }
         guard !sources.isEmpty else {
             isSearching = false
-            searchError = "Add a source in Connections to search for manga."
+            searchError = "Add a source in Settings to search for manga."
             updateErrorMessage()
             return
         }

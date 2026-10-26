@@ -7,26 +7,22 @@ struct HonbakoRecommendationTile: View {
 
     var body: some View {
         Button(action: select) {
-            VStack(alignment: .leading, spacing: 5) {
-                ZStack {
-                    Rectangle().fill(.quaternary)
-                    if let url = item.coverURL {
-                        AsyncImage(url: url) { image in image.resizable().scaledToFill() }
-                            placeholder: { Image(systemName: "book.closed").font(.largeTitle).foregroundStyle(.secondary) }
-                    } else {
-                        VStack(spacing: 12) {
-                            Image(systemName: "book.closed").font(.largeTitle)
-                            Text(item.title).font(.headline).multilineTextAlignment(.center).lineLimit(4)
-                        }
-                        .foregroundStyle(.secondary)
-                        .padding(12)
+            ZStack {
+                Rectangle().fill(.quaternary)
+                if let url = item.coverURL {
+                    AsyncImage(url: url) { image in image.resizable().scaledToFill() }
+                        placeholder: { Image(systemName: "book.closed").font(.largeTitle).foregroundStyle(.secondary) }
+                } else {
+                    VStack(spacing: 12) {
+                        Image(systemName: "book.closed").font(.largeTitle)
+                        Text(item.title).font(.headline).multilineTextAlignment(.center).lineLimit(4)
                     }
+                    .foregroundStyle(.secondary)
+                    .padding(12)
                 }
-                .aspectRatio(0.68, contentMode: .fit)
-                .clipped()
-                Text(item.title).font(.subheadline).lineLimit(2)
             }
-            .padding(.bottom, 8)
+            .aspectRatio(0.68, contentMode: .fit)
+            .clipped()
             .contentShape(.rect)
         }
         .buttonStyle(.plain)

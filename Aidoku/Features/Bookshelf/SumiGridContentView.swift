@@ -18,7 +18,6 @@ struct SumiGridContentView: View {
     @State private var pullDistance: CGFloat = 0
     @State private var libraryBooks: [SumiBook] = []
     @State private var hasPreparedLibrary = false
-    @State private var connectionsPresented = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
@@ -43,13 +42,14 @@ struct SumiGridContentView: View {
                     }
                 } else {
                     LazyVStack(alignment: .leading, spacing: 26) {
-                        if hasPreparedLibrary, libraryBooks.isEmpty {
-                            HonbakoLibraryOnboardingView { connectionsPresented = true }
+                        if !finished.isEmpty {
+                            HonbakoLibrarySectionView(title: "Finished", books: finished, columns: columns,
+                                openingBookID: opening.bookID, openBook: openBook)
                         }
-                        HonbakoLibrarySectionView(title: "Finished", books: finished, columns: columns,
-                            openingBookID: opening.bookID, openBook: openBook)
-                        HonbakoLibrarySectionView(title: "Reading", books: reading, columns: columns,
-                            openingBookID: opening.bookID, openBook: openBook)
+                        if !reading.isEmpty {
+                            HonbakoLibrarySectionView(title: "Reading", books: reading, columns: columns,
+                                openingBookID: opening.bookID, openBook: openBook)
+                        }
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Recommendations").font(.title2.bold()).padding(.horizontal, 16)
                             if recommendations.items.isEmpty {
@@ -89,7 +89,6 @@ struct SumiGridContentView: View {
         }
         .ignoresSafeArea(.container)
         .background { Color(uiColor: .systemBackground).ignoresSafeArea() }
-        .sheet(isPresented: $connectionsPresented) { SumiSourcesView() }
         .task { await prepareLibrary() }
         .onChange(of: store.library) { updateLibrary() }
         .onChange(of: opening.bookID) { if opening.bookID == nil { updateLibrary() } }

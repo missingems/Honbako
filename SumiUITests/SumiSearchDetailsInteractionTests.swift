@@ -87,10 +87,15 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         grid.swipeDown()
         let connections = app.buttons["Sumi.Search.Sources"]
         XCTAssertTrue(connections.waitForExistence(timeout: 5))
-        XCTAssertEqual(connections.label, "Connections")
+        XCTAssertEqual(connections.label, "Settings")
         connections.tap()
-        XCTAssertTrue(app.navigationBars["Connections"].waitForExistence(timeout: 5))
-        attach(app, "Connections shows files, personal servers, and manual source setup")
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        app.buttons["Getting Started"].tap()
+        XCTAssertTrue(app.navigationBars["Getting Started"].waitForExistence(timeout: 5))
+        attach(app, "Setup guide lives in Settings")
+        item("BackButton", app).tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        attach(app, "Settings shows files, personal servers, and manual source setup")
         app.buttons["Source Lists"].tap()
         XCTAssertTrue(app.navigationBars["Source Lists"].waitForExistence(timeout: 5))
         let add = app.buttons.matching(NSPredicate(format: "label == %@", "Add Source List")).firstMatch
