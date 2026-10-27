@@ -132,7 +132,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        paperHaptics.prepare()
+        paperHaptics.prepare(in: view)
     }
 
     deinit { displayLink?.invalidate(); animationWatchdog?.cancel() }
@@ -404,7 +404,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 begin(targets: [target], rightToLeft: rendersRightToLeft(navigationForward: forward))
                 if turnView != nil {
                     hasFingerLift = true
-                    paperHaptics.begin(distance: turnDistance, visible: view.window != nil)
+                    paperHaptics.begin(distance: turnDistance, visible: view.window != nil, location: recognizer.location(in: view))
                 }
             case .changed:
                 guard turnView != nil, displayLink == nil else { return }
@@ -417,7 +417,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 let translation = rawTranslation * (turnsRightToLeft ? -1 : 1)
                 progress = min(1, max(0, translation / distance))
                 turnView?.update(progress: progress)
-                paperHaptics.update(progress: progress, velocity: recognizer.velocity(in: view).x)
+                paperHaptics.update(progress: progress, velocity: recognizer.velocity(in: view).x, location: recognizer.location(in: view))
             case .ended:
                 guard turnView != nil else { return }
                 // UIPanGestureRecognizer may retain its last velocity while a
@@ -450,7 +450,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                zoom.zoomScale > zoom.minimumZoomScale + 0.02 { return false }
             touched = candidate.superview
         }
-        paperHaptics.prepare()
+        paperHaptics.prepare(in: view)
         return true
     }
 

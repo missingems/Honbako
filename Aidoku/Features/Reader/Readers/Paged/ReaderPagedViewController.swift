@@ -754,7 +754,7 @@ class ReaderPagedViewController: BaseObservingViewController {
             sumiSlidePanStarted = false
             sumiPaperHaptics.cancel()
             pan?.addTarget(self, action: #selector(sumiNativeSlidePan(_:)))
-            if pan != nil, view.window != nil { sumiPaperHaptics.prepare() }
+            if pan != nil, view.window != nil { sumiPaperHaptics.prepare(in: view) }
         }
 #endif
         guard pageViewController.transitionStyle == .pageCurl else { return }
@@ -769,11 +769,11 @@ class ReaderPagedViewController: BaseObservingViewController {
         switch pan.state {
         case .began:
             sumiSlidePanStarted = true
-            sumiPaperHaptics.begin(distance: view.bounds.width, visible: view.window != nil)
+            sumiPaperHaptics.begin(distance: view.bounds.width, visible: view.window != nil, location: pan.location(in: view))
         case .changed:
             guard sumiSlidePanStarted else { return }
             sumiPaperHaptics.update(progress: abs(pan.translation(in: view).x) / max(1, view.bounds.width),
-                velocity: pan.velocity(in: view).x)
+                velocity: pan.velocity(in: view).x, location: pan.location(in: view))
         case .ended, .cancelled, .failed:
             guard sumiSlidePanStarted else { return }
             sumiSlidePanStarted = false
@@ -1178,7 +1178,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         super.viewDidAppear(animated)
         updatePageTurnCadence()
         #if SUMI
-        if !(pageViewController is SumiPageCurlViewController) { sumiPaperHaptics.prepare() }
+        if !(pageViewController is SumiPageCurlViewController) { sumiPaperHaptics.prepare(in: view) }
         preloadNextChapter(pageCount: SumiNextChapterPreloadPolicy.firstPages)
         #endif
     }
