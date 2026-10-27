@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SumiGridContentView: View {
     @ObservedObject var store: SumiLibraryStore
-    @ObservedObject var discovery: SumiDiscoveryStore
     @ObservedObject var opening: SumiGridOpeningState
     @ObservedObject var insertion: SumiLibraryInsertionState
     let previewBooks: [SumiBook]?

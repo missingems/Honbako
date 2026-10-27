@@ -1065,7 +1065,6 @@
 "Sources couldn’t be reached. Check your connection and try again." = "无法连接书源。请检查网络连接后重试。";
 "Some sources couldn’t be searched." = "无法搜索部分书源。";
 "The source returned a different title." = "书源返回了其他作品。";
-"Search your connections for this manga" = "在已连接的书库中搜索此漫画";
 "This manga couldn’t be opened. Try again." = "无法打开此漫画。请重试。";
 "The reading page couldn’t be loaded. Try again." = "无法载入阅读页面。请重试。";
 

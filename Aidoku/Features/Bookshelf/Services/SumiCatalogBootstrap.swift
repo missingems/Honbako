@@ -8,12 +8,6 @@ import Foundation
 final class SumiCatalogBootstrap: ObservableObject {
     static let shared = SumiCatalogBootstrap()
 
-    // Kept only to recognize metadata cached by earlier builds. These names
-    // are not an install list or a recommendation to new readers.
-    static let curatedSourceKeys = [
-        "multi.mangadex", "en.weebcentral", "multi.mangaplus", "multi.webtoon"
-    ]
-
     enum State: Equatable { case idle, preparing, ready, failed(String) }
     typealias SourceLoader = @MainActor @Sendable () async -> [String]
     @Published private(set) var state: State = .idle

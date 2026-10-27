@@ -3,7 +3,7 @@
 The app and installer share an opaque 1024 × 1024 PNG. iOS applies the outer icon mask.
 
 - App asset: `Aidoku/App/Resources/Assets.xcassets/SumiIcon.appiconset/SumiIcon.png`
-- Installer asset: `recommendations/public/install/icon.png`
+- Installer asset: `site/install/icon.png`
 - Mode: built-in image generation tool, editing the previous icon, then resized to the required app-icon dimensions.
 - Lettering: the single Traditional Chinese character **漫** (U+6F2B), slightly smaller with more white space.
 - Background: white manga paper and panel artwork extend to every canvas edge; the outer black border is removed.

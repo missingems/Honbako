@@ -1056,7 +1056,6 @@
 "Sources couldn’t be reached. Check your connection and try again." = "ソースに接続できませんでした。接続を確認して、もう一度お試しください。";
 "Some sources couldn’t be searched." = "一部のソースを検索できませんでした。";
 "The source returned a different title." = "ソースから別の作品が返されました。";
-"Search your connections for this manga" = "接続先からこのマンガを検索";
 "This manga couldn’t be opened. Try again." = "このマンガを開けませんでした。もう一度お試しください。";
 "The reading page couldn’t be loaded. Try again." = "読むページを読み込めませんでした。もう一度お試しください。";
 

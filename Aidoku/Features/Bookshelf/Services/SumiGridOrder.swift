@@ -17,8 +17,8 @@ struct SumiGridOrder {
     }
 
     mutating func books(catalog: [SumiBook], library: [SumiBook]) -> [SumiBook] {
-        // Discovery already persists its shuffled catalog. New saved titles are
-        // appended in canonical order, never in the store's last-opened order.
+        // New saved titles append in canonical order rather than the store's
+        // last-opened order, preserving the reader's existing arrangement.
         let candidates = catalog + library.sorted { $0.presentation.id < $1.presentation.id }
         var seen = Set(identifiers)
         let additions = candidates.map { $0.presentation.id }.filter { seen.insert($0).inserted }

@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SumiMainView: View {
     @ObservedObject var store: SumiLibraryStore
-    @ObservedObject var discovery: SumiDiscoveryStore
     @ObservedObject var opening: SumiGridOpeningState
     @ObservedObject var search: SumiSearchPresentation
     @ObservedObject var insertion: SumiLibraryInsertionState
@@ -15,7 +14,7 @@ struct SumiMainView: View {
 
     var body: some View {
         ZStack {
-            SumiGridContentView(store: store, discovery: discovery, opening: opening, insertion: insertion,
+            SumiGridContentView(store: store, opening: opening, insertion: insertion,
                                 previewBooks: previewBooks, searchPresented: search.isPresented,
                                 updateSearchPull: search.updatePull, finishSearchPull: finishSearchPull,
                                 revealSearch: revealSearch, openBook: openBook)
