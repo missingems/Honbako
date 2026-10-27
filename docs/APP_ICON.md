@@ -5,31 +5,23 @@ The app and installer share an opaque 1024 × 1024 PNG. iOS applies the outer ic
 - App asset: `Aidoku/App/Resources/Assets.xcassets/SumiIcon.appiconset/SumiIcon.png`
 - Installer asset: `recommendations/public/install/icon.png`
 - Created with the built-in image generation tool, then resized to the required app-icon dimensions.
-- Lettering: Traditional Chinese **漫畫** (U+6F2B, U+756B).
-- Cover treatment: thick matte black bound-cover frame, subtle spine crease and inner contact shadow, with an inset printed manga face.
+- Lettering: the single Traditional Chinese character **漫** (U+6F2B).
+- Cover treatment: matte black frame and binding, inset printed manga face, generous continuous inner corners following the system icon shape.
+- The previous Build 8–10 artwork was the edit target. A private iPhone screenshot was used only as a visual reference for corner masking and is not included in this repository.
 
-## Cover Transformation Prompt
-
-The previous manga-panel artwork (Build 7) was used as the edit target.
-
-Use case: logo-brand / precise-object-edit
-Asset type: production iOS app icon, one opaque full-bleed square.
-Input image: the existing Honbako manga icon. It is the edit target.
-Primary request: Turn this into a miniature physical manga COVER with a thick black skeuomorphic cover border, keeping the exact bold traditional "漫畫" lettering and the existing manga panel/halftone aesthetic.
-Change the outer treatment: a substantial continuous rich black bound-cover rim wraps all four sides of the image. It must read as the thickness and binding of a real printed manga cover, not as another thin manga panel rule. The black rim is broad, about 5–7 percent of the canvas width, with a very subtle bevel and soft inner contact shadow. The left edge can read as a slightly thicker bound spine with a restrained embossed groove. Inside this black cover frame is the white printed artwork, with very slight paper warmth. The cover fills the square canvas, straight-on and upright; no floating book on a separate backdrop, no tilted perspective, no hand or props. Keep the dark binding frame continuous into the square canvas corners so the system app-icon mask can trim them naturally. The inner printed-cover opening can have modest physically rounded corners. No outer pre-masked squircle or transparent corners.
-Preserve the current central black brush manga title lettering: "漫" above "畫", Traditional 漫畫, with correct structure. Scale the artwork in slightly to give the new broad black frame breathing room; both glyphs remain large and fully visible. Preserve the surrounding manga panel template, speed lines and sparse halftone, but keep them secondary to the title.
-Materials: near-black matte laminated cover edging, crisp ink, subtle realistic depth through fine edge highlights and inner shadows only. Avoid shiny plastic or metallic chrome. Strong black and white contrast, clean at small Home Screen sizes.
-Text (verbatim): "漫畫", and no other text. Do not substitute 漫画. No Latin letters, numbers, author line or added branding.
-Output: exactly one finished square icon artwork, no comparison sheet, no mockup, opaque background.
-
-## Material Refinement Prompt
-
-The first cover transformation was used as the edit target.
+## Generation Prompt
 
 Use case: precise-object-edit
-Asset type: final iOS manga reader icon.
-Edit this candidate with one material correction only. Keep the exact layout, thick continuous black cover border, inset white printed manga panels, large stacked Traditional Chinese "漫畫" lettering, straight-on square composition, and spine position.
-Replace the aged leather appearance of the black border with clean smooth matte black printed cover stock, like a new manga paperback. Remove pebbled leather grain, worn white scratches, chrome-like outlines, and raised antique spine bands. Keep just a subtle soft edge bevel, a restrained binding crease down the left, and the gentle inner contact shadow that gives the cover physical depth. The black border remains thick and dark, with only a very faint broad satin highlight; it should feel like a tactile manga cover, never a metallic or leather frame.
-The paper artwork remains white with very subtle print texture; preserve the correct two characters "漫畫" and all their strokes. No new text, no branding, no added objects.
-Keep black material continuous into all four square canvas corners; opaque full-bleed square with no pre-masked transparent corner cutouts. This is a production icon, not a book mockup on a background.
+Asset type: production iOS app icon artwork, opaque full square.
+Input image 1: existing Honbako manga-cover icon, edit target.
+Input image 2: user's iPhone screenshot, visual reference ONLY showing the corner-mask problem. Do not reproduce the screenshot, wallpaper, neighboring app, or phone.
+
+Primary request: Keep the thick matte black manga-cover frame and manga print aesthetic, change the text to ONE large character "漫", and make the inner white printed-paper opening have generously rounded continuous corners CONCENTRIC with the iPhone app-icon mask.
+
+Corner geometry is essential: the current white opening's nearly square corners look wrong after iOS rounds the outside. The new white opening should be an inset soft squircle/continuous rounded rectangle, with much larger inner curves. Imagine the outer system squircle has been inset by the black frame thickness, so inner and outer curves follow each other with an even substantial band of black around every corner. At 1024 square, printed paper opening is inset roughly 72–80 pixels from each side, and its inner corner curvature is generous, visually equivalent to a 160–180 pixel radius, smoothly continuous rather than small corner rounding. Keep the manga artwork, panel rules and speed lines entirely clipped inside that rounded paper opening. At the corner areas, there must be plenty of matte black material between the opening and the future system mask.
+The actual artwork canvas must remain full bleed, filled with opaque near-black right out to all four square corners. Do not bake in transparent corners, a surrounding wallpaper/background, a separate floating squircle, or a mockup. The system will apply the outer mask.
+
+Text (verbatim): "漫" (U+6F2B). Exactly ONE character. Remove "畫" completely. Enlarge and optically center "漫" in the inset paper panel, occupying around 65–70 percent of the artwork width with clear breathing room. Correct water-radical 氵 on left, 曼 structure on right. Heavy confident black brush manga-title lettering, clean structural strokes, readable at Home Screen size.
+Preserve sparse manga panel borders, speed lines and halftone around the edges of the white paper, secondary to the one bold glyph. Restrained printed paper texture. Keep the smooth matte black binding, subtle edge depth and a restrained crease at the left spine; no aged leather, scratched chrome, heavy gloss, extra text, letters, numbers, faces or props.
+Output exactly one finished square app-icon artwork, not a comparison sheet or phone rendering.
 
