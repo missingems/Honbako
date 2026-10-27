@@ -5,23 +5,23 @@ The app and installer share an opaque 1024 × 1024 PNG. iOS applies the outer ic
 - App asset: `Aidoku/App/Resources/Assets.xcassets/SumiIcon.appiconset/SumiIcon.png`
 - Installer asset: `recommendations/public/install/icon.png`
 - Mode: built-in image generation tool, editing the previous icon, then resized to the required app-icon dimensions.
-- Lettering: the single Traditional Chinese character **漫** (U+6F2B).
-- Frame: flat near-black printed border with balanced insets and matching continuous inner corners. No separate side spine, bevel, binding seam, or directional rim lighting.
-- Manga treatment: restrained panel lines, speed lines, and halftone around a clean white face.
-- Verified at actual Home Screen size in the iPhone Duo simulator.
+- Lettering: the single Traditional Chinese character **漫** (U+6F2B), slightly smaller with more white space.
+- Background: white manga paper and panel artwork extend to every canvas edge; the outer black border is removed.
+- Manga treatment: restrained panel lines, speed lines, and halftone around a clean white center.
+- Checked at actual Home Screen size in the iPhone Duo simulator.
 
 ## Generation Prompt
 
 Use case: precise-object-edit
-Asset type: production iOS app icon, one square opaque artwork.
-Edit target: the attached current Honbako icon. Fix its uneven apparent spacing and distracting left binding.
+Asset type: production iOS app icon, full opaque square.
+Input image: current Honbako manga icon, edit target.
 
-Make the frame a CLEAN, FLAT, UNIFORM BLACK PRINTED BORDER. Completely remove the left-side book spine, separate vertical strip, fold, binding seam, offset bevel, raised lip, directional highlight, 3D volume and shadow. There must be no side protrusion. All four sides should have the same near-black color and the SAME visual thickness. No photographic book object or leather material. Think a beautifully printed manga cover in a precise graphic frame.
+Change only two things: remove the thick black outer border completely, and reduce the central character's size slightly (about 10–12 percent smaller than the reference).
 
-Geometry: full square 1024 × 1024 canvas, opaque near-black all the way to the square outer edges; iOS will apply its own outside mask. The inset white printed face must be a perfectly centered square continuous rounded rectangle. Its top, bottom, left and right straight-edge insets should all be EXACTLY 64 pixels. White opening bounds at x=64,y=64,width=896,height=896. Use matching continuous inner corner curvature, visually around a 160 pixel radius, following the eventual iPhone outer icon shape. Top and bottom edges of this white face must be equally far from the canvas edge, and the four corner curves must match one another precisely. No perspective or tilt. No rounded black book mockup sitting on a background.
+The white manga paper and its panel illustrations must now extend full bleed to all four square canvas edges and corners. Remove the entire black surrounding band and the inset rounded white window; there should be no outline around the app icon, no frame, no spine, no bevel, no rim, no rounded rectangle drawn inside the canvas. Continue the white paper and the existing manga panel lines, speed lines and halftone naturally out to the full square edges. The system will supply the outer rounded icon mask. Keep the full canvas opaque, not transparent.
 
-Keep exactly one correct "漫" (U+6F2B). Retain the bold expressive black manga brush title lettering, but make its composition visually centered in both axes. A little more white breathing space than before: glyph occupies roughly 66% width and 66% height of the full canvas; center the solid ink mass, with equal apparent white space above and below. No strokes touching the frame. Clean strong silhouette at app-icon size.
-Retain restrained manga panel dividers, fine speed lines, and light halftone dots only near the inner white panel's edges, all clipped by its rounded corners. Keep the central region behind the letter clean. White paper is neutral and evenly lit, with minimal print grain. All lighting and edge treatments must be symmetrical so nothing makes the top border look lighter/thinner than the bottom.
-Text (verbatim): "漫". No other glyphs, letters, numbers, branding, or small text.
-Output exactly one final flat square app icon artwork; no device, no wallpaper, no shadow outside it, no transparency, no comparison layout.
+Text (verbatim): "漫", exactly one correct character U+6F2B. Preserve its same bold expressive black brush lettering, same stroke structure and manga title character. Scale that glyph down approximately 10–12% from the reference while keeping it optically centered in both axes. Preserve balanced clear white breathing space above and below and separate the ink from the peripheral panel art. It must remain strong and readable at Home Screen size.
+
+Keep the black-and-white manga print aesthetic, sparse peripheral panel dividers, fine speed lines and restrained halftone. Neutral even white paper, minimal grain. Do not add any new subjects, labels or glyphs.
+Output one finished square 1024 × 1024 app-icon artwork; no device mockup, no wallpaper, no outer black border, no outline, no shadow, no transparency.
 
