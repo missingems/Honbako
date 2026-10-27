@@ -378,6 +378,20 @@ extension DownloadTask {
         source: AidokuRunner.Source,
         tmpDirectory: URL
     ) async -> PageDownloadResult {
+        if MihonRuntimeImageLoader.handles(url: page.url, source: source) {
+            do {
+                guard running, tmpDirectory.exists else { throw CancellationError() }
+                let payload = try await MihonRuntimeImageLoader.imageData(url: page.url, context: page.context, source: source)
+                guard running, tmpDirectory.exists else { throw CancellationError() }
+                return .init(page: page, data: payload.data,
+                    targetPath: page.targetPath.appendingPathExtension(MihonRuntimeImageLoader.fileExtension(for: payload)))
+            } catch is CancellationError {
+                return .init(page: page, data: nil, targetPath: nil)
+            } catch {
+                LogManager.logger.error("Runtime page image failed: \(error)")
+                return .init(page: page, data: nil, targetPath: nil)
+            }
+        }
         let urlRequest = await source.getModifiedImageRequest(
             url: page.url,
             context: page.context

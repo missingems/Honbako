@@ -19,6 +19,7 @@ final class SumiCoverArtworkLoader {
         let source: ObjectIdentifier?
         let version: Int
         let preferences: Int
+        let runtimeScope: String?
 
         init(book: SumiBook, source: AidokuRunner.Source?) {
             id = book.id
@@ -26,6 +27,7 @@ final class SumiCoverArtworkLoader {
             self.source = source.map(ObjectIdentifier.init)
             version = source?.version ?? 0
             preferences = SumiSearchSourcePreferences.fingerprint(sourceKey: book.sourceKey)
+            runtimeScope = MihonRuntimeCoverImageLoader.cacheScope(source: source)
         }
     }
 
@@ -39,6 +41,7 @@ final class SumiCoverArtworkLoader {
     private let concurrency: Int
     private let timeout: Duration
     private let loader: Loader?
+    private let imagePipeline: ImagePipeline
     private var requests: [Key: RequestEntry] = [:]
     private var placeholders: [Key: Date] = [:]
     private var active: Set<Key> = []
@@ -46,10 +49,11 @@ final class SumiCoverArtworkLoader {
     private var sourceGenerations: [String: Int] = [:]
     private var observer: AnyCancellable?
 
-    init(concurrency: Int = 4, timeout: Duration = .seconds(4), loader: Loader? = nil) {
+    init(concurrency: Int = 4, timeout: Duration = .seconds(4), imagePipeline: ImagePipeline = .shared, loader: Loader? = nil) {
         self.concurrency = max(1, concurrency)
         self.timeout = timeout
         self.loader = loader
+        self.imagePipeline = imagePipeline
         observer = NotificationCenter.default.publisher(for: .sourceUnloaded).sink { [weak self] notification in
             guard let sourceKey = notification.object as? String else { return }
             Task { @MainActor [weak self] in self?.remove(sourceKey: sourceKey) }
@@ -59,7 +63,7 @@ final class SumiCoverArtworkLoader {
     func cachedCover(for book: SumiBook) -> UIImage? {
         let key = Key(book: book, source: currentSource(for: book.sourceKey))
         guard let request = requests[key]?.request else { return nil }
-        return ImagePipeline.shared.cache.cachedImage(for: request, caches: [.memory])?.image
+        return imagePipeline.cache.cachedImage(for: request, caches: [.memory])?.image
     }
 
     func usesPreparedPlaceholder(for book: SumiBook) -> Bool {
@@ -141,20 +145,26 @@ final class SumiCoverArtworkLoader {
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         active.insert(key)
         defer { active.remove(key) }
-        let urlRequest: URLRequest
-        if let local = url.toAidokuFileUrl() { urlRequest = URLRequest(url: local) }
-        else if let source { urlRequest = await source.getModifiedImageRequest(url: url, context: nil) }
-        else { urlRequest = URLRequest(url: url) }
-        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         // 640 physical pixels are sufficient for library/search cover tiles;
         // avoid multiplying this decoded bitmap by a screen-scale factor.
         var processors: [ImageProcessing] = [DownsampleProcessor(width: 640, scaleFactor: 1)]
-        if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
-        let request = ImageRequest(urlRequest: urlRequest, processors: processors,
-            userInfo: [.processesKey: source?.features.processesCovers ?? false])
+        let request: ImageRequest
+        if let runtime = MihonRuntimeCoverImageLoader.imageRequest(url: url, source: source, sourceKey: book.sourceKey,
+                                                                  processors: processors) {
+            request = runtime
+        } else {
+            let urlRequest: URLRequest
+            if let local = url.toAidokuFileUrl() { urlRequest = URLRequest(url: local) }
+            else if let source, !url.isFileURL { urlRequest = await source.getModifiedImageRequest(url: url, context: nil) }
+            else { urlRequest = URLRequest(url: url) }
+            if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
+            request = ImageRequest(urlRequest: urlRequest, processors: processors,
+                userInfo: [.processesKey: source?.features.processesCovers ?? false])
+        }
+        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         requests[key] = RequestEntry(request: request, source: source, stored: .now)
         trim()
-        let image = try? await ImagePipeline.shared.image(for: request)
+        let image = try? await imagePipeline.image(for: request)
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         if image == nil { placeholders[key] = Date.now.addingTimeInterval(10) }
         else { placeholders[key] = nil }

@@ -1,0 +1,12 @@
+Java 27-internal
+OpenJDK 64-Bit Zero VM
+interpreted mode, static
+Class Loading: Passed
+Reflection: Passed
+Java Worker: Passed
+
+Komga 1.6.74: Passed
+Search, Chapters, Pages: Passed
+Native Image and Cover Bytes: Passed
+Repeated Requests: Passed
+Fixture Cleanup: Passed

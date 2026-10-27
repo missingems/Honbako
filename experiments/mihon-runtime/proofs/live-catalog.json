@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    "https://github.com/keiyoushi/extensions/releases/download/ff521c1/tachiyomi-all.komga-v1.6.74.apk",
+    "https://github.com/keiyoushi/extensions/releases/download/ff521c1/tachiyomi-all.komga-v1.6.74.jar"
+  ],
+  "komgaVersion": "1.6.74",
+  "packages": 1431,
+  "repository": "Keiyoushi",
+  "sourceIDs": [
+    "4508733312114627536",
+    "8074481155021144106",
+    "5132811728275817394"
+  ]
+}

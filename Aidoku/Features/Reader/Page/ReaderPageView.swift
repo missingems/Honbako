@@ -349,19 +349,14 @@ extension ReaderPageView {
         downsampleWidth: CGFloat? = nil,
         displayScale: CGFloat? = nil
     ) async -> ImageRequest {
-        let urlRequest = if !url.isFileURL, let source {
-            await source.getModifiedImageRequest(url: url, context: context)
-        } else {
-            URLRequest(url: url)
-        }
-
+        let runtimeImage = MihonRuntimeImageLoader.handles(url: url, source: source)
         var processors: [ImageProcessing] = []
         var usePageProcessor = false
         if let source {
             // only process pages if the source supports it and the image isn't downloaded
             // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
             //       this should probably be changed in the future to be more correct though
-            if source.features.processesPages, !url.isFileURL {
+            if source.features.processesPages, !url.isFileURL, !runtimeImage {
                 processors.append(PageInterceptorProcessor(source: source, pageContext: context))
                 usePageProcessor = true
             }
@@ -377,6 +372,14 @@ extension ReaderPageView {
             processors.append(UpscaleProcessor())
         }
 
+        if let request = MihonRuntimeImageLoader.imageRequest(url: url, context: context, source: source, processors: processors) {
+            return request
+        }
+        let urlRequest = if !url.isFileURL, let source {
+            await source.getModifiedImageRequest(url: url, context: context)
+        } else {
+            URLRequest(url: url)
+        }
         return ImageRequest(
             urlRequest: urlRequest,
             processors: processors,

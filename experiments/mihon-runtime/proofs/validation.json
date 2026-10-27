@@ -1,0 +1,60 @@
+{
+  "catalog_ios_unit_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "native_probe": {
+    "device_build": "passed",
+    "installed_separately": true,
+    "physical_extension_execution": "passed",
+    "simulator_startup": "upstream CodeCache failure",
+    "physical_device_family": "iPad mini",
+    "physical_os": "iPadOS 27.0",
+    "extension": "Komga 1.6.74 published JAR",
+    "operations": 9,
+    "distinct_page_images": 3,
+    "in_process_fixture": true,
+    "external_content_server": false,
+    "runtime_image_sha256": "0c0bcfda187566b1eaddf950d7241c167e6cec916b68c77f217f7eae61e6618d"
+  },
+  "production_runtime_linked": false,
+  "existing_library_migrated": false,
+  "focused_ios_integration_tests": {
+    "passed": 64,
+    "failed": 0,
+    "suites": 10
+  },
+  "verified_paths": [
+    "catalog parser",
+    "Runner metadata",
+    "lazy page images",
+    "paged reader and webtoon image loaders",
+    "scrub/preload request builder",
+    "offline page bytes",
+    "package staging and persistence",
+    "reviewed native JSON transport",
+    "library/search and generic runtime cover loading",
+    "MIME scalar/control validation"
+  ],
+  "native_persistent_executor": {
+    "physical_execution": "passed",
+    "raw_page_images": 3,
+    "raw_cover_images": 1,
+    "repeated_requests": 2,
+    "fixture_cleanup": "passed",
+    "elapsed_seconds": 17.6476389169693,
+    "bridge_sha256": "cb9a57c6b811279a51742e462955b4cf334758d9f77177ae6c6dfe6068229135",
+    "auto_lock_restored": true
+  },
+  "full_honbako_unit_tests": {
+    "passed": 408,
+    "failed": 0,
+    "suites": 83
+  },
+  "clean_host_setup": {
+    "status": "passed",
+    "proof": "host-bridge-v2-clean-setup.json",
+    "bridge_class_bytes_match_device_build": true,
+    "dependency_jar_sha256": "2de9571730c4742e531b27019ea86a62cf74a36ebe44f7e72a60ca30777d7b0b"
+  }
+}

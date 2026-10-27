@@ -1,0 +1,257 @@
+{
+  "status": "passed",
+  "execution": "host JVM, not iOS",
+  "extension_sha256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+  "extension_version": "1.6.74",
+  "source_ids": [
+    "4508733312114627536",
+    "8074481155021144106",
+    "5132811728275817394"
+  ],
+  "operations": [
+    {
+      "operation": "discover",
+      "response": {
+        "result": {
+          "sources": [
+            {
+              "id": "4508733312114627536",
+              "name": "Komga",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "8074481155021144106",
+              "name": "Komga (2)",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "5132811728275817394",
+              "name": "Komga (3)",
+              "language": "all",
+              "supportsLatest": true
+            }
+          ],
+          "version": "1.6.74",
+          "entryClass": "keiyoushi.source.Generated",
+          "package": "eu.kanade.tachiyomi.extension.all.komga"
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "search",
+      "response": {
+        "result": {
+          "hasNextPage": false,
+          "entries": [
+            {
+              "url": "http://127.0.0.1:51806/api/v1/series/honbako-original",
+              "title": "Your First Chapter",
+              "cover": "http://127.0.0.1:51806/api/v1/series/honbako-original/thumbnail",
+              "author": "Honbako",
+              "artist": null,
+              "description": "Original Honbako compatibility test content.",
+              "status": 2
+            }
+          ]
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "details",
+      "response": {
+        "result": {
+          "chapters": [],
+          "manga": {
+            "url": "http://127.0.0.1:51806/api/v1/series/honbako-original",
+            "title": "Your First Chapter",
+            "cover": "http://127.0.0.1:51806/api/v1/series/honbako-original/thumbnail",
+            "author": "Honbako",
+            "artist": null,
+            "description": "Original Honbako compatibility test content.",
+            "status": 2
+          }
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "chapters",
+      "response": {
+        "result": {
+          "chapters": [
+            {
+              "url": "http://127.0.0.1:51806/api/v1/books/original-1",
+              "name": "1 - Your First Chapter (Original Test Pages)",
+              "number": 1.0,
+              "uploadedAt": 1793030400000,
+              "scanlator": ""
+            }
+          ],
+          "manga": {
+            "url": "http://127.0.0.1:51806/api/v1/series/honbako-original",
+            "title": "Your First Chapter",
+            "cover": null,
+            "author": null,
+            "artist": null,
+            "description": null,
+            "status": 0
+          }
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "pages",
+      "response": {
+        "result": {
+          "pages": [
+            {
+              "index": 1,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:51806/api/v1/books/original-1/pages/1"
+            },
+            {
+              "index": 2,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:51806/api/v1/books/original-1/pages/2"
+            },
+            {
+              "index": 3,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:51806/api/v1/books/original-1/pages/3"
+            }
+          ]
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "image",
+      "response": {
+        "result": {
+          "bytes": 2984135,
+          "sha256": "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+          "mediaType": "image/png",
+          "dataBase64": null
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "image",
+      "response": {
+        "result": {
+          "bytes": 2891350,
+          "sha256": "1b4bd8a29ae3498bb07d7699bc08d983606653fca422c1b58e9f79744726a949",
+          "mediaType": "image/png",
+          "dataBase64": null
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "image",
+      "response": {
+        "result": {
+          "bytes": 3128777,
+          "sha256": "b397de14a8674bd1d66fb0af4d8a03ec907c1726db28103e187c92d0ff6818b3",
+          "mediaType": "image/png",
+          "dataBase64": null
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "search",
+      "response": {
+        "result": {
+          "hasNextPage": false,
+          "entries": []
+        },
+        "ok": true
+      }
+    },
+    {
+      "operation": "search",
+      "response": {
+        "ok": false,
+        "errorType": "java.lang.IllegalArgumentException",
+        "error": "Unknown sourceId"
+      }
+    },
+    {
+      "operation": "search",
+      "response": {
+        "ok": false,
+        "errorType": "java.util.concurrent.ExecutionException",
+        "error": "java.io.IOException: The host compatibility probe permits only 127.0.0.1"
+      }
+    }
+  ],
+  "http_requests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/series?search=Your%20First&page=0&deleted=false"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/series/honbako-original"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/series/honbako-original/books?unpaged=true&media_status=READY&deleted=false"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/books/original-1/pages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/books/original-1/pages/1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/books/original-1/pages/2"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/books/original-1/pages/3"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/series?search=No%20Such%20Original%20Book&page=0&deleted=false"
+    }
+  ],
+  "page_sha256": [
+    "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+    "1b4bd8a29ae3498bb07d7699bc08d983606653fca422c1b58e9f79744726a949",
+    "b397de14a8674bd1d66fb0af4d8a03ec907c1726db28103e187c92d0ff6818b3"
+  ],
+  "suwayomi_server_started": false,
+  "classpath": {
+    "file": "komga-proof-dependencies.jar",
+    "sha256": "2de9571730c4742e531b27019ea86a62cf74a36ebe44f7e72a60ca30777d7b0b",
+    "bytes": 13386146,
+    "loaded_reference_classes": 1769,
+    "reference_artifact": {
+      "file": "Suwayomi-Server-v2.4.2366.jar",
+      "url": "https://github.com/Suwayomi/Suwayomi-Server/releases/download/v2.4.2366/Suwayomi-Server-v2.4.2366.jar",
+      "sha256": "af9feb20af9d7ebe9e30769e6c6ebc7fc7ab1c447388d42e0280b1da5fe07bfd"
+    },
+    "scope": "only the measured Komga proof; not general Android compatibility"
+  },
+  "jdk_modules_required_for_http_proof": [
+    "java.base",
+    "java.xml",
+    "java.logging"
+  ],
+  "extension_artifact": {
+    "file": "tachiyomi-all.komga-v1.6.74.jar",
+    "url": "https://github.com/keiyoushi/extensions/releases/download/ff521c1/tachiyomi-all.komga-v1.6.74.jar",
+    "sha256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013"
+  }
+}

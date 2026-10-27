@@ -1,0 +1,488 @@
+{
+  "status": "passed",
+  "execution": "host JVM, not iOS",
+  "bridge_v2_sha256": "e6de49ac5bd20d0cacbd4741d3f9389e255c575aa62e8dffdaaddd984816822e",
+  "runtime_dependency_jar_sha256": "2de9571730c4742e531b27019ea86a62cf74a36ebe44f7e72a60ca30777d7b0b",
+  "compile_only_dependencies_sha256": "cd86c6f72a95959113786548ab950365151b053ba0194df3b21ba2dd01c7f1aa",
+  "published_komga_unchanged": true,
+  "published_komga_sha256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+  "binary_page_sha256": [
+    "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+    "1b4bd8a29ae3498bb07d7699bc08d983606653fca422c1b58e9f79744726a949",
+    "b397de14a8674bd1d66fb0af4d8a03ec907c1726db28103e187c92d0ff6818b3"
+  ],
+  "binary_cover_sha256": "2934f43d4062d5d935b862e45672734585c41f74c1a1d3a58a0a3b6335fbb1d8",
+  "original_fixture_lazy_resolver_and_hooks": true,
+  "source_and_namespace_preferences_isolated": true,
+  "image_limit_bytes": 33554432,
+  "known_and_unknown_length_oversize_rejected": true,
+  "identity_checked_before_fixture_class_initialization": true,
+  "operations": [
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": false,
+        "errorType": "java.lang.IllegalArgumentException",
+        "error": "Package identity mismatch: packageSHA256"
+      }
+    },
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": false,
+        "errorType": "java.lang.IllegalArgumentException",
+        "error": "Package identity mismatch: packageName"
+      }
+    },
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "extensionLibrary": "1.6",
+          "sources": [
+            {
+              "id": "4508733312114627536",
+              "name": "Komga",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "8074481155021144106",
+              "name": "Komga (2)",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "5132811728275817394",
+              "name": "Komga (3)",
+              "language": "all",
+              "supportsLatest": true
+            }
+          ],
+          "package": "eu.kanade.tachiyomi.extension.all.komga",
+          "packageSHA256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+          "entryClass": "keiyoushi.source.Generated",
+          "version": "1.6.74"
+        }
+      }
+    },
+    {
+      "operation": "search",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "entries": [
+            {
+              "url": "http://127.0.0.1:56997/api/v1/series/honbako-original",
+              "title": "Your First Chapter",
+              "cover": "http://127.0.0.1:56997/api/v1/series/honbako-original/thumbnail",
+              "author": "Honbako",
+              "artist": null,
+              "description": "Original Honbako compatibility test content.",
+              "status": 2
+            }
+          ],
+          "hasNextPage": false
+        }
+      }
+    },
+    {
+      "operation": "details",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "manga": {
+            "url": "http://127.0.0.1:56997/api/v1/series/honbako-original",
+            "title": "Your First Chapter",
+            "cover": "http://127.0.0.1:56997/api/v1/series/honbako-original/thumbnail",
+            "author": "Honbako",
+            "artist": null,
+            "description": "Original Honbako compatibility test content.",
+            "status": 2
+          },
+          "chapters": []
+        }
+      }
+    },
+    {
+      "operation": "chapters",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "manga": {
+            "url": "http://127.0.0.1:56997/api/v1/series/honbako-original",
+            "title": "Your First Chapter",
+            "cover": null,
+            "author": null,
+            "artist": null,
+            "description": null,
+            "status": 0
+          },
+          "chapters": [
+            {
+              "url": "http://127.0.0.1:56997/api/v1/books/original-1",
+              "name": "1 - Your First Chapter (Original Test Pages)",
+              "number": 1.0,
+              "uploadedAt": 1793030400000,
+              "scanlator": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "operation": "pages",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "pages": [
+            {
+              "index": 1,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:56997/api/v1/books/original-1/pages/1"
+            },
+            {
+              "index": 2,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:56997/api/v1/books/original-1/pages/2"
+            },
+            {
+              "index": 3,
+              "url": "",
+              "imageUrl": "http://127.0.0.1:56997/api/v1/books/original-1/pages/3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+          "independentlyComputedSHA256": "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+          "bytes": 2984135,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "1b4bd8a29ae3498bb07d7699bc08d983606653fca422c1b58e9f79744726a949",
+          "independentlyComputedSHA256": "1b4bd8a29ae3498bb07d7699bc08d983606653fca422c1b58e9f79744726a949",
+          "bytes": 2891350,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "b397de14a8674bd1d66fb0af4d8a03ec907c1726db28103e187c92d0ff6818b3",
+          "independentlyComputedSHA256": "b397de14a8674bd1d66fb0af4d8a03ec907c1726db28103e187c92d0ff6818b3",
+          "bytes": 3128777,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "cover",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "2934f43d4062d5d935b862e45672734585c41f74c1a1d3a58a0a3b6335fbb1d8",
+          "independentlyComputedSHA256": "2934f43d4062d5d935b862e45672734585c41f74c1a1d3a58a0a3b6335fbb1d8",
+          "bytes": 2955020,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "search",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "entries": [],
+          "hasNextPage": false
+        }
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+          "independentlyComputedSHA256": "f5dcc83336364b87b36513f6a478ca289f7b4b8933d3aa473d1fec34f2cde111",
+          "bytes": 2984135,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "cover",
+      "binary": true,
+      "response": {
+        "ok": true,
+        "result": {
+          "sha256": "2934f43d4062d5d935b862e45672734585c41f74c1a1d3a58a0a3b6335fbb1d8",
+          "independentlyComputedSHA256": "2934f43d4062d5d935b862e45672734585c41f74c1a1d3a58a0a3b6335fbb1d8",
+          "bytes": 2955020,
+          "mediaType": "image/png",
+          "binaryBoundary": true
+        }
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "errorType": "java.io.IOException",
+        "ok": false,
+        "error": "Image exceeds 33554432-byte limit"
+      }
+    },
+    {
+      "operation": "image",
+      "binary": true,
+      "response": {
+        "errorType": "java.io.IOException",
+        "ok": false,
+        "error": "Image exceeds 33554432-byte limit"
+      }
+    },
+    {
+      "operation": "search",
+      "binary": false,
+      "response": {
+        "ok": false,
+        "errorType": "java.lang.IllegalArgumentException",
+        "error": "query exceeds byte limit"
+      }
+    },
+    {
+      "operation": "pages",
+      "binary": false,
+      "response": {
+        "ok": false,
+        "errorType": "java.lang.IllegalArgumentException",
+        "error": "Unknown sourceId"
+      }
+    },
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "extensionLibrary": "1.6",
+          "sources": [
+            {
+              "id": "4508733312114627536",
+              "name": "Komga",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "8074481155021144106",
+              "name": "Komga (2)",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "5132811728275817394",
+              "name": "Komga (3)",
+              "language": "all",
+              "supportsLatest": true
+            }
+          ],
+          "package": "eu.kanade.tachiyomi.extension.all.komga",
+          "packageSHA256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+          "entryClass": "keiyoushi.source.Generated",
+          "version": "1.6.74"
+        }
+      }
+    },
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "extensionLibrary": "1.6",
+          "sources": [
+            {
+              "id": "4508733312114627536",
+              "name": "Komga",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "8074481155021144106",
+              "name": "Komga (2)",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "5132811728275817394",
+              "name": "Komga (3)",
+              "language": "all",
+              "supportsLatest": true
+            }
+          ],
+          "package": "eu.kanade.tachiyomi.extension.all.komga",
+          "packageSHA256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+          "entryClass": "keiyoushi.source.Generated",
+          "version": "1.6.74"
+        }
+      }
+    },
+    {
+      "operation": "discover",
+      "binary": false,
+      "response": {
+        "ok": true,
+        "result": {
+          "extensionLibrary": "1.6",
+          "sources": [
+            {
+              "id": "4508733312114627536",
+              "name": "Komga",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "8074481155021144106",
+              "name": "Komga (2)",
+              "language": "all",
+              "supportsLatest": true
+            },
+            {
+              "id": "5132811728275817394",
+              "name": "Komga (3)",
+              "language": "all",
+              "supportsLatest": true
+            }
+          ],
+          "package": "eu.kanade.tachiyomi.extension.all.komga",
+          "packageSHA256": "9f1b4a05113f33d4de7f5177dded79419ef33e5d91c3ce38a3e55b609c522013",
+          "entryClass": "keiyoushi.source.Generated",
+          "version": "1.6.74"
+        }
+      }
+    }
+  ],
+  "http_requests": [
+    {
+      "path": "/api/v1/series?search=Your%20First&page=0&deleted=false",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/series/honbako-original",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/series/honbako-original/books?unpaged=true&media_status=READY&deleted=false",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/books/original-1/pages",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/books/original-1/pages/1",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/books/original-1/pages/2",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/books/original-1/pages/3",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/series/honbako-original/thumbnail",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/api/v1/series?search=No%20Such%20Original%20Book&page=0&deleted=false",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/resolver",
+      "sourceHeader": "original-fixture",
+      "clientHook": "extension-client-hook",
+      "pageHook": null
+    },
+    {
+      "path": "/fixture-image",
+      "sourceHeader": "original-fixture",
+      "clientHook": "extension-client-hook",
+      "pageHook": "extension-image-request-hook"
+    },
+    {
+      "path": "/fixture-cover",
+      "sourceHeader": "original-fixture",
+      "clientHook": "extension-client-hook",
+      "pageHook": null
+    },
+    {
+      "path": "/large-known",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    },
+    {
+      "path": "/large-unknown",
+      "sourceHeader": null,
+      "clientHook": null,
+      "pageHook": null
+    }
+  ],
+  "external_network_enabled": false,
+  "frozen_artifacts_unchanged": true
+}
