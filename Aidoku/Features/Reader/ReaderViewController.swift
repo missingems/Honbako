@@ -31,11 +31,18 @@ class ReaderViewController: BaseObservingViewController {
     private var sumiLaysOutControls = false
     private var sumiRequestedToolbarEdge: UIRectEdge?
     private var sumiToolbarRelocation: Task<Void, Never>?
+    private var sumiNativeToolbarItem: UIBarButtonItem?
+    private var sumiUsesNativeToolbar = false
     private lazy var sumiReaderToolbar: SumiReaderToolbar = {
         let toolbar = SumiReaderToolbar()
         toolbar.mount(sumiScrubber)
         toolbar.close = { [weak self] in self?.close() }
         toolbar.chapters = { [weak self] in self?.sumiShowChapters() }
+        toolbar.visibilityDidChange = { [weak self] visible in
+            guard let self, sumiUsesNativeToolbar else { return }
+            let enabled = visible && sumiControlsVisible && !sumiIsClosing
+            navigationController?.toolbar.isUserInteractionEnabled = enabled
+        }
         return toolbar
     }()
     private var sumiIsClosing = false
@@ -48,10 +55,10 @@ class ReaderViewController: BaseObservingViewController {
         scrubber.isHidden = true
         scrubber.previewContainer = self.view
         scrubber.imageProvider = { [weak self] number in
-            guard let self else { return nil }
-            let page = (reader as? ReaderPagedViewController)?.sumiPageForScrubber(number) ?? pages[safe: number - 1]
-            guard let page, page.chapterId == chapter.key else { return nil }
-            return await sumiThumbnailLoader.image(for: page, position: number, source: source)
+            await self?.sumiScrubberImage(for: number, forHover: false)
+        }
+        scrubber.hoverImageProvider = { [weak self] number in
+            await self?.sumiScrubberImage(for: number, forHover: true)
         }
         scrubber.onCommit = { [weak self] page in self?.sumiGoToPage(page) }
         scrubber.navigateToPage = { [weak self] page in
@@ -83,6 +90,12 @@ class ReaderViewController: BaseObservingViewController {
         }
         return scrubber
     }()
+
+    private func sumiScrubberImage(for number: Int, forHover: Bool) async -> UIImage? {
+        let page = (reader as? ReaderPagedViewController)?.sumiPageForScrubber(number) ?? pages[safe: number - 1]
+        guard let page, page.chapterId == chapter.key else { return nil }
+        return await sumiThumbnailLoader.image(for: page, position: number, source: source, forHover: forHover)
+    }
     private(set) var sumiPendingHistorySave: Task<Void, Never>?
     private var sumiHasPresentedActualPage = false
     var sumiOpeningIndex: SumiReaderIndex? {
@@ -144,7 +157,9 @@ class ReaderViewController: BaseObservingViewController {
         var elements: [Any] = []
         if let reader, reader.isViewLoaded { elements.append(reader.view!) }
         if sumiControlsVisible {
-            elements.append(sumiReaderToolbar)
+            // A native toolbar is already an accessibility sibling of the
+            // content controller. Enumerating it here would expose it twice.
+            if !sumiUsesNativeToolbar { elements.append(sumiReaderToolbar) }
             if let overlay = sumiScrubber.accessibilityOverlayView { elements.append(overlay) }
         }
         node.isAccessibilityElement = false
@@ -204,13 +219,63 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiConfigureNativeControls() {
-        navigationItem.leftBarButtonItems = []
-        navigationItem.rightBarButtonItems = []
-        navigationItem.titleView = nil
-        navigationItem.title = nil
-        toolbarItems = []
-        navigationController?.setNavigationBarHidden(true, animated: false)
-        navigationController?.setToolbarHidden(true, animated: false)
+        if navigationItem.leftBarButtonItems?.isEmpty == false { navigationItem.leftBarButtonItems = [] }
+        if navigationItem.rightBarButtonItems?.isEmpty == false { navigationItem.rightBarButtonItems = [] }
+        if navigationItem.titleView != nil { navigationItem.titleView = nil }
+        if navigationItem.title != nil { navigationItem.title = nil }
+        guard let navigationController else { return }
+        if !navigationController.isNavigationBarHidden { navigationController.setNavigationBarHidden(true, animated: false) }
+        let usesNative = traitCollection.userInterfaceIdiom != .pad && sumiSystemToolbarEdge != nil
+        if #available(iOS 27.1, *), usesNative, let nativeToolbar = navigationController.toolbar {
+            if !sumiUsesNativeToolbar {
+                sumiReaderToolbar.removeFromSuperview()
+                sumiReaderToolbar.axis = .vertical
+                sumiReaderToolbar.maximumLength = .greatestFiniteMagnitude
+                sumiReaderToolbar.setContentCompressionResistancePriority(.required, for: .horizontal)
+                sumiReaderToolbar.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+                sumiReaderToolbar.sizeToFit()
+                let item = UIBarButtonItem(customView: sumiReaderToolbar)
+                item.axisBehavior = .verticalPreferred
+                item.hidesSharedBackground = true
+                item.sharesBackground = false
+                item.visibilityPriority = .high
+                item.isPaddingRemoved = true
+                sumiNativeToolbarItem = item
+                sumiUsesNativeToolbar = true
+                let appearance = UIToolbarAppearance()
+                appearance.configureWithTransparentBackground()
+                appearance.backgroundColor = .clear
+                appearance.backgroundEffect = nil
+                appearance.shadowColor = .clear
+                nativeToolbar.standardAppearance = appearance
+                nativeToolbar.compactAppearance = appearance
+                nativeToolbar.scrollEdgeAppearance = appearance
+                nativeToolbar.compactScrollEdgeAppearance = appearance
+                nativeToolbar.isTranslucent = true
+                nativeToolbar.backgroundColor = .clear
+                setToolbarItems([item], animated: false)
+            }
+            if navigationController.isToolbarHidden {
+                navigationController.setToolbarHidden(false, animated: false)
+            }
+            let enabled = sumiControlsVisible && sumiReaderToolbar.isVisible && sumiReaderToolbar.alpha > 0.01 && !sumiIsClosing
+            nativeToolbar.isUserInteractionEnabled = enabled
+        } else {
+            if sumiUsesNativeToolbar {
+                sumiNativeToolbarItem?.customView = nil
+                sumiNativeToolbarItem = nil
+                sumiUsesNativeToolbar = false
+                sumiReaderToolbar.removeFromSuperview()
+                view.addSubview(sumiReaderToolbar)
+                sumiReaderToolbar.maximumLength = .greatestFiniteMagnitude
+                sumiReaderToolbar.isUserInteractionEnabled = true
+            }
+            if toolbarItems?.isEmpty == false { setToolbarItems([], animated: false) }
+            navigationController.toolbar.isUserInteractionEnabled = false
+            if !navigationController.isToolbarHidden {
+                navigationController.setToolbarHidden(true, animated: false)
+            }
+        }
     }
 
     private func sumiShowChapters() {
@@ -267,6 +332,21 @@ class ReaderViewController: BaseObservingViewController {
         sumiReaderToolbar.axis = axis
         sumiReaderToolbar.expandsHorizontalStrip = isTablet
         sumiReaderToolbar.sidebarEdge = systemSide ?? bottomSide ?? .right
+        sumiConfigureNativeControls()
+        if sumiUsesNativeToolbar, let nativeToolbar = navigationController?.toolbar {
+            // UIKit owns the physical column. Only bound our item's length to
+            // its public content area; do not infer the column from safe insets.
+            let horizontalBounds = nativeToolbar.bounds.width >= nativeToolbar.bounds.height
+            let margins = nativeToolbar.layoutMargins
+            let length = horizontalBounds ? nativeToolbar.bounds.width - margins.left - margins.right
+                : nativeToolbar.bounds.height - margins.top - margins.bottom
+            if length > 0 {
+                sumiReaderToolbar.maximumLength = max(104, length)
+            }
+            sumiReaderToolbar.layoutIfNeeded()
+            sumiUpdateAccessibilityChildren()
+            return
+        }
         var exclusions: [CGRect] = []
         if #available(iOS 27.1, *) {
             exclusions = (view.reservedRegions(kind: .division) + view.reservedRegions(kind: .occlusion))
@@ -279,7 +359,8 @@ class ReaderViewController: BaseObservingViewController {
             : view.bounds.width - toolbarInsets.left - toolbarInsets.right - 16
         let size = sumiReaderToolbar.preferredSize(availableLength: available)
         sumiReaderToolbar.frame = SumiReaderControlsLayout.toolbarFrame(in: view.bounds,
-            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: systemSide ?? bottomSide, size: size, axis: axis)
+            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: systemSide ?? bottomSide, size: size,
+            axis: axis)
         sumiReaderToolbar.layoutIfNeeded()
         sumiUpdateAccessibilityChildren()
     }
@@ -320,6 +401,13 @@ class ReaderViewController: BaseObservingViewController {
         UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.2) {
             self.setNeedsStatusBarAppearanceUpdate()
             self.navigationController?.setNeedsStatusBarAppearanceUpdate()
+        } completion: { [weak self] _ in
+            // Refresh native bar geometry after the status presentation settles.
+            guard let self else { return }
+            UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.12,
+                           delay: 0, options: [.beginFromCurrentState, .curveEaseInOut]) {
+                self.sumiLayoutReaderControls()
+            }
         }
     }
 
@@ -2239,7 +2327,7 @@ extension ReaderViewController {
         sumiUpdateReaderControls()
         sumiLayoutReaderControls()
         sumiUpdateAccessibilityChildren()
-        view.bringSubviewToFront(sumiReaderToolbar)
+        if sumiReaderToolbar.superview === view { view.bringSubviewToFront(sumiReaderToolbar) }
         sumiReaderToolbar.setVisible(true, animated: appearing && !UIAccessibility.isReduceMotionEnabled)
         NotificationCenter.default.post(name: .readerShowingBars, object: nil)
         return

@@ -94,7 +94,7 @@ actor SumiSearchMetadataService {
     }
 
     static func mangaID(for book: SumiBook) -> UUID? {
-        guard book.sourceKey == "multi.mangadex" else { return nil }
+        guard ["multi.mangadex", "honbako.mangadex"].contains(book.sourceKey) else { return nil }
         if let id = UUID(uuidString: book.manga.key) { return id }
         guard let url = book.manga.url, ["mangadex.org", "www.mangadex.org"].contains(url.host?.lowercased() ?? ""),
               let titleIndex = url.pathComponents.firstIndex(of: "title"),

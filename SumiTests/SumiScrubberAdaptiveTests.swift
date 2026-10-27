@@ -35,7 +35,7 @@ struct SumiScrubberAdaptiveTests {
         let badge = try #require(scrubber.accessibilityOverlayView?.subviews.first {
             $0.accessibilityIdentifier == "Sumi.Reader.PagePosition"
         })
-        #expect(badge.frame.maxX < toolbar.frame.minX)
+        #expect(abs(scrubber.convert(scrubber.bounds, to: reader).minX - badge.frame.maxX - 4) < 0.01)
     }
 
     @Test("Compact spread previews fit both toolbar axes without magnifying the selected spread")
@@ -59,8 +59,8 @@ struct SumiScrubberAdaptiveTests {
             for cell in cells {
                 cell.layoutIfNeeded()
                 let print = try #require(descendants(cell, type: SumiSpreadThumbnailView.self).first)
-                #expect(print.bounds.height >= 28 && print.bounds.height <= 36)
-                #expect(print.bounds.width / 2 >= 20)
+                #expect(print.bounds.height >= 22 && print.bounds.height <= 32)
+                #expect(print.bounds.width / 2 >= 16)
                 #expect(abs(print.bounds.width / print.bounds.height - 1.4) < 0.001)
                 sizes.append(print.bounds.size)
             }
@@ -79,7 +79,7 @@ struct SumiScrubberAdaptiveTests {
         scrubber.layoutIfNeeded()
         let strip = try #require(descendants(scrubber, type: UICollectionView.self).first)
         let visibleFrame = strip.convert(strip.bounds, to: scrubber)
-        #expect(abs(visibleFrame.width - 48) < 0.01)
+        #expect(abs(visibleFrame.width - 40) < 0.01)
         #expect(abs(visibleFrame.height - 244) < 0.01)
         #expect(abs(visibleFrame.midX - 24) < 0.01)
         #expect(abs(visibleFrame.midY - 130) < 0.01)
@@ -113,7 +113,7 @@ struct SumiScrubberAdaptiveTests {
         scrubber.sidebarEdge = .left
         scrubber.layoutIfNeeded()
         let badge = try #require(descendants(scrubber, type: UIVisualEffectView.self).first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
-        #expect(badge.frame.minX > scrubber.bounds.maxX)
+        #expect(badge.frame.minX >= scrubber.bounds.maxX)
     }
 
     @Test("The toolbar's floating preview and label are hosted by the reader overlay")
@@ -134,11 +134,42 @@ struct SumiScrubberAdaptiveTests {
         let preview = try #require(overlay.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.ScrubPreview" })
         #expect(badge.superview !== toolbar)
         #expect(preview.superview !== toolbar)
-        #expect(badge.frame.maxX < toolbar.frame.minX)
+        #expect(badge.frame.maxX <= toolbar.frame.minX)
         scrubber.alpha = 0.4
         #expect(abs(overlay.alpha - 0.4) < 0.000001)
         scrubber.isHidden = true
         #expect(overlay.isHidden)
+    }
+
+    @Test("The thinner rail keeps its badge nearby and lifts a larger shadowed print inside the reader")
+    func legibleHoverAndNearbyPosition() async throws {
+        let reader = UIView(frame: CGRect(x: 0, y: 0, width: 466, height: 678))
+        let toolbar = SumiReaderToolbar(frame: CGRect(x: 400, y: 180, width: 48, height: 380))
+        reader.addSubview(toolbar)
+        toolbar.axis = .vertical
+        toolbar.sidebarEdge = .right
+        let scrubber = SumiPageScrubber()
+        scrubber.previewContainer = reader
+        toolbar.mount(scrubber)
+        toolbar.setVisible(true, animated: false)
+        scrubber.update(chapterKey: "one", totalPages: 6, currentPage: 3)
+        toolbar.layoutIfNeeded()
+        let rail = scrubber.convert(scrubber.bounds, to: reader)
+        #expect(rail.width == 40)
+        #expect(toolbar.hitTest(CGPoint(x: 1, y: toolbar.bounds.midY), with: nil) is UICollectionView,
+            "The thinner material must retain a full-width native pan target")
+        let overlay = try #require(scrubber.accessibilityOverlayView)
+        let badge = try #require(overlay.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
+        #expect(abs(rail.minX - badge.frame.maxX - 4) < 0.01)
+        scrubber.preview(at: CGPoint(x: 20, y: 240))
+        scrubber.layoutIfNeeded()
+        let preview = try #require(overlay.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.ScrubPreview" })
+        #expect(preview.bounds.height > 240)
+        #expect(preview.bounds.width > 160)
+        #expect(preview.layer.shadowOpacity >= 0.35)
+        #expect(preview.layer.shadowPath != nil && !preview.clipsToBounds)
+        #expect(preview.bounds.width < rail.minX - 12)
+        scrubber.cancelPreview()
     }
 
     @Test("Animated navigation stays visible and reports actual cancellation instead of mounting a raster")

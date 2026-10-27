@@ -62,12 +62,9 @@ struct ExternalSourceTableCell: View {
                 if let onGet {
                     return await onGet()
                 } else {
-                    guard
-                        let externalInfo = source.externalInfo,
-                        let url = externalInfo.fileURL
-                    else { return false }
+                    guard let externalInfo = source.externalInfo else { return false }
 
-                    let result = await SourceManager.shared.importSource(from: url)
+                    let result = await SourceManager.shared.installExternalSource(externalInfo)
 
                     if result != nil {
                         onInstall?()

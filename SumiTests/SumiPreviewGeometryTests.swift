@@ -27,7 +27,7 @@ struct SumiPreviewGeometryTests {
                 let attributes = try #require(strip.collectionViewLayout.layoutAttributesForItem(at: IndexPath(item: index, section: 0)))
                 #expect(CATransform3DIsIdentity(attributes.transform3D))
                 #expect(attributes.alpha == 1)
-                #expect(attributes.size == CGSize(width: 30, height: 40))
+                #expect(attributes.size == CGSize(width: 27, height: 32))
             }
         }
     }
@@ -124,7 +124,7 @@ struct SumiPreviewGeometryTests {
         scrubber.layoutIfNeeded()
         let strip = try #require(descendants(scrubber, type: UICollectionView.self).first)
         let flow = try #require(strip.collectionViewLayout as? SumiFilmstripLayout)
-        #expect(flow.pitch == 30)
+        #expect(flow.pitch == 27)
         scrubber.scrollViewWillBeginDragging(strip)
         strip.contentOffset.x += 11.25
         let activeOffset = strip.contentOffset
@@ -134,7 +134,7 @@ struct SumiPreviewGeometryTests {
         scrubber.update(chapterKey: "same", totalPages: 6, currentPage: 4,
             spreads: [[1, 2], [3, 4], [5, 6]])
         scrubber.layoutIfNeeded()
-        #expect(flow.pitch == 55)
+        #expect(flow.pitch == 49)
         try expectCentered(strip, physicalIndex: 1)
         #expect(scrubber.accessibilityValue == "Pages 3–4 of 6")
     }

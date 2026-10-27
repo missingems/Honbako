@@ -7,17 +7,17 @@ import UIKit
 actor SumiPreviewCropper {
     static let shared = SumiPreviewCropper()
 
-    static func thumbnailProcessor() -> ImageProcessors.Resize {
-        ImageProcessors.Resize(size: CGSize(width: 240, height: 360), unit: .pixels,
+    static func thumbnailProcessor(forHover: Bool = false) -> ImageProcessors.Resize {
+        ImageProcessors.Resize(size: forHover ? CGSize(width: 720, height: 1080) : CGSize(width: 240, height: 360), unit: .pixels,
                                contentMode: .aspectFill, crop: true)
     }
 
-    func prepare(_ image: UIImage) -> UIImage {
+    func prepare(_ image: UIImage, forHover: Bool = false) -> UIImage {
         guard !Task.isCancelled else { return image }
         // Resize and crop into a bounded output directly from the source. A
         // full-height webtoon thumbnail would discard nearly all horizontal
         // detail before the strip or hover had a chance to crop it.
-        return Self.thumbnailProcessor().process(image) ?? image
+        return Self.thumbnailProcessor(forHover: forHover).process(image) ?? image
     }
 
     func crop(_ image: UIImage) -> UIImage {

@@ -25,6 +25,7 @@ struct SumiBook: Identifiable, Hashable, Sendable {
     let unreadChapterCount: Int
     let latestUnreadChapterDate: Date?
     let finishedReadingAt: Date?
+    let searchLanguages: SumiSearchLanguageInfo?
 
     var hasUnfinishedBookmark: Bool { bookmark != nil }
 
@@ -57,7 +58,8 @@ struct SumiBook: Identifiable, Hashable, Sendable {
         releaseYear: Int? = nil,
         unreadChapterCount: Int = 0,
         latestUnreadChapterDate: Date? = nil,
-        finishedReadingAt: Date? = nil
+        finishedReadingAt: Date? = nil,
+        searchLanguages: SumiSearchLanguageInfo? = nil
     ) {
         self.manga = manga
         self.chapterLabel = chapterLabel
@@ -73,9 +75,11 @@ struct SumiBook: Identifiable, Hashable, Sendable {
         self.unreadChapterCount = max(0, unreadChapterCount)
         self.latestUnreadChapterDate = latestUnreadChapterDate
         self.finishedReadingAt = finishedReadingAt
+        self.searchLanguages = searchLanguages
     }
 
-    fileprivate func updating(manga: AidokuRunner.Manga, isInLibrary: Bool? = nil) -> Self {
+    func updating(manga: AidokuRunner.Manga, isInLibrary: Bool? = nil,
+                  releaseYear: Int? = nil, searchLanguages: SumiSearchLanguageInfo? = nil) -> Self {
         Self(
             manga: manga,
             chapterLabel: chapterLabel,
@@ -87,10 +91,11 @@ struct SumiBook: Identifiable, Hashable, Sendable {
             resumeDeviceLabel: resumeDeviceLabel,
             lastReadPage: lastReadPage,
             releaseDate: releaseDate,
-            releaseYear: releaseYear,
+            releaseYear: releaseYear ?? self.releaseYear,
             unreadChapterCount: unreadChapterCount,
             latestUnreadChapterDate: latestUnreadChapterDate,
-            finishedReadingAt: finishedReadingAt
+            finishedReadingAt: finishedReadingAt,
+            searchLanguages: searchLanguages ?? self.searchLanguages
         )
     }
 
@@ -100,7 +105,7 @@ struct SumiBook: Identifiable, Hashable, Sendable {
              resumeDeviceLabel: resumeDeviceLabel, lastReadPage: lastReadPage,
              releaseDate: releaseDate, releaseYear: releaseYear,
              unreadChapterCount: shelf.unreadCount, latestUnreadChapterDate: shelf.latestUnreadDate,
-             finishedReadingAt: shelf.finishedAt)
+             finishedReadingAt: shelf.finishedAt, searchLanguages: searchLanguages)
     }
 
     fileprivate static func snapshot(manga: MangaObject, history: HistoryObject?, isInLibrary: Bool) -> Self {
@@ -254,8 +259,8 @@ final class SumiLibraryStore: ObservableObject {
             libraryError = nil
             let snapshots = Dictionary((books.saved + books.recent).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             func enrich(_ book: SumiBook) -> SumiBook {
-                snapshots[book.id].map { $0.updating(manga: SumiMangaMetadata.merging($0.manga, with: book.manga)) }
-                    ?? SumiBook(manga: book.manga)
+                snapshots[book.id].map { $0.updating(manga: SumiMangaMetadata.merging($0.manga, with: book.manga),
+                    releaseYear: book.releaseYear, searchLanguages: book.searchLanguages) } ?? book
             }
             searchResults = searchResults.map(enrich)
             searchEditions = searchEditions.mapValues { $0.map(enrich) }
@@ -278,8 +283,7 @@ final class SumiLibraryStore: ObservableObject {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let generation = searchGeneration
         searchEditions = [:]
-        if query.isEmpty { searchResults = [] }
-        else { setSearchResults([], query: query) }
+        searchResults = []
         providerFailures = [:]
         searchError = nil
         isSearching = true
@@ -710,13 +714,14 @@ final class SumiLibraryStore: ObservableObject {
             for source in sources {
                 let outcome = await Self.fetch(source: source, query: nil)
                 guard !Task.isCancelled, generation == searchGeneration else { return }
-                accept(outcome: outcome)
+                if let error = outcome.error { providerFailures[outcome.sourceKey] = "\(outcome.sourceName): \(error)" }
+                else { await prepareSearchResults(outcome.entries, sources: byKey, query: "", generation: generation) }
                 if !searchResults.isEmpty { break }
             }
         } else {
+            var resultsBySource: [String: [AidokuRunner.Manga]] = [:]
             await withTaskGroup(of: ProviderOutcome.self) { group in
                 var nextIndex = 0
-                var resultsBySource: [String: [AidokuRunner.Manga]] = [:]
                 for _ in 0..<min(3, sources.count) {
                     let source = sources[nextIndex]
                     nextIndex += 1
@@ -737,10 +742,12 @@ final class SumiLibraryStore: ObservableObject {
                     } else {
                         resultsBySource[outcome.sourceKey] = outcome.entries
                     }
-                    setSearchResults(sources.flatMap { resultsBySource[$0.key] ?? [] }, query: query)
                     updateErrorMessage()
                 }
             }
+            guard !Task.isCancelled, generation == searchGeneration else { return }
+            await prepareSearchResults(sources.flatMap { resultsBySource[$0.key] ?? [] },
+                sources: byKey, query: query, generation: generation)
         }
         guard !Task.isCancelled, generation == searchGeneration else { return }
         isSearching = false
@@ -773,16 +780,7 @@ final class SumiLibraryStore: ObservableObject {
         }
     }
 
-    private func accept(outcome: ProviderOutcome) {
-        if let error = outcome.error {
-            providerFailures[outcome.sourceKey] = "\(outcome.sourceName): \(error)"
-        } else {
-            setSearchResults(outcome.entries)
-        }
-        updateErrorMessage()
-    }
-
-    private func setSearchResults(_ manga: [AidokuRunner.Manga], query: String? = nil) {
+    private func searchCandidates(_ manga: [AidokuRunner.Manga], query: String) -> [SumiBook] {
         let savedBooks = library + recentlyRead
         let saved = Dictionary(savedBooks.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var seen: Set<MangaIdentifier> = []
@@ -792,19 +790,53 @@ final class SumiLibraryStore: ObservableObject {
             let merged = SumiMangaMetadata.merging(existing.manga, with: entry)
             return existing.updating(manga: merged)
         }
-        if let query {
+        if !query.isEmpty {
             let text = SumiSearchRanking.normalized(query)
             var localSeen = seen
             books += savedBooks.filter {
                 localSeen.insert($0.id).inserted && !text.isEmpty && SumiSearchRanking.normalized($0.title).contains(text)
             }
         }
-        let groups = SumiSearchRanking.groups(books, query: query ?? "")
-        searchResults = groups.map(\.book)
+        return SumiSearchRanking.groups(books, query: query).flatMap(\.editions)
+    }
+
+    private func prepareSearchResults(_ manga: [AidokuRunner.Manga], sources: [String: AidokuRunner.Source],
+                                      query: String, generation: Int) async {
+        let candidates = searchCandidates(manga, query: query)
+        var prepared: [SumiBook] = []
+        // Ranked, bounded batches keep the first screen useful without fetching
+        // every large legacy chapter list before the first complete row appears.
+        for start in stride(from: 0, to: candidates.count, by: 12) {
+            do {
+                let batch = Array(candidates[start..<min(start + 12, candidates.count)])
+                let outcome = try await SumiSearchPreparationService.shared.prepare(batch, sources: sources)
+                guard !Task.isCancelled, generation == searchGeneration else { return }
+                prepared += outcome.books
+                publishPreparedSearchResults(prepared, query: query)
+                for sourceKey in outcome.failedSourceKeys where providerFailures[sourceKey] == nil {
+                    providerFailures[sourceKey] = "\(sourceName(for: sourceKey)): Chapter availability couldn’t be checked."
+                }
+                updateErrorMessage()
+            } catch { return }
+        }
+    }
+
+    private func publishPreparedSearchResults(_ books: [SumiBook], query: String) {
+        let snapshots = Dictionary((library + recentlyRead).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let current = books.map { book in
+            snapshots[book.id].map { snapshot in
+                snapshot.updating(manga: SumiMangaMetadata.merging(snapshot.manga, with: book.manga),
+                    releaseYear: book.releaseYear, searchLanguages: book.searchLanguages)
+            } ?? book
+        }
+        // Later providers/batches may add an edition, but must not replace or
+        // move a row that the user has already started reading on screen.
+        let stable = SumiSearchRanking.stableGroups(current, query: query, previouslyPublished: searchResults.map(\.id))
         searchEditions = [:]
-        for group in groups {
+        for group in stable {
             for edition in group.editions { searchEditions[edition.id] = group.editions }
         }
+        searchResults = stable.map(\.book)
     }
 
     private func replaceBook(_ book: SumiBook) {

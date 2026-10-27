@@ -14,6 +14,9 @@ enum CustomSourceConfig {
     case komga(KeyNameServer)
     case kavita(KeyNameServer)
     case suwayomi(KeyNameServer)
+    #if SUMI
+    case honbakoMangaDex
+    #endif
 
     struct KeyNameServer {
         let key: String
@@ -35,6 +38,10 @@ extension CustomSourceConfig {
                 .kavita(key: config.key, name: config.name, server: config.server)
             case let .suwayomi(config):
                 .suwayomi(key: config.key, name: config.name, server: config.server)
+            #if SUMI
+            case .honbakoMangaDex:
+                .honbakoMangaDex()
+            #endif
         }
     }
 }
@@ -85,6 +92,10 @@ extension CustomSourceConfig {
                 let name = try decodeString()
                 let server = try decodeString()
                 self = .suwayomi(.init(key: key, name: name, server: server))
+            #if SUMI
+            case 5:
+                self = .honbakoMangaDex
+            #endif
             default:
                 throw DecodingError.dataCorrupted(.init(
                     codingPath: [],
@@ -122,6 +133,10 @@ extension CustomSourceConfig {
                     varInt(UInt64(utf8.count), data: &bytes)
                     bytes.append(contentsOf: utf8)
                 }
+            #if SUMI
+            case .honbakoMangaDex:
+                bytes.append(5)
+            #endif
         }
 
         return bytes

@@ -59,6 +59,26 @@ struct SumiPreviewCropperTests {
         #expect(SumiSpreadThumbnailView().backgroundColor == .clear)
     }
 
+    @Test("A large hover loads detailed artwork without reusing the filmstrip's small cached image")
+    func hoverUsesDetailedCacheTier() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let original = UIGraphicsImageRenderer(size: CGSize(width: 1200, height: 1800), format: format).image { context in
+            UIColor.black.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1200, height: 1800))
+        }
+        let page = Sumi.Page(sourceId: "detail", chapterId: "chapter", image: original)
+        let loader = SumiPageThumbnailLoader(mangaKey: "manga")
+        let strip = try #require(await loader.image(for: page, position: 1, source: nil))
+        let hover = try #require(await loader.image(for: page, position: 1, source: nil, forHover: true))
+        #expect(strip.cgImage?.width == 240 && strip.cgImage?.height == 360)
+        #expect(hover.cgImage?.width == 720 && hover.cgImage?.height == 1080)
+        #expect(await loader.image(for: page, position: 1, source: nil) === strip)
+        #expect(await loader.image(for: page, position: 1, source: nil, forHover: true) === hover)
+        #expect(page.image === original)
+    }
+
     @Test("A tall page keeps a detailed center crop instead of first shrinking its full height")
     func tallPageCropsBeforeDownsampling() async throws {
         let format = UIGraphicsImageRendererFormat()

@@ -11,6 +11,7 @@ struct SumiSourceListCatalogView: View {
         var seen: Set<String> = []
         return list.sources.filter { entry in
             guard seen.insert(entry.id).inserted, !installed.contains(entry.id) else { return false }
+            guard entry.nativeRunner == nil || entry.isNativeInstallable else { return false }
             guard SourcePackageCompatibility.supports(minimum: entry.minAppVersion,
                 maximum: entry.maxAppVersion) else { return false }
             return true

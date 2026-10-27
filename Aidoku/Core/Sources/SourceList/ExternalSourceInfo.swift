@@ -20,6 +20,7 @@ struct ExternalSourceInfo: Codable, Hashable {
     let baseURL: String?
     let minAppVersion: String?
     let maxAppVersion: String?
+    let nativeRunner: String?
 
     // deprecated
     let lang: String?
@@ -28,6 +29,14 @@ struct ExternalSourceInfo: Codable, Hashable {
     let icon: String?
 
     var sourceUrl: URL?
+
+    var isNativeInstallable: Bool {
+        #if SUMI
+        HonbakoNativeSourceDescriptor.supports(self)
+        #else
+        false
+        #endif
+    }
 
     var fileURL: URL? {
         sourceUrl.flatMap { sourceUrl in

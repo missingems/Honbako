@@ -58,7 +58,6 @@ struct SumiSpotlightSearchView: View {
                                     SumiSpotlightResultRow(book: book,
                                         isLifted: opening.bookID == book.presentation.id,
                                         isInLibrary: book.isInLibrary || previewLibraryIDs.contains(book.id),
-                                        isSearchActive: presentation.isPresented,
                                         editions: store.editions(for: book), sourceName: store.sourceName(for:),
                                         openBook: openBook, addBook: { book in
                                             if previewBooks != nil { previewLibraryIDs.insert(book.id) }
@@ -78,13 +77,17 @@ struct SumiSpotlightSearchView: View {
                                         }
                                     } else if let error = store.errorMessage, previewBooks == nil {
                                         ContentUnavailableView {
-                                            Label("Search unavailable", systemImage: "wifi.exclamationmark")
+                                            Label("Search Unavailable", systemImage: "wifi.exclamationmark")
                                         } description: { Text(error) }
                                         actions: { Button("Try Again") { store.search(query: query) } }
                                     } else {
                                         ContentUnavailableView.search(text: query)
                                     }
                                 }
+                            }
+                            .transaction { transaction in
+                                transaction.animation = nil
+                                transaction.disablesAnimations = true
                             }
                             .padding(8)
                         }
@@ -104,6 +107,7 @@ struct SumiSpotlightSearchView: View {
                 .frame(width: width)
                 .fixedSize(horizontal: false, vertical: true)
                 .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                .containerShape(.rect(cornerRadius: 24))
                 .shadow(color: .black.opacity(0.14), radius: 24, y: 10)
                 .offset(x: region.midX - width / 2,
                         y: top - (reduceMotion ? 0 : 24 * (1 - presentation.revealProgress)))
@@ -112,9 +116,12 @@ struct SumiSpotlightSearchView: View {
         .tint(.primary)
         .sheet(isPresented: $sourcesPresented) { SumiSourcesView() }
         .onChange(of: presentation.query) { search() }
-        .onChange(of: presentation.isPresented) { if presentation.isPresented { search() } }
+        .onChange(of: presentation.isPresented) {
+            if presentation.isPresented { search() } else { store.cancelSearch() }
+        }
         .onChange(of: sourcesPresented) { if !sourcesPresented, !query.isEmpty { search() } }
         .onAppear { search() }
+        .onDisappear { store.cancelSearch() }
     }
 
     private func availableRegion(_ geometry: GeometryProxy) -> CGRect {

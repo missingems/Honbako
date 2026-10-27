@@ -63,6 +63,8 @@ struct SumiSearchMetadataServiceTests {
     func exactSourceIdentity() {
         let known = AidokuRunner.Manga(sourceKey: "multi.mangadex", key: Self.id.uuidString, title: "Title")
         #expect(SumiSearchMetadataService.mangaID(for: SumiBook(manga: known)) == Self.id)
+        let native = AidokuRunner.Manga(sourceKey: "honbako.mangadex", key: Self.id.uuidString, title: "Title")
+        #expect(SumiSearchMetadataService.mangaID(for: SumiBook(manga: native)) == Self.id)
         let unrelated = AidokuRunner.Manga(sourceKey: "other.source", key: Self.id.uuidString, title: "Same Title")
         #expect(SumiSearchMetadataService.mangaID(for: SumiBook(manga: unrelated)) == nil)
         var title = AidokuRunner.Manga(sourceKey: "multi.mangadex", key: "slug", title: "Title")

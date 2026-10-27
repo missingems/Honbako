@@ -18,6 +18,10 @@ struct SumiReaderChaptersView: View {
     @State private var errorMessage: String?
     @State private var languageNotice: String?
     @State private var retry = 0
+    @State private var nativeTitleLanguages: [String] = []
+    @State private var discoveringLanguages = false
+    @State private var languageDiscoveryFailed = false
+    @State private var languageDiscoveryRetry = 0
 
     init(chapters: [AidokuRunner.Chapter], currentKey: String,
          source: AidokuRunner.Source? = nil, manga: AidokuRunner.Manga? = nil,
@@ -43,17 +47,13 @@ struct SumiReaderChaptersView: View {
         let preferred = manga.flatMap { SumiChapterLanguage.persistedLanguage(mangaID: $0.identifier) }
         _selectedLanguage = State(initialValue: SumiChapterLanguage.activeLanguage(chapters: chapters,
             currentChapter: chapters.first(where: { $0.key == currentKey }), preferred: preferred) ?? "")
+        _discoveringLanguages = State(initialValue: source.map { $0.runner is HonbakoMangaDexRunner } == true && manga != nil)
     }
 
     private var languages: [String] {
-        var values = SumiChapterLanguage.languages(in: chapters)
-        if let source {
-            values += SumiLanguageChapterLoader.translationLanguages(sourceKey: source.key,
-                advertisedLanguages: source.languages, hasPackage: source.url != nil)
-        }
-        return Array(Set(values)).sorted {
-            SourceLanguage.displayName(for: $0).localizedStandardCompare(SourceLanguage.displayName(for: $1)) == .orderedAscending
-        }
+        SumiLanguageChapterLoader.offeredLanguages(chapters: chapters, sourceKey: source?.key ?? "",
+            advertisedLanguages: source?.languages ?? [], hasPackage: source?.url != nil,
+            nativeTitleLanguages: nativeTitleLanguages)
     }
 
     private var visibleChapters: [AidokuRunner.Chapter] {
@@ -123,6 +123,7 @@ struct SumiReaderChaptersView: View {
                 }
             }
             .task(id: "\(selectedLanguage)|\(retry)") { await loadLanguage() }
+            .task(id: languageDiscoveryRetry) { await loadAvailableLanguages() }
         }
         .tint(.primary)
         .interactiveDismissDisabled(committing)
@@ -145,16 +146,44 @@ struct SumiReaderChaptersView: View {
                 LabeledContent("Language", value: languages.first.map(SourceLanguage.displayName(for:)) ?? "Original Edition")
                     .accessibilityIdentifier("Sumi.Reader.Language")
             }
+            if discoveringLanguages {
+                ProgressView("Finding Translations…")
+            } else if languageDiscoveryFailed {
+                Button("Check Other Languages Again") { languageDiscoveryRetry += 1 }
+            }
         } header: {
             Text("Reading Language")
         } footer: {
-            if source == nil {
+            if discoveringLanguages {
+                Text("Checking the languages available for this title.")
+            } else if languageDiscoveryFailed {
+                Text("Other translations couldn’t be checked. Your current chapters are still available.")
+            } else if source?.runner is HonbakoMangaDexRunner {
+                Text("Languages reported for this title. Chapter coverage may vary; your place is saved when you switch.")
+            } else if source == nil {
                 Text("Languages available in your downloaded chapters.")
             } else if languages.count > 1 {
                 Text("Translations are provided by the source; availability varies by title. Your place is saved when you switch.")
             } else {
                 Text("This source hasn’t provided other languages for this title.")
             }
+        }
+    }
+
+    private func loadAvailableLanguages() async {
+        guard let manga, let native = source?.runner as? HonbakoMangaDexRunner else { return }
+        discoveringLanguages = true
+        languageDiscoveryFailed = false
+        do {
+            let languages = try await native.availableLanguages(for: manga)
+            try Task.checkCancellation()
+            nativeTitleLanguages = languages
+            discoveringLanguages = false
+        } catch is CancellationError { }
+        catch {
+            guard !Task.isCancelled else { return }
+            languageDiscoveryFailed = true
+            discoveringLanguages = false
         }
     }
 

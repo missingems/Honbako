@@ -6,6 +6,14 @@ import UIKit
 final class SumiReaderToolbar: UIView {
     var close: (() -> Void)?
     var chapters: (() -> Void)?
+    var visibilityDidChange: ((Bool) -> Void)?
+    var maximumLength: CGFloat = .greatestFiniteMagnitude {
+        didSet {
+            guard maximumLength != oldValue else { return }
+            invalidateIntrinsicContentSize()
+            setNeedsLayout()
+        }
+    }
     var expandsHorizontalStrip = false {
         didSet {
             guard expandsHorizontalStrip != oldValue else { return }
@@ -78,11 +86,17 @@ final class SumiReaderToolbar: UIView {
         button.isPointerInteractionEnabled = true
     }
 
-    override var intrinsicContentSize: CGSize { preferredSize(availableLength: .greatestFiniteMagnitude) }
+    override var intrinsicContentSize: CGSize { preferredSize(availableLength: maximumLength) }
+
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        let proposed = axis == .vertical ? size.height : size.width
+        return preferredSize(availableLength: min(maximumLength, proposed > 0 ? proposed : .greatestFiniteMagnitude))
+    }
 
     func preferredSize(availableLength: CGFloat) -> CGSize {
         let desired: CGFloat = axis == .vertical ? 380 : (expandsHorizontalStrip ? 620 : 420)
-        let length = min(desired, max(1, availableLength))
+        let minimum: CGFloat = axis == .vertical ? 104 : 1
+        let length = min(desired, max(minimum, availableLength))
         return axis == .vertical ? CGSize(width: SumiScrubberMetrics.toolbarThickness, height: length)
             : CGSize(width: length, height: SumiScrubberMetrics.toolbarThickness)
     }
@@ -115,7 +129,8 @@ final class SumiReaderToolbar: UIView {
                 : CGRect(x: start, y: (thickness - cross) / 2, width: length, height: cross)
         }
         closeGlass.frame = frame(start: 0, length: button, cross: button)
-        scrubberGlass.frame = frame(start: button + gap, length: stripLength, cross: thickness)
+        scrubberGlass.frame = frame(start: button + gap, length: stripLength,
+            cross: min(thickness, SumiScrubberMetrics.railThickness))
         chaptersGlass.frame = frame(start: length - button, length: button, cross: button)
         closeGlass.layer.cornerRadius = min(closeGlass.bounds.width, closeGlass.bounds.height) / 2
         scrubberGlass.layer.cornerRadius = SumiScrubberMetrics.cornerRadius
@@ -128,7 +143,19 @@ final class SumiReaderToolbar: UIView {
 
     // The empty space between components belongs to the book beneath them.
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        surfaces.contains { $0.frame.contains(point) }
+        expandedScrubberFrame.contains(point) || closeGlass.frame.contains(point) || chaptersGlass.frame.contains(point)
+    }
+
+    private var expandedScrubberFrame: CGRect {
+        scrubberGlass.frame.insetBy(dx: axis == .vertical ? -4 : 0, dy: axis == .horizontal ? -4 : 0)
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
+        if expandedScrubberFrame.contains(point), let scrubber {
+            return scrubber.hitTest(convert(point, to: scrubber), with: event)
+        }
+        return super.hitTest(point, with: event)
     }
 
     override var alpha: CGFloat { didSet { updateOverlayVisibility() } }
@@ -136,6 +163,7 @@ final class SumiReaderToolbar: UIView {
 
     private func updateOverlayVisibility() {
         scrubber?.setToolbarVisibility(alpha: alpha, isHidden: isHidden)
+        visibilityDidChange?(isVisible && !isHidden && alpha > 0.01)
     }
 
     func setVisible(_ visible: Bool, animated: Bool) {

@@ -2,8 +2,8 @@
 import Foundation
 
 /// Title chapter evidence takes precedence over a provider's general coverage.
-struct SumiSearchLanguageInfo: Identifiable, Equatable, Sendable {
-    enum Scope: Equatable, Sendable { case chapters, source }
+struct SumiSearchLanguageInfo: Identifiable, Hashable, Sendable {
+    enum Scope: Hashable, Sendable { case chapters, source }
 
     let scope: Scope
     let codes: [String]

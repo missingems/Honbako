@@ -42,6 +42,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     }
     var preparePage: ((Int) async -> Bool)?
     var imageProvider: ((Int) async -> UIImage?)?
+    var hoverImageProvider: ((Int) async -> UIImage?)?
     var landingSurface: (() -> UIView?)?
     var isLandingReady: ((Int) -> Bool)?
     /// Logical ordering of cells along the native scroll axis. Sumi uses false:
@@ -150,8 +151,8 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         positionGlass.contentView.addSubview(pageLabel); addSubview(positionGlass)
         preview.accessibilityIdentifier = "Sumi.Reader.ScrubPreview"
         preview.isHidden = true
-        preview.layer.shadowColor = UIColor.black.cgColor; preview.layer.shadowOpacity = 0.28
-        preview.layer.shadowRadius = 20; preview.layer.shadowOffset = CGSize(width: 0, height: 16)
+        preview.layer.shadowColor = UIColor.black.cgColor; preview.layer.shadowOpacity = 0.38
+        preview.layer.shadowRadius = 16; preview.layer.shadowOffset = CGSize(width: 0, height: 8)
         preview.clipsToBounds = false; addSubview(preview)
         floatingOverlay.backgroundColor = .clear
         floatingOverlay.isUserInteractionEnabled = false
@@ -169,6 +170,16 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     }
     override var alpha: CGFloat {
         didSet { updateFloatingVisibility() }
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
+        let touchBounds = bounds.insetBy(dx: axis == .vertical ? -4 : 0,
+                                        dy: axis == .horizontal ? -4 : 0)
+        guard touchBounds.contains(point) else { return nil }
+        if let hit = super.hitTest(point, with: event), hit !== self { return hit }
+        // The printed rail is thin; its native pan target still spans 48 pt.
+        return collection
     }
     deinit { settleTask?.cancel(); landingTask?.cancel() }
 
@@ -285,14 +296,15 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         let lensFrame = rail.convert(lens.frame, to: self)
         let labelFrame: CGRect
         if vertical {
-            let x = sidebarEdge == .left ? lensFrame.maxX + 8 : lensFrame.minX - labelWidth - 8
+            let x = sidebarEdge == .left ? lensFrame.maxX + SumiScrubberMetrics.badgeGap
+                : lensFrame.minX - labelWidth - SumiScrubberMetrics.badgeGap
             labelFrame = CGRect(x: lifted ? hoverCenter.x - labelWidth / 2 : x,
-                y: lifted ? hoverCenter.y - preview.bounds.height / 2 - labelHeight - 8 : bounds.midY - labelHeight / 2,
+                y: lifted ? hoverCenter.y - preview.bounds.height / 2 - labelHeight - SumiScrubberMetrics.badgeGap : bounds.midY - labelHeight / 2,
                 width: labelWidth, height: labelHeight)
         } else {
             let width = min(max(1, bounds.width - 16), labelWidth)
             labelFrame = CGRect(x: bounds.midX - width / 2,
-                y: (lifted ? hoverCenter.y - preview.bounds.height / 2 : lensFrame.minY) - labelHeight - 8,
+                y: (lifted ? hoverCenter.y - preview.bounds.height / 2 : lensFrame.minY) - labelHeight - SumiScrubberMetrics.badgeGap,
                 width: width, height: labelHeight)
         }
         positionGlass.frame = fittedOverlayFrame(overlayFrame(labelFrame), preservesAspect: false)
@@ -411,18 +423,16 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     private func layoutHover() {
         let count = preview.displayedPages.isEmpty ? model.groups[safe: selectedGroup]?.count ?? 0 : preview.displayedPages.count
         let paired = count > 1
-        let wide = (superview?.bounds.width ?? bounds.width) > (superview?.bounds.height ?? .greatestFiniteMagnitude)
-        let available = axis == .vertical ? min(244, max(140, (window?.bounds.width ?? 700) * 0.35)) : max(80, bounds.width - 24)
-        let spreadWidth = min(wide || axis == .vertical ? CGFloat(244) : 183, available)
-        let width = paired ? spreadWidth : spreadWidth / 2
-        let height = spreadWidth / 1.4
+        let available = previewContainer?.bounds.size ?? window?.bounds.size ?? CGSize(width: 466, height: 678)
+        let height = SumiScrubberMetrics.hoverHeight(in: available)
+        let width = height * SumiScrubberMetrics.pageAspect * (paired ? 2 : 1)
         preview.bounds = CGRect(x: 0, y: 0, width: width, height: height)
         let lensFrame = rail.convert(lens.frame, to: self)
         if axis == .vertical {
-            hoverCenter = CGPoint(x: sidebarEdge == .left ? lensFrame.maxX + 14 + width / 2
-                : lensFrame.minX - 14 - width / 2, y: bounds.midY)
+            hoverCenter = CGPoint(x: sidebarEdge == .left ? lensFrame.maxX + SumiScrubberMetrics.hoverGap + width / 2
+                : lensFrame.minX - SumiScrubberMetrics.hoverGap - width / 2, y: bounds.midY)
         } else {
-            hoverCenter = CGPoint(x: bounds.midX, y: lensFrame.minY - 14 - height / 2)
+            hoverCenter = CGPoint(x: bounds.midX, y: lensFrame.minY - SumiScrubberMetrics.hoverGap - height / 2)
         }
         if previewContainer != nil {
             let preferred = CGRect(x: overlayPoint(hoverCenter).x - width / 2,
@@ -433,12 +443,20 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
                 hoverCenter = convert(CGPoint(x: fitted.midX, y: fitted.midY), from: parent)
             }
         }
+        preview.layer.shadowPath = UIBezierPath(roundedRect: preview.bounds,
+            cornerRadius: SumiScrubberMetrics.previewCornerRadius).cgPath
         if preview.isHidden { preview.center = overlayPoint(hoverCenter) }
     }
 
     private func fittedOverlayFrame(_ preferred: CGRect, preservesAspect: Bool) -> CGRect {
         guard let container = previewContainer else { return preferred }
-        let insets = container.safeAreaInsets
+        var insets = container.safeAreaInsets
+        if axis == .vertical {
+            // Floating controls belong to the status rail. Applying that rail's
+            // content inset again would push the badge away from its strip.
+            if sidebarEdge == .left { insets.left = 0 }
+            else { insets.right = 0 }
+        }
         var bounds = container.bounds.inset(by: UIEdgeInsets(top: max(8, insets.top),
             left: max(8, insets.left), bottom: max(8, insets.bottom), right: max(8, insets.right)))
         let anchor = rail.convert(lens.frame, to: container)
@@ -446,17 +464,17 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             // Reserve space above the floating print for its page badge, and
             // keep the preview inward of its strip even in a narrow pane.
             let badgeHeight = max(30, pageLabel.intrinsicContentSize.height + 8)
-            bounds.origin.y += badgeHeight + 8
-            bounds.size.height = max(1, bounds.height - badgeHeight - 8)
+            bounds.origin.y += badgeHeight + SumiScrubberMetrics.badgeGap
+            bounds.size.height = max(1, bounds.height - badgeHeight - SumiScrubberMetrics.badgeGap)
             if axis == .vertical {
                 if sidebarEdge == .left {
-                    let leading = max(bounds.minX, anchor.maxX + 14)
+                    let leading = max(bounds.minX, anchor.maxX + SumiScrubberMetrics.hoverGap)
                     bounds = CGRect(x: leading, y: bounds.minY, width: max(1, bounds.maxX - leading), height: bounds.height)
                 } else {
-                    bounds.size.width = max(1, min(bounds.maxX, anchor.minX - 14) - bounds.minX)
+                    bounds.size.width = max(1, min(bounds.maxX, anchor.minX - SumiScrubberMetrics.hoverGap) - bounds.minX)
                 }
             } else {
-                bounds.size.height = max(1, min(bounds.maxY, anchor.minY - 14) - bounds.minY)
+                bounds.size.height = max(1, min(bounds.maxY, anchor.minY - SumiScrubberMetrics.hoverGap) - bounds.minY)
             }
         }
         var exclusions: [CGRect] = []
@@ -496,7 +514,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     }
     private func configureHover(pages: [Int]) {
         preview.configure(identity: thumbnailIdentity, pages: pages, reversed: reversesThumbnailPages,
-                          preservingCurrent: true, provider: imageProvider) { [weak self] _ in
+                          preservingCurrent: true, provider: hoverImageProvider ?? imageProvider) { [weak self] _ in
             self?.setNeedsLayout()
         }
     }

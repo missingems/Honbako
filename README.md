@@ -8,7 +8,7 @@ Honbako starts with an empty library and no installed source lists. Add your own
 
 Open the [Honbako download page](https://missingems.github.io/Honbako/install/) in Safari on a registered iPhone or iPad. It includes the Ad Hoc installer, direct IPA download, and an explicit **Add Source List** link. Ordinary installs still start with no sources or library entries.
 
-The source catalog is available as a [raw JSON download](https://gist.githubusercontent.com/missingems/a88a113d1b28b9149289c04bf0840d8b/raw/personal.json). Add it in **Settings → Source Lists**, open **Honbako Sources**, then choose which sources to install.
+The source catalog is available as a [raw JSON download](https://gist.githubusercontent.com/missingems/20e91aa1e2a3cbef0c61114801507196/raw/honbako.json). Add it in **Settings → Source Lists**, open **Honbako Sources**, then choose which sources to install.
 
 ## Development
 
@@ -18,7 +18,9 @@ Use one shared DerivedData directory per checkout. Do not put build caches in th
 
 Source-package compatibility uses `SourceEngineVersion` (currently `0.9.0`) independently of Honbako's product version. Preserve that boundary when updating the reader engine.
 
-The explicitly requested personal-device catalog is [Honbako Sources](https://gist.github.com/missingems/a88a113d1b28b9149289c04bf0840d8b), mirrored as `sources/personal.json`. It contains eight reviewed connector manifests and absolute links to the maintainer's packages, with attribution. This catalog is not automatically added on ordinary launches. Debug builds support an explicit developer setup operation using `--honbako-source-list=<raw JSON URL> --honbako-add-sources=<comma-separated source IDs>`; `--honbako-check-sources` additionally checks one public listing per source. The receipt is stored under `Library/Caches/HonbakoSourceSetup.json`. This operation never adds manga or modifies reading history.
+The [Honbako Sources catalog](https://gist.github.com/missingems/20e91aa1e2a3cbef0c61114801507196), mirrored as `sources/honbako.json`, enables an independently written native MangaDex REST connector included in build 6 or later. It points only to Honbako and the provider's official API. It installs no downloaded executable and is enabled only after the user chooses **Add**. The native connector supports readable-chapter checks, author and publication metadata, translations, chapter pagination, ordered page lists, and vertical reading for Long Strip titles. Existing installed connectors keep their own source identities and reading records.
+
+The older personal-device package catalog remains archived in `sources/personal.json` for compatibility with prior builds. Its packages are third-party implementations and are not represented as a native rewrite.
 
 ## Recommendations
 
@@ -30,6 +32,6 @@ Pro is designed for offline storage, chapter notifications, and iCloud progress 
 
 ## Licensing and release status
 
-This implementation is a derivative of [Aidoku](https://github.com/Aidoku/Aidoku), used under GPLv3. Original copyright notices and the [full license](LICENSE) are retained; [UPSTREAM_README.md](UPSTREAM_README.md) records the upstream project. Honbako-specific changes began in October 2026. The app is not affiliated with or endorsed by Aidoku, Apple, or the publishers linked by recommendations.
+The current app includes a GPLv3 reader engine. Required copyright, license, and provenance notices are retained in [LICENSE](LICENSE), [NOTICE](NOTICE), and the archived upstream documentation. The new native MangaDex connector was written independently against the provider's public REST schema; its catalog contains no extension executable. Honbako-specific changes began in October 2026. Honbako is not affiliated with Apple or the publishers linked by recommendations.
 
 An App Store or paid release is **not legally cleared** by this development build. Resolve the engine’s GPL distribution obligations, third-party package policies, and content/provider rights before distribution. See [release and rights notes](docs/RELEASE_AND_RIGHTS.md).

@@ -41,30 +41,35 @@ struct SumiGridContentView: View {
                         }
                     }
                 } else {
-                    LazyVStack(alignment: .leading, spacing: 26) {
+                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                         if !finished.isEmpty {
-                            HonbakoLibrarySectionView(title: "Finished", books: finished, columns: columns,
-                                openingBookID: opening.bookID, openBook: openBook)
+                            Section {
+                                HonbakoLibrarySectionView(books: finished, columns: columns,
+                                    openingBookID: opening.bookID, openBook: openBook)
+                            } header: {
+                                HonbakoLibrarySectionHeader(title: "Finished")
+                            }
                         }
                         if !reading.isEmpty {
-                            HonbakoLibrarySectionView(title: "Reading", books: reading, columns: columns,
-                                openingBookID: opening.bookID, openBook: openBook)
+                            Section {
+                                HonbakoLibrarySectionView(books: reading, columns: columns,
+                                    openingBookID: opening.bookID, openBook: openBook)
+                            } header: {
+                                HonbakoLibrarySectionHeader(title: "Reading")
+                            }
                         }
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Recommendations").font(.title2.bold()).padding(.horizontal, 16)
-                            if recommendations.items.isEmpty {
-                                Text("Suggestions will appear when the catalog is available.")
-                                    .font(.subheadline).foregroundStyle(.secondary).padding(.horizontal, 16)
-                            } else {
+                        if !recommendations.items.isEmpty {
+                            Section {
                                 LazyVGrid(columns: columns, spacing: 2) {
                                     ForEach(recommendations.items) { item in
                                         HonbakoRecommendationTile(item: item) { searchRecommendation(item.searchQuery) }
                                     }
                                 }
+                            } header: {
+                                HonbakoLibrarySectionHeader(title: "Recommendations")
                             }
                         }
                     }
-                    .padding(.top, max(16, geometry.safeAreaInsets.top))
                     .padding(.bottom, max(16, geometry.safeAreaInsets.bottom))
                     if !hasPreparedLibrary { ProgressView().padding(24).accessibilityLabel("Loading library") }
                 }

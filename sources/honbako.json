@@ -1,0 +1,20 @@
+{
+  "name": "Honbako Sources",
+  "sources": [
+    {
+      "id": "honbako.mangadex",
+      "name": "MangaDex",
+      "version": 1,
+      "nativeRunner": "honbako.mangadex.rest.v1",
+      "languages": ["en", "es", "es-419", "fr", "de", "it", "pt", "pt-BR", "ru", "uk", "zh-Hans", "zh-Hant", "ja", "ko", "id", "vi", "th", "ar", "pl", "tr", "nl", "cs", "hu", "ro", "fi", "sv", "no", "da", "el", "he", "hi", "bn", "ms", "fil", "sq", "az", "bg", "my", "ca", "hr", "eo", "et", "ka", "kk", "la", "lt", "mn", "ne", "fa", "sr", "sk", "sl", "ta", "te"],
+      "contentRating": 1,
+      "baseURL": "https://mangadex.org"
+    }
+  ],
+  "implementation": {
+    "name": "Honbako native MangaDex connector",
+    "source": "https://github.com/missingems/Honbako",
+    "api": "https://api.mangadex.org/docs/api.yaml",
+    "note": "Independently written native REST connector included in Honbako build 6 or later. Adding this catalog does not enable a source until you choose Add. No downloadable executable is supplied."
+  }
+}

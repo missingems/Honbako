@@ -11,20 +11,24 @@ final class SumiPageThumbnailLoader {
     private let temporaryStore = ReaderTemporaryPageStore()
     private let mangaKey: String
 
-    init(mangaKey: String = "") { self.mangaKey = mangaKey; cache.countLimit = 48 }
+    init(mangaKey: String = "") {
+        self.mangaKey = mangaKey
+        cache.countLimit = 48
+        cache.totalCostLimit = 32 * 1024 * 1024
+    }
 
-    func image(for page: Page, position: Int, source: AidokuRunner.Source?) async -> UIImage? {
+    func image(for page: Page, position: Int, source: AidokuRunner.Source?, forHover: Bool = false) async -> UIImage? {
         // Source-converted pages may still carry the legacy default index zero.
         // The reader's canonical ordinal is the identity of a thumbnail.
         let artwork = page.image.map { String(ObjectIdentifier($0).hashValue) } ?? page.imageURL ?? ""
         let identity = "sumi-preview-v5-leaf|\(page.sourceId)|\(mangaKey)|\(page.chapterId)|\(page.index)|\(position)|\(artwork)"
-        let key = identity as NSString
+        let key = "\(identity)|\(forHover ? "hover" : "strip")" as NSString
         if let cached = cache.object(forKey: key) { return cached }
         let image: UIImage?
         if let existing = page.image {
-            image = await SumiPreviewCropper.shared.prepare(existing)
+            image = await SumiPreviewCropper.shared.prepare(existing, forHover: forHover)
         } else if let raw = page.base64, let data = Data(base64Encoded: raw) {
-            if let decoded = UIImage(data: data) { image = await SumiPreviewCropper.shared.prepare(decoded) }
+            if let decoded = UIImage(data: data) { image = await SumiPreviewCropper.shared.prepare(decoded, forHover: forHover) }
             else { image = nil }
         } else {
             let url: URL?
@@ -38,15 +42,15 @@ final class SumiPageThumbnailLoader {
             request.imageID = "\(identity)|\(request.imageID ?? url.absoluteString)"
             // Preview resolution is independent from the reader's image options.
             request.processors = request.processors.filter { !($0 is UpscaleProcessor) && !($0 is DownsampleProcessor) }
-            request.processors.append(SumiPreviewCropper.thumbnailProcessor())
-            request.priority = .low
+            request.processors.append(SumiPreviewCropper.thumbnailProcessor(forHover: forHover))
+            request.priority = forHover ? .normal : .low
             image = try? await ImagePipeline.shared.image(for: request)
         }
         guard !Task.isCancelled else { return nil }
         guard let image else { return nil }
         let cropped = await SumiPreviewCropper.shared.crop(image)
         guard !Task.isCancelled else { return nil }
-        cache.setObject(cropped, forKey: key)
+        cache.setObject(cropped, forKey: key, cost: (cropped.cgImage?.bytesPerRow ?? 0) * (cropped.cgImage?.height ?? 0))
         return cropped
     }
 

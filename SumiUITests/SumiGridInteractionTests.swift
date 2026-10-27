@@ -5,6 +5,23 @@ import XCTest
 
 final class SumiGridInteractionTests: XCTestCase {
     @MainActor
+    func testLibrarySectionHeaderStaysPinnedWhileBooksScroll() throws {
+        let app = XCUIApplication()
+        app.launch()
+        defer { app.terminate() }
+        let grid = element("Sumi.Grid", app)
+        let header = element("Honbako.Library.Header.Recommendations", app)
+        XCTAssertTrue(grid.waitForExistence(timeout: 15))
+        XCTAssertTrue(header.waitForExistence(timeout: 10))
+        let original = header.frame
+        grid.swipeUp()
+        XCTAssertTrue(header.exists)
+        XCTAssertEqual(header.frame.minY, original.minY, accuracy: 1,
+                       "The library section title stays pinned while the manga move beneath it")
+        attach(app.screenshot(), "Pinned library header with space above its label")
+    }
+
+    @MainActor
     func testDirectCloseReturnsToTheOriginalOffCenterSlot() throws {
         XCUIDevice.shared.orientation = .portrait
         let app = launch()
@@ -376,8 +393,16 @@ final class SumiGridInteractionTests: XCTestCase {
         XCTAssertTrue(wait(NSPredicate { _, _ in app.buttons["Sumi.Reader.ChaptersButton"].isHittable }, reader, timeout: 5))
         app.buttons["Sumi.Reader.ChaptersButton"].tap()
         let chapter = element("Sumi.Reader.Chapter.chapter-2", app)
+        let chapterList = element("Sumi.Reader.Chapters", app)
+        for _ in 0..<3 where !chapter.exists {
+            let frame = chapterList.frame
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            origin.withOffset(CGVector(dx: frame.midX, dy: frame.maxY - 60))
+                .press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: frame.midX, dy: frame.minY + 120)))
+        }
         XCTAssertTrue(chapter.waitForExistence(timeout: 5), app.debugDescription)
-        chapter.tap()
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: chapter.frame.midX, dy: chapter.frame.midY)).tap()
         XCTAssertTrue(wait(NSPredicate(format: "value CONTAINS %@", "Chapter 2"), reader, timeout: 8))
         let chosenPage = paired ? 3 : 2
         let page2 = element(paired ? "Sumi.Reader.Spread.3-4" : "Sumi.Reader.Thumbnail.2", app)
@@ -462,15 +487,19 @@ final class SumiGridInteractionTests: XCTestCase {
         XCTAssertFalse(chapters.frame.intersects(scrubberFrame), file: file, line: line)
         XCTAssertGreaterThanOrEqual(close.frame.width, 44, file: file, line: line)
         XCTAssertGreaterThanOrEqual(chapters.frame.height, 44, file: file, line: line)
-        XCTAssertEqual(min(scrubberFrame.width, scrubberFrame.height),
-                       min(close.frame.width, close.frame.height), accuracy: 1,
-                       "The scrub rail matches the navigation button faces", file: file, line: line)
+        XCTAssertEqual(min(scrubberFrame.width, scrubberFrame.height), 40, accuracy: 1,
+                       "The page strip is thinner than the separate navigation buttons", file: file, line: line)
         if vertical {
             let sideClearance = min(toolbar.frame.minX - surfaceFrame.minX, surfaceFrame.maxX - toolbar.frame.maxX)
             XCTAssertGreaterThanOrEqual(sideClearance, 7, file: file, line: line)
             XCTAssertLessThanOrEqual(sideClearance, 24, file: file, line: line)
             XCTAssertTrue(badge.frame.maxX <= scrubberFrame.minX || badge.frame.minX >= scrubberFrame.maxX,
                           "Page position stays beside the side scrubber", file: file, line: line)
+            let clock = app.statusBars.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]{1,2}:[0-9]{2}")).firstMatch
+            if clock.waitForExistence(timeout: 2) {
+                XCTAssertEqual(toolbar.frame.midX, clock.frame.midX, accuracy: 2,
+                               "Vertical controls align with the visible status column", file: file, line: line)
+            }
             return
         }
         if surfaceFrame.width < surfaceFrame.height {

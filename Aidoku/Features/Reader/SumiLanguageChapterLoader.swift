@@ -11,7 +11,7 @@ enum SumiLanguageChapterLoader {
         try Task.checkCancellation()
         guard fetched.identifier == manga.identifier else { throw LanguageError.mismatchedTitle }
         if let language = SumiChapterLanguage.normalized(preferredLanguage), supports(source),
-           source.languages.contains(where: { SumiChapterLanguage.normalized($0) == language }),
+           (source.runner is HonbakoMangaDexRunner || Self.providerLanguage(for: language, advertisedLanguages: source.languages) != nil),
            !(fetched.chapters ?? []).contains(where: { SumiChapterLanguage.normalized($0.language) == language }) {
             let translated = try await load(source: source, manga: manga, language: language)
             fetched.chapters = SumiChapterLanguage.retainingOtherLanguages(existing: fetched.chapters ?? [], fetched: translated)
@@ -20,7 +20,8 @@ enum SumiLanguageChapterLoader {
     }
 
     static func supports(_ source: AidokuRunner.Source) -> Bool {
-        !translationLanguages(sourceKey: source.key, advertisedLanguages: source.languages, hasPackage: source.url != nil).isEmpty
+        if source.runner is HonbakoMangaDexRunner { return true }
+        return !translationLanguages(sourceKey: source.key, advertisedLanguages: source.languages, hasPackage: source.url != nil).isEmpty
     }
 
     /// Source.languages can describe its entire catalog, not editions of one
@@ -32,6 +33,18 @@ enum SumiLanguageChapterLoader {
         return values.count > 1 ? values : []
     }
 
+    static func offeredLanguages(chapters: [AidokuRunner.Chapter], sourceKey: String,
+                                 advertisedLanguages: [String], hasPackage: Bool,
+                                 nativeTitleLanguages: [String] = []) -> [String] {
+        let additional = sourceKey == HonbakoMangaDexRunner.sourceKey ? nativeTitleLanguages
+            : translationLanguages(sourceKey: sourceKey, advertisedLanguages: advertisedLanguages, hasPackage: hasPackage)
+        return Array(Set(SumiChapterLanguage.languages(in: chapters) + additional.compactMap(SumiChapterLanguage.normalized)))
+            .sorted {
+                let comparison = SourceLanguage.displayName(for: $0).localizedStandardCompare(SourceLanguage.displayName(for: $1))
+                return comparison == .orderedSame ? $0 < $1 : comparison == .orderedAscending
+            }
+    }
+
     /// Pass the source's advertised value to its settings, even when its chapter
     /// responses use an alias. The provider owns conversion to its API codes.
     static func providerLanguage(for language: String, advertisedLanguages: [String]) -> String? {
@@ -40,6 +53,9 @@ enum SumiLanguageChapterLoader {
     }
 
     static func load(source: AidokuRunner.Source, manga: AidokuRunner.Manga, language: String) async throws -> [AidokuRunner.Chapter] {
+        if let native = source.runner as? HonbakoMangaDexRunner {
+            return try await native.chapters(for: manga, language: language)
+        }
         guard let package = source.url, supports(source),
               let providerLanguage = Self.providerLanguage(for: language, advertisedLanguages: source.languages) else {
             throw LanguageError.unsupported

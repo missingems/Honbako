@@ -38,6 +38,20 @@ enum SumiSearchRanking {
         return words.split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 
+    static func stableGroups(_ books: [SumiBook], query: String, previouslyPublished: [MangaIdentifier]) -> [Group] {
+        var remaining = groups(books, query: query)
+        var stable: [Group] = []
+        for previous in previouslyPublished {
+            guard let index = remaining.firstIndex(where: { $0.editions.contains { $0.id == previous } }) else { continue }
+            var group = remaining.remove(at: index)
+            if let selected = group.editions.firstIndex(where: { $0.id == previous }) {
+                group.editions.insert(group.editions.remove(at: selected), at: 0)
+            }
+            stable.append(group)
+        }
+        return stable + remaining
+    }
+
     private static func precedes(_ lhs: SumiBook, _ rhs: SumiBook, query: String) -> Bool {
         let query = normalized(query)
         func match(_ book: SumiBook) -> Int {

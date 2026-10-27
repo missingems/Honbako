@@ -2,7 +2,7 @@
 import CoreData
 import Foundation
 
-/// Reads existing chapter metadata only; search never downloads chapter lists.
+/// Snapshot helper for chapter metadata already stored on this device.
 actor SumiSearchLanguageService {
     struct Context: Sendable {
         let chapterLanguages: [String]

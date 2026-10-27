@@ -8,7 +8,6 @@ struct SumiSpotlightResultRow: View {
     let book: SumiBook
     let isLifted: Bool
     let isInLibrary: Bool
-    let isSearchActive: Bool
     let editions: [SumiBook]
     let sourceName: (String) -> String
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
@@ -16,14 +15,10 @@ struct SumiSpotlightResultRow: View {
     var showsDivider = false
     @State private var anchor = SumiBookSourceAnchor()
     @State private var adding = false
-    @State private var metadata: SumiSearchMetadataService.Metadata?
-    @State private var metadataBookID: MangaIdentifier?
-    @State private var languageContext: SumiSearchLanguageService.Context?
     @State private var presentedLanguages: SumiSearchLanguageInfo?
     @ScaledMetric(relativeTo: .body) private var coverScale: CGFloat = 1
     @ScaledMetric(relativeTo: .body) private var rowContentHeight: CGFloat = 114
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var coverWidth: CGFloat { 68 * min(coverScale, 1.5) }
     private var coverHeight: CGFloat { 100 * min(coverScale, 1.5) }
     private var titleInset: CGFloat {
@@ -31,22 +26,14 @@ struct SumiSpotlightResultRow: View {
     }
 
     private var presentation: SumiSearchResultPresentation {
-        SumiSearchResultPresentation(book: book, isInLibrary: isInLibrary,
-            releaseYear: enrichedMetadata?.releaseYear, publishingStatus: enrichedMetadata?.publishingStatus)
-    }
-    private var enrichedMetadata: SumiSearchMetadataService.Metadata? {
-        metadataBookID == book.id ? metadata : nil
+        SumiSearchResultPresentation(book: book, isInLibrary: isInLibrary)
     }
     private var author: String? {
-        if let author = book.author { return author }
-        let authors = enrichedMetadata?.authors ?? []
-        return authors.isEmpty ? nil : authors.joined(separator: ", ")
+        book.author
     }
     private var languages: SumiSearchLanguageInfo? {
-        guard metadataBookID == book.id else { return nil }
-        return SumiSearchLanguageInfo(chapterLanguages: languageContext?.chapterLanguages ?? [],
-            translatedLanguages: enrichedMetadata?.translatedLanguages ?? [],
-            sourceLanguages: languageContext?.sourceLanguages ?? [])
+        book.searchLanguages ?? SumiSearchLanguageInfo(chapterLanguages: (book.manga.chapters ?? []).compactMap(\.language),
+                                                       sourceLanguages: [])
     }
     var body: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
@@ -60,6 +47,7 @@ struct SumiSpotlightResultRow: View {
                 bookLayout {
                     SumiGridBookRepresentable(book: book, anchor: anchor)
                         .frame(width: coverWidth, height: coverHeight)
+                        .clipShape(ConcentricRectangle(corners: .concentric(minimum: .fixed(8))))
                         .opacity(isLifted ? 0 : 1)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(book.title).font(.body)
@@ -117,19 +105,10 @@ struct SumiSpotlightResultRow: View {
         }
         .contentShape(.rect(cornerRadius: 14))
         .popover(item: $presentedLanguages) { SumiSearchLanguageDetailsView(info: $0) }
-        .task(id: isSearchActive ? book.id : nil) { await loadMetadata() }
-    }
-
-    private func loadMetadata() async {
-        guard isSearchActive else { return }
-        let id = book.id
-        if metadataBookID != id { metadata = nil; languageContext = nil; metadataBookID = id }
-        let context = await SumiSearchLanguageService.shared.context(for: id)
-        guard !Task.isCancelled, metadataBookID == id else { return }
-        withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.18)) { languageContext = context }
-        guard let result = await SumiSearchMetadataService.shared.metadata(for: book),
-              !Task.isCancelled, metadataBookID == id else { return }
-        withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.18)) { metadata = result }
+        .transaction { transaction in
+            transaction.animation = nil
+            transaction.disablesAnimations = true
+        }
     }
 
     private func performAction() {

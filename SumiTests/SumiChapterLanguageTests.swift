@@ -100,6 +100,54 @@ struct SumiChapterLanguageTests {
             advertisedLanguages: ["en", "EN"], hasPackage: true).isEmpty)
     }
 
+    @Test("Native reader choices use this title's translations and cached chapter labels, never global source coverage")
+    func nativeTitleLanguageChoices() {
+        let cached = [chapter("english", language: "en"), chapter("saved-japanese", language: "ja")]
+        let sourceLanguages = ["en", "fr", "pt-BR", "es", "ja"]
+        let beforeDiscovery = SumiLanguageChapterLoader.offeredLanguages(chapters: cached,
+            sourceKey: "honbako.mangadex", advertisedLanguages: sourceLanguages, hasPackage: false)
+        #expect(Set(beforeDiscovery) == ["en", "ja"])
+        let discovered = SumiLanguageChapterLoader.offeredLanguages(chapters: cached,
+            sourceKey: "honbako.mangadex", advertisedLanguages: sourceLanguages, hasPackage: false,
+            nativeTitleLanguages: ["en", "km", "pt_BR", "pt", "es-la"])
+        #expect(Set(discovered) == ["en", "ja", "km", "pt-br", "pt", "es-419"])
+        #expect(!discovered.contains("fr"))
+        #expect(SumiLanguageChapterLoader.translationLanguages(sourceKey: "honbako.mangadex",
+            advertisedLanguages: sourceLanguages, hasPackage: false).isEmpty)
+    }
+
+    @Test("A saved native language outside the catalog list is fetched when reopening the title")
+    func nativePreferredLanguageOutsideCatalog() async throws {
+        let suite = "Sumi.NativePreferredLanguageTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(["en"], forKey: HonbakoMangaDexRunner.sourceKey + ".languages")
+        let mangaKey = "aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"
+        let native = HonbakoMangaDexRunner(defaults: defaults, requestInterval: .zero) { request in
+            let url = request.url!
+            let json: [String: Any]
+            if url.path.hasSuffix("/feed") {
+                let language = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?
+                    .first { $0.name == "translatedLanguage[]" }?.value ?? "en"
+                json = ["result": "ok", "limit": 500, "offset": 0, "total": 1,
+                    "data": [["id": language == "km" ? "bbbbbbbb-1111-2222-3333-cccccccccccc" : "cccccccc-1111-2222-3333-dddddddddddd",
+                              "attributes": ["chapter": "2", "pages": 1, "translatedLanguage": language]]]]
+            } else {
+                json = ["result": "ok", "data": ["id": mangaKey,
+                    "attributes": ["title": ["en": "Title"], "availableTranslatedLanguages": ["en", "km"]]]]
+            }
+            return (try JSONSerialization.data(withJSONObject: json),
+                HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        let source = AidokuRunner.Source(key: HonbakoMangaDexRunner.sourceKey, name: "MangaDex", version: 1,
+            languages: ["en"], contentRating: .safe, runner: native)
+        let manga = AidokuRunner.Manga(sourceKey: source.key, key: mangaKey, title: "Title")
+        let refreshed = try await SumiLanguageChapterLoader.update(source: source, manga: manga,
+            needsDetails: false, preferredLanguage: "km")
+        #expect(Set((refreshed.chapters ?? []).compactMap(\.language)) == ["en", "km"])
+        #expect(defaults.stringArray(forKey: HonbakoMangaDexRunner.sourceKey + ".languages") == ["en"])
+    }
+
     @Test("MangaFire's returned es-la chapters match requested es-419 without mixing other regional editions")
     func mangaFireRegionalAlias() throws {
         let advertised = ["en", "es", "es-419", "pt", "pt-BR"]

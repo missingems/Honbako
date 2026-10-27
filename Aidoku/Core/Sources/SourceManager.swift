@@ -28,6 +28,7 @@ actor SourceManager {
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
     private var starterSourcesTask: Task<(), Never>?
+    private var nativeInstallations: [String: Task<AidokuRunner.Source?, Never>] = [:]
 
     private static let starterSourceKeys = ["multi.mangaplus", "multi.mangadex", "multi.webtoon", "en.weebcentral"]
     private static let starterSourceListURL = URL(string: "https://aidoku-community.github.io/sources/index.min.json")!
@@ -451,7 +452,8 @@ extension SourceManager {
         for state in sourceListStates.values {
             guard case let .loaded(sourceList) = state else { continue }
 
-            for source in sourceList.sources where missingKeys.contains(source.id) && source.fileURL != nil {
+            for source in sourceList.sources where missingKeys.contains(source.id)
+                && (source.fileURL != nil || source.isNativeInstallable) {
                 // check version availability
                 guard SourcePackageCompatibility.supports(minimum: source.minAppVersion,
                     maximum: source.maxAppVersion) else { continue }
@@ -469,8 +471,7 @@ extension SourceManager {
 
         Task {
             for source in sources {
-                guard let url = source.fileURL else { continue }
-                if await importSource(from: url) != nil {
+                if await installExternalSource(source) != nil {
                     continuation.yield(source.id)
                 }
             }
@@ -478,6 +479,35 @@ extension SourceManager {
         }
 
         return (stream, sources.count)
+    }
+
+    /// Native descriptors only select a bundled allowlisted implementation.
+    /// Existing executable-package imports retain their established path.
+    func installExternalSource(_ info: ExternalSourceInfo) async -> AidokuRunner.Source? {
+        await waitForSourcesLoad()
+        if info.nativeRunner != nil {
+            #if SUMI
+            guard info.isNativeInstallable else { return nil }
+            if let existing = sourcesByKey[info.id] { return existing }
+            if disabledSourceKeys.contains(info.id) {
+                await enable(sourceKey: info.id)
+                return sourcesByKey[info.id]
+            }
+            if let task = nativeInstallations[info.id] { return await task.value }
+            let task = Task { () -> AidokuRunner.Source? in
+                guard let key = await self.createCustomSource(.honbakoMangaDex) else { return nil }
+                return await self.source(for: key)
+            }
+            nativeInstallations[info.id] = task
+            let result = await task.value
+            nativeInstallations[info.id] = nil
+            return result
+            #else
+            return nil
+            #endif
+        }
+        guard let url = info.fileURL else { return nil }
+        return await importSource(from: url)
     }
 
     func importSource(from url: URL) async -> AidokuRunner.Source? {
@@ -610,6 +640,9 @@ extension SourceManager {
     enum CustomSourceKind {
         case demo
         case local
+        #if SUMI
+        case honbakoMangaDex
+        #endif
         case komga(ServerConfig)
         case kavita(ServerConfig)
         case suwayomi(ServerConfig)
@@ -630,6 +663,10 @@ extension SourceManager {
                 config = CustomSourceConfig.local
             case .demo:
                 config = CustomSourceConfig.demo
+            #if SUMI
+            case .honbakoMangaDex:
+                config = CustomSourceConfig.honbakoMangaDex
+            #endif
             case .komga(let serverConfig), .kavita(let serverConfig), .suwayomi(let serverConfig):
                 let name = serverConfig.name
                 let server = serverConfig.server
@@ -641,6 +678,9 @@ extension SourceManager {
                     case .kavita: KavitaSourceRunner.sourceKeyPrefix
                     case .suwayomi: SuwayomiSourceRunner.sourceKeyPrefix
                     case .local, .demo: unreachable()
+                    #if SUMI
+                    case .honbakoMangaDex: unreachable()
+                    #endif
                 }
                 let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
                 var key = "\(keyPrefix).\(nameEncoded)"
@@ -658,6 +698,9 @@ extension SourceManager {
                     case .kavita: CustomSourceConfig.kavita(configValues)
                     case .suwayomi: CustomSourceConfig.suwayomi(configValues)
                     case .local, .demo: unreachable()
+                    #if SUMI
+                    case .honbakoMangaDex: unreachable()
+                    #endif
                 }
 
                 // register details
@@ -686,6 +729,7 @@ extension SourceManager {
         }
 
         sourcesByKey[source.key] = source
+        sourceLanguageCodes.formUnion(source.languages)
 
         await publishSourceState()
         notifySourcesLoaded(keys: [source.key])
@@ -862,6 +906,10 @@ extension SourceManager {
         guard allCharactersValid else {
             return false
         }
+        #if SUMI
+        // Downloaded packages cannot impersonate a first-party native source.
+        guard !sourceKey.hasPrefix("honbako.") else { return false }
+        #endif
 
         let reservedPrefixes = [
             "local",
