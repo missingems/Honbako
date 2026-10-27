@@ -19,17 +19,17 @@ struct SumiLibraryShelfSummary: Equatable, Sendable {
     let finishedAt: Date?
 
     init(status: AidokuRunner.PublishingStatus, chapters: [Chapter], language: String?, scanlators: [String]? = nil) {
-        let selectedLanguage = language.flatMap { $0.isEmpty ? nil : $0 }
+        let selectedLanguage = SumiChapterLanguage.normalized(language)
         let selectedScanlators = scanlators.flatMap { $0.isEmpty ? nil : Set($0) }
         let eligible = chapters.filter {
-            (selectedLanguage == nil || $0.language == selectedLanguage)
+            (selectedLanguage == nil || SumiChapterLanguage.normalized($0.language) == selectedLanguage)
                 && (selectedScanlators == nil || selectedScanlators?.contains($0.scanlator ?? "") == true)
         }
         // Different translations are separate editions. With no stored choice,
         // use one language rather than counting the same chapter in every language.
-        let effectiveLanguage = selectedLanguage ?? Dictionary(grouping: eligible, by: \.language)
+        let effectiveLanguage = selectedLanguage ?? Dictionary(grouping: eligible, by: { SumiChapterLanguage.normalized($0.language) ?? "" })
             .max { lhs, rhs in lhs.value.count == rhs.value.count ? lhs.key > rhs.key : lhs.value.count < rhs.value.count }?.key
-        let selected = eligible.filter { effectiveLanguage == nil || $0.language == effectiveLanguage }
+        let selected = eligible.filter { effectiveLanguage == nil || (SumiChapterLanguage.normalized($0.language) ?? "") == effectiveLanguage }
         let groups = Dictionary(grouping: selected) { chapter in
             chapter.number.map { "\(chapter.volume ?? 0):\($0)" } ?? "key:\(chapter.key)"
         }
@@ -44,9 +44,12 @@ struct SumiLibraryShelfSummary: Equatable, Sendable {
             ? dates.max() : nil
     }
 
-    static func readingOrder(_ books: [SumiBook], stableIDs: [String]) -> [SumiBook] {
+    static func readingOrder(_ books: [SumiBook], stableIDs: [String], tutorialIdentifier: MangaIdentifier? = nil) -> [SumiBook] {
         let positions = Dictionary(stableIDs.enumerated().map { ($0.element, $0.offset) }, uniquingKeysWith: { first, _ in first })
         return books.filter { $0.finishedReadingAt == nil }.sorted {
+            let leftIsTutorial = $0.id == tutorialIdentifier
+            let rightIsTutorial = $1.id == tutorialIdentifier
+            if leftIsTutorial != rightIsTutorial { return leftIsTutorial }
             if $0.unreadChapterCount != $1.unreadChapterCount { return $0.unreadChapterCount > $1.unreadChapterCount }
             let lhsDate = $0.latestUnreadChapterDate ?? .distantPast
             let rhsDate = $1.latestUnreadChapterDate ?? .distantPast

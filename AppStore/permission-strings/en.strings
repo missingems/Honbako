@@ -1,0 +1,5 @@
+// Honbako-only system permission descriptions.
+"CFBundleDisplayName" = "Honbako";
+"NSFaceIDUsageDescription" = "Use Face ID to unlock protected app features.";
+"NSLocalNetworkUsageDescription" = "Connect to the personal manga servers you choose on your local network.";
+"NSPhotoLibraryUsageDescription" = "Save manga pages to your photo library.";

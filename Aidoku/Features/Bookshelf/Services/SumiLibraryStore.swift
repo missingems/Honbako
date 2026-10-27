@@ -37,12 +37,19 @@ struct SumiBook: Identifiable, Hashable, Sendable {
         return names.isEmpty ? nil : names.joined(separator: ", ")
     }
     var releaseDateLabel: String? {
-        if let releaseDate { return "Released \(releaseDate.formatted(date: .abbreviated, time: .omitted))" }
-        if let releaseYear, (1...9999).contains(releaseYear) { return "Released \(releaseYear)" }
+        if let releaseDate { return String(localized: "Released \(releaseDate.formatted(date: .abbreviated, time: .omitted))") }
+        if let year = Self.releaseYearText(releaseYear) { return String(localized: "Released \(year)") }
         return nil
     }
     var blurb: String? { manga.description }
     var coverURL: URL? { manga.cover.flatMap(URL.init(string:)) }
+
+    static func releaseYearText(_ year: Int?) -> String? {
+        guard let year, (1...9999).contains(year) else { return nil }
+        let calendar = Calendar(identifier: .gregorian)
+        guard let date = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) else { return nil }
+        return date.formatted(.dateTime.year())
+    }
 
     init(
         manga: AidokuRunner.Manga,
@@ -119,10 +126,10 @@ struct SumiBook: Identifiable, Hashable, Sendable {
         let completed = history?.completed ?? false
         let progress: Double?
         let pageLabel: String?
-        if completed { progress = 1; pageLabel = "Completed" }
+        if completed { progress = 1; pageLabel = String(localized: "Completed") }
         else if let page, page > 0 {
             progress = total > 0 ? min(1, Double(page) / Double(total)) : nil
-            pageLabel = total > 0 ? "Page \(page) of \(total)" : "Page \(page)"
+            pageLabel = total > 0 ? String(localized: "Page \(page) of \(total)") : String(localized: "Page \(page)")
         } else { progress = nil; pageLabel = nil }
         return SumiBook(manga: manga.toNewManga(), chapterLabel: chapterLabel(for: chapter),
             pageLabel: pageLabel, progress: progress, isInLibrary: isInLibrary,
@@ -136,11 +143,11 @@ struct SumiBook: Identifiable, Hashable, Sendable {
     fileprivate static func chapterLabel(for chapter: AidokuRunner.Chapter?) -> String? {
         guard let chapter else { return nil }
         if let number = chapter.chapterNumber {
-            return "Chapter \(String(format: "%g", Double(number)))"
+            return String(localized: "Chapter \(String(format: "%g", Double(number)))")
         }
         if let title = chapter.title, !title.isEmpty { return title }
         if let number = chapter.volumeNumber {
-            return "Volume \(String(format: "%g", Double(number)))"
+            return String(localized: "Volume \(String(format: "%g", Double(number)))")
         }
         return nil
     }
@@ -176,6 +183,7 @@ final class SumiLibraryStore: ObservableObject {
     private let searchSourceLoader: SearchSourceLoader
     private let searchPreparationService: SumiSearchPreparationService
     private let coverPreparer: CoverPreparer
+    private let tutorialInstaller: (@MainActor @Sendable () async -> Void)?
     private var sourceNames: [String: String] = [:]
     private var searchTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
@@ -190,10 +198,12 @@ final class SumiLibraryStore: ObservableObject {
 
     init(searchSourceLoader: SearchSourceLoader? = nil,
          searchPreparationService: SumiSearchPreparationService = .shared,
-         coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) }) {
+         coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) },
+         tutorialInstaller: (@MainActor @Sendable () async -> Void)? = nil) {
         self.searchSourceLoader = searchSourceLoader ?? { await SourceManager.shared.getLoadedSources() }
         self.searchPreparationService = searchPreparationService
         self.coverPreparer = coverPreparer
+        self.tutorialInstaller = tutorialInstaller
         for name in [
             Notification.Name.updateLibrary,
             .updateMangaDetails,
@@ -227,6 +237,8 @@ final class SumiLibraryStore: ObservableObject {
         beginLoading()
         defer { endLoading() }
         do {
+            await tutorialInstaller?()
+            guard generation == refreshGeneration, !Task.isCancelled else { return }
             let books = try await CoreDataManager.shared.container.performBackgroundTask { context in
                 let request = LibraryMangaObject.fetchRequest()
                 request.predicate = NSPredicate(format: "manga != nil")
@@ -289,7 +301,7 @@ final class SumiLibraryStore: ObservableObject {
             updateSearchSections()
         } catch {
             guard generation == refreshGeneration, !Task.isCancelled else { return }
-            libraryError = "Your reading library could not be loaded: \(error.localizedDescription)"
+            libraryError = String(localized: "Your reading library could not be loaded: \(error.localizedDescription)")
         }
         updateErrorMessage()
     }
@@ -299,7 +311,8 @@ final class SumiLibraryStore: ObservableObject {
     }
 
     func sourceName(for key: String) -> String {
-        SourceStore.shared.source(for: key)?.name ?? sourceNames[key] ?? key
+        if key == HonbakoTutorialManga.sourceKey { return String(localized: "On This Device") }
+        return SourceStore.shared.source(for: key)?.name ?? sourceNames[key] ?? key
     }
 
     /// Empty queries discover real catalog entries; typed queries search every enabled provider.
@@ -341,7 +354,7 @@ final class SumiLibraryStore: ObservableObject {
         updateErrorMessage()
         defer { endLoading() }
         guard let source = await SourceManager.shared.source(for: book.sourceKey) else {
-            operationError = "This title's source is currently unavailable."
+            operationError = String(localized: "This title's source is currently unavailable.")
             updateErrorMessage()
             return book
         }
@@ -373,7 +386,7 @@ final class SumiLibraryStore: ObservableObject {
         } catch is CancellationError {
             return book
         } catch {
-            operationError = "Title details could not be loaded: \(error.localizedDescription)"
+            operationError = String(localized: "Title details could not be loaded: \(error.localizedDescription)")
             updateErrorMessage()
             return book
         }
@@ -480,8 +493,8 @@ final class SumiLibraryStore: ObservableObject {
                     return nil
                 }
                 operationError = latestHistory == nil
-                    ? "No readable chapters are available for this title."
-                    : "Your last-read chapter is unavailable. It has not been replaced with another chapter."
+                    ? String(localized: "No readable chapters are available for this title.")
+                    : String(localized: "Your last-read chapter is unavailable. It has not been replaced with another chapter.")
                 updateErrorMessage()
                 return nil
             }
@@ -498,7 +511,7 @@ final class SumiLibraryStore: ObservableObject {
         } catch is CancellationError {
             return nil
         } catch {
-            operationError = "Your reading position could not be loaded: \(error.localizedDescription)"
+            operationError = String(localized: "Your reading position could not be loaded: \(error.localizedDescription)")
             updateErrorMessage()
             return nil
         }
@@ -533,7 +546,7 @@ final class SumiLibraryStore: ObservableObject {
             } catch is CancellationError {
                 return nil
             } catch {
-                operationError = "Chapters could not be loaded: \(error.localizedDescription)"
+                operationError = String(localized: "Chapters could not be loaded: \(error.localizedDescription)")
                 updateErrorMessage()
                 return nil
             }
@@ -554,8 +567,8 @@ final class SumiLibraryStore: ObservableObject {
         let rereading = stored.nextChapter == nil
         guard let chapter = resumingChapter ?? readerChapters.reversed().first(where: canRead) else {
             operationError = source == nil
-                ? "This title's source is unavailable and no readable chapter has been downloaded."
-                : "No readable chapters are available for this title."
+                ? String(localized: "This title's source is unavailable and no readable chapter has been downloaded.")
+                : String(localized: "No readable chapters are available for this title.")
             updateErrorMessage()
             return nil
         }
@@ -588,14 +601,14 @@ final class SumiLibraryStore: ObservableObject {
             }
             guard !Task.isCancelled else { return nil }
             guard let bookmark else {
-                operationError = "No unfinished bookmark is available. Choose a chapter or continue reading."
+                operationError = String(localized: "No unfinished bookmark is available. Choose a chapter or continue reading.")
                 updateErrorMessage()
                 return nil
             }
             return await selectChapter(book: book, chapter: AidokuRunner.Chapter(key: bookmark.chapterKey))
         } catch {
             guard !Task.isCancelled else { return nil }
-            operationError = "Your bookmark could not be loaded: \(error.localizedDescription)"
+            operationError = String(localized: "Your bookmark could not be loaded: \(error.localizedDescription)")
             updateErrorMessage()
             return nil
         }
@@ -654,7 +667,7 @@ final class SumiLibraryStore: ObservableObject {
             } catch is CancellationError {
                 return nil
             } catch {
-                operationError = "Chapters could not be loaded: \(error.localizedDescription)"
+                operationError = String(localized: "Chapters could not be loaded: \(error.localizedDescription)")
                 updateErrorMessage()
                 return nil
             }
@@ -666,14 +679,14 @@ final class SumiLibraryStore: ObservableObject {
         }
         let readerChapters = sortAscending ? Array(stored.chapters.reversed()) : stored.chapters
         guard let chapter = readerChapters.first(where: { $0.key == selectedChapter.key }) else {
-            operationError = "This chapter is no longer available. Reload the chapter list and try again."
+            operationError = String(localized: "This chapter is no longer available. Reload the chapter list and try again.")
             updateErrorMessage()
             return nil
         }
         let id = ChapterIdentifier(sourceKey: book.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
         let downloaded = DownloadManager.shared.getDownloadStatus(for: id) == .finished
         guard downloaded || (source != nil && !chapter.locked) else {
-            operationError = "This chapter is unavailable from this provider and has not been downloaded."
+            operationError = String(localized: "This chapter is unavailable from this provider and has not been downloaded.")
             updateErrorMessage()
             return nil
         }
@@ -692,7 +705,7 @@ final class SumiLibraryStore: ObservableObject {
                     try context.save()
                 }
             } catch {
-                operationError = "This manga’s reading position couldn’t be prepared. Try again."
+                operationError = String(localized: "This manga’s reading position couldn’t be prepared. Try again.")
                 updateErrorMessage()
                 return nil
             }
@@ -737,14 +750,14 @@ final class SumiLibraryStore: ObservableObject {
         providerFailures = bootstrap.failures.filter { byKey[$0.key] == nil }
         guard !sources.isEmpty else {
             isSearching = false
-            searchError = "Add a source in Settings to search for manga."
+            searchError = String(localized: "Add a source in Settings to search for manga.")
             updateErrorMessage()
             return
         }
 
         await SumiSourceSearchPipeline.run(sourceKeys: sources.map(\.key), fetch: { key in
             guard let source = byKey[key] else {
-                return ProviderOutcome(sourceKey: key, sourceName: key, entries: [], error: "Source unavailable.")
+                return ProviderOutcome(sourceKey: key, sourceName: key, entries: [], error: String(localized: "Source unavailable."))
             }
             return await Self.fetch(source: source, query: query.isEmpty ? nil : query)
         }, prepare: { [weak self] outcome in
@@ -808,7 +821,7 @@ final class SumiLibraryStore: ObservableObject {
             guard !Task.isCancelled, generation == searchGeneration,
                   !unavailableSearchSources.contains(result.sourceKey) else { return }
             for key in outcome.failedSourceKeys where providerFailures[key] == nil {
-                providerFailures[key] = "\(sourceName(for: key)): Chapter availability couldn’t be checked."
+                providerFailures[key] = String(localized: "\(sourceName(for: key)): Chapter availability couldn’t be checked.")
             }
             publishPreparedSearchResults(outcome.books, sourceKey: result.sourceKey, query: query)
             updateErrorMessage()
@@ -881,15 +894,15 @@ final class SumiLibraryStore: ObservableObject {
         var messages = [libraryError, operationError, searchError].compactMap { $0 }
         if !providerFailures.isEmpty {
             messages.append(searchResults.isEmpty
-                ? "Sources couldn’t be reached. Check your connection and try again."
-                : "Some sources couldn’t be searched.")
+                ? String(localized: "Sources couldn’t be reached. Check your connection and try again.")
+                : String(localized: "Some sources couldn’t be searched."))
         }
         errorMessage = messages.isEmpty ? nil : messages.joined(separator: "\n")
     }
 
     private enum StoreError: LocalizedError {
         case mismatchedTitle
-        var errorDescription: String? { "The source returned a different title." }
+        var errorDescription: String? { String(localized: "The source returned a different title.") }
     }
 }
 #endif

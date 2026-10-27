@@ -9,23 +9,16 @@ struct SumiSearchResultSubtitle: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            if presentation.publicationSubtitle != nil || presentation.publicationBadge != nil {
-                HStack(spacing: 6) {
-                    if let publication = presentation.publicationSubtitle {
-                        ViewThatFits(in: .horizontal) {
-                            Text(publication).fixedSize(horizontal: true, vertical: false)
-                            if let compact = presentation.compactPublicationSubtitle {
-                                Text(compact)
-                            }
-                        }
-                        .font(.caption)
-                        .lineLimit(1)
-                        .modifier(SumiVibrantSubtitleStyle())
-                    }
-                    if let badge = presentation.publicationBadge {
-                        SumiPublicationStatusBadge(title: badge)
+            if let publication = presentation.publicationSubtitle {
+                ViewThatFits(in: .horizontal) {
+                    Text(publication).fixedSize(horizontal: true, vertical: false)
+                    if let compact = presentation.compactPublicationSubtitle {
+                        Text(compact)
                     }
                 }
+                .font(.caption)
+                .lineLimit(1)
+                .modifier(SumiVibrantSubtitleStyle())
             }
             if let author = author?.trimmingCharacters(in: .whitespacesAndNewlines), !author.isEmpty {
                 Text(author).font(.subheadline)

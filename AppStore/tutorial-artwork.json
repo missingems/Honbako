@@ -1,0 +1,34 @@
+{
+  "origin": "Original artwork generated for Honbako with the built-in image-generation tool; no third-party manga or characters used. Localized titles and reading instructions are rendered natively, not baked into the artwork.",
+  "assets": [
+    {
+      "name": "HonbakoTutorialCoverArt",
+      "file": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialCoverArt.imageset/art.png",
+      "generation_file": "exec-75560c5f-69b9-4a60-9794-ca7c671e0c95.png"
+    },
+    {
+      "name": "HonbakoTutorialPage1Art",
+      "file": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialPage1Art.imageset/art.png",
+      "generation_file": "exec-d8b314ed-f0aa-4306-90e9-ce6e123d8403.png"
+    },
+    {
+      "name": "HonbakoTutorialPage2Art",
+      "file": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialPage2Art.imageset/art.png",
+      "generation_file": "exec-3f357d83-aa1c-41c4-848a-53c21f19cb5d.png"
+    },
+    {
+      "name": "HonbakoTutorialPage3Art",
+      "file": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialPage3Art.imageset/art.png",
+      "generation_file": "exec-218e85fb-d7eb-4bc7-9893-00e79f772289.png"
+    }
+  ],
+  "prompts": [
+    "Use case: illustration-story. Create one original black-and-white manga book COVER illustration for a built-in reading tutorial in an iPhone/iPad app. Portrait 2:3 print composition, full bleed flat artwork, no mockup, no device. A quiet tiny neighborhood bookshop at dusk in rain. Original young adult bookseller with round glasses and a short bob haircut, a small black cat beside an open book; warm curious expression, delicate ink linework, rich black shapes, restrained screentone, crisp clean white paper, sophisticated Japanese manga cover composition. Do not imitate a named artist or existing character/franchise. Leave the bottom 22% as clean white negative space for separately localized title typography. Absolutely NO letters, words, numbers, logos, watermarks or speech text anywhere. Fine readable illustration, tasteful bookstore scenery, one clear focal character, safe for all ages. This is the final raster cover asset, not a UI mockup.",
+    "Use the previous image ONLY as a visual style and character reference, not as a page to edit. Generate a NEW original black-and-white manga interior page, portrait2:3, crisp ink and fine screentone, same young adult bookseller with round glasses/short bob and same black cat in the small rain-lit bookshop. Three large horizontal manga panels stacked top to bottom: top the cat notices a beautiful plain unlettered book on the counter; middle close-up of the bookseller's hands carefully opening the book; lower the bookseller and cat lean toward it with curiosity. The storytelling reads top to bottom; no side-by-side panel ambiguity. Keep the lower22% of entire page completely white for separately rendered localized tutorial instructions. Flat full-page print art, thin black panel rules and white gutters, no device or mockup. No text, no letters, no speech balloons, no logos, no watermarks. No existing franchise or recognizable copyrighted characters.",
+    "Use the previous cover and interior page ONLY as character and visual-style references. Generate a NEW original manga interior page, portrait2:3, same round-glasses short-bob young adult bookseller and black cat in the rainy neighborhood bookshop, fine black ink/screentone on clean white. Three horizontal panels stacked top to bottom. Top: intimate closeup of a hand turning a thin paper page, soft natural paper curl. Middle: delighted cat watching a tiny imaginary night-sky scene of stars emerge from the open book, bookseller smiling nearby. Lower: bookseller gently placing a plain ribbon bookmark between the pages. Consistent original characters, quiet magical realism, no existing franchises. Leave the lower22% of the entire page completely blank white for native localized captions. Flat printed manga art, white gutters, thin ink panel borders. Absolutely no writing, letters, symbols that look like UI, logos, numbers, watermarks or speech balloons.",
+    "Use the previous two manga interior pages ONLY as visual style and character references. Generate a NEW final original manga page, portrait2:3, same short-bob round-glasses young adult bookseller and same small black cat, warm rain-lit neighborhood bookshop, detailed fine ink and restrained screentone. Three horizontal panels stacked top to bottom: top the bookseller gently closes the plain book with its ribbon visible; middle the book is placed upright on the shop shelf beside other unlettered books while the cat watches; lower a peaceful wide view of bookseller and cat at the window, rain clearing, hopeful sunlight. Original quiet ending, natural anatomy, no franchise likeness. Leave bottom22% of entire image completely white for localized app instructions rendered separately. Flat printed art, clean white gutters, thin black panel rules. Absolutely no words, letters, numbers, speech text, logos, watermarks or device/UI elements."
+  ],
+  "generation_tool": "Built-in image_gen.imagegen",
+  "originals_preserved": true,
+  "localized_caption_rendering": "Native UIKit text on generated artwork, with en/ja/zh-Hans/zh-Hant tables."
+}

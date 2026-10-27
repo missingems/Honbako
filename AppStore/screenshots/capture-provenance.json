@@ -1,0 +1,107 @@
+{
+  "build": "16",
+  "source": "Native app screenshots from disposable iOS/iPadOS simulators; actual bundled tutorial, no source fixtures or mockups",
+  "configuration": "Debug",
+  "devices": {
+    "iphone": "iPhone 17 Pro, iOS27.0,1206x2622",
+    "ipad": "iPad Pro13-inch(M5),iPadOS27.0,2064x2752"
+  },
+  "captures": [
+    {
+      "file": "screenshots/en-US/ipad/01-library.jpg",
+      "sha256": "19a966c2380ca0a114a354d372482cd59df301d4025e14fae1f92d26fbe8db47"
+    },
+    {
+      "file": "screenshots/en-US/ipad/02-reader.jpg",
+      "sha256": "fdf8bd0f9b3321b6fcd6f5a91193242ceee49ae64e2592468f06c8311829d37c"
+    },
+    {
+      "file": "screenshots/en-US/ipad/03-chapters.jpg",
+      "sha256": "067fcaa1c84901c53fc76a74da270bd0033692706076881f9317e847e11b09a3"
+    },
+    {
+      "file": "screenshots/en-US/iphone/01-library.jpg",
+      "sha256": "7295095364504d6d1ba83178086d864e6216f55dffd91e1ce919237ff234b4f4"
+    },
+    {
+      "file": "screenshots/en-US/iphone/02-reader.jpg",
+      "sha256": "651c69a0b79a27f43b13e77af8517e90fa5ebc9cfce8b1a083a1bc23ca425577"
+    },
+    {
+      "file": "screenshots/en-US/iphone/03-chapters.jpg",
+      "sha256": "1a771188a4b5dd4bf437f60b5294109eebae20d3033758747823a182e0357149"
+    },
+    {
+      "file": "screenshots/ja/ipad/01-library.jpg",
+      "sha256": "77c22853a177671c114bb6af0e40e30bd4b58c22ac79d408952de017dc1dfa4b"
+    },
+    {
+      "file": "screenshots/ja/ipad/02-reader.jpg",
+      "sha256": "ec50fcc15aa70ed49b667eb2e89e2cd6b8f1fc6aee52f04ae15cc01e2d8cfe96"
+    },
+    {
+      "file": "screenshots/ja/ipad/03-chapters.jpg",
+      "sha256": "1f16e16adb6b32c761b4fe42235e2b368969f4a1a42568bc105cce30d933fdec"
+    },
+    {
+      "file": "screenshots/ja/iphone/01-library.jpg",
+      "sha256": "f324951bc242e7624a12a8063e147882d06604bee84c1ed5bd0b050f6dcf7d65"
+    },
+    {
+      "file": "screenshots/ja/iphone/02-reader.jpg",
+      "sha256": "86b075155ce83f283f702903b145f579aa3b2ba276315f98941c875105a8d360"
+    },
+    {
+      "file": "screenshots/ja/iphone/03-chapters.jpg",
+      "sha256": "d5251fa68d3296be138005b277e810ff08da38000add522455d3afc2bd02e791"
+    },
+    {
+      "file": "screenshots/zh-Hans/ipad/01-library.jpg",
+      "sha256": "9471d18ca7fc9f434e976f3187ce44231fb1e55ea17a5e6c27805e3d25b2b61b"
+    },
+    {
+      "file": "screenshots/zh-Hans/ipad/02-reader.jpg",
+      "sha256": "8eef38af47688fada2f49c9a1ad48d859182d1fb1a423d6c16a72f7d359e3e13"
+    },
+    {
+      "file": "screenshots/zh-Hans/ipad/03-chapters.jpg",
+      "sha256": "80c78e060e6967c207f7dd9f7ebd177033a3c3f09a6ac69992e64007b51afff7"
+    },
+    {
+      "file": "screenshots/zh-Hans/iphone/01-library.jpg",
+      "sha256": "1986a6b347224987e5f5f8bf72d5bce4057c0559ba671e4530ce1c0597831229"
+    },
+    {
+      "file": "screenshots/zh-Hans/iphone/02-reader.jpg",
+      "sha256": "04c1064c784a292d03b763b218f5523a323fa1ee2769655712fd68078242b4d2"
+    },
+    {
+      "file": "screenshots/zh-Hans/iphone/03-chapters.jpg",
+      "sha256": "942b3f84e9bfebb4c0d0575f1b09792f579e11e325562b58c1539e72fcd9b376"
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/01-library.jpg",
+      "sha256": "0da5709096d37e5abd4ba59f4db63db852bf0d73949a16a6127cfe2391938fe6"
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/02-reader.jpg",
+      "sha256": "caebfda44f51aa1bcc6c8c89cf1868a8bb2ad0efc1eff6a12f33d2986c382cde"
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/03-chapters.jpg",
+      "sha256": "86863b0c8b2a2aabc32cac0693e4d0d69b4f58baf7eebcd21f4b9ae894b4c15a"
+    },
+    {
+      "file": "screenshots/zh-Hant/iphone/01-library.jpg",
+      "sha256": "c0327e457bfcac59c847e4cb54771f264544f016ef4e9ee7190634ae09262403"
+    },
+    {
+      "file": "screenshots/zh-Hant/iphone/02-reader.jpg",
+      "sha256": "32a723c06f43e56e76313eddf7337e1b6eaf4a82a53bc45fc967ba71482db8d3"
+    },
+    {
+      "file": "screenshots/zh-Hant/iphone/03-chapters.jpg",
+      "sha256": "5962c20cb47e14d83630ac91ec256102fd705cb02d9bb8c16ecf9dc4fc009c82"
+    }
+  ]
+}

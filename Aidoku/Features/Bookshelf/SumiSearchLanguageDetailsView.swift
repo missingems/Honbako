@@ -14,11 +14,11 @@ struct SumiSearchLanguageDetailsView: View {
                     }
                 } footer: {
                     Text(info.scope == .chapters
-                        ? "Languages with known chapters for this title. Chapter coverage can vary."
-                        : "Languages advertised by this source. Chapter languages for this title have not been confirmed.")
+                        ? String(localized: "Languages with known chapters for this title. Chapter coverage can vary.")
+                        : String(localized: "Languages advertised by this source. Chapter languages for this title have not been confirmed."))
                 }
             }
-            .navigationTitle(info.scope == .chapters ? "Chapter Languages" : "Source Languages")
+            .navigationTitle(info.scope == .chapters ? String(localized: "Chapter Languages") : String(localized: "Source Languages"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

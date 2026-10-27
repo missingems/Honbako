@@ -14,14 +14,16 @@ import Foundation
 // only one chapter per source is downloaded at a time
 actor DownloadQueue {
     private let cache: DownloadCache
+    private let sourceLookup: DownloadTask.SourceLookup
     private var onCompletion: (() -> Void)?
 
     private(set) var queue: [String: [Download]] = [:] // all queued downloads stored under source id
-    private var tasks: [String: DownloadTask] = [:] // tasks for each source
+    private(set) var tasks: [String: DownloadTask] = [:] // current worker identities for each source
     private var progressBlocks: [ChapterIdentifier: (Int, Int) -> Void] = [:]
 
     private var paused = false
     private var registeredTask = false
+    private var backgroundTaskRequested = false
     private var totalDownloads: Int = 0
     private var completedDownloads: Int = 0
     private var bgTask: ProgressReporting?
@@ -29,8 +31,10 @@ actor DownloadQueue {
 
     private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".download"
 
-    init(cache: DownloadCache, onCompletion: (() -> Void)? = nil) {
+    init(cache: DownloadCache, onCompletion: (() -> Void)? = nil,
+         sourceLookup: @escaping DownloadTask.SourceLookup = { await SourceManager.shared.source(for: $0) }) {
         self.cache = cache
+        self.sourceLookup = sourceLookup
         self.onCompletion = onCompletion
     }
 
@@ -45,7 +49,7 @@ actor DownloadQueue {
 
 #if !targetEnvironment(simulator)
         if
-            bgTask == nil,
+            bgTask == nil, !backgroundTaskRequested,
             #available(iOS 26.0, *),
             AppSettings.downloads.background.get(),
             !ProcessInfo.processInfo.isMacCatalystApp
@@ -59,20 +63,22 @@ actor DownloadQueue {
             )
             do {
                 try await BGTaskScheduler.shared.submit(request: request)
-                return
+                backgroundTaskRequested = true
             } catch {
                 LogManager.logger.error("Failed to start background downloading: \(error)")
             }
         }
 #endif
 
+        // User-initiated work starts now. Continued processing extends it;
+        // waiting for the scheduler first left the foreground queue idle.
         await initAndResumeTasks()
     }
 
     private func initAndResumeTasks() async {
         for (sourceKey, downloads) in queue {
             if tasks[sourceKey] == nil {
-                let task = DownloadTask(id: sourceKey, cache: cache, downloads: downloads)
+                let task = DownloadTask(id: sourceKey, cache: cache, downloads: downloads, sourceLookup: sourceLookup)
                 await task.setDelegate(delegate: self)
                 tasks[sourceKey] = task
             }
@@ -124,7 +130,8 @@ actor DownloadQueue {
                 mangaKey: manga.key,
                 chapterKey: chapter.key
             )
-            guard !(await cache.isChapterDownloaded(identifier: identifier)) else {
+            guard !(await cache.isChapterDownloaded(identifier: identifier)),
+                  queue[manga.sourceKey]?.contains(where: { $0.chapterIdentifier == identifier }) != true else {
                 continue
             }
 
@@ -137,8 +144,12 @@ actor DownloadQueue {
             downloads.append(download)
             if queue[manga.sourceKey] == nil {
                 queue[manga.sourceKey] = [download]
+                NotificationCenter.default.post(name: .downloadsQueued, object: [download])
             } else {
                 queue[manga.sourceKey]?.append(download)
+                // Publish before handing this entry to an already-running
+                // worker, which can complete cached pages immediately.
+                NotificationCenter.default.post(name: .downloadsQueued, object: [download])
                 await tasks[manga.sourceKey]?.add(download: download)
             }
         }
@@ -197,6 +208,8 @@ actor DownloadQueue {
     }
 
     func cancelAll() async {
+        // A late worker callback must not restart entries being canceled.
+        paused = true
         sendCancelNotification = false
         defer { sendCancelNotification = true }
         for task in tasks {
@@ -230,6 +243,7 @@ actor DownloadQueue {
         }
         queue = queueState
         if !queue.isEmpty {
+            NotificationCenter.default.post(name: .downloadsQueued, object: queue.values.flatMap { $0 })
             await start()
         }
     }
@@ -249,10 +263,13 @@ actor DownloadQueue {
 extension DownloadQueue {
     private func setBackgroundTask(_ task: ProgressReporting?) {
         bgTask = task
+        if task == nil { backgroundTaskRequested = false }
         totalDownloads = queue.values.reduce(0) { $0 + $1.count }
         completedDownloads = 0
         bgTask?.progress.totalUnitCount = Int64(totalDownloads)
     }
+
+    private func hasBackgroundTask() -> Bool { bgTask != nil }
 
 #if !targetEnvironment(simulator)
     @available(iOS 26.0, *)
@@ -275,16 +292,16 @@ extension DownloadQueue {
                 await self.setBackgroundTask(task)
                 await self.initAndResumeTasks()
 
-                // wait until downloads complete
-                while true {
-                    if await self.queue.isEmpty {
-                        break
-                    }
+                // Yield between checks. Expiration clears the task and ends
+                // this waiter even when the user keeps a paused queue.
+                while await self.hasBackgroundTask(), !(await self.queue.isEmpty) {
+                    do { try await Task.sleep(for: .milliseconds(250)) }
+                    catch { break }
                 }
-
+                guard await self.hasBackgroundTask() else { return }
+                let completed = await self.queue.isEmpty
                 await self.setBackgroundTask(nil)
-
-                task.setTaskCompleted(success: true)
+                task.setTaskCompleted(success: completed)
             }
         }
     }
@@ -300,9 +317,14 @@ extension DownloadQueue: DownloadTaskDelegate {
     func taskPaused(task _: DownloadTask) async {}
 
     func taskFinished(task: DownloadTask) async {
+        // The worker can drain just as add() gives this source more entries.
+        // Ignore an older cycle if it resumed or has already been replaced.
+        guard !(await task.running), tasks[task.id] === task else { return }
         tasks.removeValue(forKey: task.id)
-        queue.removeValue(forKey: task.id)
+        let pending = queue[task.id] ?? []
+        if pending.isEmpty { queue.removeValue(forKey: task.id) }
         saveQueueState()
+        if !paused, !pending.isEmpty { await initAndResumeTasks() }
     }
 
     func downloadFinished(download: Download) async {
@@ -347,9 +369,8 @@ extension DownloadQueue: DownloadTaskDelegate {
     }
 
     func downloadProgressChanged(download: Download) async {
-        if let index = queue[download.chapterIdentifier.sourceKey]?.firstIndex(where: { $0 == download }) {
-            queue[download.chapterIdentifier.sourceKey]?[index] = download
-        }
+        guard let index = queue[download.chapterIdentifier.sourceKey]?.firstIndex(where: { $0 == download }) else { return }
+        queue[download.chapterIdentifier.sourceKey]?[index] = download
         if let block = progressBlocks[download.chapterIdentifier] {
             block(download.progress, download.total)
         }

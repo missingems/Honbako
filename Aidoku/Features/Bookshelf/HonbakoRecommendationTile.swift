@@ -9,16 +9,12 @@ struct HonbakoRecommendationTile: View {
         Button(action: select) {
             ZStack {
                 Rectangle().fill(.quaternary)
-                if let url = item.coverURL {
-                    AsyncImage(url: url) { image in image.resizable().scaledToFill() }
-                        placeholder: { Image(systemName: "book.closed").font(.largeTitle).foregroundStyle(.secondary) }
-                } else {
-                    VStack(spacing: 12) {
-                        Image(systemName: "book.closed").font(.largeTitle)
-                        Text(item.title).font(.headline).multilineTextAlignment(.center).lineLimit(4)
-                    }
+                AsyncImage(url: item.coverURL) { image in image.resizable().scaledToFill() }
+                    placeholder: {
+                    Text(item.title).font(.body.weight(.medium)).multilineTextAlignment(.center).lineLimit(4)
                     .foregroundStyle(.secondary)
                     .padding(12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .aspectRatio(0.68, contentMode: .fit)
@@ -27,7 +23,7 @@ struct HonbakoRecommendationTile: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(item.title)
-        .accessibilityHint("Search your connections for this manga")
+        .accessibilityHint(String(localized: "Search your connections for this manga"))
         .contextMenu {
             if let url = item.officialURL { Link("Publisher Website", destination: url) }
         }

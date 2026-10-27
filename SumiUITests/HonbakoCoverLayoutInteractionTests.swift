@@ -6,20 +6,40 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
     func testMixedAspectCoversFillTheirSlotsWithoutDistortingCircularArtwork() throws {
         let app = launch(checkCoverLayout: true)
         defer { app.terminate() }
-        let popular = item("Honbako.Library.Header.Popular", app)
-        guard popular.waitForExistence(timeout: 10) else {
-            XCTFail("Popular must load the mixed-aspect source catalog")
+        XCTAssertFalse(item("Honbako.Library.Header.Popular", app).exists)
+        item("Sumi.Grid", app).swipeDown()
+        let field = item("Sumi.Search.Field", app)
+        guard field.waitForExistence(timeout: 5), app.keyboards.firstMatch.waitForExistence(timeout: 5) else {
+            XCTFail("Search must expose the configured source catalog")
             return
         }
-        for title in ["Shared Manga", "Fixture Manga 001", "Fixture Manga 002"] {
-            let cover = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label == %@",
-                "Sumi.Grid.Book.honbako-catalog-", title)).firstMatch
-            guard cover.waitForExistence(timeout: 5) else { XCTFail("Missing cover: \(title)"); continue }
+        var previousQuery = ""
+        for (key, title) in [("shared-title", "Shared Manga"), ("book-001", "Fixture Manga 001"),
+                             ("book-002", "Fixture Manga 002")] {
+            field.tap()
+            if !previousQuery.isEmpty {
+                // Tapping a native text field can place its caret in the middle.
+                // Its clear button replaces the entire query independently of
+                // caret position and the system's localized button label.
+                let clear = field.buttons.firstMatch
+                guard clear.waitForExistence(timeout: 3) else {
+                    XCTFail("The native Search clear control is unavailable for \(previousQuery)")
+                    return
+                }
+                clear.tap()
+            }
+            field.typeText(title)
+            previousQuery = title
+            let cover = app.buttons["Sumi.Search.Book.honbako-catalog-fast:\(key)"]
+            guard cover.waitForExistence(timeout: 5) else {
+                XCTFail("Missing cover: \(title); Search value: \(String(describing: field.value))")
+                continue
+            }
             let loaded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-                self.marker(in: cover.screenshot().image) != nil
+                self.searchCover(in: cover.screenshot().image).flatMap(self.marker(in:)) != nil
             }, object: nil)
             guard XCTWaiter.wait(for: [loaded], timeout: 8) == .completed,
-                  let marker = marker(in: cover.screenshot().image) else {
+                  let print = searchCover(in: cover.screenshot().image), let marker = marker(in: print) else {
                 XCTFail("The source artwork did not load for \(title)")
                 continue
             }
@@ -28,7 +48,7 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
             XCTAssertGreaterThan(marker.coloredFraction, 0.85,
                                  "Cover artwork must fill the slot without letterboxing for \(title)")
         }
-        attach(app, "Wide square and tall source covers preserve circular artwork")
+        attach(app, "Wide square and tall Search covers preserve circular artwork")
     }
 
     @MainActor
@@ -79,6 +99,15 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
     private struct Marker {
         let bounds: CGRect
         let coloredFraction: Double
+    }
+
+    /// Search intentionally exposes one accessible row rather than every image.
+    /// Its leading print has a fixed 68×100 point slot at the default text size.
+    private func searchCover(in row: UIImage) -> UIImage? {
+        let rect = CGRect(x: 0, y: max(0, (row.size.height - 100) / 2), width: 68, height: 100)
+            .applying(CGAffineTransform(scaleX: row.scale, y: row.scale))
+        guard let image = row.cgImage?.cropping(to: rect) else { return nil }
+        return UIImage(cgImage: image, scale: row.scale, orientation: .up)
     }
 
     /// Measure rendered pixels rather than checking an image view's contentMode.

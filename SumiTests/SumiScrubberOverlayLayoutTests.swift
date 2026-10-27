@@ -16,7 +16,7 @@ struct SumiScrubberOverlayLayoutTests {
         scrubber.layoutIfNeeded()
         let overlay = try #require(scrubber.accessibilityOverlayView)
         let preview = try #require(overlay.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.ScrubPreview" })
-        let glass = try #require(preview.subviews.first { $0 is SumiScrubHoverGlassView })
+        let glass = try #require(preview.subviews.flatMap { $0.subviews }.first { $0 is SumiScrubHoverGlassView })
         let frame = glass.convert(glass.bounds, to: host)
         #expect(host.bounds.insetBy(dx: 8, dy: 8).contains(frame))
         #expect(frame.maxY < scrubber.frame.minY, "The entire glass lip remains above the strip")

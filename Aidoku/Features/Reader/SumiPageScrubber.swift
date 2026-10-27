@@ -65,14 +65,12 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     private let glass = UIVisualEffectView(effect: SumiReaderToolbar.makeGlassEffect())
     private let rail = UIView()
     private let floatingOverlay = UIView()
-    private let glassTint = UIView()
     private let lens = SumiScrubberLensView()
     private let flow = SumiFilmstripLayout()
     private lazy var collection = UICollectionView(frame: .zero, collectionViewLayout: flow)
     private let edgeFade = CAGradientLayer()
     private let positionGlass = UIVisualEffectView(effect: {
         let effect = UIGlassEffect(style: .regular)
-        effect.tintColor = UIColor(white: 0.08, alpha: 0.48)
         return effect
     }())
     private let pageLabel = UILabel()
@@ -107,17 +105,13 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     override init(frame: CGRect) {
         super.init(frame: frame)
         accessibilityIdentifier = "Sumi.Reader.Scrubber"
-        accessibilityLabel = "Page previews"
+        accessibilityLabel = String(localized: "Page previews")
         isAccessibilityElement = false; shouldGroupAccessibilityChildren = true
-        glass.overrideUserInterfaceStyle = .dark
         glass.layer.cornerRadius = SumiScrubberMetrics.cornerRadius; glass.clipsToBounds = true
         rail.backgroundColor = .clear
         rail.clipsToBounds = false
         addSubview(rail)
         rail.addSubview(glass)
-        glassTint.backgroundColor = UIColor(white: 0.02, alpha: 0.18)
-        glassTint.isUserInteractionEnabled = false
-        glass.contentView.addSubview(glassTint)
         collection.backgroundColor = .clear
         edgeFade.colors = [UIColor.clear.cgColor, UIColor.white.cgColor,
                            UIColor.white.cgColor, UIColor.clear.cgColor]
@@ -137,18 +131,16 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         glass.contentView.addSubview(collection)
         lens.accessibilityIdentifier = "Sumi.Reader.SelectedSpread"
         rail.addSubview(lens)
-        positionGlass.overrideUserInterfaceStyle = .dark
-        // Keep the count readable while the glass effect is still blurring in.
-        positionGlass.contentView.backgroundColor = UIColor(white: 0.08, alpha: 0.68)
+        positionGlass.contentView.backgroundColor = .clear
         positionGlass.layer.cornerRadius = 15; positionGlass.clipsToBounds = true
         positionGlass.isUserInteractionEnabled = false
         positionGlass.accessibilityIdentifier = "Sumi.Reader.PagePosition"
-        pageLabel.textColor = .white
+        pageLabel.textColor = .label
         pageLabel.font = .preferredFont(forTextStyle: .caption1)
         pageLabel.adjustsFontForContentSizeCategory = true; pageLabel.textAlignment = .center
         pageLabel.accessibilityCustomActions = [
-            UIAccessibilityCustomAction(name: "Previous spread") { [weak self] _ in self?.accessibilityMove(-1) ?? false },
-            UIAccessibilityCustomAction(name: "Next spread") { [weak self] _ in self?.accessibilityMove(1) ?? false }
+            UIAccessibilityCustomAction(name: String(localized: "Previous spread")) { [weak self] _ in self?.accessibilityMove(-1) ?? false },
+            UIAccessibilityCustomAction(name: String(localized: "Next spread")) { [weak self] _ in self?.accessibilityMove(1) ?? false }
         ]
         positionGlass.contentView.addSubview(pageLabel); addSubview(positionGlass)
         preview.accessibilityIdentifier = "Sumi.Reader.ScrubPreview"
@@ -156,7 +148,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         preview.layer.shadowColor = UIColor.black.cgColor; preview.layer.shadowOpacity = 0.38
         preview.layer.shadowRadius = 16; preview.layer.shadowOffset = CGSize(width: 0, height: 8)
         preview.clipsToBounds = false; addSubview(preview)
-        preview.insertSubview(hoverGlass, at: 0)
+        preview.installDecoration(hoverGlass)
         floatingOverlay.backgroundColor = .clear
         floatingOverlay.isUserInteractionEnabled = false
         floatingOverlay.shouldGroupAccessibilityChildren = true
@@ -275,7 +267,6 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         rail.center = vertical ? CGPoint(x: bounds.midX, y: bounds.midY)
             : CGPoint(x: bounds.midX, y: bounds.maxY - thickness / 2)
         glass.frame = rail.bounds
-        glassTint.frame = glass.bounds
         let stripFrame = glass.bounds.insetBy(dx: 8, dy: 0)
         if collection.frame != stripFrame { collection.frame = stripFrame }
         updateEdgeFade()
@@ -342,7 +333,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             cell.isVertical = axis == .vertical
             cell.onPreviewReady = { [weak self] ready in
                 guard let self, selectedGroup == logical else { return }
-                lens.accessibilityValue = ready ? "Preview ready" : "Preview unavailable"
+                lens.accessibilityValue = ready ? String(localized: "Preview ready") : String(localized: "Preview unavailable")
             }
             cell.configure(chapterKey: thumbnailIdentity, group: logical, pages: model.groups[logical], reversed: reversesThumbnailPages, provider: imageProvider)
             cell.updateSelection(logical == selectedGroup)
@@ -415,7 +406,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         feedback.prepare()
         preview.isHidden = false; layoutHover()
         configureHover(pages: model.groups[safe: selectedGroup] ?? [])
-        hoverGlass.ripple()
+        preview.bounce()
         preview.layer.transform = visible ? transform : CATransform3DMakeScale(0.2, 0.2, 1)
         preview.center = visible ? position : overlayPoint(rail.convert(CGPoint(x: lens.frame.midX, y: lens.frame.midY), to: self))
         preview.alpha = visible ? CGFloat(opacity) : 1
@@ -510,15 +501,15 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     private func updateVisibleSelection() {
         for case let cell as SumiPageThumbnailCell in collection.visibleCells { cell.updateSelection(cell.group == selectedGroup) }
         if let cell = collection.cellForItem(at: IndexPath(item: physicalIndex(for: selectedGroup), section: 0)) as? SumiPageThumbnailCell {
-            lens.accessibilityValue = cell.previewReady ? "Preview ready" : cell.accessibilityValue
+            lens.accessibilityValue = cell.previewReady ? String(localized: "Preview ready") : cell.accessibilityValue
         }
     }
     private func refreshSelection() {
         let text = model.label(for: selectedGroup)
         pageLabel.text = text; accessibilityValue = text
         let pages = model.groups[safe: selectedGroup] ?? []
-        lens.accessibilityLabel = pages.count == 2 ? "Pages \(pages[0]) and \(pages[1])" : "Page \(pages.first ?? 1)"
-        lens.accessibilityValue = "Loading preview"
+        lens.accessibilityLabel = pages.count == 2 ? String(localized: "Pages \(pages[0]) and \(pages[1])") : String(localized: "Page \(pages.first ?? 1)")
+        lens.accessibilityValue = String(localized: "Loading preview")
         updateVisibleSelection()
     }
     private func setPreview(group: Int) {
@@ -528,7 +519,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         selectedGroup = group; feedback.selectionChanged(); feedback.prepare()
         refreshSelection(); layoutHover()
         configureHover(pages: model.groups[group])
-        hoverGlass.ripple()
+        preview.bounce()
         setNeedsLayout()
     }
     private func configureHover(pages: [Int]) {
@@ -698,7 +689,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         }
     }
     private func clearLanding(keepingSnapshot: Bool = false) {
-        hoverGlass.stopRipple()
+        preview.stopBounce()
         landing = false; lowering = false; preview.isHidden = true; preview.alpha = 1; preview.layer.transform = CATransform3DIdentity
         if !keepingSnapshot {
             landingBackdrop?.removeFromSuperview(); landingBackdrop = nil; isRecoveringSnapshot = false

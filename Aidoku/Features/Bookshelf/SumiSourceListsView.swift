@@ -31,7 +31,7 @@ struct SumiSourceListsView: View {
                             } else {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(url.host ?? url.absoluteString)
-                                    Text(loading ? "Loading…" : "Couldn’t load this list")
+                                    Text(loading ? String(localized: "Loading…") : String(localized: "Couldn’t load this list"))
                                         .font(.subheadline).foregroundStyle(.secondary)
                                 }
                             }

@@ -48,7 +48,6 @@ final class SumiReaderToolbar: UIView {
     static func makeGlassEffect() -> UIGlassEffect {
         let effect = UIGlassEffect(style: .regular)
         effect.isInteractive = true
-        effect.tintColor = UIColor(white: 0.08, alpha: 0.72)
         return effect
     }
 
@@ -60,14 +59,13 @@ final class SumiReaderToolbar: UIView {
         backgroundColor = .clear
         for (surface, identifier) in zip(surfaces, ["Close", "Scrubber", "Chapters"]) {
             surface.accessibilityIdentifier = "Sumi.Reader.\(identifier).Glass"
-            surface.overrideUserInterfaceStyle = .dark
             surface.clipsToBounds = true
             surface.layer.cornerCurve = .continuous
-            surface.contentView.backgroundColor = UIColor(white: 0.08, alpha: 0.28)
+            surface.contentView.backgroundColor = .clear
             addSubview(surface)
         }
-        configure(closeButton, image: "xmark", label: "Close book", identifier: "SumiReader.Close")
-        configure(chaptersButton, image: "list.bullet", label: "Chapters and language", identifier: "Sumi.Reader.ChaptersButton")
+        configure(closeButton, image: "xmark", label: String(localized: "Close Book"), identifier: "SumiReader.Close")
+        configure(chaptersButton, image: "list.bullet", label: String(localized: "Chapters and Language"), identifier: "Sumi.Reader.ChaptersButton")
         closeButton.addAction(UIAction { [weak self] _ in self?.close?() }, for: .touchUpInside)
         chaptersButton.addAction(UIAction { [weak self] _ in self?.chapters?() }, for: .touchUpInside)
         closeGlass.contentView.addSubview(closeButton)
@@ -80,7 +78,7 @@ final class SumiReaderToolbar: UIView {
 
     private func configure(_ button: UIButton, image: String, label: String, identifier: String) {
         button.setImage(UIImage(systemName: image), for: .normal)
-        button.tintColor = .white
+        button.tintColor = .label
         button.accessibilityLabel = label
         button.accessibilityIdentifier = identifier
         button.isPointerInteractionEnabled = true

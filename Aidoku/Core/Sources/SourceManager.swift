@@ -447,6 +447,9 @@ extension SourceManager {
     }
 
     func source(for key: String) async -> AidokuRunner.Source? {
+        #if SUMI
+        if key == HonbakoTutorialManga.sourceKey { return await HonbakoTutorialManga.source }
+        #endif
         #if SUMI && DEBUG
         if HonbakoCatalogPreviewFixtures.isEnabled {
             return await HonbakoCatalogPreviewFixtures.shared.sources.first { $0.key == key }

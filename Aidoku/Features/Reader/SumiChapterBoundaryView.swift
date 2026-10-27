@@ -56,7 +56,7 @@ final class SumiChapterBoundaryView: UIView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     func showLoading() {
-        titleLabel.text = "Loading Chapter"
+        titleLabel.text = String(localized: "Loading Chapter")
         detailLabel.text = nil
         detailLabel.isHidden = true
         continueButton.isHidden = true
@@ -66,17 +66,17 @@ final class SumiChapterBoundaryView: UIView {
 
     func showError(retry: @escaping () -> Void) {
         progress.stopAnimating()
-        titleLabel.text = "Chapter Unavailable"
-        detailLabel.text = "This chapter couldn’t be loaded. Try again."
+        titleLabel.text = String(localized: "Chapter Unavailable")
+        detailLabel.text = String(localized: "This chapter couldn’t be loaded. Try again.")
         detailLabel.isHidden = false
-        continueButton.configuration?.title = "Try Again"
+        continueButton.configuration?.title = String(localized: "Try Again")
         continueButton.isHidden = false
         onContinue = retry
     }
 
     func update(type: ReaderInfoPageType, destination: AidokuRunner.Chapter?) {
         progress.stopAnimating()
-        titleLabel.text = type == .previous && destination == nil ? "The Beginning" : "Chapter End"
+        titleLabel.text = type == .previous && destination == nil ? String(localized: "The Beginning") : String(localized: "Chapter End")
         detailLabel.text = nil
         detailLabel.isHidden = true
         continueButton.configuration?.title = nil

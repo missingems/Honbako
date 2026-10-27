@@ -29,15 +29,16 @@ struct SumiSearchLanguageInfo: Identifiable, Hashable, Sendable {
         }
     }
 
-    var label: String { scope == .chapters ? "Chapters" : "Source Languages" }
+    var label: String { scope == .chapters ? String(localized: "Chapters") : String(localized: "Source Languages") }
     var names: [String] { codes.map(SourceLanguage.displayName(for:)) }
-    var text: String { "\(label): \(names.joined(separator: ", "))" }
+    var text: String { String(localized: "\(label): \(names.joined(separator: ", "))") }
     var compactText: String {
         let visible = names.prefix(2).joined(separator: ", ")
-        return "\(label): \(visible)\(names.count > 2 ? " +\(names.count - 2)" : "")"
+        let summary = String(localized: "\(label): \(visible)")
+        return names.count > 2 ? String(localized: "\(summary) +\(names.count - 2)") : summary
     }
     var accessibilityText: String {
-        scope == .chapters ? text : "\(text). Chapter languages have not been confirmed for this title."
+        scope == .chapters ? text : String(localized: "\(text). Chapter languages have not been confirmed for this title.")
     }
 
     private static func normalized(_ values: [String]) -> [String] {

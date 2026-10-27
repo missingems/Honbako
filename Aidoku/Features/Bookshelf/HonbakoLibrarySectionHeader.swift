@@ -7,7 +7,7 @@ struct HonbakoLibrarySectionHeader: View {
     @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(.title2.bold())
             .foregroundStyle(Color.primary.shadow(.inner(
                 color: contrast == .increased ? .clear
@@ -15,7 +15,7 @@ struct HonbakoLibrarySectionHeader: View {
                 radius: 0.7, x: 0, y: 0.75)))
             .padding(.horizontal, 16)
             .padding(.top, 34)
-            .padding(.bottom, 10)
+            .padding(.bottom, 18)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.regularMaterial, in: .rect)
             .accessibilityAddTraits(.isHeader)

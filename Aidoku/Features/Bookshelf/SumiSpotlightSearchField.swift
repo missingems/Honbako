@@ -10,7 +10,7 @@ struct SumiSpotlightSearchField: UIViewRepresentable {
 
     func makeUIView(context: Context) -> SumiSpotlightTextField {
         let field = SumiSpotlightTextField()
-        field.placeholder = "Search manga"
+        field.placeholder = String(localized: "Search manga")
         field.font = .preferredFont(forTextStyle: .title3)
         field.adjustsFontForContentSizeCategory = true
         field.backgroundColor = .clear

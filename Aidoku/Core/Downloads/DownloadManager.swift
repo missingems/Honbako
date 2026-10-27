@@ -52,12 +52,6 @@ actor DownloadManager {
 
     func loadQueueState() async {
         await queue.loadQueueState()
-
-        // fetch loaded downloads to notify ui about
-        let downloads = await queue.queue.flatMap(\.value)
-        if !downloads.isEmpty {
-            NotificationCenter.default.post(name: .downloadsQueued, object: downloads)
-        }
     }
 
     func getDownloadedPages(for chapter: ChapterIdentifier) async -> [AidokuRunner.Page] {
@@ -217,11 +211,7 @@ extension DownloadManager {
         #if SUMI
         guard await MainActor.run(body: { HonbakoProStore.shared.hasPro }) else { return }
         #endif
-        let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
-        NotificationCenter.default.post(
-            name: .downloadsQueued,
-            object: downloads
-        )
+        await queue.add(chapters: chapters, manga: manga, autoStart: true)
         // Invalidate cache since new downloads may affect the list
         invalidateDownloadedMangaCache()
     }

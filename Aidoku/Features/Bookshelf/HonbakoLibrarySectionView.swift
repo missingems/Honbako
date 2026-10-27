@@ -18,9 +18,11 @@ struct HonbakoLibrarySectionView: View {
                         if book.unreadChapterCount > 0 {
                             Text(book.unreadChapterCount, format: .number)
                                 .font(.caption.bold()).padding(.horizontal, 7).padding(.vertical, 4)
-                                .background(.regularMaterial, in: .capsule)
+                                .foregroundStyle(.primary)
+                                .glassEffect(.regular.tint(.red), in: .capsule)
                                 .padding(5)
-                                .accessibilityLabel("\(book.unreadChapterCount) unread chapters")
+                                .accessibilityLabel(String(localized: "\(book.unreadChapterCount) unread chapters"))
+                                .allowsHitTesting(false)
                         }
                     }
                     .overlay(alignment: .bottom) {
@@ -29,7 +31,8 @@ struct HonbakoLibrarySectionView: View {
                                 .font(.caption).lineLimit(1)
                                 .padding(6).frame(maxWidth: .infinity)
                                 .background(.regularMaterial)
-                                .accessibilityLabel("Finished \(date.formatted(date: .abbreviated, time: .omitted))")
+                                .accessibilityLabel(String(localized: "Finished \(date.formatted(date: .abbreviated, time: .omitted))"))
+                                .allowsHitTesting(false)
                         }
                     }
                     .opacity(openingBookID == book.presentation.id || insertingBookID == book.presentation.id ? 0 : 1)

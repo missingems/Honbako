@@ -71,7 +71,7 @@ struct SumiPreviewGeometryTests {
             let radius = preview.layer.cornerRadius
             #expect(radius == 8)
             #expect(preview.layer.cornerCurve == .continuous)
-            let placeholders = preview.subviews.filter { $0.accessibilityIdentifier?.contains("PreviewPlaceholder") == true }
+            let placeholders = preview.subviews.flatMap { $0.subviews }.filter { $0.accessibilityIdentifier?.contains("PreviewPlaceholder") == true }
             #expect(placeholders.count == pages.count)
             for placeholder in placeholders {
                 #expect(placeholder.layer.cornerRadius == radius)
@@ -80,7 +80,7 @@ struct SumiPreviewGeometryTests {
             preview.configure(identity: "loaded", pages: pages, reversed: false, provider: { _ in image })
             for _ in 0..<100 where preview.displayedPages != pages { await Task.yield() }
             preview.layoutIfNeeded()
-            let art = preview.subviews.compactMap { $0 as? UIImageView }.prefix(pages.count)
+            let art = preview.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIImageView }.prefix(pages.count)
             #expect(art.count == pages.count)
             for (index, leaf) in art.enumerated() {
                 #expect(leaf.layer.cornerRadius == radius)
@@ -105,7 +105,7 @@ struct SumiPreviewGeometryTests {
                 preview.configure(identity: "tall", pages: pages, reversed: false, provider: { _ in image })
                 for _ in 0..<100 where preview.displayedPages != pages { await Task.yield() }
                 preview.layoutIfNeeded()
-                let leaves = preview.subviews.compactMap { $0 as? UIImageView }.prefix(pages.count)
+                let leaves = preview.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIImageView }.prefix(pages.count)
                 for (index, leaf) in leaves.enumerated() {
                     #expect(abs(leaf.frame.minX - CGFloat(index) * leafSize.width) < 0.001)
                     #expect(abs(leaf.frame.minY) < 0.001)

@@ -248,6 +248,7 @@
 				39183B5C09D91D33E8F3F31B /* Sources */,
 				6E21C85E8635CA5AECA5B2A9 /* Frameworks */,
 				CC6B1982AE3EB6758FFCAAC7 /* Resources */,
+				E716A02116A0000000000001 /* Localize Honbako Permissions */,
 			);
 			buildRules = (
 			);
@@ -451,6 +452,38 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		E716A02116A0000000000001 /* Localize Honbako Permissions */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			inputPaths = (
+				"$(SRCROOT)/scripts/copy_honbako_permission_strings.sh",
+				"$(SRCROOT)/AppStore/permission-strings/en.strings",
+				"$(SRCROOT)/AppStore/permission-strings/ja.strings",
+				"$(SRCROOT)/AppStore/permission-strings/zh-Hans.strings",
+				"$(SRCROOT)/AppStore/permission-strings/zh-Hant.strings",
+				"$(SRCROOT)/Aidoku/App/Resources/Localization/en.lproj/Localizable.strings",
+				"$(SRCROOT)/Aidoku/App/Resources/Localization/ja.lproj/Localizable.strings",
+				"$(SRCROOT)/Aidoku/App/Resources/Localization/zh-Hans.lproj/Localizable.strings",
+				"$(SRCROOT)/Aidoku/App/Resources/Localization/zh-Hant.lproj/Localizable.strings",
+				"$(SRCROOT)/Aidoku/App/Resources/Localization/en.lproj/Localizable.stringsdict",
+			);
+			name = "Localize Honbako Permissions";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/InfoPlist.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ja.lproj/InfoPlist.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ja.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/InfoPlist.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hant.lproj/InfoPlist.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hant.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/Localizable.stringsdict",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"${SRCROOT}/scripts/copy_honbako_permission_strings.sh\"\n";
+		};
 		FB5C1A0E2E7B4C3D00A1C0DE /* Restore Legacy App Icons */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -836,7 +869,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;
@@ -879,7 +912,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;

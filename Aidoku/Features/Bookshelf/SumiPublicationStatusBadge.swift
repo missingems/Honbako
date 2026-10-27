@@ -7,11 +7,10 @@ struct SumiPublicationStatusBadge: View {
     var body: some View {
         Text(title)
             .font(.caption)
+            .fontWeight(.medium)
+            .textCase(.uppercase)
             .modifier(SumiVibrantSubtitleStyle())
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
-            .background(.quaternary, in: .capsule)
-            .fixedSize()
+            .lineLimit(1)
     }
 }
 #endif

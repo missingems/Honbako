@@ -48,7 +48,7 @@ enum SumiReadingProvenance {
     static func deviceLabel(id: String?, name: String?, currentID: String?) -> String? {
         guard let id, !id.isEmpty, let name = name?.trimmingCharacters(in: .whitespacesAndNewlines),
               !name.isEmpty else { return nil }
-        return id == currentID ? "This device" : name
+        return id == currentID ? String(localized: "This device") : name
     }
 }
 #endif

@@ -287,6 +287,7 @@ class ReaderViewController: BaseObservingViewController {
         sumiStopNavigation()
         let panel = UIHostingController(rootView: SumiReaderChaptersView(
             chapters: sumiAllChapters, currentKey: chapter.key,
+            currentPage: currentPage, currentTotalPages: toolbarView.totalPages ?? 0,
             source: source, manga: manga,
             languageSelection: { [weak self] language, chapters in
                 guard let self else { return }

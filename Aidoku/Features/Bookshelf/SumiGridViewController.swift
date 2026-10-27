@@ -4,7 +4,7 @@ import UIKit
 
 /// Hosts the full-bleed collection and owns direct book presentation.
 final class SumiGridViewController: UIViewController {
-    private let store = SumiLibraryStore()
+    private let store = SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
     private let discovery = SumiDiscoveryStore()
     private let opening = SumiGridOpeningState()
     private let search = SumiSearchPresentation()

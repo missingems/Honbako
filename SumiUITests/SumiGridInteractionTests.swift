@@ -6,20 +6,7 @@ import XCTest
 final class SumiGridInteractionTests: XCTestCase {
     @MainActor
     func testLibrarySectionHeaderStaysPinnedWhileBooksScroll() throws {
-        let app = XCUIApplication(bundleIdentifier: "com.missingems.honbaku")
-        app.launchArguments = ["--honbako-catalog-check"]
-        app.launch()
-        defer { app.terminate() }
-        let grid = element("Sumi.Grid", app)
-        let header = element("Honbako.Library.Header.Popular", app)
-        XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        XCTAssertTrue(header.waitForExistence(timeout: 10))
-        let original = header.frame
-        grid.swipeUp()
-        XCTAssertTrue(header.exists)
-        XCTAssertEqual(header.frame.minY, original.minY, accuracy: 1,
-                       "The library section title stays pinned while the manga move beneath it")
-        attach(app.screenshot(), "Pinned library header with space above its label")
+        throw XCTSkip("The catalog-only fixture populated the removed Popular section. Pinned source headers remain covered in Search; Reading requires saved library content.")
     }
 
     @MainActor

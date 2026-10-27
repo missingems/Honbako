@@ -40,7 +40,7 @@ struct SumiAddSourceListView: View {
                             if await SourceManager.shared.addSourceList(url: url) {
                                 await didAdd()
                                 dismiss()
-                            } else { errorMessage = "This list couldn’t be added. Check the link or try again." }
+                            } else { errorMessage = String(localized: "This list couldn’t be added. Check the link or try again.") }
                             adding = false
                         }
                     } label: {

@@ -21,7 +21,7 @@ struct SumiGridCoverTile: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(book.title)
         .accessibilityValue([book.chapterLabel, book.pageLabel].compactMap { $0 }.joined(separator: ", "))
-        .accessibilityHint("Open manga")
+        .accessibilityHint(String(localized: "Open manga"))
         .accessibilityIdentifier("Sumi.Grid.Book.\(book.presentation.id)")
         .onAppear { registerAnchor?(anchor) }
     }

@@ -17,7 +17,7 @@ struct SumiSpotlightResultRow: View {
     @State private var adding = false
     @State private var presentedLanguages: SumiSearchLanguageInfo?
     @ScaledMetric(relativeTo: .body) private var coverScale: CGFloat = 1
-    @ScaledMetric(relativeTo: .body) private var rowContentHeight: CGFloat = 114
+    @ScaledMetric(relativeTo: .body) private var rowContentHeight: CGFloat = 124
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private var coverWidth: CGFloat { 68 * min(coverScale, 1.5) }
     private var coverHeight: CGFloat { 100 * min(coverScale, 1.5) }
@@ -50,6 +50,9 @@ struct SumiSpotlightResultRow: View {
                         .clipShape(ConcentricRectangle(corners: .concentric(minimum: .fixed(8))))
                         .opacity(isLifted ? 0 : 1)
                     VStack(alignment: .leading, spacing: 4) {
+                        if let status = presentation.publicationBadge {
+                            SumiPublicationStatusBadge(title: status)
+                        }
                         Text(book.title).font(.body)
                             .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                         SumiSearchResultSubtitle(author: author, presentation: presentation, languages: languages)
@@ -79,7 +82,7 @@ struct SumiSpotlightResultRow: View {
                     .accessibilityValue([presentation.publicationSubtitle, presentation.publicationBadge, author,
                         languages?.accessibilityText, presentation.readingPosition]
                         .compactMap { $0 }.joined(separator: ", "))
-                    .accessibilityHint("Open manga")
+                    .accessibilityHint(String(localized: "Open manga"))
                     .accessibilityIdentifier("Sumi.Search.Book.\(book.presentation.id)")
                     .accessibilityActions {
                         if !isInLibrary { Button("Add to Library", action: getBook) }

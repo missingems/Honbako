@@ -12,7 +12,6 @@ struct SumiGridContentView: View {
     let finishSearchPull: () -> Void
     let revealSearch: () -> Void
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
-    @StateObject private var popular = HonbakoPopularStore()
     @State private var order = SumiGridOrder()
     @State private var scrollPhase: ScrollPhase = .idle
     @State private var pullDistance: CGFloat = 0
@@ -21,7 +20,10 @@ struct SumiGridContentView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
-    private var reading: [SumiBook] { SumiLibraryShelfSummary.readingOrder(libraryBooks, stableIDs: order.identifiers) }
+    private var reading: [SumiBook] {
+        SumiLibraryShelfSummary.readingOrder(libraryBooks, stableIDs: order.identifiers,
+            tutorialIdentifier: .init(sourceKey: HonbakoTutorialManga.sourceKey, mangaKey: HonbakoTutorialManga.mangaKey))
+    }
     private var finished: [SumiBook] {
         libraryBooks.filter { $0.finishedReadingAt != nil }
             .sorted { ($0.finishedReadingAt ?? .distantPast) > ($1.finishedReadingAt ?? .distantPast) }
@@ -65,14 +67,6 @@ struct SumiGridContentView: View {
                                     HonbakoLibrarySectionHeader(title: "Reading")
                                 }
                             }
-                            if popular.hasSources, !popular.books.isEmpty {
-                                Section {
-                                    HonbakoLibrarySectionView(books: popular.books, columns: columns,
-                                        openingBookID: opening.bookID, openBook: openBook)
-                                } header: {
-                                    HonbakoLibrarySectionHeader(title: "Popular")
-                                }
-                            }
                         }
                         .padding(.bottom, max(16, geometry.safeAreaInsets.bottom))
                         if !hasPreparedLibrary { ProgressView().padding(24).accessibilityLabel("Loading library") }
@@ -94,7 +88,7 @@ struct SumiGridContentView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .accessibilityIdentifier("Sumi.Grid")
-                .accessibilityValue("\(previewBooks?.count ?? libraryBooks.count) manga")
+                .accessibilityValue(String(localized: "\(previewBooks?.count ?? libraryBooks.count) manga"))
                 .onChange(of: insertion.scrollRequest) {
                     guard let bookID = insertion.bookID else { return }
                     updateLibrary()
@@ -114,13 +108,9 @@ struct SumiGridContentView: View {
         .task { await prepareLibrary() }
         .onChange(of: store.library) { updateLibrary() }
         .onChange(of: opening.bookID) { if opening.bookID == nil { updateLibrary() } }
-        .onChange(of: searchPresented) {
-            popular.setPaused(searchPresented)
-            if !searchPresented, previewBooks == nil { Task { await popular.refresh() } }
-        }
         .onChange(of: scenePhase) {
             if scenePhase == .active, previewBooks == nil {
-                Task { await store.refresh(); await popular.refresh() }
+                Task { await store.refresh() }
             }
         }
     }
@@ -130,7 +120,6 @@ struct SumiGridContentView: View {
         await store.refresh()
         hasPreparedLibrary = true
         updateLibrary()
-        await popular.refresh()
     }
 
     private func updateLibrary() {

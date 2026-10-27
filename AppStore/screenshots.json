@@ -1,0 +1,110 @@
+{
+  "verified_against_apple_on": "2026-10-27",
+  "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications",
+  "formats": [
+    "jpeg",
+    "jpg",
+    "png"
+  ],
+  "alpha_allowed": false,
+  "minimum_per_required_device_size": 1,
+  "maximum_per_device_size": 10,
+  "locales": [
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "sets": {
+    "iphone": {
+      "required": true,
+      "accepted_dimensions": [
+        [
+          1206,
+          2622
+        ],
+        [
+          2622,
+          1206
+        ],
+        [
+          1179,
+          2556
+        ],
+        [
+          2556,
+          1179
+        ]
+      ],
+      "suggested_device": "iPhone 18 Pro"
+    },
+    "ipad": {
+      "required": true,
+      "accepted_dimensions": [
+        [
+          2064,
+          2752
+        ],
+        [
+          2752,
+          2064
+        ],
+        [
+          2048,
+          2732
+        ],
+        [
+          2732,
+          2048
+        ]
+      ],
+      "suggested_device": "iPad Pro 13-inch"
+    },
+    "duo-outer": {
+      "required": false,
+      "accepted_dimensions": [
+        [
+          1398,
+          2034
+        ],
+        [
+          2034,
+          1398
+        ]
+      ],
+      "suggested_device": "iPhone Duo closed"
+    },
+    "duo-inner": {
+      "required": false,
+      "accepted_dimensions": [
+        [
+          2007,
+          2853
+        ],
+        [
+          2853,
+          2007
+        ]
+      ],
+      "suggested_device": "iPhone Duo open"
+    }
+  },
+  "shot_list": [
+    {
+      "sequence": 1,
+      "name": "library",
+      "content": "Original tutorial in the real library; no Popular section."
+    },
+    {
+      "sequence": 2,
+      "name": "reader",
+      "content": "Original tutorial open; genuine title and regular-glass controls visible."
+    },
+    {
+      "sequence": 3,
+      "name": "chapters",
+      "content": "Actual latest-first chapter list with release dates and reading progress."
+    }
+  ],
+  "duo_future_requirement": "Apple states Duo screenshots become required from April 2027 for apps built against iOS27.1 or later."
+}

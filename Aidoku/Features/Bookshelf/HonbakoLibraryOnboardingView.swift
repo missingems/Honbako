@@ -22,7 +22,7 @@ struct HonbakoLibraryOnboardingView: View {
             } header: {
                 Text("1. Choose a Connection")
             } footer: {
-                Text("Add your own files, connect a personal server, or choose a source list or source file you trust. Honbako includes no source lists or manga.")
+                Text("Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust.")
             }
 
             Section("2. Find Manga") {

@@ -4,11 +4,13 @@ import SwiftUI
 struct SumiGridBookRepresentable: UIViewRepresentable {
     let book: SumiBook
     let anchor: SumiBookSourceAnchor
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorScheme) private var colorScheme
 
     func makeUIView(context: Context) -> SumiGridBookView {
         let view = SumiGridBookView(frame: .zero)
         anchor.view = view
-        view.configure(book: book)
+        view.configure(book: book, dynamicTypeSize: dynamicTypeSize, colorScheme: colorScheme)
         return view
     }
 
@@ -28,7 +30,7 @@ struct SumiGridBookRepresentable: UIViewRepresentable {
 
     func updateUIView(_ view: SumiGridBookView, context: Context) {
         anchor.view = view
-        view.configure(book: book)
+        view.configure(book: book, dynamicTypeSize: dynamicTypeSize, colorScheme: colorScheme)
     }
 }
 #endif

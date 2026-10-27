@@ -2,11 +2,10 @@
 import UIKit
 
 /// Live refraction surrounds only the lifted print. The strip keeps its flat
-/// thumbnails, and the page itself stays sharp above this glass surface.
+/// thumbnails, and the artwork shares its bounce with the surrounding glass.
 final class SumiScrubHoverGlassView: UIVisualEffectView {
     static let outset: CGFloat = 7
     private static let peakScale: CGFloat = 1.025
-    private static let rippleKey = "Sumi.HoverGlass.Ripple"
 
     init() {
         super.init(effect: nil)
@@ -27,7 +26,6 @@ final class SumiScrubHoverGlassView: UIVisualEffectView {
         guard printBounds.width > 1, printBounds.height > 1 else {
             isHidden = true
             frame = .zero
-            stopRipple()
             return
         }
         isHidden = false
@@ -37,22 +35,14 @@ final class SumiScrubHoverGlassView: UIVisualEffectView {
         layer.cornerRadius = SumiPreviewGeometry.radius(in: printBounds) + Self.outset
     }
 
-    func ripple() {
-        layer.removeAnimation(forKey: Self.rippleKey)
-        guard !isHidden, window != nil, !UIAccessibility.isReduceMotionEnabled,
-              !UIAccessibility.isReduceTransparencyEnabled else { return }
-        // Animate only the refracting surface. Text and artwork never wobble.
+    static func bounceAnimation() -> CAKeyframeAnimation {
         let wave = CAKeyframeAnimation(keyPath: "transform.scale")
         wave.values = [1, Self.peakScale, 0.995, 1]
         wave.keyTimes = [0, 0.32, 0.68, 1]
         wave.timingFunctions = [CAMediaTimingFunction(name: .easeOut),
             CAMediaTimingFunction(name: .easeInEaseOut), CAMediaTimingFunction(name: .easeInEaseOut)]
         wave.duration = 0.48
-        layer.add(wave, forKey: Self.rippleKey)
-    }
-
-    func stopRipple() {
-        layer.removeAnimation(forKey: Self.rippleKey)
+        return wave
     }
 
     static func maximumOutset(for printSize: CGSize) -> CGFloat {

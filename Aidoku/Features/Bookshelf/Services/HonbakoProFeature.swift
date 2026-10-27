@@ -6,9 +6,9 @@ enum HonbakoProFeature: String, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .offline: "Offline Reading"
-        case .chapterAlerts: "Chapter Notifications"
-        case .cloudProgress: "iCloud Progress Sync"
+        case .offline: String(localized: "Offline Reading")
+        case .chapterAlerts: String(localized: "Chapter Notifications")
+        case .cloudProgress: String(localized: "iCloud Progress Sync")
         }
     }
 }

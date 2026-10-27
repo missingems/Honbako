@@ -1,0 +1,46 @@
+{
+  "identifier": "31D49E80",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [
+    {
+      "id": "7AFB68E2",
+      "localizations": [],
+      "name": "Honbako Pro \u2014 Local Testing Only",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "0.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "F129CBA4",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Local StoreKit testing only. This placeholder price does not set an App Store price.",
+              "displayName": "Honbako Pro Monthly \u2014 Test",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.missingems.honbaku.pro",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Honbako Pro Monthly \u2014 Local Testing Only",
+          "subscriptionGroupID": "7AFB68E2",
+          "type": "RecurringSubscription",
+          "winBackOffers": []
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 6,
+    "minor": 3
+  }
+}

@@ -15,6 +15,11 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
     private var pendingArtwork: (cover: UIImage, rendered: UIImage, physical: Bool)?
     private var pendingBook: SumiBook?
     private var coverTask: Task<Void, Never>?
+    private var placeholderBook: BookPresentation?
+    private var placeholderSize: CGSize = .zero
+    private var placeholderScale: CGFloat = 0
+    private var placeholderDynamicType: DynamicTypeSize = .large
+    private var placeholderColorScheme: ColorScheme = .light
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -33,6 +38,11 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if !holdsVisibleEdition, !isBookTransitionActive { renderPlaceholder() }
     }
 
     func beginBookTransition() {
@@ -70,12 +80,15 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         }
         if let pendingBook {
             self.pendingBook = nil
-            configure(book: pendingBook)
+            configure(book: pendingBook, dynamicTypeSize: placeholderDynamicType, colorScheme: placeholderColorScheme)
         }
+        setNeedsLayout()
     }
 
     /// Loading new artwork never changes the edition already lifted from the grid.
     func applyFlatEdition(cover: UIImage, animated: Bool = false) {
+        placeholderBook = nil
+        placeholderSize = .zero
         if holdsVisibleEdition {
             pendingArtwork = (cover, cover, false)
         } else {
@@ -97,8 +110,15 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         applyFlatEdition(cover: cover)
     }
 
-    func configure(book: SumiBook) {
-        let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")"
+    func configure(book: SumiBook, dynamicTypeSize: DynamicTypeSize = .large, colorScheme: ColorScheme? = nil) {
+        let appearance = colorScheme ?? (traitCollection.userInterfaceStyle == .dark ? .dark : .light)
+        if placeholderDynamicType != dynamicTypeSize || placeholderColorScheme != appearance {
+            placeholderDynamicType = dynamicTypeSize
+            placeholderColorScheme = appearance
+            placeholderSize = .zero
+            setNeedsLayout()
+        }
+        let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")|\(book.title)"
         guard identity != requestedIdentity else {
             // A later coherent refresh can replace a prepared placeholder with
             // warmed artwork without starting a new per-tile image request.
@@ -126,18 +146,34 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             applyFlatEdition(cover: cached)
             return
         }
-        let fallback = ImageRenderer(content: BookPrintedFrontCover(book: book.presentation)
-            .frame(width: 340, height: 500))
-        fallback.scale = 1
-        let placeholder = fallback.uiImage
-        if let placeholder { applyFlatEdition(cover: placeholder) }
+        placeholderBook = book.presentation
+        placeholderSize = .zero
+        renderPlaceholder()
         guard !SumiCoverArtworkLoader.shared.usesPreparedPlaceholder(for: book) else { return }
         coverTask = Task { @MainActor [weak self] in
             let loaded = await SumiCoverArtworkLoader.shared.loadCover(for: book)
             guard !Task.isCancelled, self?.identity == requestedIdentity else { return }
             if let loaded { self?.applyFlatEdition(cover: loaded, animated: true) }
         }
+    }
 
+    private func renderPlaceholder() {
+        guard let book = placeholderBook, !holdsVisibleEdition, !isBookTransitionActive else { return }
+        let size = bounds.width > 1 && bounds.height > 1 ? bounds.size : CGSize(width: 340, height: 500)
+        let scale = max(1, traitCollection.displayScale)
+        guard placeholderSize != size || placeholderScale != scale else { return }
+        // Render at the actual tile's point size. Rendering a 17pt body label
+        // into a fixed large bitmap made the search placeholder illegibly tiny.
+        let renderer = ImageRenderer(content: BookPrintedFrontCover(book: book)
+            .frame(width: size.width, height: size.height)
+            .environment(\.dynamicTypeSize, placeholderDynamicType)
+            .environment(\.colorScheme, placeholderColorScheme))
+        renderer.scale = scale
+        guard let placeholder = renderer.uiImage else { return }
+        applyFlatEdition(cover: placeholder)
+        placeholderBook = book
+        placeholderSize = size
+        placeholderScale = scale
     }
 }
 #endif

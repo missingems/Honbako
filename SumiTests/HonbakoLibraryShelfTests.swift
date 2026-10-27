@@ -56,6 +56,21 @@ struct HonbakoLibraryShelfTests {
         #expect(summary.finishedAt == nil)
     }
 
+    @Test("Unread counts normalize saved script and region codes without combining distinct translations")
+    func savedLanguageMatchesCanonicalSourceCodes() {
+        for (stored, source, other) in [("zh-hans", "zh-Hans", "zh-Hant"),
+                                        ("zh-hant", "zh_Hant", "zh-Hans"),
+                                        ("pt-br", "pt-BR", "pt-PT")] {
+            let readDate = Date(timeIntervalSince1970: 1_700_000_000)
+            let chapters = [chapter("selected-read", number: 1, language: source, completed: readDate),
+                            chapter("selected-unread", number: 2, language: source),
+                            chapter("other-read", number: 2, language: other, completed: readDate)]
+            let summary = SumiLibraryShelfSummary(status: .completed, chapters: chapters, language: stored)
+            #expect(summary.unreadCount == 1)
+            #expect(summary.finishedAt == nil, "Reading a different translation must not finish the selected edition")
+        }
+    }
+
     @Test("Reading puts unread updates first and preserves collection order for equal urgency")
     func stableUnreadOrdering() {
         func book(_ key: String, unread: Int, uploaded: Date? = nil, finished: Date? = nil) -> SumiBook {
@@ -67,5 +82,23 @@ struct HonbakoLibraryShelfTests {
                      book("d", unread: 0), book("finished", unread: 0, finished: date)]
         let sorted = SumiLibraryShelfSummary.readingOrder(books, stableIDs: ["test:d", "test:a", "test:b", "test:c", "test:finished"])
         #expect(sorted.map(\.manga.key) == ["c", "b", "d", "a"])
+    }
+
+    @Test("The unfinished tutorial leads Reading without changing other urgency or restoring a removed book")
+    func tutorialComesFirstOnlyWhileAvailableAndUnfinished() {
+        let tutorialManga = AidokuRunner.Manga(sourceKey: "tutorial", key: "first", title: "Tutorial")
+        let tutorial = SumiBook(manga: tutorialManga, isInLibrary: true)
+        let urgent = SumiBook(manga: .init(sourceKey: "test", key: "urgent", title: "Urgent"), unreadChapterCount: 10)
+        let quiet = SumiBook(manga: .init(sourceKey: "test", key: "quiet", title: "Quiet"))
+        let order = ["test:quiet", "test:urgent", "tutorial:first"]
+        let sorted = SumiLibraryShelfSummary.readingOrder([quiet, urgent, tutorial], stableIDs: order,
+            tutorialIdentifier: tutorial.id)
+        #expect(sorted.map(\.id) == [tutorial.id, urgent.id, quiet.id])
+        let removed = SumiLibraryShelfSummary.readingOrder([quiet, urgent], stableIDs: order,
+            tutorialIdentifier: tutorial.id)
+        #expect(removed.map(\.id) == [urgent.id, quiet.id])
+        let finishedTutorial = SumiBook(manga: tutorialManga, isInLibrary: true, finishedReadingAt: .now)
+        #expect(SumiLibraryShelfSummary.readingOrder([finishedTutorial, urgent], stableIDs: order,
+            tutorialIdentifier: tutorial.id).map(\.id) == [urgent.id])
     }
 }

@@ -23,8 +23,8 @@ struct SumiThumbnailIdentityTests {
             return await withCheckedContinuation { secondLeaf = $0 }
         })
         view.layoutIfNeeded()
-        let images = view.subviews.compactMap { $0 as? UIImageView }
-        let placeholder = try #require(view.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.PreviewPlaceholder.4" })
+        let images = view.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIImageView }
+        let placeholder = try #require(view.subviews.flatMap { $0.subviews }.first { $0.accessibilityIdentifier == "Sumi.Reader.PreviewPlaceholder.4" })
         for _ in 0..<100 where secondLeaf == nil || images.first?.image !== green { await Task.yield() }
         #expect(secondLeaf != nil)
         #expect(view.displayedPages.isEmpty)
@@ -64,7 +64,7 @@ struct SumiThumbnailIdentityTests {
         view.configure(identity: "new", pages: [1], reversed: false, preservingCurrent: true, provider: { _ in blue })
         #expect(view.displayedPages.isEmpty)
         for _ in 0..<100 where view.displayedPages != [1] { await Task.yield() }
-        let views = view.subviews.compactMap { $0 as? UIImageView }
+        let views = view.subviews.flatMap { $0.subviews }.compactMap { $0 as? UIImageView }
         #expect(views.first?.image === blue)
         old?.resume(returning: image(.red))
         for _ in 0..<10 { await Task.yield() }

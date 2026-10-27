@@ -3,7 +3,7 @@ import UIKit
 
 /// A transient book title follows the reader controls without becoming a bar.
 final class SumiReaderTitleView: UIView {
-    private let surface = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterialDark))
+    private let surface = UIVisualEffectView(effect: SumiReaderTitleView.makeGlassEffect())
     private let label = UILabel()
     private var visibilityAnimator: UIViewPropertyAnimator?
     private var visibilityIdentity = UUID()
@@ -19,18 +19,24 @@ final class SumiReaderTitleView: UIView {
         surface.clipsToBounds = true
         surface.layer.cornerCurve = .continuous
         surface.layer.cornerRadius = 13
-        surface.contentView.backgroundColor = UIColor(white: 0.08, alpha: 0.72)
+        surface.contentView.backgroundColor = .clear
         addSubview(surface)
         label.text = title
         label.font = UIFont.preferredFont(forTextStyle: .subheadline)
         label.adjustsFontForContentSizeCategory = true
-        label.textColor = .white
+        label.textColor = .label
         label.textAlignment = .center
         label.lineBreakMode = .byTruncatingTail
         label.isAccessibilityElement = false
         surface.contentView.addSubview(label)
         alpha = 0
         isHidden = true
+    }
+
+    private static func makeGlassEffect() -> UIGlassEffect {
+        let effect = UIGlassEffect(style: .regular)
+        effect.isInteractive = false
+        return effect
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -57,7 +63,7 @@ final class SumiReaderTitleView: UIView {
         if visible { isHidden = false }
         let changes = {
             self.alpha = visible ? 1 : 0
-            self.surface.effect = visible ? UIBlurEffect(style: .systemThickMaterialDark) : nil
+            self.surface.effect = visible ? Self.makeGlassEffect() : nil
         }
         guard animated, !UIAccessibility.isReduceMotionEnabled else {
             changes()

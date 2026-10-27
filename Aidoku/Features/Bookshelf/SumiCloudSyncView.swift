@@ -41,16 +41,16 @@ struct SumiCloudSyncView: View {
     }
 
     private var message: String {
-        if !pro.hasPro { return "iCloud Sync Is Included with Honbako Pro" }
-        if !status.configured { return "iCloud is unavailable in this build." }
-        if status.checkingAccount { return "Checking iCloud…" }
-        if !status.enabledAtLaunch { return "Reopen Honbako to enable automatic sync." }
+        if !pro.hasPro { return String(localized: "iCloud Sync Is Included with Honbako Pro") }
+        if !status.configured { return String(localized: "iCloud is unavailable in this build.") }
+        if status.checkingAccount { return String(localized: "Checking iCloud…") }
+        if !status.enabledAtLaunch { return String(localized: "Reopen Honbako to enable automatic sync.") }
         switch status.accountStatus {
         case .available:
-            return status.activeEvents.isEmpty ? "Automatic Sync On" : "Syncing…"
-        case .noAccount: return "Sign in to iCloud in Settings."
-        case .restricted: return "iCloud access is restricted on this device."
-        default: return "Waiting for iCloud. Your reading is saved on this device."
+            return status.activeEvents.isEmpty ? String(localized: "Automatic Sync On") : String(localized: "Syncing…")
+        case .noAccount: return String(localized: "Sign in to iCloud in Settings.")
+        case .restricted: return String(localized: "iCloud access is restricted on this device.")
+        default: return String(localized: "Waiting for iCloud. Your reading is saved on this device.")
         }
     }
 }

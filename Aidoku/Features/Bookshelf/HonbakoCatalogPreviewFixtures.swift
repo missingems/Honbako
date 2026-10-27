@@ -23,7 +23,8 @@ final class HonbakoCatalogPreviewFixtures {
         let defaults = UserDefaults.standard
         originalArgumentDomain = defaults.volatileDomain(forName: UserDefaults.argumentDomain)
         var overrides = originalArgumentDomain
-        overrides["General.incognitoMode"] = true
+        // Action-flow UI tests opt into real history on their generated books.
+        overrides["General.incognitoMode"] = !ProcessInfo.processInfo.arguments.contains("--honbako-reader-actions-check")
         overrides["Reader.liveText"] = false
         overrides["Reader.autoScroll"] = false
         overrides["Reader.skipDuplicateChapters"] = false

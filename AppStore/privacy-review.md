@@ -1,0 +1,21 @@
+# Privacy and release data-flow review
+
+Engineering audit: 27 October 2026. This is preparation for the owner's declarations, not a published privacy policy or a legal attestation.
+
+| Flow | Evidence in this checkout | Submission implication |
+| --- | --- | --- |
+| Library, chapters, bookmarks, reading history | Core Data in the app container; `CoreDataManager.createContainer` | User content and reading activity exist on device. Review retention and deletion before answering labels. |
+| Optional progress sync | `NSPersistentCloudKitContainer`, private database scope | Library metadata and reading records may leave the device through the user's private iCloud database. Cloud model also includes related session/local-file metadata. Files themselves are not app progress-sync payloads. |
+| Device provenance | `SumiReadingProvenance` stores identifierForVendor, or a generated UUID, and device name in reading records | Do not claim the app never uses identifiers. These identify which device saved a reading position; no advertising identifier was found. |
+| User-selected sources and servers | Source manager, HTTP(S) source lists, native connector, imported source runners | Queries, identifiers, credentials when configured, image requests and network information reach providers. Their retention/collection policies are not established by this source audit. |
+| Pro | StoreKit verified transactions; cached product/expiry/revocation/verification dates | Apple processes payment. No developer payment server or raw card handling was found. Real monthly product configuration remains unverified. |
+| Alerts | `NotificationManager`, background library refresh, local notification requests | Permission and background refresh are required. This is not a developer-operated real-time push feed. |
+| Diagnostics | Local logger and opt-in DEBUG-only gesture/performance probes | No advertising/analytics SDK or developer analytics endpoint found in app source. TestFlight separately supplies Apple's testing diagnostics under its own settings. Review the final SDK privacy report. |
+
+`Aidoku/App/Resources/PrivacyInfo.xcprivacy` describes the app-owned required-reason APIs found in the audit: UserDefaults `CA92.1`; file metadata in the app/CloudKit containers `C617.1`; metadata for user-granted files `3B52.1`. Apple's current definitions were checked in [required-reason API documentation](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api). The system-uptime performance probe is DEBUG-only. The ZIPFoundation checkout has its own manifest. Root must confirm manifests are actually present in the final archive and review all integrated SDKs; the app manifest does not replace SDK obligations.
+
+The manifest sets tracking to false based on the audited implementation. It deliberately does not submit collected-data categories. The owner must determine the App Store Connect answers for app functionality, user content/reading activity, device provenance, purchases, diagnostics, and user-chosen providers using their actual access and retention practices. A blanket “Data Not Collected” answer has not been made. Apple's collection definition and third-party-partner requirements are in [App privacy details](https://developer.apple.com/app-store/app-privacy-details/) and [Manage app privacy](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy/).
+
+The in-app Privacy Information sheet describes these current flows. `web-drafts` contains localized support drafts with the authorized feedback email, plus policy drafts whose operator identity, privacy contact, retention details, and public policy URL still require owner review. These drafts have not been approved or published as policy. A real policy URL is still required in App Store Connect and must be linked in the final subscription presentation.
+
+The existing `ITSAppUsesNonExemptEncryption=NO` build setting is not a new export determination. Apple documents an exemption path for encryption limited to Apple operating-system facilities, but the owner must review the final engine/dependency/source behavior and markets before confirming the answer. See [Apple export-compliance table](https://developer.apple.com/help/app-store-connect/reference/export-compliance-documentation-for-encryption/).

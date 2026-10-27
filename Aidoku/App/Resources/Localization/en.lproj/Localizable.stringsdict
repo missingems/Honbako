@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%lld unread chapters</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@unread@</string>
+		<key>unread</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld unread chapter</string>
+			<key>other</key>
+			<string>%lld unread chapters</string>
+		</dict>
+	</dict>
+	<key>Downloading %lld Chapters</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@chapters@</string>
+		<key>chapters</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Downloading %lld Chapter</string>
+			<key>other</key>
+			<string>Downloading %lld Chapters</string>
+		</dict>
+	</dict>
+	<key>%lld Downloads Failed</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@downloads@</string>
+		<key>downloads</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Download Failed</string>
+			<key>other</key>
+			<string>%lld Downloads Failed</string>
+		</dict>
+	</dict>
+	<key>There are %lld earlier unread chapters in this language.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@chapters@</string>
+		<key>chapters</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>There is %lld earlier unread chapter in this language.</string>
+			<key>other</key>
+			<string>There are %lld earlier unread chapters in this language.</string>
+		</dict>
+	</dict>
+	<key>There are %lld earlier unread chapters in this language. Your current chapter stays at its saved position.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@chapters@</string>
+		<key>chapters</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>There is %lld earlier unread chapter in this language. Your current chapter stays at its saved position.</string>
+			<key>other</key>
+			<string>There are %lld earlier unread chapters in this language. Your current chapter stays at its saved position.</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

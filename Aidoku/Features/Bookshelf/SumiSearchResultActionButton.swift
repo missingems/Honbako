@@ -25,7 +25,7 @@ struct SumiSearchResultActionButton: View {
             VStack(spacing: 2) {
                 HStack(spacing: 5) {
                     if adding { ProgressView().controlSize(.small) }
-                    Text(action.rawValue).font(.caption.bold()).lineLimit(1)
+                    Text(action.title).font(.caption.bold()).lineLimit(1)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
@@ -45,7 +45,7 @@ struct SumiSearchResultActionButton: View {
         .buttonStyle(.plain)
         .fixedSize(horizontal: true, vertical: false)
         .disabled(adding)
-        .accessibilityLabel("\(action.rawValue) \(bookTitle)")
+        .accessibilityLabel(String(localized: "\(action.title) \(bookTitle)"))
         .accessibilityValue(action == .resume ? readingPosition ?? "" : "")
         .accessibilityIdentifier(identifier)
     }

@@ -1,0 +1,5 @@
+// Honbako-only system permission descriptions.
+"CFBundleDisplayName" = "Honbako";
+"NSFaceIDUsageDescription" = "使用面容 ID 解锁受保护的应用功能。";
+"NSLocalNetworkUsageDescription" = "连接你在本地网络中选择的个人漫画服务器。";
+"NSPhotoLibraryUsageDescription" = "将漫画页面保存到照片图库。";

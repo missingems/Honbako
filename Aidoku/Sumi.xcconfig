@@ -5,5 +5,6 @@ APP_ID_SUFFIX = honbaku
 PRODUCT_BUNDLE_IDENTIFIER = $(APP_ID_PREFIX).$(APP_ID_SUFFIX)
 ICLOUD_CONTAINER_ID = iCloud.$(PRODUCT_BUNDLE_IDENTIFIER)
 OTHER_SWIFT_FLAGS = $(inherited) -DSUMI
-// Aidoku's localized display name must not override Sumi's own Info.plist.
-EXCLUDED_SOURCE_FILE_NAMES = $(inherited) InfoPlist.strings
+// Honbako installs its four complete localization tables in its own copy phase.
+// Shared legacy localized display names must not override its app identity.
+EXCLUDED_SOURCE_FILE_NAMES = $(inherited) InfoPlist.strings Localizable.strings Localizable.stringsdict

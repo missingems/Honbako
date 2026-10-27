@@ -1,0 +1,17 @@
+DRAFT — verify final functionality and replace required owner details before submission.
+
+Honbako is a personal manga reader for iPhone and iPad. It includes an original illustrated reading tutorial so the core reading experience can be reviewed without an external account or third-party content. No source list is added automatically.
+
+Review steps:
+1. Launch and open the first book, Your First Chapter.
+2. Swipe pages in portrait. Rotate to landscape to inspect the book presentation.
+3. Tap a page to reveal the title and controls. Drag the page strip to preview a page, then release to navigate.
+4. Open Chapters to inspect latest-first ordering, release dates, language choices, and each chapter's progress.
+5. Pinch inward or use Close to return to the library. The tutorial's position is saved.
+6. Pull down in the library to open Search. Settings explains local files, personal servers, and user-selected sources. These connections may need their own credentials; none are required for the included tutorial.
+
+Honbako Pro is a monthly auto-renewable subscription for offline storage, chapter alerts, and iCloud progress/library sync. Restore and subscription management are available. Offline copies require source permission. Alerts use iOS background refresh and local notifications, so their timing is controlled by iOS and provider availability.
+
+Before sending these notes: configure and verify the real product com.missingems.honbaku.pro, supply any authorized review-server credentials needed to exercise paid network flows, verify notification permission and iCloud behavior on the final build, and provide the required contact information. No credentials, real prices, public policy URL, or rights approvals have been fabricated in this draft.
+
+The source-import engine and all distribution/content licensing questions must be disclosed and resolved as described in AppStore/README.md and docs/RELEASE_AND_RIGHTS.md. Do not omit functionality from review or use the tutorial to hide imported-source behavior.

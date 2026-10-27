@@ -7,6 +7,14 @@ struct SumiSearchResultPresentation {
         case get = "Add"
         case read = "Read"
         case resume = "Resume"
+
+        var title: String {
+            switch self {
+            case .get: String(localized: "Add")
+            case .read: String(localized: "Read")
+            case .resume: String(localized: "Resume")
+            }
+        }
     }
 
     let action: Action
@@ -17,18 +25,18 @@ struct SumiSearchResultPresentation {
 
     init(book: SumiBook, isInLibrary: Bool, releaseYear: Int? = nil, isOngoing: Bool? = nil,
          publishingStatus: AidokuRunner.PublishingStatus? = nil) {
-        let release = book.releaseDateLabel ?? releaseYear.flatMap { (1...9999).contains($0) ? "Released \($0)" : nil }
+        let release = book.releaseDateLabel ?? SumiBook.releaseYearText(releaseYear).map { String(localized: "Released \($0)") }
         let enriched = publishingStatus.flatMap { $0 == .unknown ? nil : $0 }
             ?? (isOngoing == true ? .ongoing : .unknown)
         let status = book.manga.status == .unknown ? enriched : book.manga.status
         switch status {
-        case .ongoing: publicationBadge = "Ongoing"
-        case .completed: publicationBadge = "Finished"
+        case .ongoing: publicationBadge = String(localized: "Ongoing")
+        case .completed: publicationBadge = String(localized: "Publication Finished", defaultValue: "Finished")
         default: publicationBadge = nil
         }
         publicationSubtitle = release
         let year = book.releaseDate?.formatted(.dateTime.year())
-            ?? [book.releaseYear, releaseYear].compactMap { $0 }.first { (1...9999).contains($0) }.map(String.init)
+            ?? [book.releaseYear, releaseYear].compactMap(SumiBook.releaseYearText).first
         compactPublicationSubtitle = year
         let hasRead = book.lastRead != nil || book.bookmark != nil || (book.progress ?? 0) > 0
         action = hasRead ? .resume : (isInLibrary ? .read : .get)
@@ -38,7 +46,7 @@ struct SumiSearchResultPresentation {
         if let chapter, !chapter.isEmpty, let page, page > 0 {
             readingPosition = "\(chapter)-\(page)"
         } else if let page, page > 0 {
-            readingPosition = "Page \(page)"
+            readingPosition = String(localized: "Page \(page)")
         } else {
             readingPosition = chapter?.isEmpty == false ? chapter : nil
         }

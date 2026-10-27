@@ -1,0 +1,68 @@
+{
+  "status": "prepared_not_submitted",
+  "bundle_identifier": "com.missingems.honbaku",
+  "app_name": "Honbako",
+  "version": "0.1.0",
+  "primary_locale": "en-US",
+  "locales": [
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "suggested_primary_category": "Books",
+  "owner_fields_required": {
+    "app_store_connect_app_id": null,
+    "review_contact_first_name": null,
+    "review_contact_last_name": null,
+    "review_contact_email": null,
+    "review_contact_phone_international": null,
+    "feedback_email": "itchymail@icloud.com",
+    "support_url": null,
+    "privacy_policy_url": null,
+    "copyright_holder": null,
+    "pro_product_configured_in_app_store_connect": false,
+    "content_rights_documentation_reviewed": false,
+    "engine_distribution_licensing_cleared": false,
+    "privacy_answers_confirmed": false,
+    "export_compliance_confirmed": false,
+    "age_rating_completed": false
+  },
+  "subscription": {
+    "product_id": "com.missingems.honbaku.pro",
+    "type": "auto-renewable",
+    "period": "P1M",
+    "subscription_group_id": null,
+    "subscription_group_name_proposal": "Honbako Pro",
+    "price": {
+      "amount": "1.99",
+      "currency": "USD",
+      "period": "P1M",
+      "source": "owner-selected",
+      "app_store_connect_configuration_verified": false
+    },
+    "price_note": "Owner selected US$1.99 per month. Configure the U.S. base storefront price in App Store Connect and review other storefront prices. The simulator fixture remains test-only US$0.99; runtime paywall always uses StoreKit displayPrice.",
+    "billing_grace_period_enabled": false,
+    "terms_of_use_url": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
+    "localizations": {
+      "en-US": {
+        "display_name": "Honbako Pro Monthly",
+        "description": "Offline, alerts, and iCloud sync."
+      },
+      "ja": {
+        "display_name": "Honbako Pro（月額）",
+        "description": "オフライン読書、新着通知、iCloud同期。"
+      },
+      "zh-Hans": {
+        "display_name": "Honbako Pro（按月）",
+        "description": "离线阅读、新章节提醒和 iCloud 同步。"
+      },
+      "zh-Hant": {
+        "display_name": "Honbako Pro（按月）",
+        "description": "離線閱讀、新章節提醒和 iCloud 同步。"
+      }
+    },
+    "billing_grace_period_note": "Draft configuration leaves billing grace off; enable only after entitlement handling is implemented and tested."
+  },
+  "screenshot_sources": "Actual app captures using only original tutorial artwork or owned/licensed content. No fixture, third-party manga, or fabricated UI screenshots."
+}

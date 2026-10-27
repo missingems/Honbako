@@ -7,6 +7,12 @@ enum HonbakoEarlierChapterPrompt {
     private static var handled: Set<ChapterIdentifier> = []
     private static var inFlight: Set<ChapterIdentifier> = []
 
+    static func recordDecision(mangaID: MangaIdentifier, chapterKey: String) {
+        let id = ChapterIdentifier(sourceKey: mangaID.sourceKey, mangaKey: mangaID.mangaKey, chapterKey: chapterKey)
+        handled.insert(id)
+        if handled.count > 256 { handled = [id] }
+    }
+
     static func consider(manga: AidokuRunner.Manga, selected: AidokuRunner.Chapter,
                          chapters: [AidokuRunner.Chapter], presenter: UIViewController,
                          whileCurrent: @escaping @MainActor () -> Bool,
@@ -27,15 +33,13 @@ enum HonbakoEarlierChapterPrompt {
         guard !Task.isCancelled, whileCurrent(), presenter.viewIfLoaded?.window != nil,
               presenter.presentedViewController == nil else { return }
         let earlier = HonbakoEarlierChapterPolicy.unreadBefore(selected, in: chapters, completedKeys: completed)
-        handled.insert(id)
-        // Bound session-only choices rather than persisting a permanent refusal.
-        if handled.count > 256 { handled = [id] }
+        recordDecision(mangaID: manga.identifier, chapterKey: selected.key)
         guard !earlier.isEmpty else { return }
-        let alert = UIAlertController(title: "Mark Earlier Chapters as Read?",
-            message: "There are \(earlier.count) earlier unread chapters in this language. Your current chapter stays at its saved position.",
+        let alert = UIAlertController(title: String(localized: "Mark Earlier Chapters as Read?"),
+            message: String(localized: "There are \(earlier.count) earlier unread chapters in this language. Your current chapter stays at its saved position."),
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Keep Unread", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Mark as Read", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: String(localized: "Keep Unread"), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "Mark as Read"), style: .default) { _ in
             Task {
                 guard !Task.isCancelled, whileCurrent() else { return }
                 await HistoryManager.shared.addHistory(mangaId: manga.identifier, chapters: earlier)

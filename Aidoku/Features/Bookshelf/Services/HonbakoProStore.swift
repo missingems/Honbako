@@ -41,11 +41,13 @@ final class HonbakoProStore: ObservableObject {
         defer { isLoading = false }
         do {
             product = try await Product.products(for: [Self.productID]).first {
-                $0.type == .nonConsumable || $0.type == .autoRenewable
+                $0.type == .autoRenewable
+                    && $0.subscription?.subscriptionPeriod.unit == .month
+                    && $0.subscription?.subscriptionPeriod.value == 1
             }
-            message = product == nil ? "Pro purchases aren’t available yet. Reading your library remains free." : nil
+            message = product == nil ? String(localized: "Monthly Pro purchases aren’t available yet. Reading your library remains free.") : nil
         } catch {
-            message = "The App Store couldn’t be reached. Try again later."
+            message = String(localized: "The App Store couldn’t be reached. Try again later.")
         }
     }
 
@@ -53,7 +55,7 @@ final class HonbakoProStore: ObservableObject {
         var active: HonbakoProEntitlement?
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result, transaction.productID == Self.productID,
-                  transaction.productType == .nonConsumable || transaction.productType == .autoRenewable else { continue }
+                  transaction.productType == .autoRenewable else { continue }
             let claim = HonbakoProEntitlement(productID: transaction.productID,
                 expirationDate: transaction.expirationDate, revocationDate: transaction.revocationDate, verifiedAt: .now)
             if claim.isActive(at: .now, productID: Self.productID) { active = claim; break }
@@ -75,17 +77,17 @@ final class HonbakoProStore: ObservableObject {
             switch try await product.purchase() {
             case .success(let result):
                 guard case .verified(let transaction) = result else {
-                    message = "This purchase couldn’t be verified. No Pro features were unlocked."
+                    message = String(localized: "This purchase couldn’t be verified. No Pro features were unlocked.")
                     return
                 }
                 await refreshEntitlement()
                 await transaction.finish()
                 message = nil
-            case .pending: message = "Your purchase is awaiting approval."
+            case .pending: message = String(localized: "Your purchase is awaiting approval.")
             case .userCancelled: break
-            @unknown default: message = "The purchase didn’t complete. Try again later."
+            @unknown default: message = String(localized: "The purchase didn’t complete. Try again later.")
             }
-        } catch { message = "The purchase didn’t complete. \(error.localizedDescription)" }
+        } catch { message = String(localized: "The purchase didn’t complete. \(error.localizedDescription)") }
     }
 
     func restore() async {
@@ -95,8 +97,8 @@ final class HonbakoProStore: ObservableObject {
         do {
             try await AppStore.sync()
             await refreshEntitlement()
-            message = hasPro ? "Pro purchases restored." : "No active Pro purchase was found."
-        } catch { message = "Purchases couldn’t be restored. Try again later." }
+            message = hasPro ? String(localized: "Pro purchases restored.") : String(localized: "No active Pro purchase was found.")
+        } catch { message = String(localized: "Purchases couldn’t be restored. Try again later.") }
     }
 
     deinit { listener?.cancel() }

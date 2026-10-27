@@ -56,26 +56,26 @@ final class HonbakoSearchSourceInteractionTests: XCTestCase {
     }
 
     @MainActor
-    func testPopularLoadsSourceCoverArtworkAndOpensItsActualReader() throws {
+    func testLibraryHasNoPopularAndSearchOpensTheProvidersActualCoverAndReader() throws {
         let app = launch()
         defer { app.terminate() }
-        let header = item("Honbako.Library.Header.Popular", app)
-        XCTAssertTrue(header.waitForExistence(timeout: 10))
-        let cover = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label == %@",
-            "Sumi.Grid.Book.honbako-catalog-", "Shared Manga")).firstMatch
+        XCTAssertFalse(item("Honbako.Library.Header.Popular", app).exists,
+                       "Configured sources must not repopulate the removed automatic catalog")
+        try search("Shared Manga", in: app)
+        let cover = app.buttons["Sumi.Search.Book.honbako-catalog-fast:shared-title"]
         XCTAssertTrue(cover.waitForExistence(timeout: 5))
         let artwork = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             self.hasColoredArtwork(cover.screenshot().image)
         }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [artwork], timeout: 8), .completed,
-                       "A popular tile must load the source's real colored cover rather than a text placeholder")
-        attach(app, "Popular covers loaded through the source-aware grid renderer")
+                       "The search row must contain the source's real colored cover rather than a text placeholder")
+        attach(app, "Search cover loaded through the source-aware renderer")
         cover.tap()
         let reader = item("Sumi.DirectReader", app)
         XCTAssertTrue(reader.waitForExistence(timeout: 20))
         let firstPage = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value CONTAINS %@", "Chapter 1, page 1"), object: reader)
         XCTAssertEqual(XCTWaiter.wait(for: [firstPage], timeout: 8), .completed)
-        attach(app, "Popular source book opens directly on its first chapter")
+        attach(app, "Search source book opens directly on its first chapter")
     }
 
     @MainActor
@@ -119,7 +119,9 @@ final class HonbakoSearchSourceInteractionTests: XCTestCase {
             let channels = [pixels[index], pixels[index + 1], pixels[index + 2]]
             return Int(channels.max() ?? 0) - Int(channels.min() ?? 0) > 60
         }.count
-        return colored > 24 * 24 / 3
+        // A fixed cover occupies only part of a Search row; the surrounding
+        // labels are intentionally neutral and must not count as artwork.
+        return colored > 24 * 24 / 20
     }
 
     @MainActor

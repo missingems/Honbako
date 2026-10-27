@@ -21,8 +21,8 @@ struct SumiScrubberPages: Equatable {
 
     func index(containing page: Int) -> Int { groups.firstIndex { $0.contains(page) } ?? 0 }
     func label(for index: Int) -> String {
-        guard groups.indices.contains(index), let first = groups[index].first, let last = groups[index].last else { return "Loading pages…" }
-        return first == last ? "Page \(first) of \(total)" : "Pages \(first)–\(last) of \(total)"
+        guard groups.indices.contains(index), let first = groups[index].first, let last = groups[index].last else { return String(localized: "Loading pages…") }
+        return first == last ? String(localized: "Page \(first) of \(total)") : String(localized: "Pages \(first)–\(last) of \(total)")
     }
 }
 #endif

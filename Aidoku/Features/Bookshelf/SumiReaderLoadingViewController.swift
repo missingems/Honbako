@@ -39,7 +39,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         view.backgroundColor = .clear
         view.accessibilityIdentifier = "Sumi.Book.Loading"
         view.accessibilityViewIsModal = true
-        let cancelAction = UIAccessibilityCustomAction(name: "Cancel opening") { [weak self] _ in
+        let cancelAction = UIAccessibilityCustomAction(name: String(localized: "Cancel opening")) { [weak self] _ in
             self?.accessibilityPerformEscape() ?? false
         }
         view.accessibilityCustomActions = [cancelAction]
@@ -55,7 +55,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         cover.accessibilityIdentifier = "Sumi.Book.HoverCover"
         cover.isAccessibilityElement = false
         cover.accessibilityLabel = book.title
-        cover.accessibilityValue = "Loading"
+        cover.accessibilityValue = String(localized: "Loading")
         view.addSubview(cover)
         let artwork: UIView
         if let snapshot {
@@ -81,16 +81,16 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         message.textAlignment = .center
         message.accessibilityIdentifier = "SumiReader.Error"
         message.accessibilityCustomActions = [cancelAction]
-        retryButton.setTitle("Retry", for: .normal)
+        retryButton.setTitle(String(localized: "Retry"), for: .normal)
         retryButton.tintColor = .white
         retryButton.addAction(UIAction { [weak self] _ in self?.retry?() }, for: .touchUpInside)
         activity.color = .label
         activity.hidesWhenStopped = true
         activity.isAccessibilityElement = false
         activity.accessibilityIdentifier = "Sumi.Book.LoadingIndicator"
-        activity.accessibilityLabel = "Loading \(book.title)"
+        activity.accessibilityLabel = String(localized: "Loading \(book.title)")
         activity.accessibilityCustomActions = [cancelAction]
-        loadingLabel.text = "Loading"
+        loadingLabel.text = String(localized: "Loading")
         loadingLabel.font = .preferredFont(forTextStyle: .subheadline)
         loadingLabel.adjustsFontForContentSizeCategory = true
         loadingLabel.textColor = .label
@@ -112,7 +112,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         loadingPill.isUserInteractionEnabled = false
         loadingPill.isAccessibilityElement = true
         loadingPill.accessibilityIdentifier = "Sumi.Book.LoadingPill"
-        loadingPill.accessibilityLabel = "Loading \(book.title)"
+        loadingPill.accessibilityLabel = String(localized: "Loading \(book.title)")
         loadingPill.accessibilityCustomActions = [cancelAction]
         loadingPill.translatesAutoresizingMaskIntoConstraints = false
         loadingPill.layer.cornerCurve = .continuous

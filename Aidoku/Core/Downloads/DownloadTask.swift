@@ -25,7 +25,9 @@ protocol DownloadTaskDelegate: AnyObject, Sendable {
 actor DownloadTask: Identifiable {
     let id: String
 
+    typealias SourceLookup = @Sendable (String) async -> AidokuRunner.Source?
     private let cache: DownloadCache
+    private let sourceLookup: SourceLookup
     private var downloads: [Download]
     private weak var delegate: DownloadTaskDelegate?
 
@@ -46,9 +48,11 @@ actor DownloadTask: Identifiable {
         case pageProcessorFailed
     }
 
-    init(id: String, cache: DownloadCache, downloads: [Download]) {
+    init(id: String, cache: DownloadCache, downloads: [Download],
+         sourceLookup: @escaping SourceLookup = { await SourceManager.shared.source(for: $0) }) {
         self.id = id
         self.cache = cache
+        self.sourceLookup = sourceLookup
         self.downloads = downloads
     }
 
@@ -171,16 +175,19 @@ extension DownloadTask {
             return
         }
 
-        // attempt to download first chapter in the queue
-        if
-            let download = downloads.first,
-            let source = await SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
-        {
+        // Resolve a source without letting an intervening cancel turn the
+        // response into work for a different queue entry.
+        guard let download = downloads.first else { return }
+        let source = await sourceLookup(download.chapterIdentifier.sourceKey)
+        guard running, downloads.first == download else { return }
+        if let source {
             // if chapter already downloaded, skip
             let directory = cache.directory(for: download.chapterIdentifier)
             guard !directory.exists && !directory.appendingPathExtension("cbz").exists else {
                 downloads.removeFirst()
-                await delegate?.downloadFinished(download: download)
+                var finished = download
+                finished.status = .finished
+                await delegate?.downloadFinished(download: finished)
                 return await next()
             }
 
@@ -194,9 +201,18 @@ extension DownloadTask {
             Task {
                 await self.download(from: source)
             }
-        } else {
-            // source not found, skip this download
+        } else if !downloads.isEmpty {
+            // An unavailable source is a retryable failure, not a silent
+            // disappearance from the user's queue.
+            var failed = download
+            failed.status = .failed
+            let directory = cache.tmpDirectory(for: failed.chapterIdentifier)
+            directory.createDirectory()
+            await DownloadManager.shared.saveChapterMetadata(manga: failed.manga, chapter: failed.chapter, to: directory)
+            guard running, downloads.first == download, directory.exists else { return }
+            markFailed(tmpDirectory: directory)
             downloads.removeFirst()
+            await delegate?.downloadFailed(download: failed)
             await next()
         }
     }
@@ -225,6 +241,8 @@ extension DownloadTask {
 
         let download = downloads[0]
         downloads[0].status = .downloading
+        await delegate?.downloadProgressChanged(download: downloads[0])
+        guard running, downloads.first == download else { return }
 
         let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
         tmpDirectory.removeItem() // remove in case it exists from a previous failed download
@@ -244,11 +262,13 @@ extension DownloadTask {
             }
             guard running && downloads.first == download else { return }
             downloads[0].total = pages.count
+            await delegate?.downloadProgressChanged(download: downloads[0])
         }
 
         var networkPages: [NetworkPage] = []
 
         for (i, page) in pages.enumerated() {
+            guard running, downloads.first == download else { return }
             let pageNumber = String(format: "%03d", i + 1)
             let targetPath = tmpDirectory.appendingPathComponent(pageNumber)
 
@@ -261,21 +281,24 @@ extension DownloadTask {
                     pageNumber: i + 1
                 ))
             } else {
-                currentPage += 1
+                var failed = false
                 do {
                     if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                         try data.write(to: targetPath.appendingPathExtension("png"))
                     } else if let text = page.text, let data = text.data(using: .utf8) {
                         try data.write(to: targetPath.appendingPathExtension("txt"))
                     } else if let image = page.image {
-                        let data = image.pngData()
-                        try data?.write(to: targetPath.appendingPathExtension("png"))
+                        guard let data = image.pngData() else { throw DownloadError.pageProcessorFailed }
+                        try data.write(to: targetPath.appendingPathExtension("png"))
+                    } else {
+                        throw DownloadError.pageProcessorFailed
                     }
                 } catch {
-                    failedPages += 1
-                    failedPageNumbers.append(i + 1)
+                    failed = true
                     LogManager.logger.error("Error writing page data: \(error)")
                 }
+                await incrementProgress(for: download.chapterIdentifier,
+                    failedPage: failed ? i + 1 : nil, completesChapter: false)
             }
 
             if page.hasDescription {
@@ -305,16 +328,17 @@ extension DownloadTask {
                             // download was cancelled, stop processing
                             return
                         }
+                        var failed = result.data == nil
                         if let data = result.data, let path = result.targetPath {
-                            do {
-                                try data.write(to: path)
-                            } catch {
+                            do { try data.write(to: path) }
+                            catch {
+                                failed = true
                                 LogManager.logger.error("Error writing downloaded image: \(error)")
                             }
                         }
                         await self.incrementProgress(
                             for: download.chapterIdentifier,
-                            failedPage: result.data == nil ? result.page.pageNumber : nil
+                            failedPage: failed ? result.page.pageNumber : nil
                         )
                     }
                 }
@@ -327,16 +351,17 @@ extension DownloadTask {
                     // download was cancelled, stop processing
                     return
                 }
+                var failed = result.data == nil
                 if let data = result.data, let path = result.targetPath {
-                    do {
-                        try data.write(to: path)
-                    } catch {
+                    do { try data.write(to: path) }
+                    catch {
+                        failed = true
                         LogManager.logger.error("Error writing downloaded image: \(error)")
                     }
                 }
                 await self.incrementProgress(
                     for: download.chapterIdentifier,
-                    failedPage: result.data == nil ? page.pageNumber : nil
+                    failedPage: failed ? page.pageNumber : nil
                 )
             }
         }
@@ -455,35 +480,38 @@ extension DownloadTask {
         }
     }
 
-    private func incrementProgress(for id: ChapterIdentifier, failedPage: Int? = nil) async {
+    private func incrementProgress(for id: ChapterIdentifier, failedPage: Int? = nil,
+                                   completesChapter: Bool = true) async {
         guard let downloadIndex = downloads.firstIndex(where: { $0.chapterIdentifier == id }) else {
             return
         }
         currentPage += 1
         downloads[downloadIndex].progress = currentPage
         let download = downloads[downloadIndex]
-        Task {
-            await delegate?.downloadProgressChanged(download: download)
-        }
+        await delegate?.downloadProgressChanged(download: download)
+        guard running, downloads.first?.chapterIdentifier == id else { return }
         if let failedPage {
             failedPages += 1
             failedPageNumbers.append(failedPage)
         }
-        if currentPage == pages.count {
+        if completesChapter, currentPage == pages.count {
             await handleChapterDownloadFinish(download: download)
         }
     }
 
     private func handleChapterDownloadFinish(download: Download) async {
         let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
+        guard running, downloads.first == download, tmpDirectory.exists else { return }
 
-        if failedPages == pages.count {
-            // the entire chapter failed to download, skip adding to cache and cancel
-            tmpDirectory.removeItem()
+        if pages.isEmpty || failedPages == pages.count {
+            // Keep a failure marker so the reader offers Retry after a missing
+            // page list or a completely failed transfer.
+            await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
+            markFailed(tmpDirectory: tmpDirectory)
             if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
-                downloads[downloadIndex].status = .cancelled
-                downloads.remove(at: downloadIndex)
-                await delegate?.downloadCancelled(download: download)
+                downloads[downloadIndex].status = .failed
+                let failed = downloads.remove(at: downloadIndex)
+                await delegate?.downloadFailed(download: failed)
             }
             LogManager.logger.error("Chapter failed to download: \(download.chapter.formattedTitle())")
         } else if failedPages > 0 {
@@ -502,42 +530,36 @@ extension DownloadTask {
                 await delegate?.downloadFailed(download: failed)
             }
         } else {
+            var stored = false
             do {
-                // Save chapter metadata after successful download
                 await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
-
+                guard running, downloads.first == download, tmpDirectory.exists else { return }
                 let directory = cache.directory(for: download.chapterIdentifier)
-
                 try FileManager.default.moveItem(at: tmpDirectory, to: directory)
-
                 if AppSettings.downloads.compress.get() {
-                    try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
-                    directory.removeItem()
-                }
-
-                // save manga cover if not already present
-                let mangaDirectory = cache.directory(for: download.mangaIdentifier)
-                let coverPath = mangaDirectory.appendingPathComponent("cover.png")
-                if
-                    !coverPath.exists,
-                    let coverUrl = download.manga.cover.flatMap({ URL(string: $0) }),
-                    let source = await SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
-                {
-                    let request = await source.getModifiedImageRequest(url: coverUrl, context: nil)
-                    let result = try? await URLSession.shared.data(for: request)
-                    if let data = result?.0, self.isSuccessResponse(result?.1) {
-                        try? data.write(to: coverPath)
+                    do {
+                        try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
+                        directory.removeItem()
+                    } catch {
+                        // The complete uncompressed chapter remains readable.
+                        LogManager.logger.error("Could not compress downloaded chapter: \(error)")
                     }
                 }
-
                 await cache.add(chapter: download.chapterIdentifier)
+                stored = true
             } catch {
-                LogManager.logger.error("Error moving temporary download directory (\(tmpDirectory)) to final location: \(error)")
+                LogManager.logger.error("Error storing downloaded chapter: \(error)")
+                if tmpDirectory.exists { markFailed(tmpDirectory: tmpDirectory) }
             }
             if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
-                downloads[downloadIndex].status = .finished
-                downloads.remove(at: downloadIndex)
-                await delegate?.downloadFinished(download: download)
+                downloads[downloadIndex].status = stored ? .finished : .failed
+                let result = downloads.remove(at: downloadIndex)
+                if stored {
+                    await delegate?.downloadFinished(download: result)
+                    // A slow cover host must not hold completed reading pages
+                    // in a permanent-looking Downloading state.
+                    Task { await self.saveCoverIfNeeded(for: result) }
+                } else { await delegate?.downloadFailed(download: result) }
             }
         }
         pages = []
@@ -545,6 +567,17 @@ extension DownloadTask {
         failedPages = 0
         failedPageNumbers = []
         await next()
+    }
+
+    private func saveCoverIfNeeded(for download: Download) async {
+        let directory = cache.directory(for: download.mangaIdentifier)
+        let target = directory.appendingPathComponent("cover.png")
+        guard directory.exists, !target.exists,
+              let url = download.manga.cover.flatMap(URL.init(string:)),
+              let source = await sourceLookup(download.chapterIdentifier.sourceKey) else { return }
+        let request = await source.getModifiedImageRequest(url: url, context: nil)
+        let result = try? await URLSession.shared.data(for: request)
+        if directory.exists, let data = result?.0, isSuccessResponse(result?.1) { try? data.write(to: target) }
     }
 
     // store file with failed pages in failed download directory

@@ -40,7 +40,11 @@ struct SumiReaderToolbarTests {
             .filter { $0.accessibilityIdentifier != "Sumi.Reader.PagePosition" && !($0 is SumiScrubHoverGlassView) }
             .allSatisfy { $0.effect == nil || $0.isHidden })
         let hoverGlass = try #require(descendants(scrubber, type: SumiScrubHoverGlassView.self).first)
-        #expect(hoverGlass.superview?.isHidden == true, "The added glass belongs only to a lifted preview, never the resting rail")
+        var previewAncestor = hoverGlass.superview
+        while let ancestor = previewAncestor, ancestor.accessibilityIdentifier != "Sumi.Reader.ScrubPreview" {
+            previewAncestor = ancestor.superview
+        }
+        #expect(previewAncestor?.isHidden == true, "The added glass belongs only to a lifted preview, never the resting rail")
     }
 
     @Test("Separate vertical controls keep artwork upright and preserve the hover coordinate space")

@@ -3,6 +3,7 @@ import UIKit
 
 /// Reused by the filmstrip and the larger floating preview.
 final class SumiSpreadThumbnailView: UIView {
+    private let contentSurface = UIView()
     private let images = [UIImageView(), UIImageView()]
     private let placeholders = [UIView(), UIView()]
     private let indicators = [UIActivityIndicatorView(style: .medium), UIActivityIndicatorView(style: .medium)]
@@ -20,6 +21,8 @@ final class SumiSpreadThumbnailView: UIView {
         backgroundColor = .clear
         layer.cornerCurve = .continuous
         clipsToBounds = true
+        contentSurface.isUserInteractionEnabled = false
+        addSubview(contentSurface)
         for (index, image) in images.enumerated() {
             let placeholder = placeholders[index]
             placeholder.backgroundColor = UIColor(white: 0.75, alpha: 0.32)
@@ -27,7 +30,7 @@ final class SumiSpreadThumbnailView: UIView {
             placeholder.clipsToBounds = true
             placeholder.isAccessibilityElement = false
             placeholder.isUserInteractionEnabled = false
-            addSubview(placeholder)
+            contentSurface.addSubview(placeholder)
             let indicator = indicators[index]
             indicator.color = .secondaryLabel
             indicator.hidesWhenStopped = true
@@ -36,7 +39,7 @@ final class SumiSpreadThumbnailView: UIView {
             image.layer.cornerCurve = .continuous
             image.clipsToBounds = true
             image.isAccessibilityElement = false
-            addSubview(image)
+            contentSurface.addSubview(image)
         }
         isAccessibilityElement = true
         accessibilityTraits = .image
@@ -47,6 +50,7 @@ final class SumiSpreadThumbnailView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        contentSurface.frame = bounds
         let count = max(1, requestedPages.count)
         let radius = SumiPreviewGeometry.radius(in: bounds)
         layer.cornerRadius = radius
@@ -70,17 +74,33 @@ final class SumiSpreadThumbnailView: UIView {
         }
     }
 
+    func installDecoration(_ view: UIView) {
+        contentSurface.insertSubview(view, at: 0)
+    }
+
+    func bounce() {
+        stopBounce()
+        layoutIfNeeded()
+        guard !isHidden, window != nil, !UIAccessibility.isReduceMotionEnabled else { return }
+        // The artwork and surrounding glass are a single physical preview.
+        contentSurface.layer.add(SumiScrubHoverGlassView.bounceAnimation(), forKey: "Sumi.Preview.Bounce")
+    }
+
+    func stopBounce() {
+        contentSurface.layer.removeAnimation(forKey: "Sumi.Preview.Bounce")
+    }
+
     func configure(identity: String = "", pages: [Int], reversed: Bool,
                    preservingCurrent _: Bool = false, provider: ((Int) async -> UIImage?)?, ready: ((Bool) -> Void)? = nil) {
         let physical = Array((reversed ? Array(pages.reversed()) : pages).prefix(2))
         guard !physical.isEmpty else {
-            cancelImage(clear: true); accessibilityValue = "Preview unavailable"; ready?(false); return
+            cancelImage(clear: true); accessibilityValue = String(localized: "Preview unavailable"); ready?(false); return
         }
         onReady = ready
         let samePages = self.identity == identity && requestedPages == physical
         if samePages {
             if displayedPages == physical {
-                accessibilityValue = "Preview ready"; ready?(true); return
+                accessibilityValue = String(localized: "Preview ready"); ready?(true); return
             }
             if pendingLoads > 0 { return }
         }
@@ -91,8 +111,8 @@ final class SumiSpreadThumbnailView: UIView {
         displayedPages = []
         if !samePages { loadedPages = [] }
         pendingLoads = physical.filter { !loadedPages.contains($0) }.count
-        accessibilityLabel = pages.count == 2 ? "Pages \(pages[0]) and \(pages[1])" : "Page \(pages.first ?? 1)"
-        accessibilityValue = "Loading preview"
+        accessibilityLabel = pages.count == 2 ? String(localized: "Pages \(pages[0]) and \(pages[1])") : String(localized: "Page \(pages.first ?? 1)")
+        accessibilityValue = String(localized: "Loading preview")
         for (index, image) in images.enumerated() {
             image.layer.removeAllAnimations()
             let loaded = physical[safe: index].map { loadedPages.contains($0) } ?? false
@@ -122,7 +142,7 @@ final class SumiSpreadThumbnailView: UIView {
                 tasks = []
                 let complete = loadedPages.count == physical.count
                 displayedPages = complete ? physical : []
-                accessibilityValue = complete ? "Preview ready" : "Preview unavailable"
+                accessibilityValue = complete ? String(localized: "Preview ready") : String(localized: "Preview unavailable")
                 onReady?(complete)
             }
             tasks.append(task)

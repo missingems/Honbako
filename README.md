@@ -2,11 +2,11 @@
 
 A personal manga library and reader for iPhone and iPad. Bundle identifier: `com.missingems.honbaku`.
 
-Honbako starts with an empty library and no installed source lists. Add your own files, connect a personal library server, or explicitly configure a provider you are authorized to use. Popular titles come from your enabled providers and do not add books to the library.
+Honbako starts with **Your First Chapter**, an original, fully bundled manga that teaches the reader's controls. It appears first while unfinished and stays removed if you choose to remove it. No external source lists or third-party manga are installed by default. Add your own files, connect a personal library server, or explicitly configure a provider you are authorized to use.
 
 ## Install the development build
 
-Open the [Honbako download page](https://missingems.github.io/Honbako/install/) in Safari on a registered iPhone or iPad. It includes the Ad Hoc installer, direct IPA download, and an explicit **Add Source List** link. Ordinary installs still start with no sources or library entries.
+Open the [Honbako download page](https://missingems.github.io/Honbako/install/) in Safari on a registered iPhone or iPad. It includes the Ad Hoc installer, direct IPA download, and an explicit **Add Source List** link. A fresh install includes only the original tutorial book; source installation remains an explicit choice.
 
 The source catalog is available as a [raw JSON download](https://gist.githubusercontent.com/missingems/20e91aa1e2a3cbef0c61114801507196/raw/honbako.json). Add it in **Settings → Source Lists**, open **Honbako Sources**, then choose which sources to install.
 
@@ -22,11 +22,13 @@ The [Honbako Sources catalog](https://gist.github.com/missingems/20e91aa1e2a3cbe
 
 The older personal-device package catalog remains archived in `sources/personal.json` for compatibility with prior builds. Its packages are third-party implementations and are not represented as a native rewrite.
 
-## Search and Popular
+## Library and Search
 
-Search publishes complete, readable results as providers respond, grouped under pinned source headers. Repeated queries reuse short-lived provider and metadata caches. A title from each provider keeps that provider's identity and reading progress.
+The library shows saved books in Reading and Finished sections, omitting empty sections. Red glass badges show available unread chapters in the selected translation, without double-counting duplicate editions or locked chapters. Reading places the unfinished tutorial first, then prioritizes unread updates while keeping equal-priority books in their saved order. Finished books show their finished-reading dates. The automatic Popular section has been removed.
 
-Popular aggregates the enabled sources' own popular, trending, or ranked catalogs, with source-aware cover requests and direct reading. It is hidden when no sources are added. Catalog metadata is cached for 15 minutes and removed from view when its source is disabled or removed. Catalog loading pauses during search.
+Search publishes complete, readable results as providers respond, grouped under pinned source headers. Each row puts its Ongoing or Finished publication status above the title, with available publication date, author, translation information, and saved reading position. Publication status is distinct from whether you have finished reading the book. Repeated queries reuse short-lived provider and metadata caches. A title from each provider keeps that provider's identity and reading progress.
+
+The interface and bundled tutorial support English, Japanese, Simplified Chinese, and Traditional Chinese. Source-provided manga translations remain dependent on each title's available chapters.
 
 The older editorial recommendation feed remains available for prior builds. Current versions do not display or fetch it. See the archived [recommendation setup](docs/RECOMMENDATIONS.md).
 

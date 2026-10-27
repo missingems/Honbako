@@ -60,7 +60,7 @@ struct SumiSourcesView: View {
                     }
                     Button("Import Source File", systemImage: "square.and.arrow.down") { importing = true }
                 } header: { Text("More Sources") }
-                footer: { Text("Add a source list supplied by your provider, or import a source file you trust. Honbako includes no source lists or manga.") }
+                footer: { Text("Honbako includes an original tutorial. Add your own files or a connection to read more.") }
 
                 Section {
                     Button { proPresented = true } label: {
@@ -89,7 +89,7 @@ struct SumiSourcesView: View {
                     let scoped = url.startAccessingSecurityScopedResource()
                     defer { if scoped { url.stopAccessingSecurityScopedResource() } }
                     if await SourceManager.shared.importSource(from: url) == nil {
-                        errorMessage = "This source couldn’t be imported. Choose a compatible .aix file and try again."
+                        errorMessage = String(localized: "This source couldn’t be imported. Choose a compatible .aix file and try again.")
                     }
                     await reload()
                 }
@@ -113,7 +113,7 @@ struct SumiSourcesView: View {
                 await SourceManager.shared.enable(sourceKey: source.sourceId)
                 if await SourceManager.shared.source(for: source.sourceId) == nil {
                     await SourceManager.shared.disable(sourceKey: source.sourceId)
-                    errorMessage = "This source couldn’t be enabled. Import a current version and try again."
+                    errorMessage = String(localized: "This source couldn’t be enabled. Import a current version and try again.")
                 }
             } else { await SourceManager.shared.disable(sourceKey: source.sourceId) }
             await reload()

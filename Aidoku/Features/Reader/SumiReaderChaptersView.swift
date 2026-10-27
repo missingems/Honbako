@@ -4,6 +4,8 @@ import SwiftUI
 
 struct SumiReaderChaptersView: View {
     let currentKey: String
+    let currentPage: Int
+    let currentTotalPages: Int
     let source: AidokuRunner.Source?
     let manga: AidokuRunner.Manga?
     let languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)?
@@ -11,6 +13,11 @@ struct SumiReaderChaptersView: View {
     let select: (AidokuRunner.Chapter, Bool) -> Void
     let close: () -> Void
 
+    @StateObject private var chapterState = HonbakoReaderChapterState()
+    @State private var requestedPro: HonbakoProFeature?
+    @State private var showingEarlierPrompt = false
+    @State private var pendingChapter: AidokuRunner.Chapter?
+    @State private var pendingEarlier: [AidokuRunner.Chapter] = []
     @State private var chapters: [AidokuRunner.Chapter]
     @State private var selectedLanguage: String
     @State private var loading = false
@@ -24,11 +31,14 @@ struct SumiReaderChaptersView: View {
     @State private var languageDiscoveryRetry = 0
 
     init(chapters: [AidokuRunner.Chapter], currentKey: String,
+         currentPage: Int = 0, currentTotalPages: Int = 0,
          source: AidokuRunner.Source? = nil, manga: AidokuRunner.Manga? = nil,
          languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)? = nil,
          canRead: @escaping (AidokuRunner.Chapter) -> Bool,
          select: @escaping (AidokuRunner.Chapter, Bool) -> Void, close: @escaping () -> Void) {
         self.currentKey = currentKey
+        self.currentPage = currentPage
+        self.currentTotalPages = currentTotalPages
         self.source = source
         self.manga = manga
         self.languageSelection = languageSelection
@@ -57,7 +67,7 @@ struct SumiReaderChaptersView: View {
     }
 
     private var visibleChapters: [AidokuRunner.Chapter] {
-        Array(SumiChapterLanguage.filter(chapters, language: selectedLanguage).reversed())
+        SumiChapterLanguage.filter(chapters, language: selectedLanguage)
     }
 
     private var currentChapter: AidokuRunner.Chapter? { chapters.first { $0.key == currentKey } }
@@ -70,7 +80,9 @@ struct SumiReaderChaptersView: View {
                 languageSection
                 if let manga, let current = chapters.first(where: { $0.key == currentKey }) {
                     HonbakoReaderActionsView(manga: manga, chapter: current,
-                        chapters: SumiChapterLanguage.filter(chapters, language: currentLanguage), sourceAvailable: source != nil)
+                        chapters: SumiChapterLanguage.filter(chapters, language: currentLanguage), sourceAvailable: source != nil,
+                        chapterState: chapterState, requestPro: { requestedPro = $0 })
+                        .disabled(committing)
                 }
                 if let languageNotice, !loading {
                     Section {
@@ -92,24 +104,15 @@ struct SumiReaderChaptersView: View {
                 } else {
                     Section {
                         ForEach(visibleChapters, id: \.key) { chapter in
-                            Button { Task { await choose(chapter, resumingTranslation: false) } } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(chapter.chapterNumber.map { "Chapter \(String(format: "%g", Double($0)))" } ?? chapter.title ?? "Chapter")
-                                            .foregroundStyle(.primary)
-                                        if chapter.chapterNumber != nil, let title = chapter.title, !title.isEmpty {
-                                            Text(title).font(.subheadline).foregroundStyle(.secondary)
-                                        }
-                                    }
-                                    Spacer()
-                                    if !canRead(chapter) { Image(systemName: "lock").foregroundStyle(.secondary) }
-                                    else if chapter.key == currentKey { Image(systemName: "checkmark").foregroundStyle(.primary) }
+                            HStack(spacing: 12) {
+                                Button { Task { await choose(chapter, resumingTranslation: false) } } label: {
+                                    chapterLabel(chapter)
                                 }
-                                .contentShape(.rect)
+                                .buttonStyle(.plain)
+                                .disabled(!canRead(chapter) || committing)
+                                .accessibilityIdentifier("Sumi.Reader.Chapter.\(chapter.key)")
+                                if manga?.sourceKey != HonbakoTutorialManga.sourceKey { chapterDownloadMenu(chapter) }
                             }
-                            .buttonStyle(.plain)
-                            .disabled(!canRead(chapter) || committing)
-                            .accessibilityIdentifier("Sumi.Reader.Chapter.\(chapter.key)")
                         }
                     }
                 }
@@ -128,11 +131,117 @@ struct SumiReaderChaptersView: View {
             }
             .task(id: "\(selectedLanguage)|\(retry)") { await loadLanguage() }
             .task(id: languageDiscoveryRetry) { await loadAvailableLanguages() }
+            .task(id: chapters.map(\.key)) {
+                await chapterState.configure(manga: manga, chapters: chapters, currentKey: currentKey,
+                    currentPage: currentPage, currentTotal: currentTotalPages)
+            }
+        }
+        // Present from the stable picker host, not a reusable List section.
+        .sheet(item: $requestedPro) { feature in HonbakoProView(feature: feature) }
+        .alert("Mark Earlier Chapters as Read?", isPresented: $showingEarlierPrompt, presenting: pendingChapter) { chapter in
+            Button("Keep Unread", role: .cancel) { completeEarlierPrompt(chapter, markRead: false) }
+            Button("Mark as Read") { completeEarlierPrompt(chapter, markRead: true) }
+        } message: { _ in
+            Text("There are \(pendingEarlier.count) earlier unread chapters in this language.")
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .presentationBackground(Color(uiColor: .systemGroupedBackground))
         .tint(.primary)
         .interactiveDismissDisabled(committing)
+    }
+
+    private func chapterLabel(_ chapter: AidokuRunner.Chapter) -> some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(chapter.chapterNumber.map { String(localized: "Chapter \(String(format: "%g", Double($0)))") }
+                    ?? chapter.title ?? String(localized: "Chapter"))
+                    .foregroundStyle(.primary)
+                if chapter.chapterNumber != nil, let title = chapter.title, !title.isEmpty {
+                    Text(title).font(.subheadline).foregroundStyle(.secondary)
+                }
+                HStack(spacing: 8) {
+                    if let date = chapter.dateUploaded {
+                        Text(date, format: .dateTime.year().month(.abbreviated).day())
+                            .accessibilityIdentifier("Honbako.Reader.Chapter.ReleaseDate.\(chapter.key)")
+                    } else {
+                        Text("Date Unavailable")
+                            .accessibilityIdentifier("Honbako.Reader.Chapter.ReleaseDate.\(chapter.key)")
+                    }
+                    Text("·").accessibilityHidden(true)
+                    Text(chapterState.reading[chapter.key]?.label ?? String(localized: "Unread"))
+                        .accessibilityIdentifier("Honbako.Reader.Chapter.Progress.\(chapter.key)")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            if !canRead(chapter) { Image(systemName: "lock").foregroundStyle(.secondary) }
+            else if chapter.key == currentKey { Image(systemName: "checkmark").foregroundStyle(.primary) }
+            else if chapterState.reading[chapter.key]?.completed == true {
+                Image(systemName: "checkmark.circle").foregroundStyle(.secondary)
+            }
+        }
+        .contentShape(.rect)
+    }
+
+    private func chapterDownloadMenu(_ chapter: AidokuRunner.Chapter) -> some View {
+        let status = chapterState.statuses[chapter.key] ?? .none
+        let active = status == .queued || status == .downloading || status == .paused
+        return Menu {
+            if active {
+                Button("Cancel Download", systemImage: "xmark.circle") {
+                    guard let manga else { return }
+                    let id = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                    Task { await DownloadManager.shared.cancelDownloads(for: [id]); await chapterState.refresh() }
+                }
+            } else if status == .finished {
+                Button("Remove Download", systemImage: "trash", role: .destructive) {
+                    guard let manga else { return }
+                    let id = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                    Task { await DownloadManager.shared.delete(chapters: [id]); await chapterState.refresh() }
+                }
+            } else {
+                Button(status == .failed ? String(localized: "Retry Download") : String(localized: "Download Chapter"),
+                       systemImage: status == .failed ? "arrow.clockwise" : "arrow.down.circle") {
+                    downloadChapter(chapter)
+                }
+                .disabled(source == nil || chapter.locked)
+            }
+        } label: {
+            VStack(spacing: 3) {
+                if status == .downloading, let item = chapterState.downloads[chapter.key], item.total > 0 {
+                    ProgressView(value: min(1, Double(item.progress) / Double(item.total)))
+                        .progressViewStyle(.circular)
+                    Text("\(item.progress)/\(item.total)").font(.caption)
+                } else {
+                    Image(systemName: status == .finished ? "checkmark.circle" : status == .failed ? "arrow.clockwise.circle"
+                        : active ? "clock" : "arrow.down.circle")
+                }
+            }
+            .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Offline Options")
+        .accessibilityIdentifier("Honbako.Reader.Chapter.Download.\(chapter.key)")
+        .disabled(committing)
+    }
+
+    private func downloadChapter(_ chapter: AidokuRunner.Chapter) {
+        guard HonbakoProStore.shared.hasPro else { requestedPro = .offline; return }
+        guard let manga else { return }
+        var payload = manga
+        payload.chapters = chapters
+        Task { await DownloadManager.shared.download(manga: payload, chapters: [chapter]); await chapterState.refresh() }
+    }
+
+    private func completeEarlierPrompt(_ chapter: AidokuRunner.Chapter, markRead: Bool) {
+        let earlier = pendingEarlier
+        guard let manga else { return }
+        HonbakoEarlierChapterPrompt.recordDecision(mangaID: manga.identifier, chapterKey: chapter.key)
+        Task {
+            if markRead { await HistoryManager.shared.addHistory(mangaId: manga.identifier, chapters: earlier) }
+            await choose(chapter, resumingTranslation: false, considerEarlier: false)
+        }
     }
 
     private var languageSection: some View {
@@ -149,7 +258,7 @@ struct SumiReaderChaptersView: View {
                 .accessibilityIdentifier("Sumi.Reader.Language")
                 .accessibilityHint("Continues the matching chapter in the selected language when available.")
             } else {
-                LabeledContent("Language", value: languages.first.map(SourceLanguage.displayName(for:)) ?? "Original Edition")
+                LabeledContent("Language", value: languages.first.map(SourceLanguage.displayName(for:)) ?? String(localized: "Original Edition"))
                     .accessibilityIdentifier("Sumi.Reader.Language")
             }
             if discoveringLanguages {
@@ -218,21 +327,34 @@ struct SumiReaderChaptersView: View {
             if let translated = SumiChapterLanguage.equivalent(to: currentChapter, in: readable, language: language) {
                 await choose(translated, resumingTranslation: true)
             } else {
-                languageNotice = "Your current chapter isn’t available in \(SourceLanguage.displayName(for: language)). Choose a chapter below to continue."
+                languageNotice = String(localized: "Your current chapter isn’t available in \(SourceLanguage.displayName(for: language)). Choose a chapter below to continue.")
             }
         } catch is CancellationError { }
         catch {
             guard !Task.isCancelled, selectedLanguage == language else { return }
-            errorMessage = "Chapters couldn’t be loaded. \(error.localizedDescription)"
+            errorMessage = String(localized: "Chapters couldn’t be loaded. \(error.localizedDescription)")
             loading = false
         }
     }
 
-    private func choose(_ chapter: AidokuRunner.Chapter, resumingTranslation: Bool) async {
+    private func choose(_ chapter: AidokuRunner.Chapter, resumingTranslation: Bool,
+                        considerEarlier: Bool = true) async {
         guard !committing else { return }
         committing = true
         defer { committing = false }
         do {
+            if considerEarlier, !resumingTranslation, chapter.key != currentKey,
+               !AppSettings.general.incognitoMode.get(), manga != nil {
+                let completed = await chapterState.completedKeys()
+                try Task.checkCancellation()
+                let earlier = HonbakoEarlierChapterPolicy.unreadBefore(chapter, in: chapters, completedKeys: completed)
+                if !earlier.isEmpty {
+                    pendingChapter = chapter
+                    pendingEarlier = earlier
+                    showingEarlierPrompt = true
+                    return
+                }
+            }
             let language = SumiChapterLanguage.normalized(selectedLanguage) ?? SumiChapterLanguage.normalized(chapter.language)
             if let manga { try await SumiChapterLanguage.persist(language: language, chapters: chapters, manga: manga) }
             try Task.checkCancellation()
@@ -240,7 +362,7 @@ struct SumiReaderChaptersView: View {
             select(chapter, resumingTranslation)
         } catch is CancellationError { }
         catch {
-            errorMessage = "Your language choice couldn’t be saved. Try again."
+            errorMessage = String(localized: "Your language choice couldn’t be saved. Try again.")
         }
     }
 }
