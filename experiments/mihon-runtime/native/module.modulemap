@@ -1,0 +1,4 @@
+module HonbakoJavaRuntime {
+    header "HBJavaExtensionExecutor.h"
+    export *
+}

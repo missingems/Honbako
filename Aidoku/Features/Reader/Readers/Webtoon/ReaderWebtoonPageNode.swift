@@ -19,6 +19,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     let page: Page
     let temporaryPageStore: ReaderTemporaryPageStore
     let pillarboxLayoutState: ReaderPillarboxLayoutState
+    private let imagePipeline: ImagePipeline
 
     weak var delegate: ReaderWebtoonViewController?
 
@@ -100,12 +101,14 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         source: AidokuRunner.Source?,
         page: Page,
         temporaryPageStore: ReaderTemporaryPageStore,
-        pillarboxLayoutState: ReaderPillarboxLayoutState
+        pillarboxLayoutState: ReaderPillarboxLayoutState,
+        imagePipeline: ImagePipeline = .shared
     ) {
         self.source = source
         self.page = page
         self.temporaryPageStore = temporaryPageStore
         self.pillarboxLayoutState = pillarboxLayoutState
+        self.imagePipeline = imagePipeline
         super.init()
 
         automaticallyManagesSubnodes = true
@@ -352,6 +355,7 @@ extension ReaderWebtoonPageNode {
         imageProcessingTask = nil
     }
 
+    @MainActor
     func loadPage() async {
         guard image == nil, text == nil, !Task.isCancelled else { return }
 
@@ -378,13 +382,9 @@ extension ReaderWebtoonPageNode {
         }
     }
 
+    @MainActor
     private func loadImage(url: URL, context: PageContext?) async {
-        let urlRequest = if !url.isFileURL, let source {
-            await source.getModifiedImageRequest(url: url, context: context)
-        } else {
-            URLRequest(url: url)
-        }
-
+        let runtimeImage = MihonRuntimeImageLoader.handles(url: url, source: source)
         let width = pageWidth
         let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && width > 0
         let shouldUpscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
@@ -394,7 +394,8 @@ extension ReaderWebtoonPageNode {
         if
             let source,
             source.features.processesPages,
-            !url.isFileURL
+            !url.isFileURL,
+            !runtimeImage
         {
             // only process pages if the source supports it and the image isn't downloaded
             processors.append(PageInterceptorProcessor(source: source, pageContext: context))
@@ -409,16 +410,22 @@ extension ReaderWebtoonPageNode {
             processors.append(UpscaleProcessor())
         }
 
-        let request = ImageRequest(
-            urlRequest: urlRequest,
-            processors: processors,
-            userInfo: [.processesKey: usePageProcessor]
-        )
+        let request: ImageRequest
+        if let runtimeRequest = MihonRuntimeImageLoader.imageRequest(url: url, context: context, source: source, processors: processors) {
+            request = runtimeRequest
+        } else {
+            let urlRequest = if !url.isFileURL, let source {
+                await source.getModifiedImageRequest(url: url, context: context)
+            } else {
+                URLRequest(url: url)
+            }
+            request = ImageRequest(urlRequest: urlRequest, processors: processors, userInfo: [.processesKey: usePageProcessor])
+        }
 
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
-        let imageTask = ImagePipeline.shared.loadImage(
+        let imageTask = imagePipeline.loadImage(
             with: request,
             progress: { [weak progressView] _, completed, total in
                 guard let progressView else { return }
@@ -490,8 +497,8 @@ extension ReaderWebtoonPageNode {
         progressNode.isHidden = false
 
         // check cache
-        if ImagePipeline.shared.cache.containsCachedImage(for: request) {
-            let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
+        if imagePipeline.cache.containsCachedImage(for: request) {
+            let imageContainer = imagePipeline.cache.cachedImage(for: request)
             image = imageContainer?.image
             if isNodeLoaded {
                 displayPage()
@@ -535,7 +542,7 @@ extension ReaderWebtoonPageNode {
         self.imageProcessingTask = nil
         guard !Task.isCancelled, let image else { return }
 
-        ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+        imagePipeline.cache.storeCachedImage(ImageContainer(image: image), for: request)
         self.image = image
         if isNodeLoaded {
             displayPage()
@@ -793,18 +800,18 @@ extension ReaderWebtoonPageNode {
         if let urlString = page.imageURL, let url = URL(string: urlString) {
             // For URL-based images, remove from both memory and disk cache
             if let currentImageRequest = currentImageRequest {
-                ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
+                imagePipeline.cache.removeCachedImage(for: currentImageRequest)
             }
 
             // Also try to remove the basic URL request from cache
             let basicRequest = ImageRequest(url: url)
-            ImagePipeline.shared.cache.removeCachedImage(for: basicRequest)
+            imagePipeline.cache.removeCachedImage(for: basicRequest)
 
         } else if page.base64 != nil {
             // For base64 images, remove using the page key
             let fullKey = "\(page.key)-\(settingsKey)"
             let request = ImageRequest(id: fullKey, data: { Data() })
-            ImagePipeline.shared.cache.removeCachedImage(for: request)
+            imagePipeline.cache.removeCachedImage(for: request)
 
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             // For zip-based images, remove using the generated key
@@ -814,7 +821,7 @@ extension ReaderWebtoonPageNode {
             let key = String(hasher.finalize())
             let fullKey = "\(key)-\(settingsKey)"
             let request = ImageRequest(id: fullKey, data: { Data() })
-            ImagePipeline.shared.cache.removeCachedImage(for: request)
+            imagePipeline.cache.removeCachedImage(for: request)
         }
     }
 }

@@ -22,12 +22,20 @@ struct SourceImageView: View {
 
     @State private var imageRequest: ImageRequest?
 
+    private struct RequestIdentity: Hashable {
+        let url: String
+        let source: ObjectIdentifier?
+        let runtimeScope: String?
+    }
+
     private var processors: [ImageProcessing] {
         var processors: [ImageProcessing] = []
         if let downsampleWidth {
             processors.append(DownsampleProcessor(width: downsampleWidth))
         }
-        if let source, source.features.processesCovers {
+        let usesRuntimeCover = URL(string: imageUrl).map { MihonRuntimeCoverImageLoader.handles(url: $0, source: source) } ?? false
+        if let source, source.features.processesCovers,
+           !usesRuntimeCover {
             processors.append(CoverInterceptorProcessor(source: source))
         }
         return processors
@@ -59,31 +67,27 @@ struct SourceImageView: View {
             }
         }
         .processors(processors)
-        .onAppear {
-            guard imageRequest == nil else { return }
-            Task {
-                await loadImageRequest(url: imageUrl)
-            }
-        }
-        .onChange(of: imageUrl) { newValue in
+        .task(id: RequestIdentity(url: imageUrl, source: source.map(ObjectIdentifier.init),
+                                  runtimeScope: MihonRuntimeCoverImageLoader.cacheScope(source: source))) {
             imageRequest = nil
-            Task {
-                await loadImageRequest(url: newValue)
-            }
+            let request = await Self.makeImageRequest(url: imageUrl, source: source)
+            guard !Task.isCancelled else { return }
+            imageRequest = request
         }
     }
 
-    func loadImageRequest(url: String) async {
+    static func makeImageRequest(url: String, source: AidokuRunner.Source?) async -> ImageRequest {
         let url = URL(string: url)
         if let fileUrl = url?.toAidokuFileUrl() {
-            imageRequest = ImageRequest(url: fileUrl)
-            return
+            return ImageRequest(url: fileUrl)
+        }
+        if let url, let runtime = MihonRuntimeCoverImageLoader.imageRequest(url: url, source: source) {
+            return runtime
         }
         guard let source, let url, !url.isFileURL else {
-            imageRequest = ImageRequest(url: url)
-            return
+            return ImageRequest(url: url)
         }
-        imageRequest = ImageRequest(
+        return ImageRequest(
             urlRequest: await source.getModifiedImageRequest(url: url, context: nil),
             userInfo: [.processesKey: source.features.processesCovers]
         )

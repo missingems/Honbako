@@ -1,0 +1,6 @@
+Java 27-internal
+OpenJDK 64-Bit Zero VM
+interpreted mode, static
+Class Loading: Passed
+Reflection: Passed
+Java Worker: Passed
