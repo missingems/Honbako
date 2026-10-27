@@ -4,24 +4,24 @@ The app and installer share an opaque 1024 × 1024 PNG. iOS applies the outer ic
 
 - App asset: `Aidoku/App/Resources/Assets.xcassets/SumiIcon.appiconset/SumiIcon.png`
 - Installer asset: `recommendations/public/install/icon.png`
-- Created with the built-in image generation tool, then resized to the required app-icon dimensions.
+- Mode: built-in image generation tool, editing the previous icon, then resized to the required app-icon dimensions.
 - Lettering: the single Traditional Chinese character **漫** (U+6F2B).
-- Cover treatment: matte black frame and binding, inset printed manga face, generous continuous inner corners following the system icon shape.
-- The previous Build 8–10 artwork was the edit target. A private iPhone screenshot was used only as a visual reference for corner masking and is not included in this repository.
+- Frame: flat near-black printed border with balanced insets and matching continuous inner corners. No separate side spine, bevel, binding seam, or directional rim lighting.
+- Manga treatment: restrained panel lines, speed lines, and halftone around a clean white face.
+- Verified at actual Home Screen size in the iPhone Duo simulator.
 
 ## Generation Prompt
 
 Use case: precise-object-edit
-Asset type: production iOS app icon artwork, opaque full square.
-Input image 1: existing Honbako manga-cover icon, edit target.
-Input image 2: user's iPhone screenshot, visual reference ONLY showing the corner-mask problem. Do not reproduce the screenshot, wallpaper, neighboring app, or phone.
+Asset type: production iOS app icon, one square opaque artwork.
+Edit target: the attached current Honbako icon. Fix its uneven apparent spacing and distracting left binding.
 
-Primary request: Keep the thick matte black manga-cover frame and manga print aesthetic, change the text to ONE large character "漫", and make the inner white printed-paper opening have generously rounded continuous corners CONCENTRIC with the iPhone app-icon mask.
+Make the frame a CLEAN, FLAT, UNIFORM BLACK PRINTED BORDER. Completely remove the left-side book spine, separate vertical strip, fold, binding seam, offset bevel, raised lip, directional highlight, 3D volume and shadow. There must be no side protrusion. All four sides should have the same near-black color and the SAME visual thickness. No photographic book object or leather material. Think a beautifully printed manga cover in a precise graphic frame.
 
-Corner geometry is essential: the current white opening's nearly square corners look wrong after iOS rounds the outside. The new white opening should be an inset soft squircle/continuous rounded rectangle, with much larger inner curves. Imagine the outer system squircle has been inset by the black frame thickness, so inner and outer curves follow each other with an even substantial band of black around every corner. At 1024 square, printed paper opening is inset roughly 72–80 pixels from each side, and its inner corner curvature is generous, visually equivalent to a 160–180 pixel radius, smoothly continuous rather than small corner rounding. Keep the manga artwork, panel rules and speed lines entirely clipped inside that rounded paper opening. At the corner areas, there must be plenty of matte black material between the opening and the future system mask.
-The actual artwork canvas must remain full bleed, filled with opaque near-black right out to all four square corners. Do not bake in transparent corners, a surrounding wallpaper/background, a separate floating squircle, or a mockup. The system will apply the outer mask.
+Geometry: full square 1024 × 1024 canvas, opaque near-black all the way to the square outer edges; iOS will apply its own outside mask. The inset white printed face must be a perfectly centered square continuous rounded rectangle. Its top, bottom, left and right straight-edge insets should all be EXACTLY 64 pixels. White opening bounds at x=64,y=64,width=896,height=896. Use matching continuous inner corner curvature, visually around a 160 pixel radius, following the eventual iPhone outer icon shape. Top and bottom edges of this white face must be equally far from the canvas edge, and the four corner curves must match one another precisely. No perspective or tilt. No rounded black book mockup sitting on a background.
 
-Text (verbatim): "漫" (U+6F2B). Exactly ONE character. Remove "畫" completely. Enlarge and optically center "漫" in the inset paper panel, occupying around 65–70 percent of the artwork width with clear breathing room. Correct water-radical 氵 on left, 曼 structure on right. Heavy confident black brush manga-title lettering, clean structural strokes, readable at Home Screen size.
-Preserve sparse manga panel borders, speed lines and halftone around the edges of the white paper, secondary to the one bold glyph. Restrained printed paper texture. Keep the smooth matte black binding, subtle edge depth and a restrained crease at the left spine; no aged leather, scratched chrome, heavy gloss, extra text, letters, numbers, faces or props.
-Output exactly one finished square app-icon artwork, not a comparison sheet or phone rendering.
+Keep exactly one correct "漫" (U+6F2B). Retain the bold expressive black manga brush title lettering, but make its composition visually centered in both axes. A little more white breathing space than before: glyph occupies roughly 66% width and 66% height of the full canvas; center the solid ink mass, with equal apparent white space above and below. No strokes touching the frame. Clean strong silhouette at app-icon size.
+Retain restrained manga panel dividers, fine speed lines, and light halftone dots only near the inner white panel's edges, all clipped by its rounded corners. Keep the central region behind the letter clean. White paper is neutral and evenly lit, with minimal print grain. All lighting and edge treatments must be symmetrical so nothing makes the top border look lighter/thinner than the bottom.
+Text (verbatim): "漫". No other glyphs, letters, numbers, branding, or small text.
+Output exactly one final flat square app icon artwork; no device, no wallpaper, no shadow outside it, no transparency, no comparison layout.
 
