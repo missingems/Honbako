@@ -161,7 +161,9 @@ final class SumiPaperHaptics: NSObject {
         let delta = next - self.progress
         let elapsed = max(1.0 / 240, now - lastProgressSample)
         suppliedVelocity = velocity.isFinite ? velocity : 0
-        if abs(delta) > 0.0005 {
+        // Keep slow drags measurable at 120 Hz; filtering each small sample
+        // would discard real motion when the recognizer supplies zero speed.
+        if abs(delta) > 0.000001 {
             lastMovement = now
             derivedVelocity = delta * distance / elapsed
         } else if now - lastMovement > 0.06 {
