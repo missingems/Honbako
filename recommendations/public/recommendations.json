@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-26T15:07:32Z",
+  "generatedAt": "2026-10-27T00:11:57Z",
   "curation": {
     "method": "deterministic-reviewed-catalog",
     "seedModel": "gpt-6.1-sol",
@@ -33,7 +33,7 @@
         "metric": "trending_z_score",
         "value": 1.5317369,
         "rank": 4,
-        "observedAt": "2026-10-26T15:07:32Z",
+        "observedAt": "2026-10-27T00:11:57Z",
         "sourceURL": "https://openlibrary.org/works/OL13268171W"
       }
     },
