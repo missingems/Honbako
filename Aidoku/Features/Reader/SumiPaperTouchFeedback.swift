@@ -1,8 +1,8 @@
 #if SUMI
 import UIKit
 
-/// Anchor the discrete paper contacts to the actual reader, including its
-/// display and touch position. Core Haptics supplies the moving-paper texture.
+/// Quiet paper-grain contacts on the actual reader display. Movement drives
+/// these soft contacts; finger-down, release and page landing stay silent.
 @MainActor
 final class SumiPaperTouchFeedback {
     private weak var view: UIView?
@@ -15,8 +15,8 @@ final class SumiPaperTouchFeedback {
     func prepare(in view: UIView?) {
         if let view, self.view !== view {
             self.view = view
-            lift = UIImpactFeedbackGenerator(style: .light, view: view)
-            release = UIImpactFeedbackGenerator(style: .medium, view: view)
+            lift = UIImpactFeedbackGenerator(style: .soft, view: view)
+            release = UIImpactFeedbackGenerator(style: .soft, view: view)
         }
         lift?.prepare()
         release?.prepare()

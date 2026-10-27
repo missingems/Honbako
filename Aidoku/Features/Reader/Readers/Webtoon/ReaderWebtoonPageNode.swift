@@ -60,6 +60,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var currentImageRequest: ImageRequest?
     #if SUMI
     private var sumiRevealGeneration = 0
+    private(set) var sumiImageLoadFailed = false
+
+    func sumiStopLoading() { cancelPageLoad() }
     private var sumiEdgeBackground: SumiPageEdgeBackgroundView?
     private var sumiIsRevealing = false
     var sumiIsImageReady: Bool {
@@ -354,6 +357,10 @@ extension ReaderWebtoonPageNode {
 
     func loadPage() async {
         guard image == nil, text == nil, !Task.isCancelled else { return }
+        #if SUMI
+        sumiImageLoadFailed = false
+        defer { if !Task.isCancelled { sumiImageLoadFailed = image == nil && text == nil } }
+        #endif
 
         imageNode.alpha = 0
         textNode.alpha = 0

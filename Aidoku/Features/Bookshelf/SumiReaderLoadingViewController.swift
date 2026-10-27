@@ -16,6 +16,8 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
     private let activity = UIActivityIndicatorView(style: .medium)
     private let message = UILabel()
     private let retryButton = UIButton(type: .system)
+    private let closeButton = UIButton(type: .system)
+    private var hasError = false
     private let status = UIStackView()
     private var isLifting = false
     private var hasLifted = false
@@ -31,6 +33,11 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override var canBecomeFirstResponder: Bool { true }
+    override var keyCommands: [UIKeyCommand]? {
+        [UIKeyCommand(input: UIKeyCommand.inputEscape, modifierFlags: [], action: #selector(cancelFromKeyboard))]
+    }
+    @objc private func cancelFromKeyboard() { _ = accessibilityPerformEscape() }
     override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
 
@@ -84,6 +91,10 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         retryButton.setTitle(String(localized: "Retry"), for: .normal)
         retryButton.tintColor = .white
         retryButton.addAction(UIAction { [weak self] _ in self?.retry?() }, for: .touchUpInside)
+        closeButton.setTitle(String(localized: "Close"), for: .normal)
+        closeButton.tintColor = .white
+        closeButton.accessibilityIdentifier = "Sumi.Book.LoadingClose"
+        closeButton.addAction(UIAction { [weak self] _ in self?.closeBook?() }, for: .touchUpInside)
         activity.color = .label
         activity.hidesWhenStopped = true
         activity.isAccessibilityElement = false
@@ -127,7 +138,11 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         status.axis = .vertical
         status.alignment = .center
         status.spacing = 12
-        [message, retryButton].forEach(status.addArrangedSubview)
+        let errorActions = UIStackView(arrangedSubviews: [retryButton, closeButton])
+        errorActions.axis = .horizontal
+        errorActions.spacing = 28
+        errorActions.alignment = .center
+        [message, errorActions].forEach(status.addArrangedSubview)
         status.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(status)
         NSLayoutConstraint.activate([
@@ -167,6 +182,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         layoutLoadingIndicator()
         isLifting = true
         hasLifted = true
+        becomeFirstResponder()
         UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0.15 : 0.48,
                        delay: 0, usingSpringWithDamping: 0.82, initialSpringVelocity: 0,
                        options: [.beginFromCurrentState, .allowUserInteraction]) {
@@ -260,6 +276,10 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
 
     func showLoading() {
         loadViewIfNeeded()
+        hasError = false
+        loadingPill.layer.removeAllAnimations()
+        view.isUserInteractionEnabled = true
+        closeButton.isHidden = true
         message.isHidden = true
         retryButton.isHidden = true
         cover.isHidden = false
@@ -269,6 +289,9 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
     }
 
     func showError(_ text: String) {
+        hasError = true
+        view.isUserInteractionEnabled = true
+        closeButton.isHidden = false
         activity.stopAnimating()
         loadingPill.isHidden = true
         message.text = text
@@ -324,7 +347,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
     func cancelOpeningIfOutsideCover(at point: CGPoint) {
         guard !isReturningToLibrary else { return }
         let visibleFrame = cover.layer.presentation()?.frame ?? cover.frame
-        guard !visibleFrame.contains(point) else { return }
+        guard hasError || !visibleFrame.contains(point) else { return }
         closeBook?()
     }
 

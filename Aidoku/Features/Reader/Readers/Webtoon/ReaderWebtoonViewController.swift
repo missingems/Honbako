@@ -105,6 +105,20 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var sumiNavigationID = UUID()
     var sumiOnPageTurnBegan: (() -> Void)?
     var sumiCurrentCanonicalPage: Int { min(max(1, getCurrentPage()), max(1, viewModel.pages.count)) }
+    var sumiOpeningImageFailed: Bool {
+        collectionNode.visibleNodes.contains {
+            guard let page = $0 as? ReaderWebtoonPageNode, let chapter,
+                  page.page.chapterId == chapter.key || page.page.chapterId == chapter.id else { return false }
+            return page.sumiImageLoadFailed
+        }
+    }
+    func sumiAbandonOpening() {
+        sumiChapterLoadTask?.cancel()
+        sumiNextChapterPreloadTask?.cancel()
+        sumiNextImagePrefetcher.reset()
+        viewModel.sumiCancelLoading()
+        for node in collectionNode.visibleNodes { (node as? ReaderWebtoonPageNode)?.sumiStopLoading() }
+    }
     var sumiReadyForOpening: Bool {
         guard let chapter, chapter.id == viewModel.chapter?.id, !viewModel.pages.isEmpty else { return false }
         return collectionNode.visibleNodes.contains { node in

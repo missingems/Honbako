@@ -9,6 +9,8 @@ final class SumiGridViewController: UIViewController {
     private let search = SumiSearchPresentation()
     private let insertion = SumiLibraryInsertionState()
     private var openingTask: Task<Void, Never>?
+    private var openingDeadline: Task<Void, Never>?
+    private var openingAttempt = UUID()
     private var pendingHistorySave: Task<Void, Never>?
     private var loadingController: SumiReaderLoadingViewController?
     private var stagedReader: SumiDirectReaderController?
@@ -105,8 +107,7 @@ final class SumiGridViewController: UIViewController {
         opening.bookID = book.presentation.id
         loading.closeBook = { [weak self, weak loading] in
             guard let self, let loading, self.loadingController === loading else { return }
-            self.openingTask?.cancel()
-            self.openingTask = nil
+            self.cancelOpeningAttempt()
             self.removeStagedReader()
             loading.returnToSource(frame: { source?.frame(in: loading.view) }) { [weak self, weak loading] in
                 guard let self, self.loadingController === loading else { return }
@@ -181,13 +182,23 @@ final class SumiGridViewController: UIViewController {
 
     private func prepareReader(book: SumiBook, source: SumiBookTransitionSource?,
                                loading: SumiReaderLoadingViewController) {
-        openingTask?.cancel()
+        cancelOpeningAttempt()
         removeStagedReader()
         loading.showLoading()
+        let attempt = openingAttempt
+        // A separate UI deadline never waits for a non-cooperative source task
+        // to unwind. Every callback also belongs to this exact attempt.
+        openingDeadline = Task { [weak self, weak loading] in
+            do { try await Task.sleep(for: .seconds(25)) } catch { return }
+            guard let self, let loading, openingAttempt == attempt,
+                  loadingController === loading else { return }
+            failOpening(String(localized: "The source took too long to respond. Try again or close this book."),
+                        attempt: attempt, loading: loading)
+        }
         openingTask = Task { [weak self, weak loading] in
             guard let self else { return }
             await pendingHistorySave?.value
-            guard !Task.isCancelled, let loading, loadingController === loading else { return }
+            guard !Task.isCancelled, let loading, loadingController === loading, openingAttempt == attempt else { return }
             #if DEBUG
             if let argument = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--sumi-loading-delay=") }),
                let seconds = Double(argument.split(separator: "=").last ?? ""), seconds > 0 {
@@ -202,9 +213,10 @@ final class SumiGridViewController: UIViewController {
             #else
             selection = await store.prepareReader(book: book)
             #endif
-            guard !Task.isCancelled, loadingController === loading else { return }
+            guard !Task.isCancelled, loadingController === loading, openingAttempt == attempt else { return }
             guard let selection else {
-                loading.showError(store.errorMessage ?? "This manga couldn’t be opened. Try again.")
+                failOpening(store.errorMessage ?? String(localized: "This manga couldn’t be opened. Try again."),
+                            attempt: attempt, loading: loading)
                 return
             }
             let position = selection.selection
@@ -215,20 +227,22 @@ final class SumiGridViewController: UIViewController {
             let presentation = SumiDirectReaderController(content: reader)
             stage(presentation)
             guard await reader.sumiWaitForOpening() else {
-                guard !Task.isCancelled, loadingController === loading else { return }
+                guard !Task.isCancelled, loadingController === loading, openingAttempt == attempt else { return }
                 // Signed image URLs can expire before their short cache TTL.
                 // Retrying a failed first page must request a fresh page list.
                 if let source = position.source {
                     await SumiChapterPageListCache.shared.invalidate(.init(source: source,
                         manga: position.manga, chapter: position.chapter))
                 }
-                removeStagedReader()
-                loading.showError("The reading page couldn’t be loaded. Try again.")
+                failOpening(reader.sumiOpeningFailureMessage ?? String(localized: "The reading page couldn’t be loaded. Try again."),
+                            attempt: attempt, loading: loading)
                 return
             }
-            guard !Task.isCancelled, loadingController === loading, stagedReader === presentation else { return }
+            guard !Task.isCancelled, loadingController === loading, openingAttempt == attempt, stagedReader === presentation else { return }
             await loading.prepareOpening()
-            guard !Task.isCancelled, loadingController === loading else { return }
+            guard !Task.isCancelled, loadingController === loading, openingAttempt == attempt else { return }
+            openingDeadline?.cancel()
+            openingDeadline = nil
             unstage(presentation)
             reader.view.accessibilityIdentifier = "Sumi.DirectReader"
             configureOpening(presentation, book: book, source: source, loading: loading)
@@ -243,6 +257,22 @@ final class SumiGridViewController: UIViewController {
                 }
             }
         }
+    }
+
+    private func cancelOpeningAttempt() {
+        openingAttempt = UUID()
+        openingDeadline?.cancel()
+        openingDeadline = nil
+        openingTask?.cancel()
+        openingTask = nil
+    }
+
+    private func failOpening(_ message: String, attempt: UUID, loading: SumiReaderLoadingViewController) {
+        guard openingAttempt == attempt, loadingController === loading else { return }
+        cancelOpeningAttempt()
+        // Stop source/image work without waiting for it before enabling Close.
+        removeStagedReader()
+        loading.showError(message)
     }
 
     /// Give Texture and its page images a real viewport behind the grid while
@@ -268,10 +298,15 @@ final class SumiGridViewController: UIViewController {
     }
 
     private func removeStagedReader() {
-        if let stagedReader { unstage(stagedReader) }
+        if let stagedReader {
+            stagedReader.readerViewController?.sumiAbandonOpening()
+            unstage(stagedReader)
+        }
     }
 
     private func removeLoading() {
+        openingDeadline?.cancel()
+        openingDeadline = nil
         if let loadingController {
             loadingController.stopHovering()
             loadingController.willMove(toParent: nil)

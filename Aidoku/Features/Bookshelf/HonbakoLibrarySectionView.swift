@@ -18,8 +18,8 @@ struct HonbakoLibrarySectionView: View {
                         if book.unreadChapterCount > 0 {
                             Text(book.unreadChapterCount, format: .number)
                                 .font(.caption.bold()).padding(.horizontal, 7).padding(.vertical, 4)
-                                .foregroundStyle(.primary)
-                                .glassEffect(.regular.tint(.red), in: .capsule)
+                                .foregroundStyle(.white)
+                                .background(.red, in: .capsule)
                                 .padding(5)
                                 .accessibilityLabel(String(localized: "\(book.unreadChapterCount) unread chapters"))
                                 .allowsHitTesting(false)
