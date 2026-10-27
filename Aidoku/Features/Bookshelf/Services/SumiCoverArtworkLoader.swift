@@ -150,8 +150,9 @@ final class SumiCoverArtworkLoader {
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         // Original artwork remains sharp when lifted from a 3x grid. Bound the
         // decoded image in physical pixels; the processor never upscales it.
-        var processors: [ImageProcessing] = [DownsampleProcessor(width: 1024, scaleFactor: 1)]
+        var processors: [ImageProcessing] = []
         if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
+        processors.append(DownsampleProcessor(width: 1024, scaleFactor: 1))
         processors.append(HonbakoCoverMaterialProcessor())
         let request = ImageRequest(urlRequest: urlRequest, processors: processors,
             userInfo: [.processesKey: source?.features.processesCovers ?? false])
