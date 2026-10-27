@@ -38,11 +38,17 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             MainActor.assumeIsolated {
                 guard let self, let book = representedBook,
                       window != nil || holdsVisibleEdition,
-                      let batch = notification.object as? SumiCoverArtworkLoader.PreparedBatch,
-                      let cover = SumiCoverArtworkLoader.shared.preparedCover(for: book, in: batch) else { return }
-                // Every matching visible tile installs the staged cohort in
-                // this notification pass. A lifted edition still stays frozen.
-                applyFlatEdition(cover: cover)
+                      let batch = notification.object as? SumiCoverArtworkLoader.PreparedBatch else { return }
+                if let cover = SumiCoverArtworkLoader.shared.preparedCover(for: book, in: batch) {
+                    // Every matching visible tile installs the staged cohort in
+                    // this notification pass. A lifted edition stays frozen.
+                    applyFlatEdition(cover: cover)
+                } else if window != nil {
+                    // A bounded cohort can drop unattempted work. Requeue only
+                    // unresolved visible art; real provider failures retain
+                    // their cooldown, and held editions never change here.
+                    refreshPreparedCoverIfNeeded()
+                }
             }
         }
     }
