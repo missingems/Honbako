@@ -1196,3 +1196,15 @@
 
 // Completed chapter state, distinct from the Read action.
 "Chapter Read" = "Read";
+
+// Reader and personal library options
+"Chapter %@ End" = "Chapter %@ End";
+"Hide Finished Books" = "Hide Finished Books";
+"All Pro features are enabled for your personal build." = "All Pro features are enabled for your personal build.";
+"Library" = "Library";
+
+"Cover Display" = "Cover Display";
+
+"Show Manga Cover" = "Show Manga Cover";
+
+"The system chooses when a connected display can show the cover." = "The system chooses when a connected display can show the cover.";

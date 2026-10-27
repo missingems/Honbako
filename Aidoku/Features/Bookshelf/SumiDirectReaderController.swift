@@ -7,6 +7,7 @@ final class SumiDirectReaderController: UINavigationController {
     var onBookDismissed: (() -> Void)?
     var readerViewController: ReaderViewController? { content as? ReaderViewController }
     var bookTransition: SumiBookTransition?
+    private var coverDisplaySession: HonbakoCoverDisplaySession?
 
     init(content: UIViewController) {
         self.content = content
@@ -39,6 +40,13 @@ final class SumiDirectReaderController: UINavigationController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         bookTransition?.prioritizeBackSwipe()
+        startCoverDisplayIfPresented()
+    }
+
+    @available(iOS 26.0, *)
+    override func updateProperties() {
+        super.updateProperties()
+        coverDisplaySession?.updateAvailability()
     }
 
     func show(_ controller: UIViewController) {
@@ -46,6 +54,7 @@ final class SumiDirectReaderController: UINavigationController {
         content = controller
         setViewControllers([controller], animated: false)
         view.layoutIfNeeded()
+        startCoverDisplayIfPresented()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -61,12 +70,23 @@ final class SumiDirectReaderController: UINavigationController {
     }
 
     private func finishDismissal() {
+        coverDisplaySession?.stop()
+        coverDisplaySession = nil
         bookTransition?.uninstall()
         bookTransition = nil
         guard let action = onBookDismissed else { return }
         onBookDismissed = nil
         readerViewController?.sumiBookDidClose()
         action()
+    }
+
+    private func startCoverDisplayIfPresented() {
+        // The hidden staging controller prepares pages before opening. Only a
+        // genuinely presented reader should offer cover-display content.
+        guard presentingViewController != nil, let reader = readerViewController else { return }
+        let session = coverDisplaySession ?? HonbakoCoverDisplaySession()
+        coverDisplaySession = session
+        session.start(on: self, manga: reader.manga, source: reader.source)
     }
 }
 #endif

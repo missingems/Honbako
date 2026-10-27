@@ -61,5 +61,15 @@ struct SumiLibraryShelfSummary: Equatable, Sendable {
             return left == right ? leftID < rightID : left < right
         }
     }
+
+    static func finishedOrder(_ books: [SumiBook], hidden: Bool) -> [SumiBook] {
+        guard !hidden else { return [] }
+        return books.filter { $0.finishedReadingAt != nil }.sorted {
+            let left = $0.finishedReadingAt ?? .distantPast
+            let right = $1.finishedReadingAt ?? .distantPast
+            if left != right { return left > right }
+            return "\($0.sourceKey):\($0.manga.key)" < "\($1.sourceKey):\($1.manga.key)"
+        }
+    }
 }
 #endif

@@ -20,19 +20,24 @@ struct SumiCloudSyncView: View {
             } footer: {
                 Text("Library, bookmarks, language choices, and reading progress sync with your iCloud account. Downloads and source files stay on this device.")
             }
+            .listRowBackground(HonbakoSettingsRowBackground())
             if pro.hasPro, let upload = status.lastUpload {
                 LabeledContent("Last Upload") { Text(upload, format: .dateTime.month().day().hour().minute()) }
+                    .listRowBackground(HonbakoSettingsRowBackground())
             }
             if pro.hasPro, let download = status.lastDownload {
                 LabeledContent("Last Download") { Text(download, format: .dateTime.month().day().hour().minute()) }
+                    .listRowBackground(HonbakoSettingsRowBackground())
             }
             if pro.hasPro {
                 Button("Check iCloud Account") { Task { await status.refreshAccount() } }
                     .disabled(status.checkingAccount)
+                    .listRowBackground(HonbakoSettingsRowBackground())
             }
         }
         .navigationTitle("iCloud Sync")
         .navigationBarTitleDisplayMode(.inline)
+        .tint(.blue)
         .sheet(isPresented: $proPresented) { HonbakoProView(feature: .cloudProgress) }
         .task { if pro.hasPro { status.start(); await status.refreshAccount() } }
         .onChange(of: pro.hasPro) { _, enabled in

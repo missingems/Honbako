@@ -24,14 +24,17 @@ struct HonbakoLibraryOnboardingView: View {
             } footer: {
                 Text("Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust.")
             }
+            .listRowBackground(HonbakoSettingsRowBackground())
 
             Section("2. Find Manga") {
                 Text("Return to your library and pull down to search. Search uses the connections you enable in Settings.")
             }
+            .listRowBackground(HonbakoSettingsRowBackground())
 
             Section("3. Build Your Library") {
                 Text("Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading.")
             }
+            .listRowBackground(HonbakoSettingsRowBackground())
 
         }
         .navigationTitle("Getting Started")

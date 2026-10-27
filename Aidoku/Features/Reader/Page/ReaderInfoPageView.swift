@@ -156,7 +156,8 @@ class ReaderInfoPageView: UIView {
 
     func updateLabelText() {
         #if SUMI
-        sumiBoundary.update(type: type, destination: type == .next ? nextChapter : previousChapter)
+        sumiBoundary.update(type: type, currentChapter: currentChapter,
+            destination: type == .next ? nextChapter : previousChapter)
         #else
         guard let currentChapter else { return }
         if let previousChapter {

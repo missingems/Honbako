@@ -131,8 +131,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var sumiSlideNavigation: SumiSlideNavigation?
     private weak var sumiSlidePan: UIPanGestureRecognizer?
     private var sumiSlidePanStarted = false
-    private let sumiSlideStartHaptic = UIImpactFeedbackGenerator(style: .soft)
-    private let sumiSlideReleaseHaptic = UIImpactFeedbackGenerator(style: .soft)
+    private let sumiPaperHaptics = SumiPaperHaptics()
     private var sumiSequenceIsActive = false
     private var sumiCanonicalFocus: (chapterID: String, page: Int)?
     private var sumiQueuedCanonicalFocus: (chapterID: String, page: Int)?
@@ -550,7 +549,10 @@ class ReaderPagedViewController: BaseObservingViewController {
             return Array(Set(displays.flatMap { display -> [Int] in
                 let index = display + (previousChapter != nil ? 1 : 0)
                 guard let group = plan.groupIndex(containingCanonicalIndex: index) else { return [] }
-                return plan.groups[group].compactMap(\.canonicalIndex)
+                return plan.groups[group].compactMap(\.canonicalIndex).filter { index in
+                    guard pageViewControllers.indices.contains(index), case .page = pageViewControllers[index].type else { return false }
+                    return true
+                }
             })).sorted()
         }
         return Array(Set(displays.flatMap { presentationIndices(for: $0) })).sorted()
@@ -571,6 +573,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         }
         return containsRequested && leafControllers(in: visible).allSatisfy { leaf in
             if let page = leaf as? ReaderPageViewController {
+                if case .info = page.type { return true }
                 return page.pageView?.sumiIsImageReady == true
             }
             if let wide = leaf as? ReaderBookWideLeafViewController {
@@ -749,7 +752,9 @@ class ReaderPagedViewController: BaseObservingViewController {
             sumiSlidePan?.removeTarget(self, action: #selector(sumiNativeSlidePan(_:)))
             sumiSlidePan = pan
             sumiSlidePanStarted = false
+            sumiPaperHaptics.cancel()
             pan?.addTarget(self, action: #selector(sumiNativeSlidePan(_:)))
+            if pan != nil, view.window != nil { sumiPaperHaptics.prepare() }
         }
 #endif
         guard pageViewController.transitionStyle == .pageCurl else { return }
@@ -764,12 +769,15 @@ class ReaderPagedViewController: BaseObservingViewController {
         switch pan.state {
         case .began:
             sumiSlidePanStarted = true
-            sumiSlideStartHaptic.impactOccurred(intensity: 0.3)
-            sumiSlideReleaseHaptic.prepare()
-        case .ended, .cancelled:
+            sumiPaperHaptics.begin(distance: view.bounds.width, visible: view.window != nil)
+        case .changed:
+            guard sumiSlidePanStarted else { return }
+            sumiPaperHaptics.update(progress: abs(pan.translation(in: view).x) / max(1, view.bounds.width),
+                velocity: pan.velocity(in: view).x)
+        case .ended, .cancelled, .failed:
             guard sumiSlidePanStarted else { return }
             sumiSlidePanStarted = false
-            sumiSlideReleaseHaptic.impactOccurred(intensity: 0.65)
+            sumiPaperHaptics.release(velocity: pan.velocity(in: view).x, cancelled: pan.state != .ended)
         default: break
         }
     }
@@ -1170,6 +1178,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         super.viewDidAppear(animated)
         updatePageTurnCadence()
         #if SUMI
+        if !(pageViewController is SumiPageCurlViewController) { sumiPaperHaptics.prepare() }
         preloadNextChapter(pageCount: SumiNextChapterPreloadPolicy.firstPages)
         #endif
     }
@@ -1292,6 +1301,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         #if SUMI
+        sumiPaperHaptics.suspend()
         sumiCancelAnimatedNavigation()
         nextChapterPreloadTask?.cancel()
         nextChapterPreloadTask = nil
@@ -1311,6 +1321,8 @@ class ReaderPagedViewController: BaseObservingViewController {
         guard !sumiIsAdaptingViewport else { return }
         sumiIsAdaptingViewport = true
         defer { sumiIsAdaptingViewport = false }
+        sumiPaperHaptics.cancel()
+        sumiSlidePanStarted = false
         sumiCancelAnimatedNavigation()
         (pageViewController as? SumiPageCurlViewController)?.cancelCurrentTurn()
         let canonicalPage = sumiCurrentCanonicalPage
@@ -1504,6 +1516,14 @@ extension ReaderPagedViewController {
                     )
                 )
             }
+            #if SUMI
+            // A pager refresh may create a new preview after its list has
+            // already been prepared. Attach the cached cover immediately.
+            if viewModel.preloadedChapter?.id == nextChapter?.id,
+               let cover = viewModel.preloadedPages.first {
+                pageViewControllers.last?.setPage(cover, sourceId: viewModel.manga.sourceKey)
+            }
+            #endif
         }
 
         rebuildPageIndices()
@@ -1579,6 +1599,17 @@ extension ReaderPagedViewController {
         let index = page + (previousChapter != nil ? 1 : 0)
         guard pageViewControllers.indices.contains(index) else { return [] }
         guard usesDoublePages else { return [index] }
+        #if SUMI
+        // The chapter boundary and the following chapter's cover form one
+        // physical spread. Keep that same spread after ownership passes to the
+        // next chapter, so turning again starts at its second displayed page.
+        if previousChapter != nil, (0...1).contains(page) {
+            return [1, 2]
+        }
+        if nextChapter != nil, page == displayPageCount + 1 {
+            return [index, index + 1]
+        }
+        #endif
         func canPair(at first: Int) -> Bool {
             guard pageViewControllers.indices.contains(first), pageViewControllers.indices.contains(first + 1),
                   case .page = pageViewControllers[first].type,
@@ -1731,6 +1762,9 @@ extension ReaderPagedViewController {
         let visible = canonicalControllers(in: pageViewController.viewControllers ?? [])
         for (index, controller) in pageViewControllers.enumerated() {
             guard case .page = controller.type,
+                  // Neighbor previews are the only artwork on a boundary
+                  // spread. Keep these two small, bounded surfaces resident.
+                  (1...displayPageCount).contains(pageIndex(from: index)),
                   !range.contains(pageIndex(from: index)),
                   !visible.contains(where: { $0 === controller }) else { continue }
             controller.sumiReleasePreloadedImage()
@@ -1760,6 +1794,10 @@ extension ReaderPagedViewController {
                 sumiPreparedNextChapterID = nil
                 sumiNextChapterRetryAfter = .now.addingTimeInterval(SumiNextChapterPreloadPolicy.retryDelay)
                 return
+            }
+            if let firstPage = pages.first, let preview = pageViewControllers.last,
+               case .page = preview.type {
+                preview.setPage(firstPage, sourceId: viewModel.manga.sourceKey)
             }
             await pagePrefetcher.prefetch(pages: pages, count: SumiNextChapterPreloadPolicy.firstPages,
                 chapterKey: nextChapter.key, sourceKey: viewModel.manga.sourceKey,
@@ -1935,12 +1973,12 @@ extension ReaderPagedViewController {
         move(toPage: currentPage, animated: false)
     }
 
-    private func makeSplitPages(leftImage: UIImage, rightImage: UIImage, pageIndex: Int) -> [Page] {
+    private func makeSplitPages(leftImage: UIImage, rightImage: UIImage, pageIndex: Int, sourcePage: Page? = nil) -> [Page] {
         let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
-        let chapterId = chapter?.id ?? ""
         let reverseOrderSetting = UserDefaults.standard.bool(forKey: "Reader.reverseSplitOrder")
         let reverseOrder = readingMode == .rtl ? reverseOrderSetting : !reverseOrderSetting
-        let originalPage = viewModel.pages[safe: pageIndex - 1] ?? viewModel.pages.first
+        let originalPage = sourcePage ?? viewModel.pages[safe: pageIndex - 1] ?? viewModel.pages.first
+        let chapterId = originalPage?.chapterId ?? chapter?.id ?? ""
 
         let leftPage = Page(
             sourceId: sourceId,
@@ -1976,7 +2014,7 @@ extension ReaderPagedViewController {
         else { return }
 
         if pageIndex <= 0 || pageIndex > viewModel.pages.count {
-            let pages = makeSplitPages(leftImage: leftImage, rightImage: rightImage, pageIndex: pageIndex)
+            let pages = makeSplitPages(leftImage: leftImage, rightImage: rightImage, pageIndex: pageIndex, sourcePage: controller.page)
             if pageIndex <= 0 {
                 previousPreviewSplitPages = pages
             } else {
@@ -2128,7 +2166,7 @@ extension ReaderPagedViewController {
 
     private func isPageIsolated(_ displayPage: Int) -> Bool {
 #if SUMI
-        if sumiHasOpeningIndex, displayPage == 1 { return true }
+        if displayPage == 1, sumiHasOpeningIndex || previousChapter != nil { return true }
 #endif
         return isolatedPages.contains(displayPage)
     }
@@ -2243,6 +2281,10 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
     }
 
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+        setChapter(chapter, startPage: startPage, showLoading: true)
+    }
+
+    private func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, showLoading: Bool) {
         let isChapterChange = self.chapter?.id != chapter.id
         if isChapterChange {
             #if SUMI
@@ -2260,7 +2302,9 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         self.chapter = chapter
         #if SUMI
         sumiStopAnimatedNavigation()
-        sumiChapterState().showLoading()
+        // A prefetched boundary already presents the next cover. Do not cover
+        // that paper with a loading screen while its page graph is handed off.
+        if showLoading { sumiChapterState().showLoading() }
         #endif
         Task {
             await loadChapter(startPage: startPage, isChapterChange: isChapterChange)
@@ -2344,11 +2388,11 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         setChapter(previousChapter, startPage: Int.max)
     }
 
-    func loadNextChapter() {
+    func loadNextChapter(keepingBoundaryVisible: Bool = false) {
         guard let nextChapter else { return }
         previousPreviewSplitPages = splitPages[viewModel.pages.count]
         delegate?.setChapter(nextChapter)
-        setChapter(nextChapter, startPage: 1)
+        setChapter(nextChapter, startPage: 1, showLoading: !keepingBoundaryVisible)
     }
 }
 
@@ -2429,8 +2473,14 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         guard completed, let visible = pageViewController.viewControllers,
               let currentIndex = canonicalControllers(in: visible).compactMap({ pageViewControllers.firstIndex(of: $0) }).min()
         else { programmaticMove = false; return }
-        let page = currentIndex + (previousChapter != nil ? -1 : 0)
+        var page = currentIndex + (previousChapter != nil ? -1 : 0)
 #if SUMI
+        // The left leaf is the previous chapter's end, while the selected
+        // artwork on the right is this chapter's real first page.
+        if displayingBookLayout, page == 0,
+           canonicalControllers(in: visible).contains(where: { $0 === pageViewControllers[safe: 2] }) {
+            page = 1
+        }
         currentPage = page
 #else
         if displayingBookLayout || !programmaticMove { currentPage = page }
@@ -2461,6 +2511,11 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
                 delegate?.setCurrentPage(displayPageCount + 1, position: nil)
                 // preload next
                 preloadNextChapter(pageCount: pagesToPreload)
+                #if SUMI
+                if displayingBookLayout, nextChapter != nil {
+                    loadNextChapter(keepingBoundaryVisible: true)
+                }
+                #endif
 
             case displayPageCount + 2: // next chapter first page
                 pendingSpreadRebuild = false

@@ -9,6 +9,7 @@ struct SumiPersonalLibrariesView: View {
                 NavigationLink("Kavita") { KavitaSetupView() }
                 NavigationLink("Suwayomi") { SuwayomiSetupView() }
             } footer: { Text("Connect to a server you manage to search your own library.") }
+            .listRowBackground(HonbakoSettingsRowBackground())
         }
         .navigationTitle("Personal Server")
         .navigationBarTitleDisplayMode(.inline)

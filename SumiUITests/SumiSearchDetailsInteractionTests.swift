@@ -102,13 +102,31 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         XCTAssertEqual(connections.label, "Settings")
         connections.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        let hideFinished = app.switches["Honbako.Settings.HideFinishedBooks"]
+        let coverDisplay = app.switches["Honbako.Settings.ShowMangaCover"]
+        XCTAssertTrue(hideFinished.waitForExistence(timeout: 5))
+        XCTAssertTrue(coverDisplay.exists)
+        let initial = hideFinished.value as? String
+        hideFinished.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in hideFinished.value as? String != initial }, object: hideFinished)], timeout: 3) == .completed)
+        hideFinished.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in hideFinished.value as? String == initial }, object: hideFinished)], timeout: 3) == .completed)
+        attach(app, "Blue settings controls and optional finished-book filter")
         app.buttons["Getting Started"].tap()
         XCTAssertTrue(app.navigationBars["Getting Started"].waitForExistence(timeout: 5))
         attach(app, "Setup guide lives in Settings")
         item("BackButton", app).tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         attach(app, "Settings shows files, personal servers, and manual source setup")
-        app.buttons["Source Lists"].tap()
+        let sourceLists = app.buttons["Source Lists"]
+        for _ in 0..<3 where !sourceLists.exists {
+            let anchor = app.buttons["Personal Server"]
+            if anchor.exists { anchor.swipeUp() } else { app.swipeUp() }
+        }
+        XCTAssertTrue(sourceLists.waitForExistence(timeout: 5))
+        sourceLists.tap()
         XCTAssertTrue(app.navigationBars["Source Lists"].waitForExistence(timeout: 5))
         let add = app.buttons.matching(NSPredicate(format: "label == %@", "Add Source List")).firstMatch
         XCTAssertTrue(add.waitForExistence(timeout: 5))
