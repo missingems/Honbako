@@ -26,6 +26,8 @@ actor SourceManager {
     private var sourceListLanguageCodes: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
+    private var legacySourceFiltersTask: Task<Void, Never>?
+    private var legacySourceFiltersGeneration = 0
     private var loadSourceListsTask: Task<(), Never>?
     private var starterSourcesTask: Task<(), Never>?
     private var nativeInstallations: [String: Task<AidokuRunner.Source?, Never>] = [:]
@@ -117,13 +119,25 @@ extension SourceManager {
     }
 
     func reloadSources() async {
-        sourcesByKey = await getInstalledSources()
+        legacySourceFiltersTask?.cancel()
+        legacySourceFiltersGeneration += 1
+        let generation = legacySourceFiltersGeneration
+        let installed = await getInstalledSources()
+        guard generation == legacySourceFiltersGeneration else { return }
+        sourcesByKey = installed
         loadSourceLanguages()
 
         await publishSourceState()
+        guard generation == legacySourceFiltersGeneration else { return }
         notifySourcesLoaded(keys: sourcesByKey.keys)
 
-        await loadLegacySourceFilters()
+        // Catalogs and covers are ready now. Optional legacy filter file I/O
+        // and parsing must not hold up source lookup or search.
+        let loaded = Array(sourcesByKey.values)
+        legacySourceFiltersTask = Task { [weak self] in
+            guard let self else { return }
+            await self.loadLegacySourceFilters(loaded, generation: generation)
+        }
     }
 
     private func getInstalledSources() async -> [String: AidokuRunner.Source] {
@@ -146,16 +160,19 @@ extension SourceManager {
         return sourcesByKey
     }
 
-    private func loadLegacySourceFilters() async {
+    private func loadLegacySourceFilters(_ sources: [AidokuRunner.Source], generation: Int) async {
         await withTaskGroup(of: Void.self) { group in
-            for source in sourcesByKey.values {
+            for source in sources {
                 if let legacySource = source.legacySource {
                     group.addTask {
+                        guard !Task.isCancelled else { return }
                         _ = try? await legacySource.getFilters()
                     }
                 }
             }
         }
+        guard !Task.isCancelled, generation == legacySourceFiltersGeneration else { return }
+        legacySourceFiltersTask = nil
         NotificationCenter.default.post(name: .loadedSourceFilters, object: nil)
     }
 }
@@ -366,6 +383,11 @@ extension SourceManager {
     }
 
     func getLoadedSources(sorted: Bool = false) async -> [AidokuRunner.Source] {
+        #if SUMI && DEBUG
+        if HonbakoCatalogPreviewFixtures.isEnabled {
+            return await HonbakoCatalogPreviewFixtures.shared.sources
+        }
+        #endif
         await waitForSourcesLoad()
         if sorted {
             return sourcesByKey.values
@@ -425,6 +447,11 @@ extension SourceManager {
     }
 
     func source(for key: String) async -> AidokuRunner.Source? {
+        #if SUMI && DEBUG
+        if HonbakoCatalogPreviewFixtures.isEnabled {
+            return await HonbakoCatalogPreviewFixtures.shared.sources.first { $0.key == key }
+        }
+        #endif
         await waitForSourcesLoad()
         return sourcesByKey[key]
     }

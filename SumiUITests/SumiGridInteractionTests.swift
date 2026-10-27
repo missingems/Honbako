@@ -6,11 +6,12 @@ import XCTest
 final class SumiGridInteractionTests: XCTestCase {
     @MainActor
     func testLibrarySectionHeaderStaysPinnedWhileBooksScroll() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication(bundleIdentifier: "com.missingems.honbaku")
+        app.launchArguments = ["--honbako-catalog-check"]
         app.launch()
         defer { app.terminate() }
         let grid = element("Sumi.Grid", app)
-        let header = element("Honbako.Library.Header.Recommendations", app)
+        let header = element("Honbako.Library.Header.Popular", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
         XCTAssertTrue(header.waitForExistence(timeout: 10))
         let original = header.frame

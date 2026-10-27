@@ -7,7 +7,6 @@ struct SumiSpotlightSearchView: View {
     @ObservedObject var presentation: SumiSearchPresentation
     @ObservedObject var opening: SumiGridOpeningState
     let previewBooks: [SumiBook]?
-    let recommendations: [SumiBook]
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
     let dismiss: () -> Void
     @State private var sourcesPresented = false
@@ -22,6 +21,10 @@ struct SumiSpotlightSearchView: View {
         }
         let recent = store.recentlyRead.isEmpty ? store.library : store.recentlyRead
         return query.isEmpty ? Array(recent.prefix(6)) : store.searchResults
+    }
+    private var sections: [SumiSearchSourceSection] {
+        if !query.isEmpty, previewBooks == nil { return store.searchSections }
+        return SumiSearchSourceSection.grouping(books, sourceName: store.sourceName(for:))
     }
 
     var body: some View {
@@ -53,19 +56,26 @@ struct SumiSpotlightSearchView: View {
                     if !results.isEmpty || !query.isEmpty {
                         Divider()
                         ScrollView {
-                            LazyVStack(spacing: 0) {
-                                ForEach(results) { book in
-                                    SumiSpotlightResultRow(book: book,
-                                        isLifted: opening.bookID == book.presentation.id,
-                                        isInLibrary: book.isInLibrary || previewLibraryIDs.contains(book.id),
-                                        editions: store.editions(for: book), sourceName: store.sourceName(for:),
-                                        openBook: openBook, addBook: { book in
-                                            if previewBooks != nil { previewLibraryIDs.insert(book.id) }
-                                            else { await store.add(book: book) }
-                                        }, showsDivider: book.id != results.last?.id)
+                            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                                ForEach(sections) { section in
+                                    Section {
+                                        ForEach(section.books) { book in
+                                            SumiSpotlightResultRow(book: book,
+                                                isLifted: opening.bookID == book.presentation.id,
+                                                isInLibrary: book.isInLibrary || previewLibraryIDs.contains(book.id),
+                                                editions: store.editions(for: book), sourceName: store.sourceName(for:),
+                                                openBook: openBook, addBook: { book in
+                                                    if previewBooks != nil { previewLibraryIDs.insert(book.id) }
+                                                    else { await store.add(book: book) }
+                                                }, showsDivider: book.id != section.books.last?.id)
+                                        }
+                                    } header: {
+                                        SumiSearchSourceHeader(name: section.name, sourceKey: section.sourceKey)
+                                    }
                                 }
                                 if store.isSearching, previewBooks == nil {
                                     ProgressView().padding(16).accessibilityLabel("Searching")
+                                        .accessibilityIdentifier("Honbako.Search.Loading")
                                 } else if results.isEmpty, !query.isEmpty {
                                     if store.needsConnection, previewBooks == nil {
                                         ContentUnavailableView {
@@ -89,8 +99,10 @@ struct SumiSpotlightSearchView: View {
                                 transaction.animation = nil
                                 transaction.disablesAnimations = true
                             }
-                            .padding(8)
+                            .padding(.horizontal, 8)
+                            .padding(.bottom, 8)
                         }
+                        .accessibilityIdentifier("Honbako.Search.Results")
                         .scrollDismissesKeyboard(.interactively)
                         .frame(maxHeight: max(80, region.maxY - top - 80))
                     } else if previewBooks == nil {

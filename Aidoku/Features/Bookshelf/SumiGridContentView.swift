@@ -10,9 +10,8 @@ struct SumiGridContentView: View {
     let updateSearchPull: (CGFloat) -> Void
     let finishSearchPull: () -> Void
     let revealSearch: () -> Void
-    let searchRecommendation: (String) -> Void
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
-    @StateObject private var recommendations = HonbakoRecommendationStore()
+    @StateObject private var popular = HonbakoPopularStore()
     @State private var order = SumiGridOrder()
     @State private var scrollPhase: ScrollPhase = .idle
     @State private var pullDistance: CGFloat = 0
@@ -58,15 +57,12 @@ struct SumiGridContentView: View {
                                 HonbakoLibrarySectionHeader(title: "Reading")
                             }
                         }
-                        if !recommendations.items.isEmpty {
+                        if popular.hasSources, !popular.books.isEmpty {
                             Section {
-                                LazyVGrid(columns: columns, spacing: 2) {
-                                    ForEach(recommendations.items) { item in
-                                        HonbakoRecommendationTile(item: item) { searchRecommendation(item.searchQuery) }
-                                    }
-                                }
+                                HonbakoLibrarySectionView(books: popular.books, columns: columns,
+                                    openingBookID: opening.bookID, openBook: openBook)
                             } header: {
-                                HonbakoLibrarySectionHeader(title: "Recommendations")
+                                HonbakoLibrarySectionHeader(title: "Popular")
                             }
                         }
                     }
@@ -97,9 +93,13 @@ struct SumiGridContentView: View {
         .task { await prepareLibrary() }
         .onChange(of: store.library) { updateLibrary() }
         .onChange(of: opening.bookID) { if opening.bookID == nil { updateLibrary() } }
+        .onChange(of: searchPresented) {
+            popular.setPaused(searchPresented)
+            if !searchPresented, previewBooks == nil { Task { await popular.refresh() } }
+        }
         .onChange(of: scenePhase) {
             if scenePhase == .active, previewBooks == nil {
-                Task { await store.refresh(); await recommendations.refresh() }
+                Task { await store.refresh(); await popular.refresh() }
             }
         }
     }
@@ -109,7 +109,7 @@ struct SumiGridContentView: View {
         await store.refresh()
         hasPreparedLibrary = true
         updateLibrary()
-        await recommendations.refresh()
+        await popular.refresh()
     }
 
     private func updateLibrary() {

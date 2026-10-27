@@ -16,12 +16,11 @@ struct SumiMainView: View {
             SumiGridContentView(store: store, discovery: discovery, opening: opening,
                                 previewBooks: previewBooks, searchPresented: search.isPresented,
                                 updateSearchPull: search.updatePull, finishSearchPull: finishSearchPull,
-                                revealSearch: revealSearch,
-                                searchRecommendation: { query in search.query = query; revealSearch() }, openBook: openBook)
+                                revealSearch: revealSearch, openBook: openBook)
                 .allowsHitTesting(!search.isPresented)
                 .accessibilityHidden(search.isPresented)
             SumiSpotlightSearchView(store: store, presentation: search, opening: opening,
-                previewBooks: previewBooks, recommendations: discovery.books, openBook: openBook, dismiss: dismissSearch)
+                previewBooks: previewBooks, openBook: openBook, dismiss: dismissSearch)
                 .opacity(search.revealProgress)
                 .allowsHitTesting(search.isPresented)
                 .accessibilityHidden(!search.isPresented)

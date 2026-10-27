@@ -17,6 +17,8 @@ actor SumiSearchPreparationService {
     }
 
     typealias Loader = @Sendable (SumiBook, AidokuRunner.Source?) async throws -> Details?
+    typealias ProgressHandler = @Sendable (Outcome) async -> Void
+    typealias MetadataLoader = @Sendable (SumiBook) async -> SumiSearchMetadataService.Metadata?
     static let shared = SumiSearchPreparationService()
     private let loader: Loader
     private let concurrency: Int
@@ -30,6 +32,9 @@ actor SumiSearchPreparationService {
         let preferences: Int
     }
     private struct Entry {
+        // Keep the instance alive for as long as its identity keys the cache.
+        // A replaced source cannot inherit a reused ObjectIdentifier address.
+        let source: AidokuRunner.Source?
         let details: Details?
         let expires: Date
         let stored: Date
@@ -46,34 +51,63 @@ actor SumiSearchPreparationService {
         self.loader = loader ?? Self.load
     }
 
-    func prepare(_ books: [SumiBook], sources: [String: AidokuRunner.Source] = [:]) async throws -> Outcome {
+    func prepare(_ books: [SumiBook], sources: [String: AidokuRunner.Source] = [:],
+                 onProgress: ProgressHandler? = nil) async throws -> Outcome {
         try Task.checkCancellation()
+        // Source settings do not change within a search generation. Serializing
+        // the entire defaults domain for every result adds main-process work
+        // before even a cached row can be returned.
+        let preferences = Dictionary(uniqueKeysWithValues: Set(books.map(\.sourceKey)).map {
+            ($0, SumiSearchSourcePreferences.fingerprint(sourceKey: $0))
+        })
         return try await withThrowingTaskGroup(of: Prepared.self) { group in
             var next = 0
             var ready: [Int: SumiBook] = [:]
             var failed: Set<String> = []
+            var published: [SumiBook] = []
             for _ in 0..<min(concurrency, books.count) {
                 let index = next
                 next += 1
-                group.addTask { await self.prepareOne(books[index], source: sources[books[index].sourceKey], index: index) }
+                group.addTask {
+                    await self.prepareOne(books[index], source: sources[books[index].sourceKey], index: index,
+                                          preferences: preferences[books[index].sourceKey] ?? 0)
+                }
             }
             while let result = try await group.next() {
                 try Task.checkCancellation()
-                if let book = result.book { ready[result.index] = book }
-                if let source = result.failedSource { failed.insert(source) }
+                var shouldPublish = false
+                if let book = result.book {
+                    ready[result.index] = book
+                    published.append(book)
+                    shouldPublish = true
+                }
+                if let source = result.failedSource, failed.insert(source).inserted { shouldPublish = true }
                 if next < books.count {
                     let index = next
                     next += 1
-                    group.addTask { await self.prepareOne(books[index], source: sources[books[index].sourceKey], index: index) }
+                    group.addTask {
+                        await self.prepareOne(books[index], source: sources[books[index].sourceKey], index: index,
+                                              preferences: preferences[books[index].sourceKey] ?? 0)
+                    }
+                }
+                if shouldPublish, let onProgress {
+                    // A ready row never waits for a slower higher-ranked title.
+                    // Late completions append rather than inserting above rows
+                    // the user can already see. The final result retains input
+                    // order for callers that do not stream progress.
+                    let snapshot = Outcome(books: published, failedSourceKeys: failed)
+                    try Task.checkCancellation()
+                    await onProgress(snapshot)
+                    try Task.checkCancellation()
                 }
             }
             return Outcome(books: books.indices.compactMap { ready[$0] }, failedSourceKeys: failed)
         }
     }
 
-    private func prepareOne(_ book: SumiBook, source: AidokuRunner.Source?, index: Int) async -> Prepared {
+    private func prepareOne(_ book: SumiBook, source: AidokuRunner.Source?, index: Int, preferences: Int) async -> Prepared {
         let key = Key(id: book.id, source: source.map(ObjectIdentifier.init), version: source?.version ?? 0,
-                      preferences: Self.preferencesFingerprint(sourceKey: book.sourceKey))
+                      preferences: preferences)
         do {
             while active.contains(key) || active.count >= concurrency {
                 try await Task.sleep(for: .milliseconds(30))
@@ -98,7 +132,8 @@ actor SumiSearchPreparationService {
                     guard let oldest = cache.min(by: { $0.value.stored < $1.value.stored })?.key else { break }
                     cache[oldest] = nil
                 }
-                cache[key] = Entry(details: details, expires: now.addingTimeInterval(details == nil ? 60 : 300), stored: now)
+                cache[key] = Entry(source: source, details: details,
+                    expires: now.addingTimeInterval(details == nil ? 60 : 300), stored: now)
             }
             return Prepared(index: index, book: Self.apply(details, to: book), failedSource: nil)
         } catch is CancellationError {
@@ -116,13 +151,6 @@ actor SumiSearchPreparationService {
                              releaseYear: details.releaseYear, searchLanguages: details.languages)
     }
 
-    private static func preferencesFingerprint(sourceKey: String) -> Int {
-        let values = UserDefaults.standard.dictionaryRepresentation().filter { $0.key.hasPrefix(sourceKey + ".") }
-        // Property-list encoding retains types and includes language/filter changes.
-        let ordered: [[Any]] = values.keys.sorted().map { [$0, values[$0]!] }
-        return (try? PropertyListSerialization.data(fromPropertyList: ordered, format: .binary, options: 0))?.hashValue ?? 0
-    }
-
     private static func load(_ book: SumiBook, source: AidokuRunner.Source?) async throws -> Details? {
         try Task.checkCancellation()
         if let native = source?.runner as? HonbakoMangaDexRunner {
@@ -137,11 +165,23 @@ actor SumiSearchPreparationService {
                 languages: SumiSearchLanguageInfo(chapterLanguages: [chapter.language].compactMap { $0 },
                     translatedLanguages: result.translatedLanguages, sourceLanguages: []))
         }
+        return try await loadLegacy(book, source: source)
+    }
+
+    /// Optional publication metadata overlaps the source's chapter request. It
+    /// remains part of the single prepared row and is cancelled if that row has
+    /// no readable chapters, fails, or its search is dismissed.
+    static func loadLegacy(_ book: SumiBook, source: AidokuRunner.Source?,
+                           metadataLoader: @escaping MetadataLoader = { await SumiSearchMetadataService.shared.metadata(for: $0) })
+        async throws -> Details? {
+        try Task.checkCancellation()
         var manga = book.manga
         if manga.chapters?.isEmpty == true { return nil }
-        if manga.chapters == nil || manga.authors?.isEmpty != false || manga.status == .unknown {
+        async let metadata = metadataLoader(book)
+        let needsDetails = manga.authors?.isEmpty != false || manga.status == .unknown || manga.cover?.isEmpty != false
+        if manga.chapters == nil || needsDetails {
             guard let source else { throw URLError(.resourceUnavailable) }
-            let fetched = try await source.getMangaUpdate(manga: manga, needsDetails: true, needsChapters: manga.chapters == nil)
+            let fetched = try await source.getMangaUpdate(manga: manga, needsDetails: needsDetails, needsChapters: manga.chapters == nil)
             try Task.checkCancellation()
             guard fetched.identifier == book.id else { throw URLError(.badServerResponse) }
             manga = SumiMangaMetadata.merging(manga, with: fetched)
@@ -152,13 +192,13 @@ actor SumiSearchPreparationService {
                 mangaKey: book.manga.key, chapterKey: chapter.key)) == .finished
         }
         guard !readable.isEmpty else { return nil }
-        let metadata = await SumiSearchMetadataService.shared.metadata(for: book)
+        let resolvedMetadata = await metadata
         try Task.checkCancellation()
-        if manga.authors?.isEmpty != false, let authors = metadata?.authors, !authors.isEmpty { manga.authors = authors }
-        if manga.status == .unknown, let status = metadata?.publishingStatus { manga.status = status }
-        return Details(manga: manga, releaseYear: book.releaseYear ?? metadata?.releaseYear,
+        if manga.authors?.isEmpty != false, let authors = resolvedMetadata?.authors, !authors.isEmpty { manga.authors = authors }
+        if manga.status == .unknown, let status = resolvedMetadata?.publishingStatus { manga.status = status }
+        return Details(manga: manga, releaseYear: book.releaseYear ?? resolvedMetadata?.releaseYear,
             languages: SumiSearchLanguageInfo(chapterLanguages: readable.compactMap(\.language),
-                translatedLanguages: metadata?.translatedLanguages ?? [], sourceLanguages: source?.languages ?? []))
+                translatedLanguages: resolvedMetadata?.translatedLanguages ?? [], sourceLanguages: source?.languages ?? []))
     }
 
     static func readableChapters(in chapters: [AidokuRunner.Chapter], sourceAvailable: Bool,

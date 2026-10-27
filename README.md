@@ -2,7 +2,7 @@
 
 A personal manga library and reader for iPhone and iPad. Bundle identifier: `com.missingems.honbaku`.
 
-Honbako starts with an empty library and no installed source lists. Add your own files, connect a personal library server, or explicitly configure a provider you are authorized to use. Recommendations are discovery metadata and official publisher links; they do not install sources or add books to the library.
+Honbako starts with an empty library and no installed source lists. Add your own files, connect a personal library server, or explicitly configure a provider you are authorized to use. Popular titles come from your enabled providers and do not add books to the library.
 
 ## Install the development build
 
@@ -22,9 +22,13 @@ The [Honbako Sources catalog](https://gist.github.com/missingems/20e91aa1e2a3cbe
 
 The older personal-device package catalog remains archived in `sources/personal.json` for compatibility with prior builds. Its packages are third-party implementations and are not represented as a native rewrite.
 
-## Recommendations
+## Search and Popular
 
-The bundled first list contains 19 editorial recommendations curated by GPT-6.1 Sol in the existing development session, without a model API call. A scheduled GitHub Action validates and publishes the static feed. Optional low-volume popularity observations and an explicitly requested Sonnet rerank have separate activation requirements. See [recommendation setup](docs/RECOMMENDATIONS.md).
+Search publishes complete, readable results as providers respond, grouped under pinned source headers. Repeated queries reuse short-lived provider and metadata caches. A title from each provider keeps that provider's identity and reading progress.
+
+Popular aggregates the enabled sources' own popular, trending, or ranked catalogs, with source-aware cover requests and direct reading. It is hidden when no sources are added. Catalog metadata is cached for 15 minutes and removed from view when its source is disabled or removed. Catalog loading pauses during search.
+
+The older editorial recommendation feed remains available for prior builds. Current versions do not display or fetch it. See the archived [recommendation setup](docs/RECOMMENDATIONS.md).
 
 ## Pro
 
@@ -32,6 +36,6 @@ Pro is designed for offline storage, chapter notifications, and iCloud progress 
 
 ## Licensing and release status
 
-The current app includes a GPLv3 reader engine. Required copyright, license, and provenance notices are retained in [LICENSE](LICENSE), [NOTICE](NOTICE), and the archived upstream documentation. The new native MangaDex connector was written independently against the provider's public REST schema; its catalog contains no extension executable. Honbako-specific changes began in October 2026. Honbako is not affiliated with Apple or the publishers linked by recommendations.
+The current app includes a GPLv3 reader engine. Required copyright, license, and provenance notices are retained in [LICENSE](LICENSE), [NOTICE](NOTICE), and the archived upstream documentation. The new native MangaDex connector was written independently against the provider's public REST schema; its catalog contains no extension executable. Honbako-specific changes began in October 2026. Honbako is not affiliated with Apple, its configured providers, or manga publishers.
 
 An App Store or paid release is **not legally cleared** by this development build. Resolve the engine’s GPL distribution obligations, third-party package policies, and content/provider rights before distribution. See [release and rights notes](docs/RELEASE_AND_RIGHTS.md).

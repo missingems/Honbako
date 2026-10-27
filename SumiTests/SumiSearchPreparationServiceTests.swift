@@ -44,6 +44,127 @@ struct SumiSearchPreparationServiceTests {
         }
     }
 
+    @Test("Complete rows publish before a later chapter lookup finishes and stay where they first appeared")
+    func progressivePreparedRows() async throws {
+        let gate = Gate()
+        let publications = Publications()
+        let service = SumiSearchPreparationService(concurrency: 3) { book, _ in
+            if book.manga.key == "last" { await gate.wait() }
+            return Self.details(book)
+        }
+        let candidates = [book("first"), book("second"), book("last")]
+        let task = Task {
+            try await service.prepare(candidates, onProgress: { await publications.record($0) })
+        }
+        defer { task.cancel(); Task { await gate.release() } }
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while await publications.latestBooks.count < 2, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        let firstScreen = await publications.latestBooks
+        #expect(Set(firstScreen.map(\.manga.key)) == ["first", "second"])
+        #expect(firstScreen.allSatisfy { $0.author == "Author" && $0.releaseYear == 2009
+            && $0.manga.status == .ongoing && $0.searchLanguages?.codes == ["en"] })
+        await gate.release()
+        let outcome = try await task.value
+        #expect(outcome.books.map(\.manga.key) == ["first", "second", "last"])
+        let snapshots = await publications.snapshots
+        let displayedOrder = snapshots.last?.books.map(\.id) ?? []
+        #expect(Set(displayedOrder) == Set(outcome.books.map(\.id)))
+        for snapshot in snapshots {
+            #expect(snapshot.books.map(\.id) == Array(displayedOrder.prefix(snapshot.books.count)))
+        }
+        #expect(Array(displayedOrder.prefix(firstScreen.count)) == firstScreen.map(\.id))
+    }
+
+    @Test("A fast later-ranked title appears immediately while a slow first title appends only when ready")
+    func slowFirstDoesNotBlockProgress() async throws {
+        let gate = Gate()
+        let publications = Publications()
+        let service = SumiSearchPreparationService(concurrency: 2) { book, _ in
+            if book.manga.key == "first" { await gate.wait() }
+            return Self.details(book)
+        }
+        let candidates = [book("first"), book("second")]
+        let task = Task {
+            try await service.prepare(candidates, onProgress: { await publications.record($0) })
+        }
+        defer { task.cancel(); Task { await gate.release() } }
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while await publications.latestBooks.isEmpty, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        let firstScreen = await publications.latestBooks
+        #expect(firstScreen.map(\.manga.key) == ["second"])
+        #expect(firstScreen.first?.author == "Author")
+        #expect(firstScreen.first?.releaseYear == 2009)
+        #expect(firstScreen.first?.searchLanguages?.codes == ["en"])
+        await gate.release()
+        let outcome = try await task.value
+        #expect(outcome.books.map(\.manga.key) == ["first", "second"], "Non-streaming callers keep ranked input order")
+        #expect(await publications.latestBooks.map(\.manga.key) == ["second", "first"], "Displayed rows never jump when an earlier candidate finishes")
+    }
+
+    @Test("Unreadable and failed rows do not block later readable results")
+    func progressSkipsUnavailableRows() async throws {
+        let publications = Publications()
+        let service = SumiSearchPreparationService { book, _ in
+            if book.manga.key == "empty" { return nil }
+            if book.manga.key == "unknown" { throw URLError(.timedOut) }
+            return Self.details(book)
+        }
+        let outcome = try await service.prepare([book("empty"), book("unknown"), book("readable")],
+            onProgress: { await publications.record($0) })
+        #expect(outcome.books.map(\.manga.key) == ["readable"])
+        #expect(outcome.failedSourceKeys == ["preparation-test"])
+        #expect(await publications.latestBooks.map(\.id) == outcome.books.map(\.id))
+        #expect(await publications.snapshots.last?.failedSourceKeys == outcome.failedSourceKeys)
+    }
+
+    @Test("Legacy publication metadata starts alongside chapter fetching and arrives in the same row")
+    func legacyMetadataOverlapsChapters() async throws {
+        let state = ParallelLoadState()
+        let chapterGate = Gate()
+        let metadataGate = Gate()
+        let runner = LegacyRunner(state: state, gate: chapterGate)
+        let source = AidokuRunner.Source(key: "legacy-fixture", name: "Fixture", version: 1,
+            contentRating: .safe, runner: runner)
+        let candidate = SumiBook(manga: .init(sourceKey: source.key, key: "title", title: "Title"))
+        let task = Task {
+            try await SumiSearchPreparationService.loadLegacy(candidate, source: source) { _ in
+                await state.start("metadata")
+                await metadataGate.wait()
+                return .init(authors: ["Author"], releaseYear: 2009, publishingStatus: .ongoing,
+                             translatedLanguages: ["en"])
+            }
+        }
+        defer { task.cancel(); Task { await chapterGate.release(); await metadataGate.release() } }
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while await state.started.count < 2, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        let startedTogether = await state.started == ["chapters", "metadata"]
+        await chapterGate.release()
+        await metadataGate.release()
+        let result = try await task.value
+        #expect(startedTogether, "Metadata must not wait for a potentially large legacy chapter collection")
+        #expect(result?.manga.authors == ["Author"])
+        #expect(result?.releaseYear == 2009)
+        #expect(result?.languages?.codes == ["en"])
+    }
+
+    @Test("Known empty chapter lists do not start optional metadata requests")
+    func emptyRowsDoNotRequestMetadata() async throws {
+        let state = ParallelLoadState()
+        let candidate = SumiBook(manga: .init(sourceKey: "fixture", key: "empty", title: "Empty", chapters: []))
+        let result = try await SumiSearchPreparationService.loadLegacy(candidate, source: nil) { _ in
+            await state.start("metadata")
+            return nil
+        }
+        #expect(result == nil)
+        #expect(await state.started.isEmpty)
+    }
+
     @Test("Bounded preparation and cache reuse preserve current history instead of caching old Resume state")
     func boundedCachePreservesProgress() async throws {
         let probe = Probe()
@@ -174,6 +295,35 @@ struct SumiSearchPreparationServiceTests {
     private actor Publication {
         private(set) var books: [SumiBook] = []
         func publish(_ books: [SumiBook]) { self.books = books }
+    }
+
+    private actor Publications {
+        private(set) var snapshots: [SumiSearchPreparationService.Outcome] = []
+        var latestBooks: [SumiBook] { snapshots.last?.books ?? [] }
+        func record(_ outcome: SumiSearchPreparationService.Outcome) { snapshots.append(outcome) }
+    }
+
+    private actor ParallelLoadState {
+        private(set) var started: Set<String> = []
+        func start(_ label: String) { started.insert(label) }
+    }
+
+    private actor LegacyRunner: AidokuRunner.Runner {
+        nonisolated let features = AidokuRunner.SourceFeatures()
+        let state: ParallelLoadState
+        let gate: Gate
+        init(state: ParallelLoadState, gate: Gate) { self.state = state; self.gate = gate }
+        func getSearchMangaList(query: String?, page: Int, filters: [AidokuRunner.FilterValue]) async throws -> AidokuRunner.MangaPageResult {
+            .init(entries: [], hasNextPage: false)
+        }
+        func getMangaUpdate(manga: AidokuRunner.Manga, needsDetails: Bool, needsChapters: Bool) async throws -> AidokuRunner.Manga {
+            await state.start("chapters")
+            await gate.wait()
+            var result = manga
+            result.chapters = [.init(key: "chapter", language: "en")]
+            return result
+        }
+        func getPageList(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) async throws -> [AidokuRunner.Page] { [] }
     }
 
     private actor Probe {
