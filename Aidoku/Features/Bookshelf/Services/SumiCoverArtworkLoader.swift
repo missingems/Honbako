@@ -19,6 +19,7 @@ final class SumiCoverArtworkLoader {
         let source: ObjectIdentifier?
         let version: Int
         let preferences: Int
+        let variant = "original-1024-material-v1"
 
         init(book: SumiBook, source: AidokuRunner.Source?) {
             id = book.id
@@ -121,7 +122,8 @@ final class SumiCoverArtworkLoader {
     }
 
     func loadCover(for book: SumiBook, source providedSource: AidokuRunner.Source? = nil) async -> UIImage? {
-        guard let url = book.coverURL, !Task.isCancelled else { return nil }
+        guard let coverURL = book.coverURL, !Task.isCancelled else { return nil }
+        let url = Self.highQualityCoverURL(coverURL)
         let generation = sourceGenerations[book.sourceKey, default: 0]
         let source: AidokuRunner.Source?
         if let providedSource { source = providedSource }
@@ -146,10 +148,11 @@ final class SumiCoverArtworkLoader {
         else if let source { urlRequest = await source.getModifiedImageRequest(url: url, context: nil) }
         else { urlRequest = URLRequest(url: url) }
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
-        // 640 physical pixels are sufficient for library/search cover tiles;
-        // avoid multiplying this decoded bitmap by a screen-scale factor.
-        var processors: [ImageProcessing] = [DownsampleProcessor(width: 640, scaleFactor: 1)]
+        // Original artwork remains sharp when lifted from a 3x grid. Bound the
+        // decoded image in physical pixels; the processor never upscales it.
+        var processors: [ImageProcessing] = [DownsampleProcessor(width: 1024, scaleFactor: 1)]
         if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
+        processors.append(HonbakoCoverMaterialProcessor())
         let request = ImageRequest(urlRequest: urlRequest, processors: processors,
             userInfo: [.processesKey: source?.features.processesCovers ?? false])
         requests[key] = RequestEntry(request: request, source: source, stored: .now)
@@ -159,6 +162,21 @@ final class SumiCoverArtworkLoader {
         if image == nil { placeholders[key] = Date.now.addingTimeInterval(10) }
         else { placeholders[key] = nil }
         return image
+    }
+
+    /// Older saved MangaDex entries retain a thumbnail URL. Upgrade only its
+    /// documented uploads path; every other provider keeps its exact URL and
+    /// still receives its own source-modified headers below.
+    private static func highQualityCoverURL(_ url: URL) -> URL {
+        let parts = url.pathComponents
+        guard url.scheme?.lowercased() == "https", url.host?.lowercased() == "uploads.mangadex.org",
+              parts.count == 4, parts[1] == "covers", UUID(uuidString: parts[2]) != nil,
+              let suffix = [".256.jpg", ".512.jpg"].first(where: { parts[3].hasSuffix($0) }),
+              parts[3].count > suffix.count,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.percentEncodedPath.hasSuffix(suffix) else { return url }
+        components.percentEncodedPath = String(components.percentEncodedPath.dropLast(suffix.count))
+        return components.url ?? url
     }
 
     private func warm(_ book: SumiBook) async {

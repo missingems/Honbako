@@ -214,17 +214,7 @@ class ReaderPageViewController: BaseObservingViewController {
         // The actual page surface now owns its rendering size again, rather
         // than the two clipping leaves used for a full-width wide image.
         pageView?.clearReferenceViewport()
-        #if SUMI
-        pageView?.setNeedsLayout()
-        #endif
     }
-
-    #if SUMI
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        pageView?.resetSumiBookBend()
-    }
-    #endif
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -246,7 +236,6 @@ class ReaderPageViewController: BaseObservingViewController {
     #if SUMI
     func updatePaperShape() {
         guard case .page = type else { return }
-        pageView?.bookBindingEdge = bookBindingEdge
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         if bookBindingEdge == .none {

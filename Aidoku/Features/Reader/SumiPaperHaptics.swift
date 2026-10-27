@@ -22,6 +22,10 @@ final class SumiPaperHaptics: NSObject {
     private var distance: CGFloat = 1
     private var lastMovement: CFTimeInterval = 0
     private var lastTick: CFTimeInterval = 0
+    private var lastProgressSample: CFTimeInterval = 0
+    private var lastParameterUpdate: CFTimeInterval = 0
+    private var suppliedVelocity: CGFloat = 0
+    private var derivedVelocity: CGFloat = 0
     private var intensity: Float = 0
     private let fallback = UIImpactFeedbackGenerator(style: .soft)
     private let inputMode: String
@@ -31,6 +35,12 @@ final class SumiPaperHaptics: NSObject {
     private var gestureID = UUID().uuidString
     private var maximumProgress: CGFloat = 0
     private var maximumVelocity: CGFloat = 0
+    private var maximumSuppliedVelocity: CGFloat = 0
+    private var maximumDerivedVelocity: CGFloat = 0
+    private var gestureUpdateCount = 0
+    private var motionUpdateCount = 0
+    private var nonzeroMotionUpdateCount = 0
+    private var gestureDrivenMotionUpdateCount = 0
     private var maximumMotionIntensity: Float = 0
     private var maximumOutputIntensity: Float = 0
     private var fallbackUsed = false
@@ -102,10 +112,16 @@ final class SumiPaperHaptics: NSObject {
         self.distance = max(1, distance)
         gestureID = UUID().uuidString
         maximumProgress = 0; maximumVelocity = 0
+        maximumSuppliedVelocity = 0; maximumDerivedVelocity = 0
+        gestureUpdateCount = 0; motionUpdateCount = 0
+        nonzeroMotionUpdateCount = 0; gestureDrivenMotionUpdateCount = 0
         maximumMotionIntensity = 0; maximumOutputIntensity = 0
         fallbackUsed = false; coreStartedForGesture = false; lastError = nil
         progress = 0; velocity = 0; intensity = 0
+        suppliedVelocity = 0; derivedVelocity = 0
         lastMovement = CACurrentMediaTime(); lastTick = lastMovement
+        lastProgressSample = lastMovement
+        lastParameterUpdate = 0
         active = true
         prepare()
         if !startCoreMotion(playLift: true) { playFallback(SumiPaperHapticPolicy.liftIntensity) }
@@ -128,6 +144,7 @@ final class SumiPaperHaptics: NSObject {
             clock.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
             clock.add(to: .main, forMode: .common)
             self.clock = clock
+            sendMotion(now: CACurrentMediaTime(), fromGesture: false, force: true)
             return true
         } catch {
             usingCore = false; engineReady = false
@@ -138,13 +155,31 @@ final class SumiPaperHaptics: NSObject {
     }
 
     func update(progress: CGFloat, velocity: CGFloat) {
-        guard active, progress.isFinite, velocity.isFinite else { return }
+        guard active, progress.isFinite else { return }
+        let now = CACurrentMediaTime()
         let next = min(1, max(0, progress))
-        if abs(next - self.progress) > 0.0005 { lastMovement = CACurrentMediaTime() }
+        let delta = next - self.progress
+        let elapsed = max(1.0 / 240, now - lastProgressSample)
+        suppliedVelocity = velocity.isFinite ? velocity : 0
+        if abs(delta) > 0.0005 {
+            lastMovement = now
+            derivedVelocity = delta * distance / elapsed
+        } else if now - lastMovement > 0.06 {
+            derivedVelocity = 0
+        }
+        lastProgressSample = now
         self.progress = next
-        self.velocity = velocity
+        // Device and remote input can move the leaf while reporting zero pan
+        // velocity. Recover its real speed from measured point displacement.
+        self.velocity = abs(suppliedVelocity) > 1 ? suppliedVelocity : derivedVelocity
+        gestureUpdateCount += 1
         maximumProgress = max(maximumProgress, next)
-        maximumVelocity = max(maximumVelocity, abs(velocity))
+        maximumVelocity = max(maximumVelocity, abs(self.velocity))
+        maximumSuppliedVelocity = max(maximumSuppliedVelocity, abs(suppliedVelocity))
+        maximumDerivedVelocity = max(maximumDerivedVelocity, abs(derivedVelocity))
+        // Short gestures must reach the motor even if there is no intervening
+        // display-link tick. The same throttle also covers clock-driven decay.
+        sendMotion(now: now, fromGesture: true)
     }
 
     func release(velocity: CGFloat, cancelled: Bool = false) {
@@ -153,7 +188,8 @@ final class SumiPaperHaptics: NSObject {
         stopPlayback()
         defer { record(cancelled ? "endCancelled" : "end") }
         guard UIApplication.shared.applicationState == .active else { return }
-        let releaseVelocity = CACurrentMediaTime() - lastMovement > 0.12 ? 0 : velocity
+        let releaseVelocity = CACurrentMediaTime() - lastMovement > 0.12 ? 0
+            : (velocity.isFinite && abs(velocity) > 1 ? velocity : self.velocity)
         let strength = SumiPaperHapticPolicy.releaseIntensity(velocity: releaseVelocity, distance: distance, cancelled: cancelled)
         if wasCore, engineReady {
             do {
@@ -211,20 +247,32 @@ final class SumiPaperHaptics: NSObject {
     }
 
     @objc private func tick(_ link: CADisplayLink) {
-        guard active, usingCore, UIApplication.shared.applicationState == .active,
+        sendMotion(now: CACurrentMediaTime(), fromGesture: false)
+    }
+
+    private func sendMotion(now: CFTimeInterval, fromGesture: Bool, force: Bool = false) {
+        guard active, usingCore else { return }
+        guard UIApplication.shared.applicationState == .active,
               !UIAccessibility.isReduceMotionEnabled else { cancel(); return }
-        let now = CACurrentMediaTime()
         let sample = SumiPaperHapticPolicy.motion(progress: progress, velocity: velocity, distance: distance, idleFor: now - lastMovement)
-        let blend = Float(1 - exp(-max(0, now - lastTick) / 0.025))
+        let firstMovement = sample.intensity > 0 && nonzeroMotionUpdateCount == 0
+        guard force || firstMovement || now - lastParameterUpdate >= 1.0 / 60 else { return }
+        let blend: Float = firstMovement ? 1 : Float(1 - exp(-max(0, now - lastTick) / 0.025))
         lastTick = now
-        intensity += (sample.intensity - intensity) * blend
-        maximumMotionIntensity = max(maximumMotionIntensity, intensity)
-        maximumOutputIntensity = max(maximumOutputIntensity, intensity)
+        if now - lastMovement >= 0.14 { intensity = 0 }
+        else { intensity += (sample.intensity - intensity) * blend }
         do {
-            try motionPlayer?.sendParameters([
+            guard let motionPlayer else { return }
+            try motionPlayer.sendParameters([
                 .init(parameterID: .hapticIntensityControl, value: intensity, relativeTime: 0),
                 .init(parameterID: .hapticSharpnessControl, value: sample.sharpness, relativeTime: 0)
             ], atTime: CHHapticTimeImmediate)
+            lastParameterUpdate = now
+            motionUpdateCount += 1
+            if intensity > 0 { nonzeroMotionUpdateCount += 1 }
+            if fromGesture { gestureDrivenMotionUpdateCount += 1 }
+            maximumMotionIntensity = max(maximumMotionIntensity, intensity)
+            maximumOutputIntensity = max(maximumOutputIntensity, intensity)
         } catch {
             recordError(error, stage: "motionUpdate")
             cancel(); engineReady = false
@@ -309,6 +357,12 @@ final class SumiPaperHaptics: NSObject {
             "active": active, "usingCore": usingCore, "coreStartedForGesture": coreStartedForGesture,
             "progress": Double(progress), "maximumProgress": Double(maximumProgress),
             "velocity": Double(velocity), "maximumVelocity": Double(maximumVelocity),
+            "suppliedVelocity": Double(suppliedVelocity), "derivedVelocity": Double(derivedVelocity),
+            "maximumSuppliedVelocity": Double(maximumSuppliedVelocity),
+            "maximumDerivedVelocity": Double(maximumDerivedVelocity),
+            "gestureUpdateCount": gestureUpdateCount, "motionUpdateCount": motionUpdateCount,
+            "nonzeroMotionUpdateCount": nonzeroMotionUpdateCount,
+            "gestureDrivenMotionUpdateCount": gestureDrivenMotionUpdateCount,
             "maximumMotionIntensity": maximumMotionIntensity, "maximumOutputIntensity": maximumOutputIntensity,
             "fallbackUsed": fallbackUsed
         ]

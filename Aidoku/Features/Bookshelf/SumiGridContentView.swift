@@ -41,16 +41,12 @@ struct SumiGridContentView: View {
                             }
                         }
                     } else {
-                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                        LazyVStack(alignment: .leading, spacing: 0) {
                             if !reading.isEmpty {
-                                Section {
-                                    HonbakoLibrarySectionView(books: reading, columns: columns,
-                                        openingBookID: opening.bookID, openBook: openBook,
-                                        insertingBookID: insertion.bookID,
-                                        registerAnchor: { id, anchor in insertion.register(anchor, for: id) })
-                                } header: {
-                                    HonbakoLibrarySectionHeader(title: "Reading")
-                                }
+                                HonbakoLibrarySectionView(books: reading, columns: columns,
+                                    openingBookID: opening.bookID, openBook: openBook,
+                                    insertingBookID: insertion.bookID,
+                                    registerAnchor: { id, anchor in insertion.register(anchor, for: id) })
                             }
                         }
                         .padding(.bottom, max(16, geometry.safeAreaInsets.bottom))

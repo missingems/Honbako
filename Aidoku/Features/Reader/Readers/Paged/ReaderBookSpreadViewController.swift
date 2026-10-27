@@ -80,13 +80,7 @@ final class ReaderBookSpreadViewController: BaseViewController {
         bindingLighting.values.forEach { $0.removeFromSuperlayer() }
         bindingLighting.removeAll()
         #endif
-        for leaf in leaves where leaf.parent === self {
-            #if SUMI
-            if let page = leaf as? ReaderPageViewController { page.bookBindingEdge = .none }
-            if let wide = leaf as? ReaderBookWideLeafViewController { wide.bookBindingEdge = .none }
-            #endif
-            leaf.remove()
-        }
+        for leaf in leaves where leaf.parent === self { leaf.remove() }
         #if SUMI
         updateAccessibilityLeaves()
         #endif
