@@ -5,7 +5,6 @@ import UIKit
 /// Hosts the full-bleed collection and owns direct book presentation.
 final class SumiGridViewController: UIViewController {
     private let store = SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
-    private let discovery = SumiDiscoveryStore()
     private let opening = SumiGridOpeningState()
     private let search = SumiSearchPresentation()
     private let insertion = SumiLibraryInsertionState()
@@ -39,7 +38,7 @@ final class SumiGridViewController: UIViewController {
         let previewBooks: [SumiBook]? = nil
         #endif
         let host = UIHostingController(rootView: SumiMainView(
-            store: store, discovery: discovery, opening: opening, search: search, insertion: insertion,
+            store: store, opening: opening, search: search, insertion: insertion,
             previewBooks: previewBooks, openBook: openBook,
             dismissSearch: { [weak self] in self?.dismissSearch() },
             didAddBook: { [weak self] book, source in

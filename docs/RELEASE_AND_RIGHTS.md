@@ -14,8 +14,6 @@ A reader, a source list, a search result, or an API response does not grant mang
 
 A source catalog can be maintained in a Honbako-owned repository or Gist and linked directly inside the app. The existing importer reads ordinary JSON from an HTTP(S) URL; a separate community site or Discord invitation is not required. A private repository needs a deliberately public catalog endpoint, without embedding GitHub credentials in the app. Source manifests and installable packages must both be available, with their own code-license notices preserved. Catalog hosting location does not change content permissions or Apple's downloadable-code/plugin review requirements (Guidelines 2.5.2 and 4.7).
 
-Recommendation data contains factual catalog fields, original short notes, and reviewed official publisher links, without chapter files or copied cover artwork. Open Library’s catalog licensing and API usage limits are documented separately in [RECOMMENDATIONS.md](RECOMMENDATIONS.md). Commercial scale requires a fresh provider-use review.
-
 ## Apple review and payments
 
 Apple expects authorization for third-party content and accurate app descriptions. Review Guidelines 5.2 address intellectual property; 4.7 may matter for downloadable executable source packages; 3.1.1 governs digital feature purchases. Document provider permissions and demonstrate a review account or personal-server fixture when needed. Use StoreKit for Pro, provide restore purchases, explain notification permission, and disclose network/background activity. Do not present a source picker as an App Review workaround. Regional rules and the final distribution model must be checked before submission.
@@ -26,10 +24,9 @@ Primary references: [App Review Guidelines](https://developer.apple.com/app-stor
 
 - Configure the Pro product in App Store Connect, including product type and pricing. If it is an auto-renewable subscription, add the required period, renewal, terms and privacy disclosures to its purchase presentation before enabling sales.
 - Confirm signing capabilities and iCloud container provisioning for `com.missingems.honbaku`.
-- Resolve GitHub's account payment/spending-limit restriction so the scheduled recommendation job and Pages deployment can start.
 - Resolve distribution licensing and publisher/provider authorizations before submitting to Apple.
 
-The optional Anthropic key is configured only as an Actions secret, with an explicitly selected Sonnet model. The maintainer supplied a public Open Library request contact and enabled the daily metadata poll. Neither credential is embedded in the app; scheduled runs make no paid model requests.
+The app has no recommendation feed or scheduled metadata poll. The installer-only Pages workflow does not access a manga catalog or model API.
 
 ## Duo cover display
 

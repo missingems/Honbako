@@ -30,7 +30,7 @@ Search publishes complete, readable results as providers respond, grouped under 
 
 The interface and bundled tutorial support English, Japanese, Simplified Chinese, and Traditional Chinese. Source-provided manga translations remain dependent on each title's available chapters.
 
-The older editorial recommendation feed remains available for prior builds. Current versions do not display or fetch it. See the archived [recommendation setup](docs/RECOMMENDATIONS.md).
+There are no recommendation or Popular feeds, bundled suggestion lists, or scheduled catalog polls. The installer website is deployed separately from `site/`.
 
 ## Pro
 
