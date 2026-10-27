@@ -15,6 +15,9 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         var enabled = false
         var sceneConnected = false
         var imageState = "notRequested"
+        var cameraState = "notRequested"
+        var hingePresent = false
+        var hingeOpen = false
         var title = ""
         var sceneRole: String?
         var displayWidth: Double?
@@ -71,6 +74,25 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         status.available = available
         status.enabled = enabled
         record("availabilityChanged")
+    }
+
+    func setAccessoryKind(_ kind: String) {
+        guard status.accessoryKind != kind else { return }
+        status.accessoryKind = kind
+        record("accessoryKindChanged")
+    }
+
+    func setCameraState(_ state: String) {
+        guard status.cameraState != state else { return }
+        status.cameraState = state
+        record("cameraStateChanged")
+    }
+
+    func setHinge(present: Bool, open: Bool) {
+        guard status.hingePresent != present || status.hingeOpen != open else { return }
+        status.hingePresent = present
+        status.hingeOpen = open
+        record("hingeChanged")
     }
 
     func setSceneConnected(_ connected: Bool, role: String, size: CGSize? = nil) {

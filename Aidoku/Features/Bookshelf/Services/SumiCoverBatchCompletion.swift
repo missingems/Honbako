@@ -1,6 +1,6 @@
 #if SUMI
-/// An unstructured worker can be cancelled at the deadline without waiting on
-/// a provider that ignores cancellation. It cannot publish after the batch ends.
+/// A one-shot UI waiter. The presentation deadline can finish its wait while
+/// the loader's separate bounded cohort continues preparing its publication.
 @MainActor
 final class SumiCoverBatchCompletion {
     private var finished = false

@@ -107,7 +107,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         accessibilityIdentifier = "Sumi.Reader.Scrubber"
         accessibilityLabel = String(localized: "Page previews")
         isAccessibilityElement = false; shouldGroupAccessibilityChildren = true
-        glass.layer.cornerRadius = SumiScrubberMetrics.cornerRadius; glass.clipsToBounds = true
+        glass.layer.cornerRadius = SumiScrubberMetrics.barCornerRadius(in: bounds.size); glass.clipsToBounds = true
         rail.backgroundColor = .clear
         rail.clipsToBounds = false
         addSubview(rail)
@@ -274,6 +274,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         rail.center = vertical ? CGPoint(x: bounds.midX, y: bounds.midY)
             : CGPoint(x: bounds.midX, y: bounds.maxY - thickness / 2)
         glass.frame = rail.bounds
+        glass.layer.cornerRadius = SumiScrubberMetrics.barCornerRadius(in: glass.bounds.size)
         let stripFrame = glass.bounds.insetBy(dx: 8, dy: 0)
         if collection.frame != stripFrame { collection.frame = stripFrame }
         updateEdgeFade()

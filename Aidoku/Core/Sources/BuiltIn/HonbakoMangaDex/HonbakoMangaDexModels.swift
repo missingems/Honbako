@@ -61,7 +61,7 @@ enum HonbakoMangaDexAPI {
             let coverFile = relationships.first { $0.type == "cover_art" }?.attributes?.fileName
             let cover = coverFile.flatMap { fileName -> String? in
                     guard safePathComponent(fileName) else { return nil }
-                    return "https://uploads.mangadex.org/covers/\(id)/\(fileName).256.jpg"
+                    return "https://uploads.mangadex.org/covers/\(id)/\(fileName)"
             }
             let status: AidokuRunner.PublishingStatus = switch attributes.status {
                 case "ongoing": .ongoing

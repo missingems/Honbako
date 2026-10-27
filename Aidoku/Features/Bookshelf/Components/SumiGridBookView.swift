@@ -9,12 +9,13 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
     var renderedBookPose: SumiGridBookPose? { nil }
     private var identity: String?
     private var representedBookID: String?
+    private var representedBook: SumiBook?
     private var isBookTransitionActive = false
     private var holdsVisibleEdition = false
     private var refreshOnNextAttachment = false
     private var pendingArtwork: (cover: UIImage, rendered: UIImage, physical: Bool)?
     private var pendingBook: SumiBook?
-    private var coverTask: Task<Void, Never>?
+    private var preparedObserver: NSObjectProtocol?
     private var placeholderBook: BookPresentation?
     private var placeholderSize: CGSize = .zero
     private var placeholderScale: CGFloat = 0
@@ -31,10 +32,31 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         isAccessibilityElement = false
         accessibilityElementsHidden = true
         accessibilityIdentifier = "Sumi.Grid.Cover"
+        preparedObserver = NotificationCenter.default.addObserver(
+            forName: SumiCoverArtworkLoader.batchPreparedNotification, object: nil, queue: .main
+        ) { [weak self] notification in
+            MainActor.assumeIsolated {
+                guard let self, let book = self.representedBook,
+                      self.window != nil || self.holdsVisibleEdition,
+                      let batch = notification.object as? SumiCoverArtworkLoader.PreparedBatch else { return }
+                if let cover = SumiCoverArtworkLoader.shared.preparedCover(for: book, in: batch) {
+                    // Every matching visible tile installs the staged cohort in
+                    // this notification pass. A lifted edition stays frozen.
+                    self.applyFlatEdition(cover: cover)
+                } else if self.window != nil {
+                    // A bounded cohort can drop unattempted work. Requeue only
+                    // unresolved visible art; real provider failures retain
+                    // their cooldown, and held editions never change here.
+                    self.refreshPreparedCoverIfNeeded()
+                }
+            }
+        }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    deinit { coverTask?.cancel() }
+    deinit {
+        if let preparedObserver { NotificationCenter.default.removeObserver(preparedObserver) }
+    }
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
@@ -66,6 +88,7 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         }
         guard refreshOnNextAttachment, !isBookTransitionActive else {
             refreshOnNextAttachment = false
+            refreshPreparedCoverIfNeeded()
             return
         }
         refreshOnNextAttachment = false
@@ -82,6 +105,7 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             self.pendingBook = nil
             configure(book: pendingBook, dynamicTypeSize: placeholderDynamicType, colorScheme: placeholderColorScheme)
         }
+        refreshPreparedCoverIfNeeded()
         setNeedsLayout()
     }
 
@@ -120,10 +144,8 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         }
         let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")|\(book.title)"
         guard identity != requestedIdentity else {
-            // A later coherent refresh can replace a prepared placeholder with
-            // warmed artwork without starting a new per-tile image request.
-            if !holdsVisibleEdition, let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book),
-               coverArtwork !== cached { applyFlatEdition(cover: cached) }
+            representedBook = book
+            refreshPreparedCoverIfNeeded()
             return
         }
         if holdsVisibleEdition, representedBookID == book.presentation.id {
@@ -139,9 +161,9 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             holdsVisibleEdition = false
         }
         representedBookID = book.presentation.id
+        representedBook = book
         identity = requestedIdentity
         bookPose = SumiGridBookPose(seed: book.presentation.placementSeed)
-        coverTask?.cancel()
         if let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book) {
             applyFlatEdition(cover: cached)
             return
@@ -149,11 +171,19 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         placeholderBook = book.presentation
         placeholderSize = .zero
         renderPlaceholder()
-        guard !SumiCoverArtworkLoader.shared.usesPreparedPlaceholder(for: book) else { return }
-        coverTask = Task { @MainActor [weak self] in
-            let loaded = await SumiCoverArtworkLoader.shared.loadCover(for: book)
-            guard !Task.isCancelled, self?.identity == requestedIdentity else { return }
-            if let loaded { self?.applyFlatEdition(cover: loaded, animated: true) }
+        refreshPreparedCoverIfNeeded()
+    }
+
+    private func refreshPreparedCoverIfNeeded() {
+        guard !holdsVisibleEdition, !isBookTransitionActive, let book = representedBook else { return }
+        if let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book) {
+            if coverArtwork !== cached { applyFlatEdition(cover: cached) }
+        } else if (placeholderBook != nil || coverArtwork == nil),
+                  !SumiCoverArtworkLoader.shared.usesPreparedPlaceholder(for: book) {
+            // This also recovers a visible tile after a decoded cache eviction.
+            // The loader coalesces disk/network work and publishes one cohort;
+            // the tile never starts an independent per-image repaint task.
+            SumiCoverArtworkLoader.shared.requestVisibleCover(for: book)
         }
     }
 

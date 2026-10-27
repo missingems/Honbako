@@ -25,7 +25,7 @@ struct SumiReaderToolbarTests {
         #expect(surfaces[0].bounds.height == 48 && surfaces[2].bounds.height == 48)
         #expect(surfaces[1].bounds.height == 40)
         #expect(toolbar.hitTest(CGPoint(x: 200, y: 1), with: nil) is UICollectionView)
-        #expect(surfaces[1].layer.cornerRadius == 13)
+        #expect(surfaces[1].layer.cornerRadius == 20)
         #expect(surfaces[0].layer.cornerRadius == 24 && surfaces[2].layer.cornerRadius == 24)
         #expect(descendants(surfaces[1], type: SumiPageScrubber.self).first === scrubber)
         #expect(descendants(toolbar, type: UIButton.self).allSatisfy { $0.isPointerInteractionEnabled })
@@ -65,7 +65,7 @@ struct SumiReaderToolbarTests {
         #expect(surfaces[0].bounds.width == 48 && surfaces[2].bounds.width == 48)
         #expect(surfaces[1].bounds.width == 40)
         #expect(toolbar.hitTest(CGPoint(x: 1, y: 180), with: nil) is UICollectionView)
-        #expect(toolbar.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" }?.layer.cornerRadius == 13)
+        #expect(toolbar.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" }?.layer.cornerRadius == 20)
         #expect(toolbar.bounds.insetBy(dx: -1, dy: -1).contains(frame))
         let anchor = toolbar.chaptersAnchorView
         let center = anchor.convert(CGPoint(x: anchor.bounds.midX, y: anchor.bounds.midY), to: toolbar)
