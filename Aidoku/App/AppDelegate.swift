@@ -549,22 +549,40 @@ extension AppDelegate {
     }
 
     func handleUrl(url: URL) {
-        if url.scheme == "aidoku" { // aidoku://
-            if url.host == "addSourceList" { // addSourceList?url=
+        #if SUMI
+        let appScheme = "honbako"
+        #else
+        let appScheme = "aidoku"
+        #endif
+        if url.scheme?.lowercased() == appScheme {
+            if url.host?.lowercased() == "addsourcelist" {
                 let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
                 if
                     let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
-                    let listUrl = URL(string: listUrlString)
+                    let listUrl = URL(string: listUrlString),
+                    ["https", "http"].contains(listUrl.scheme?.lowercased() ?? ""),
+                    listUrl.host != nil
                 {
                     Task {
                         let sourceListURLs = await SourceManager.shared.getSourceListURLs()
-                        guard !sourceListURLs.contains(listUrl) else { return }
+                        if sourceListURLs.contains(listUrl) {
+                            #if SUMI
+                            presentAlert(title: "Source List Ready",
+                                message: "Open Settings → Source Lists, then choose the sources to add.")
+                            #endif
+                            return
+                        }
                         let success = await SourceManager.shared.addSourceList(url: listUrl)
                         if success {
+                            #if SUMI
+                            presentAlert(title: "Source List Added",
+                                message: "Open Settings → Source Lists, then choose the sources to add.")
+                            #else
                             presentAlert(
                                 title: NSLocalizedString("SOURCE_LIST_ADDED"),
                                 message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT")
                             )
+                            #endif
                         } else {
                             presentAlert(
                                 title: NSLocalizedString("SOURCE_LIST_ADD_FAIL"),

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Install the Honbako development build on a registered iPhone or iPad.">
+  <title>Install Honbako</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #ffffff;
+      --text: #1d1d1f;
+      --secondary: #606066;
+      --accent: #0066cc;
+      --button-text: #ffffff;
+      --line: #d2d2d7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #000000;
+        --text: #f5f5f7;
+        --secondary: #a1a1a6;
+        --accent: #409cff;
+        --button-text: #000000;
+        --line: #424245;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+    }
+    main { max-width: 440px; margin: 0 auto; padding: 48px 24px 32px; }
+    header { text-align: center; }
+    img { display: block; margin: 0 auto 16px; border-radius: 22px; }
+    h1 { margin: 0; font-size: 32px; line-height: 1.2; letter-spacing: -0.02em; }
+    h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.3; }
+    p { margin: 8px 0 20px; }
+    .version, .note { color: var(--secondary); font-size: 15px; }
+    .version { margin-top: 6px; margin-bottom: 28px; }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 12px 16px;
+      border-radius: 13px;
+      background: var(--accent);
+      color: var(--button-text);
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+    }
+    .secondary-button { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+    .download { margin-top: 14px; text-align: center; }
+    section { margin-top: 32px; padding-top: 26px; border-top: 1px solid var(--line); }
+    .source-link { margin: 14px 0 0; font-size: 15px; text-align: center; }
+    footer { margin-top: 32px; font-size: 15px; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icon.png" width="96" height="96" alt="">
+      <h1>Honbako</h1>
+      <p class="version">Version 0.1.0 · Build 5</p>
+    </header>
+
+    <a class="button" href="itms-services://?action=download-manifest&amp;url=https%3A%2F%2Fmissingems.github.io%2FHonbako%2Finstall%2Fmanifest.plist">Install on iPhone or iPad</a>
+    <p class="download"><a href="https://github.com/missingems/Honbako/releases/download/v0.1.0-build.5/Honbako.ipa">Download IPA</a></p>
+    <p class="note">This Ad Hoc build requires your device to be registered to the developer account.</p>
+
+    <section aria-labelledby="sources-title">
+      <h2 id="sources-title">Sources</h2>
+      <p>Add the source list, then choose sources in Settings.</p>
+      <a class="button secondary-button" href="honbako://addSourceList?url=https%3A%2F%2Fgist.githubusercontent.com%2Fmissingems%2Fa88a113d1b28b9149289c04bf0840d8b%2Fraw%2Fpersonal.json">Add Source List</a>
+      <p class="source-link"><a href="https://gist.githubusercontent.com/missingems/a88a113d1b28b9149289c04bf0840d8b/raw/personal.json">View Source List</a></p>
+    </section>
+
+    <footer><a href="https://github.com/missingems/Honbako">Source Code on GitHub</a></footer>
+  </main>
+</body>
+</html>

@@ -4,6 +4,12 @@ A personal manga library and reader for iPhone and iPad. Bundle identifier: `com
 
 Honbako starts with an empty library and no installed source lists. Add your own files, connect a personal library server, or explicitly configure a provider you are authorized to use. Recommendations are discovery metadata and official publisher links; they do not install sources or add books to the library.
 
+## Install the development build
+
+Open the [Honbako download page](https://missingems.github.io/Honbako/install/) in Safari on a registered iPhone or iPad. It includes the Ad Hoc installer, direct IPA download, and an explicit **Add Source List** link. Ordinary installs still start with no sources or library entries.
+
+The source catalog is available as a [raw JSON download](https://gist.githubusercontent.com/missingems/a88a113d1b28b9149289c04bf0840d8b/raw/personal.json). Add it in **Settings → Source Lists**, open **Honbako Sources**, then choose which sources to install.
+
 ## Development
 
 Open `Aidoku.xcodeproj` and select the **Honbako** scheme. The internal reader target/module remains `Sumi` while the app identity is Honbako. Supply your Apple development team locally in the ignored `Aidoku/LocalSigning.xcconfig`; signing credentials are not part of this repository.

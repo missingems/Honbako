@@ -20,11 +20,15 @@ struct SumiSpotlightResultRow: View {
     @State private var metadataBookID: MangaIdentifier?
     @State private var languageContext: SumiSearchLanguageService.Context?
     @State private var presentedLanguages: SumiSearchLanguageInfo?
-    @State private var metadataHeight: CGFloat = 66
+    @ScaledMetric(relativeTo: .body) private var coverScale: CGFloat = 1
+    @ScaledMetric(relativeTo: .body) private var rowContentHeight: CGFloat = 114
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    private var coverHeight: CGFloat { max(66, metadataHeight) }
-    private var coverWidth: CGFloat { coverHeight * CGFloat(SumiGridBookPose.coverAspect) }
+    private var coverWidth: CGFloat { 68 * min(coverScale, 1.5) }
+    private var coverHeight: CGFloat { 100 * min(coverScale, 1.5) }
+    private var titleInset: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? Self.rowInset : Self.rowInset + coverWidth + Self.coverSpacing
+    }
 
     private var presentation: SumiSearchResultPresentation {
         SumiSearchResultPresentation(book: book, isInLibrary: isInLibrary,
@@ -48,23 +52,24 @@ struct SumiSpotlightResultRow: View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
             : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+        let bookLayout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: Self.coverSpacing))
         layout {
             Button(action: selectBook) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(book.title).font(.body).lineLimit(2)
-                    SumiSearchResultSubtitle(author: author, presentation: presentation, languages: languages)
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
-                    if abs(metadataHeight - height) > 0.5 { metadataHeight = height.rounded(.up) }
-                }
-                .padding(.leading, coverWidth + Self.coverSpacing)
-                .frame(maxWidth: .infinity, minHeight: coverHeight, alignment: .topLeading)
-                .overlay(alignment: .topLeading) {
+                bookLayout {
                     SumiGridBookRepresentable(book: book, anchor: anchor)
                         .frame(width: coverWidth, height: coverHeight)
                         .opacity(isLifted ? 0 : 1)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(book.title).font(.body)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                        SumiSearchResultSubtitle(author: author, presentation: presentation, languages: languages)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .frame(maxWidth: .infinity, minHeight: rowContentHeight, alignment: .leading)
                 .contentShape(.rect)
                 .accessibilityHidden(true)
             }
@@ -106,7 +111,7 @@ struct SumiSpotlightResultRow: View {
         .padding(Self.rowInset)
         .overlay(alignment: .bottom) {
             if showsDivider {
-                Divider().padding(.leading, Self.rowInset + coverWidth + Self.coverSpacing)
+                Divider().padding(.leading, titleInset)
                     .padding(.trailing, Self.rowInset)
             }
         }
