@@ -1,5 +1,6 @@
 #if SUMI
 import CoreHaptics
+import AVFAudio
 import UIKit
 
 /// One retained waveform is modulated during a real gesture. No haptic work is
@@ -28,6 +29,8 @@ final class SumiPaperHaptics: NSObject {
     private var derivedVelocity: CGFloat = 0
     private var intensity: Float = 0
     private let fallback = UIImpactFeedbackGenerator(style: .soft)
+    private let touchFeedback = SumiPaperTouchFeedback()
+    private var nativeContactCount = 0
     private let inputMode: String
     private let writesDiagnostics: Bool
     private let supportsHaptics = CHHapticEngine.capabilitiesForHardware().supportsHaptics
@@ -60,14 +63,15 @@ final class SumiPaperHaptics: NSObject {
 
     /// Warm the engine before a touch, without changing the audio session or
     /// overriding any system haptic/mute policy. Unsupported devices use UIKit.
-    func prepare() {
+    func prepare(in view: UIView? = nil) {
+        touchFeedback.prepare(in: view)
         fallback.prepare()
         guard UIApplication.shared.applicationState == .active, !UIAccessibility.isReduceMotionEnabled,
               supportsHaptics,
               !engineReady, !engineStarting else { return }
         do {
             if engine == nil {
-                let engine = try CHHapticEngine()
+                let engine = try CHHapticEngine(audioSession: nil)
                 engine.playsHapticsOnly = true
                 engine.isAutoShutdownEnabled = true
                 engine.stoppedHandler = { [weak self] reason in
@@ -106,7 +110,7 @@ final class SumiPaperHaptics: NSObject {
         }
     }
 
-    func begin(distance: CGFloat, visible: Bool) {
+    func begin(distance: CGFloat, visible: Bool, location: CGPoint? = nil) {
         cancel()
         guard visible, UIApplication.shared.applicationState == .active else { return }
         self.distance = max(1, distance)
@@ -117,6 +121,8 @@ final class SumiPaperHaptics: NSObject {
         nonzeroMotionUpdateCount = 0; gestureDrivenMotionUpdateCount = 0
         maximumMotionIntensity = 0; maximumOutputIntensity = 0
         fallbackUsed = false; coreStartedForGesture = false; lastError = nil
+        nativeContactCount = 0
+        touchFeedback.update(location: location)
         progress = 0; velocity = 0; intensity = 0
         suppliedVelocity = 0; derivedVelocity = 0
         lastMovement = CACurrentMediaTime(); lastTick = lastMovement
@@ -124,8 +130,10 @@ final class SumiPaperHaptics: NSObject {
         lastParameterUpdate = 0
         active = true
         prepare()
-        if !startCoreMotion(playLift: true) { playFallback(SumiPaperHapticPolicy.liftIntensity) }
-        maximumOutputIntensity = SumiPaperHapticPolicy.liftIntensity
+        let nativeContact = touchFeedback.play(releasing: false, intensity: 0.6)
+        if nativeContact { nativeContactCount += 1 }
+        if !startCoreMotion(playLift: !nativeContact), !nativeContact { playFallback(SumiPaperHapticPolicy.liftIntensity) }
+        maximumOutputIntensity = nativeContact ? 0.6 : SumiPaperHapticPolicy.liftIntensity
         record("begin")
     }
 
@@ -154,8 +162,9 @@ final class SumiPaperHaptics: NSObject {
         }
     }
 
-    func update(progress: CGFloat, velocity: CGFloat) {
+    func update(progress: CGFloat, velocity: CGFloat, location: CGPoint? = nil) {
         guard active, progress.isFinite else { return }
+        touchFeedback.update(location: location)
         let now = CACurrentMediaTime()
         let next = min(1, max(0, progress))
         let delta = next - self.progress
@@ -193,6 +202,14 @@ final class SumiPaperHaptics: NSObject {
         let releaseVelocity = CACurrentMediaTime() - lastMovement > 0.12 ? 0
             : (velocity.isFinite && abs(velocity) > 1 ? velocity : self.velocity)
         let strength = SumiPaperHapticPolicy.releaseIntensity(velocity: releaseVelocity, distance: distance, cancelled: cancelled)
+        if touchFeedback.play(releasing: true, intensity: cancelled ? 0.5 : 0.85) {
+            nativeContactCount += 1
+            maximumOutputIntensity = max(maximumOutputIntensity, cancelled ? 0.5 : 0.85)
+            // The native contact supplies finger-up after the continuous
+            // paper texture stops; avoid a duplicate Core Haptics impact.
+            touchFeedback.prepare(in: nil)
+            return
+        }
         if wasCore, engineReady {
             do {
                 // Fixed event intensities make the finger-up perceptible even
@@ -368,6 +385,11 @@ final class SumiPaperHaptics: NSObject {
             "maximumMotionIntensity": maximumMotionIntensity, "maximumOutputIntensity": maximumOutputIntensity,
             "fallbackUsed": fallbackUsed
         ]
+        snapshot["nativeContactCount"] = nativeContactCount
+        snapshot["nativeFeedbackAttachedToReader"] = touchFeedback.isAttached
+        snapshot["audioHapticsAllowedDuringRecording"] = AVAudioSession.sharedInstance().allowHapticsAndSystemSoundsDuringRecording
+        snapshot["audioCategory"] = AVAudioSession.sharedInstance().category.rawValue
+        snapshot["edgePreparation"] = SumiPageEdgeMetadataCache.shared.status()
         snapshot["isMutedForHaptics"] = engine.map { $0.isMutedForHaptics as Any } ?? NSNull()
         snapshot["motionPlayerMuted"] = motionPlayer.map { $0.isMuted as Any } ?? NSNull()
         snapshot["error"] = lastError ?? [:]

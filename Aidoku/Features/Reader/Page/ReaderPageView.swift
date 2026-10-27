@@ -377,6 +377,10 @@ extension ReaderPageView {
             processors.append(UpscaleProcessor())
         }
 
+        #if SUMI
+        processors.append(SumiPageEdgePreparationProcessor(request: urlRequest, sourceKey: source?.key,
+            sourceVersion: source?.version, pageContext: context, processors: processors))
+        #endif
         return ImageRequest(
             urlRequest: urlRequest,
             processors: processors,
@@ -566,6 +570,9 @@ extension ReaderPageView {
                 }
             }
 
+            #if SUMI
+            _ = SumiPreparedPageEdges.prepare(image: image)
+            #endif
             return image
         }.value
         #if SUMI

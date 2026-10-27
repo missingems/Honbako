@@ -8,6 +8,7 @@ final class HonbakoCoverCamera: @unchecked Sendable {
     private let queue = DispatchQueue(label: "Honbako.CoverDisplay.Camera", qos: .userInitiated)
     private let session = AVCaptureSession()
     private let requests = HonbakoCoverCameraRequests()
+    private let haptics = HonbakoCoverCameraHaptics()
     private var configured = false
 
     func setRunning(_ running: Bool) async -> String {
@@ -24,6 +25,7 @@ final class HonbakoCoverCamera: @unchecked Sendable {
                     }
                     if !running {
                         if session.isRunning { session.stopRunning() }
+                        haptics.restore()
                         continuation.resume(returning: "stopped")
                         return
                     }
@@ -36,7 +38,9 @@ final class HonbakoCoverCamera: @unchecked Sendable {
                         continuation.resume(returning: session.isRunning ? "running" : "stopped")
                         return
                     }
+                    haptics.allow()
                     if !session.isRunning { session.startRunning() }
+                    if !session.isRunning { haptics.restore() }
                     // startRunning can block. A hide/close arriving during it
                     // must stop the newly started session before this job ends.
                     stopIfNoLongerWanted()
@@ -55,7 +59,10 @@ final class HonbakoCoverCamera: @unchecked Sendable {
     }
 
     private func stopIfNoLongerWanted() {
-        if !requests.wantsRunning, session.isRunning { session.stopRunning() }
+        if !requests.wantsRunning {
+            if session.isRunning { session.stopRunning() }
+            haptics.restore()
+        }
     }
 
     private func configure() -> Bool {
@@ -80,7 +87,11 @@ final class HonbakoCoverCamera: @unchecked Sendable {
 
     deinit {
         let session = session
-        queue.async { if session.isRunning { session.stopRunning() } }
+        let haptics = haptics
+        queue.async {
+            if session.isRunning { session.stopRunning() }
+            haptics.restore()
+        }
     }
 }
 #endif

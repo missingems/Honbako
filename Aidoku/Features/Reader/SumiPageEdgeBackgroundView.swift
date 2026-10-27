@@ -50,10 +50,14 @@ final class SumiPageEdgeBackgroundView: UIView {
         generation += 1
         let request = generation
         identity = next
-        let orientation = image.imageOrientation
+        if let cached = SumiPreparedPageEdges.cached(image: image, crop: crop) {
+            sampling = nil
+            apply(cached)
+            return
+        }
         sampling = Task { [weak self] in
-            let detector = Task.detached(priority: .utility) {
-                SumiPageEdgeColors.sample(image: bitmap, orientation: orientation, crop: crop)
+            let detector = Task.detached(priority: .userInitiated) {
+                SumiPreparedPageEdges.prepare(image: image, crop: crop)
             }
             let result = await withTaskCancellationHandler {
                 await detector.value

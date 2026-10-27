@@ -20,24 +20,13 @@ struct SumiPageEdgeColors: Equatable, Sendable {
     let trailing: Color
     let bottom: Color
 
-    private final class Cached {
-        // Retaining the image prevents a recycled object address from matching
-        // another bitmap. The cache's byte budget also bounds this retention.
-        let image: CGImage
-        let colors: SumiPageEdgeColors
-        init(image: CGImage, colors: SumiPageEdgeColors) { self.image = image; self.colors = colors }
+    static func identity(image: CGImage, orientation: UIImage.Orientation, crop: CGRect) -> String {
+        "\(ObjectIdentifier(image))-\(cropIdentity(image: image, orientation: orientation, crop: crop))"
     }
 
-    private static let cache: NSCache<NSString, Cached> = {
-        let cache = NSCache<NSString, Cached>()
-        cache.countLimit = 32
-        cache.totalCostLimit = 32 * 1024 * 1024
-        return cache
-    }()
-
-    static func identity(image: CGImage, orientation: UIImage.Orientation, crop: CGRect) -> String {
+    static func cropIdentity(image: CGImage, orientation: UIImage.Orientation, crop: CGRect) -> String {
         let size = displaySize(image: image, orientation: orientation)
-        return "\(ObjectIdentifier(image))-\(orientation.rawValue)-\(Int((crop.minX * size.width).rounded()))-\(Int((crop.minY * size.height).rounded()))-\(Int((crop.maxX * size.width).rounded()))-\(Int((crop.maxY * size.height).rounded()))"
+        return "\(orientation.rawValue)-\(Int((crop.minX * size.width).rounded()))-\(Int((crop.minY * size.height).rounded()))-\(Int((crop.maxX * size.width).rounded()))-\(Int((crop.maxY * size.height).rounded()))"
     }
 
     static func sample(image: CGImage, orientation: UIImage.Orientation = .up,
@@ -46,8 +35,6 @@ struct SumiPageEdgeColors: Equatable, Sendable {
               [crop.minX, crop.minY, crop.width, crop.height].allSatisfy(\.isFinite) else { return nil }
         let crop = crop.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
         guard !crop.isEmpty, !crop.isNull else { return nil }
-        let key = identity(image: image, orientation: orientation, crop: crop) as NSString
-        if let cached = cache.object(forKey: key) { return cached.colors }
         let size = displaySize(image: image, orientation: orientation)
         // Use pixel centers inside the visible crop, including an internal
         // split edge. This does not accidentally sample the neighboring leaf.
@@ -69,9 +56,6 @@ struct SumiPageEdgeColors: Equatable, Sendable {
               let trailing = edge(CGPoint(x: right, y: top), CGPoint(x: right, y: bottom)),
               let bottomColor = edge(CGPoint(x: left, y: bottom), CGPoint(x: right, y: bottom)) else { return nil }
         let result = Self(top: topColor, leading: leading, trailing: trailing, bottom: bottomColor)
-        let byteCount = image.bytesPerRow.multipliedReportingOverflow(by: image.height)
-        let cost = byteCount.overflow ? 32 * 1024 * 1024 : byteCount.partialValue
-        cache.setObject(Cached(image: image, colors: result), forKey: key, cost: cost)
         return result
     }
 
