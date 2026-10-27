@@ -1,5 +1,6 @@
 // Honbako-only system permission descriptions.
 "CFBundleDisplayName" = "Honbako";
+"NSCameraUsageDescription" = "Honbako 會在你閱讀時啟用相機，以便在外螢幕顯示漫畫封面。不會錄製或儲存照片及影片。";
 "NSFaceIDUsageDescription" = "使用 Face ID 解鎖受保護的 App 功能。";
 "NSLocalNetworkUsageDescription" = "連接你在區域網路中選擇的個人漫畫伺服器。";
 "NSPhotoLibraryUsageDescription" = "將漫畫頁面儲存到照片圖庫。";

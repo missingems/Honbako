@@ -27,16 +27,55 @@ struct SumiReaderControlsLayoutTests {
         #expect(SumiReaderControlsLayout.sidebarEdge(systemEdge: nil, hasInnerFold: false) == nil)
     }
 
-    @Test("An open portrait inner canvas can anchor the larger strip to either touched bottom corner")
-    func innerPortraitBottomCorners() {
+    @Test("An open portrait inner canvas centers the bottom strip regardless of the last touched leaf")
+    func innerPortraitBottomCenter() {
         let bounds = CGRect(x: 0, y: 0, width: 669, height: 951)
         for side in [UIRectEdge.left, .right] {
+            let bottomSide = SumiReaderControlsLayout.bottomSide(in: bounds, isTablet: false, requestedSide: side)
+            #expect(bottomSide == nil)
+            #expect(SumiReaderControlsLayout.sidebarEdge(systemEdge: side, hasInnerFold: true) == nil)
             let frame = SumiReaderControlsLayout.toolbarFrame(in: bounds, safeAreaInsets: .zero,
-                avoiding: [], side: side, size: CGSize(width: 420, height: 80))
-            #expect(frame.height == 80)
+                avoiding: [], side: bottomSide, size: CGSize(width: 420, height: 48))
+            #expect(frame.height == 48)
             #expect(frame.maxY == bounds.maxY - 8)
-            if side == .left { #expect(frame.maxX <= bounds.midX - 8) }
-            else { #expect(frame.minX >= bounds.midX + 8) }
+            #expect(frame.midX == bounds.midX)
+            #expect(frame.width == 420)
+        }
+    }
+
+    @Test("A rotation re-evaluates bottom placement instead of retaining the former landscape leaf")
+    func rotatedPlacementUsesCurrentBounds() {
+        let landscape = CGRect(x: 0, y: 0, width: 951, height: 669)
+        let portrait = CGRect(x: 0, y: 0, width: 669, height: 951)
+        for side in [UIRectEdge.left, .right] {
+            #expect(SumiReaderControlsLayout.bottomSide(in: landscape, isTablet: false, requestedSide: side) == side)
+            #expect(SumiReaderControlsLayout.bottomSide(in: portrait, isTablet: false, requestedSide: side) == nil)
+            #expect(SumiReaderControlsLayout.bottomSide(in: landscape, isTablet: true, requestedSide: side) == nil)
+        }
+    }
+
+    @Test("The scrub bar is a capsule on either axis while printed previews retain their separate 13-point corners")
+    func capsuleBarAndPrintedCorners() {
+        #expect(SumiScrubberMetrics.barCornerRadius(in: CGSize(width: 300, height: 40)) == 20)
+        #expect(SumiScrubberMetrics.barCornerRadius(in: CGSize(width: 40, height: 300)) == 20)
+        #expect(SumiScrubberMetrics.barCornerRadius(in: CGSize(width: 28, height: 300)) == 14)
+        #expect(SumiScrubberMetrics.previewCornerRadius == 13)
+        #expect(SumiPreviewGeometry.radius(in: CGRect(x: 0, y: 0, width: 160, height: 220)) == 13)
+    }
+
+    @MainActor
+    @Test("The mounted scrub material keeps rounded capsule ends in horizontal and vertical toolbars")
+    func mountedBarIsCapsule() throws {
+        for axis in [NSLayoutConstraint.Axis.horizontal, .vertical] {
+            let toolbar = SumiReaderToolbar()
+            toolbar.axis = axis
+            toolbar.frame = CGRect(origin: .zero, size: toolbar.preferredSize(availableLength: 420))
+            toolbar.mount(SumiPageScrubber())
+            toolbar.layoutIfNeeded()
+            let bar = try #require(toolbar.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" })
+            #expect(min(bar.bounds.width, bar.bounds.height) == 40)
+            #expect(bar.layer.cornerRadius == 20)
+            #expect(bar.clipsToBounds && bar.layer.cornerCurve == .continuous)
         }
     }
 

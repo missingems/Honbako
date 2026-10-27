@@ -20,13 +20,18 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
     private let paperMask = CAShapeLayer()
     private let sumiLoadingView = SumiPageImageLoadingView()
     private let sumiEdgeBackground = SumiPageEdgeBackgroundView()
+    private let sumiBookBend = SumiBookPageBendView()
+    var sumiHasSettledBookBend: Bool { sumiBookBend.isPrepared }
     var sumiIsImageReady: Bool {
         imageView.image != nil && !sumiLoadingView.isRevealing && imageView.alpha > 0.99 && sumiEdgeBackground.isReady
     }
 
     func sumiRevealAfterLoadingPlaceholder() {
         guard imageView.image != nil else { return }
-        sumiLoadingView.reveal(imageView, animated: view.window != nil)
+        sumiBookBend.reset()
+        sumiLoadingView.reveal(imageView, animated: view.window != nil) { [weak self] in
+            self?.view.setNeedsLayout()
+        }
     }
     #endif
     private var referenceGIFData: Data?
@@ -67,6 +72,7 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         sumiEdgeBackground.frame = view.bounds
         sumiEdgeBackground.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(sumiEdgeBackground)
+        sumiEdgeBackground.onReady = { [weak self] in self?.view.setNeedsLayout() }
         #endif
         view.clipsToBounds = true
         // Native center-spine leaves can end on a half point. Keep the exact
@@ -95,6 +101,9 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         view.insertSubview(sumiEdgeBackground, aboveSubview: sumiLoadingView)
         #endif
         imageView.addSubview(texture)
+        #if SUMI
+        view.addSubview(sumiBookBend)
+        #endif
         imageView.addSubview(overlayView)
         overlayView.backgroundColor = .clear
         overlays.containerView = overlayView
@@ -137,6 +146,7 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
 
     #if SUMI
     func updatePaperShape() {
+        if bookBindingEdge == .none { sumiBookBend.reset() }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         if bookBindingEdge == .none {
@@ -148,6 +158,8 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         paperMask.path = ReaderBookSpineView.pagePath(in: view.bounds, bindingEdge: bookBindingEdge)
         view.layer.mask = paperMask
         CATransaction.commit()
+        sumiBookBend.update(image: imageView.image, animated: referenceGIFData != nil, ready: sumiIsImageReady,
+            edge: bookBindingEdge, source: view, nativeImage: imageView, imageFrame: imageView.frame)
     }
     #endif
 
@@ -161,6 +173,10 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         super.viewDidDisappear(animated)
         isVisible = false
         gifFrameMirror.stop()
+        #if SUMI
+        sumiBookBend.reset()
+        view.setNeedsLayout()
+        #endif
     }
 
     private func updateGIFMirroring() {
@@ -220,6 +236,7 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         if data == nil || data != referenceGIFData {
             if imageView.image !== canonicalPage?.imageView.image {
                 #if SUMI
+                sumiBookBend.reset()
                 let firstImage = imageView.image == nil && canonicalPage?.imageView.image != nil
                 #endif
                 imageView.image = canonicalPage?.imageView.image
@@ -235,7 +252,9 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
                         if candidate.isHidden || candidate.alpha < 0.01 { visible = false; break }
                         ancestor = candidate.superview
                     }
-                    sumiLoadingView.reveal(imageView, animated: firstImage && visible)
+                    sumiLoadingView.reveal(imageView, animated: firstImage && visible) { [weak self] in
+                        self?.view.setNeedsLayout()
+                    }
                 }
                 #endif
                 view.setNeedsLayout()

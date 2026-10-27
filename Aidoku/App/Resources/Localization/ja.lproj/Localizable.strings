@@ -1122,3 +1122,5 @@
 "Show Manga Cover" = "表紙を表示";
 
 "The system chooses when a connected display can show the cover." = "接続された画面に表紙を表示できるかどうかは、システムが判断します。";
+
+"Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "iPhone Duoの外側に表紙を表示する間は、カメラを使用します。写真や動画の撮影・保存は行いません。";

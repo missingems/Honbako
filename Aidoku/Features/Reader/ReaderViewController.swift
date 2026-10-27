@@ -330,7 +330,8 @@ class ReaderViewController: BaseObservingViewController {
         (reader as? ReaderWebtoonViewController)?.sumiOnPageTurnBegan = { [weak self] in self?.sumiHideControlsForPageTurn() }
         let landscape = view.bounds.width > view.bounds.height
         let isTablet = traitCollection.userInterfaceIdiom == .pad
-        let bottomSide: UIRectEdge? = !isTablet && (landscape || sumiUsesInnerCanvas) ? (sumiRequestedToolbarEdge ?? .right) : nil
+        let bottomSide = SumiReaderControlsLayout.bottomSide(in: view.bounds,
+            isTablet: isTablet, requestedSide: sumiRequestedToolbarEdge)
         let systemSide = isTablet ? nil : sumiSystemToolbarEdge
         let axis: NSLayoutConstraint.Axis = systemSide == nil ? .horizontal : .vertical
         if sumiReaderToolbar.axis != axis {
@@ -427,7 +428,7 @@ class ReaderViewController: BaseObservingViewController {
 
     private func sumiHandlePageTap(at point: CGPoint) {
         guard traitCollection.userInterfaceIdiom != .pad,
-              sumiSystemToolbarEdge == nil, view.bounds.width > view.bounds.height || sumiUsesInnerCanvas else {
+              sumiSystemToolbarEdge == nil, view.bounds.width > view.bounds.height else {
             toggleBarVisibility()
             return
         }

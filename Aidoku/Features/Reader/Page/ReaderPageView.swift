@@ -77,6 +77,19 @@ class ReaderPageView: UIView {
     #if SUMI
     private let sumiLoadingView = SumiPageImageLoadingView()
     private let sumiEdgeBackground = SumiPageEdgeBackgroundView()
+    private let sumiBookBend = SumiBookPageBendView()
+    var bookBindingEdge: ReaderBookSpineView.BindingEdge = .none {
+        didSet {
+            if bookBindingEdge == .none { sumiBookBend.reset() }
+            if bookBindingEdge != oldValue { setNeedsLayout() }
+        }
+    }
+    var sumiHasSettledBookBend: Bool { sumiBookBend.isPrepared }
+
+    func resetSumiBookBend() {
+        sumiBookBend.reset()
+        setNeedsLayout()
+    }
     private var sumiLoadGeneration = 0
     var sumiIsImageReady: Bool {
         imageView.image != nil && !sumiLoadingView.isRevealing && imageView.alpha > 0.99 && sumiEdgeBackground.isReady
@@ -84,7 +97,9 @@ class ReaderPageView: UIView {
 
     func sumiRevealAfterLoadingPlaceholder() {
         guard imageView.image != nil else { return }
+        sumiBookBend.reset()
         sumiLoadingView.reveal(imageView, animated: window != nil) { [weak self] in
+            self?.setNeedsLayout()
             self?.onReferenceContentChanged?()
         }
         onReferenceContentChanged?()
@@ -161,6 +176,7 @@ class ReaderPageView: UIView {
         sumiLoadingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(sumiLoadingView)
         addSubview(sumiEdgeBackground)
+        sumiEdgeBackground.onReady = { [weak self] in self?.setNeedsLayout() }
         #endif
 
         #if !SUMI
@@ -176,6 +192,9 @@ class ReaderPageView: UIView {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
         imageView.addSubview(paperTextureView)
+        #if SUMI
+        addSubview(sumiBookBend)
+        #endif
 
         dictionaryOverlayContainerView.translatesAutoresizingMaskIntoConstraints = false
         dictionaryOverlayContainerView.backgroundColor = .clear
@@ -237,6 +256,10 @@ class ReaderPageView: UIView {
         if needsDictionaryOverlayRender {
             renderDictionaryOverlaysIfNeeded()
         }
+        #if SUMI
+        sumiBookBend.update(image: imageView.image, animated: gifData != nil, ready: sumiIsImageReady,
+            edge: bookBindingEdge, source: self, nativeImage: imageView, imageFrame: imageView.frame)
+        #endif
     }
 
     private func schedulePageSizingUpdate() {
@@ -646,6 +669,9 @@ extension ReaderPageView {
     }
 
     func setPageText(text: String) {
+        #if SUMI
+        sumiBookBend.reset()
+        #endif
         resetVerticalContentBounds()
         stopGIFAnimation()
         cancelDictionaryTextAnalysis()
@@ -740,6 +766,7 @@ extension ReaderPageView {
 
     func setPageImage(_ image: UIImage?, gifData: Data? = nil) {
         #if SUMI
+        sumiBookBend.reset()
         let firstImage = imageView.image == nil && image != nil
         if image == nil {
             sumiLoadGeneration += 1
@@ -760,6 +787,7 @@ extension ReaderPageView {
         sumiEdgeBackground.update(image: image)
         if image != nil {
             sumiLoadingView.reveal(imageView, animated: firstImage && sumiIsVisible) { [weak self] in
+                self?.setNeedsLayout()
                 self?.onReferenceContentChanged?()
             }
         }

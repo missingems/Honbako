@@ -2,6 +2,12 @@
 import UIKit
 
 enum SumiReaderControlsLayout {
+    /// Portrait uses one centered bottom strip, including the open inner
+    /// canvas. Tapped-leaf placement applies only to an actual landscape view.
+    static func bottomSide(in bounds: CGRect, isTablet: Bool, requestedSide: UIRectEdge?) -> UIRectEdge? {
+        !isTablet && bounds.width > bounds.height ? (requestedSide ?? .right) : nil
+    }
+
     static func sidebarEdge(systemEdge: UIRectEdge?, hasInnerFold: Bool) -> UIRectEdge? {
         hasInnerFold ? nil : systemEdge
     }

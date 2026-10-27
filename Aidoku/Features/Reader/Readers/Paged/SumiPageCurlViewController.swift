@@ -59,7 +59,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
         }
     }
     private var journey: Journey?
-    private let paperHaptics = SumiPaperHaptics()
+    private let paperHaptics = SumiPaperHaptics(inputMode: "landscapeCurl")
     private var loadingTargetLeaves: [UIViewController] = []
     private var hasFingerLift = false
     private var lastDragTranslation: CGFloat = 0

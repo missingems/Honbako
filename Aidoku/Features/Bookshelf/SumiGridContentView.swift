@@ -16,16 +16,12 @@ struct SumiGridContentView: View {
     @State private var pullDistance: CGFloat = 0
     @State private var libraryBooks: [SumiBook] = []
     @State private var hasPreparedLibrary = false
-    @AppStorage(HonbakoLibraryPreferences.hideFinishedBooksKey) private var hideFinishedBooks = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
     private var reading: [SumiBook] {
         SumiLibraryShelfSummary.readingOrder(libraryBooks, stableIDs: order.identifiers,
             tutorialIdentifier: .init(sourceKey: HonbakoTutorialManga.sourceKey, mangaKey: HonbakoTutorialManga.mangaKey))
-    }
-    private var finished: [SumiBook] {
-        SumiLibraryShelfSummary.finishedOrder(libraryBooks, hidden: hideFinishedBooks)
     }
 
     var body: some View {
@@ -46,16 +42,6 @@ struct SumiGridContentView: View {
                         }
                     } else {
                         LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-                            if !finished.isEmpty {
-                                Section {
-                                    HonbakoLibrarySectionView(books: finished, columns: columns,
-                                        openingBookID: opening.bookID, openBook: openBook,
-                                        insertingBookID: insertion.bookID,
-                                        registerAnchor: { id, anchor in insertion.register(anchor, for: id) })
-                                } header: {
-                                    HonbakoLibrarySectionHeader(title: "Finished")
-                                }
-                            }
                             if !reading.isEmpty {
                                 Section {
                                     HonbakoLibrarySectionView(books: reading, columns: columns,
@@ -87,7 +73,7 @@ struct SumiGridContentView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .accessibilityIdentifier("Sumi.Grid")
-                .accessibilityValue(String(localized: "\(previewBooks?.count ?? (reading.count + finished.count)) manga"))
+                .accessibilityValue(String(localized: "\(previewBooks?.count ?? reading.count) manga"))
                 .onChange(of: insertion.scrollRequest) {
                     guard let bookID = insertion.bookID else { return }
                     updateLibrary()

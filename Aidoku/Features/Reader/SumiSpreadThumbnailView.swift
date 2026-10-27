@@ -52,7 +52,7 @@ final class SumiSpreadThumbnailView: UIView {
         super.layoutSubviews()
         contentSurface.frame = bounds
         let count = max(1, requestedPages.count)
-        let radius = SumiPreviewGeometry.radius(in: bounds)
+        let radius = min(SumiPreviewGeometry.radius(in: bounds), bounds.width / CGFloat(count) / 2)
         layer.cornerRadius = radius
         for (index, image) in images.enumerated() {
             image.isHidden = index >= count

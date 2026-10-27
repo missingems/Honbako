@@ -102,18 +102,17 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         XCTAssertEqual(connections.label, "Settings")
         connections.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        let hideFinished = app.switches["Honbako.Settings.HideFinishedBooks"]
         let coverDisplay = app.switches["Honbako.Settings.ShowMangaCover"]
-        XCTAssertTrue(hideFinished.waitForExistence(timeout: 5))
-        XCTAssertTrue(coverDisplay.exists)
-        let initial = hideFinished.value as? String
-        hideFinished.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        XCTAssertTrue(coverDisplay.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["Honbako.Settings.HideFinishedBooks"].exists)
+        let initial = coverDisplay.value as? String
+        coverDisplay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
         XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in hideFinished.value as? String != initial }, object: hideFinished)], timeout: 3) == .completed)
-        hideFinished.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+            predicate: NSPredicate { _, _ in coverDisplay.value as? String != initial }, object: coverDisplay)], timeout: 3) == .completed)
+        coverDisplay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
         XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in hideFinished.value as? String == initial }, object: hideFinished)], timeout: 3) == .completed)
-        attach(app, "Blue settings controls and optional finished-book filter")
+            predicate: NSPredicate { _, _ in coverDisplay.value as? String == initial }, object: coverDisplay)], timeout: 3) == .completed)
+        attach(app, "Blue cover-display preference")
         app.buttons["Getting Started"].tap()
         XCTAssertTrue(app.navigationBars["Getting Started"].waitForExistence(timeout: 5))
         attach(app, "Setup guide lives in Settings")

@@ -21,6 +21,14 @@ final class SumiReaderContinuityTests: XCTestCase {
         XCTAssertTrue(wait(NSPredicate(format: "value CONTAINS %@", "page 3"), reader))
         for orientation in [UIDeviceOrientation.portrait, .landscapeRight, .portrait, .landscapeLeft] {
             XCUIDevice.shared.orientation = orientation
+            let resized = wait(NSPredicate { _, _ in
+                app.windows.allElementsBoundByIndex.contains {
+                    $0.isHittable && ($0.frame.width > $0.frame.height) == orientation.isLandscape
+                }
+            }, app)
+            guard resized else {
+                throw XCTSkip("This Duo runtime did not apply XCUIDevice orientation to its scene. Use Device Hub rotation to verify the actual viewport.")
+            }
             let rendererID = orientation.isLandscape ? "sumi.reader.curl" : "sumi.reader.slide"
             let otherRendererID = orientation.isLandscape ? "sumi.reader.slide" : "sumi.reader.curl"
             XCTAssertTrue(item(rendererID, app).waitForExistence(timeout: 8),
@@ -30,6 +38,17 @@ final class SumiReaderContinuityTests: XCTestCase {
             XCTAssertTrue(wait(NSPredicate(format: "value CONTAINS %@", "page 3"), reader))
             let window = try XCTUnwrap(app.windows.allElementsBoundByIndex.first { $0.isHittable && $0.frame.contains(reader.frame.center) })
             _ = try artwork(in: window, containing: ["PAGE03"])
+            if orientation == .portrait {
+                let close = app.buttons["SumiReader.Close"]
+                if !close.isHittable {
+                    reader.coordinate(withNormalizedOffset: CGVector(dx: 0.55, dy: 0.4)).tap()
+                }
+                let scrub = item("Sumi.Reader.Scrubber", app)
+                XCTAssertTrue(wait(NSPredicate { _, _ in scrub.exists && scrub.isHittable }, scrub))
+                XCTAssertGreaterThan(scrub.frame.width, scrub.frame.height)
+                XCTAssertEqual(scrub.frame.midX, window.frame.midX, accuracy: 8,
+                               "The open Duo centers portrait page previews at the bottom")
+            }
             attach(window.screenshot(), "Visible page retained after \(orientation.rawValue)")
         }
         let pager = item("sumi.reader.curl", app)

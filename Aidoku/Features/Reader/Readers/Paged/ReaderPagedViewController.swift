@@ -131,7 +131,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var sumiSlideNavigation: SumiSlideNavigation?
     private weak var sumiSlidePan: UIPanGestureRecognizer?
     private var sumiSlidePanStarted = false
-    private let sumiPaperHaptics = SumiPaperHaptics()
+    private let sumiPaperHaptics = SumiPaperHaptics(inputMode: "portraitSwipe")
     private var sumiSequenceIsActive = false
     private var sumiCanonicalFocus: (chapterID: String, page: Int)?
     private var sumiQueuedCanonicalFocus: (chapterID: String, page: Int)?

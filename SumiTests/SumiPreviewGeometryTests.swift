@@ -69,7 +69,7 @@ struct SumiPreviewGeometryTests {
             preview.configure(identity: "loading", pages: pages, reversed: false, provider: { _ in nil })
             preview.layoutIfNeeded()
             let radius = preview.layer.cornerRadius
-            #expect(radius == 8)
+            #expect(radius == min(13, preview.bounds.width / CGFloat(pages.count) / 2))
             #expect(preview.layer.cornerCurve == .continuous)
             let placeholders = preview.subviews.flatMap { $0.subviews }.filter { $0.accessibilityIdentifier?.contains("PreviewPlaceholder") == true }
             #expect(placeholders.count == pages.count)

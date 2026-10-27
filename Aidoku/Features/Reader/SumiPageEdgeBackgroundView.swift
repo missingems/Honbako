@@ -20,6 +20,7 @@ final class SumiPageEdgeBackgroundView: UIView {
     private var identity: String?
     private var imageFrame = CGRect.zero
     private(set) var colors: SumiPageEdgeColors?
+    var onReady: (() -> Void)?
     var isReady: Bool { sampling == nil }
 
     override init(frame: CGRect) {
@@ -119,6 +120,7 @@ final class SumiPageEdgeBackgroundView: UIView {
         // color. The image keeps its own loading fade; its edge colors publish
         // atomically and fully opaque before the page reports readiness.
         UIView.performWithoutAnimation { alpha = colors == nil ? 0 : 1 }
+        onReady?()
     }
 }
 #endif

@@ -1,5 +1,6 @@
 // Honbako-only system permission descriptions.
 "CFBundleDisplayName" = "Honbako";
+"NSCameraUsageDescription" = "Honbako uses the camera while you read to show the manga cover on the outer display. No photos or video are recorded or saved.";
 "NSFaceIDUsageDescription" = "Use Face ID to unlock protected app features.";
 "NSLocalNetworkUsageDescription" = "Connect to the personal manga servers you choose on your local network.";
 "NSPhotoLibraryUsageDescription" = "Save manga pages to your photo library.";

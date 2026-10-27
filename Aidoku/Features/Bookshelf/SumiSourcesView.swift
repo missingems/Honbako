@@ -10,7 +10,6 @@ struct SumiSourcesView: View {
     @State private var importing = false
     @State private var errorMessage: String?
     @State private var proPresented = false
-    @AppStorage(HonbakoLibraryPreferences.hideFinishedBooksKey) private var hideFinishedBooks = false
     @AppStorage(HonbakoCoverDisplayPreferences.showCoverKey) private var showMangaCover = true
 
     var body: some View {
@@ -28,17 +27,17 @@ struct SumiSourcesView: View {
                 }
                 .listRowBackground(HonbakoSettingsRowBackground())
 
-                Section("Library") {
-                    Toggle("Hide Finished Books", isOn: $hideFinishedBooks)
-                        .accessibilityIdentifier("Honbako.Settings.HideFinishedBooks")
-                }
-                .listRowBackground(HonbakoSettingsRowBackground())
-
                 Section {
                     Toggle("Show Manga Cover", isOn: $showMangaCover)
                         .accessibilityIdentifier("Honbako.Settings.ShowMangaCover")
                 } header: { Text("Cover Display") }
-                footer: { Text("The system chooses when a connected display can show the cover.") }
+                footer: {
+                    if HonbakoProStore.personalFeaturesEnabled {
+                        Text("Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved.")
+                    } else {
+                        Text("The system chooses when a connected display can show the cover.")
+                    }
+                }
                 .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section {

@@ -131,7 +131,7 @@ final class SumiReaderToolbar: UIView {
             cross: min(thickness, SumiScrubberMetrics.railThickness))
         chaptersGlass.frame = frame(start: length - button, length: button, cross: button)
         closeGlass.layer.cornerRadius = min(closeGlass.bounds.width, closeGlass.bounds.height) / 2
-        scrubberGlass.layer.cornerRadius = SumiScrubberMetrics.cornerRadius
+        scrubberGlass.layer.cornerRadius = SumiScrubberMetrics.barCornerRadius(in: scrubberGlass.bounds.size)
         chaptersGlass.layer.cornerRadius = min(chaptersGlass.bounds.width, chaptersGlass.bounds.height) / 2
         closeButton.frame = closeGlass.bounds
         chaptersButton.frame = chaptersGlass.bounds
