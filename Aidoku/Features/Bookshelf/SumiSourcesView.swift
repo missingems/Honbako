@@ -10,6 +10,8 @@ struct SumiSourcesView: View {
     @State private var importing = false
     @State private var errorMessage: String?
     @State private var proPresented = false
+    @AppStorage(HonbakoLibraryPreferences.hideFinishedBooksKey) private var hideFinishedBooks = false
+    @AppStorage(HonbakoCoverDisplayPreferences.showCoverKey) private var showMangaCover = true
 
     var body: some View {
         NavigationStack {
@@ -24,6 +26,20 @@ struct SumiSourcesView: View {
                         Label("Getting Started", systemImage: "book.closed")
                     }
                 }
+                .listRowBackground(HonbakoSettingsRowBackground())
+
+                Section("Library") {
+                    Toggle("Hide Finished Books", isOn: $hideFinishedBooks)
+                        .accessibilityIdentifier("Honbako.Settings.HideFinishedBooks")
+                }
+                .listRowBackground(HonbakoSettingsRowBackground())
+
+                Section {
+                    Toggle("Show Manga Cover", isOn: $showMangaCover)
+                        .accessibilityIdentifier("Honbako.Settings.ShowMangaCover")
+                } header: { Text("Cover Display") }
+                footer: { Text("The system chooses when a connected display can show the cover.") }
+                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section {
                     if sources.isEmpty {
@@ -44,6 +60,7 @@ struct SumiSourcesView: View {
                     }
                 } header: { Text("Included in Search") }
                 footer: { Text("Connections provide the books you can find in Honbako.") }
+                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section("Your Content") {
                     NavigationLink { LocalSetupView() } label: {
@@ -54,6 +71,7 @@ struct SumiSourcesView: View {
                         Label("Personal Server", systemImage: "externaldrive")
                     }
                 }
+                .listRowBackground(HonbakoSettingsRowBackground())
                 Section {
                     NavigationLink { SumiSourceListsView() } label: {
                         Label("Source Lists", systemImage: "link")
@@ -61,6 +79,7 @@ struct SumiSourcesView: View {
                     Button("Import Source File", systemImage: "square.and.arrow.down") { importing = true }
                 } header: { Text("More Sources") }
                 footer: { Text("Honbako includes an original tutorial. Add your own files or a connection to read more.") }
+                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section {
                     Button { proPresented = true } label: {
@@ -68,6 +87,7 @@ struct SumiSourcesView: View {
                     }
                     NavigationLink { SumiCloudSyncView() } label: { Label("iCloud Sync", systemImage: "icloud") }
                 }
+                .listRowBackground(HonbakoSettingsRowBackground())
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -81,7 +101,7 @@ struct SumiSourcesView: View {
             .onReceive(NotificationCenter.default.publisher(for: .sourceLoaded)) { _ in Task { await reload() } }
             .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in Task { await reload() } }
         }
-        .tint(.primary)
+        .tint(.blue)
         .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "aix") ?? .zip]) { result in
             switch result {
             case let .success(url):

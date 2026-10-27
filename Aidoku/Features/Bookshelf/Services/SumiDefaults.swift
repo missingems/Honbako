@@ -9,6 +9,7 @@ enum SumiDefaults {
         // entitlement can enable mirroring; fresh installations remain local.
         defaults.set(HonbakoProStore.cachedHasPro, forKey: "General.icloudSync")
         defaults.register(defaults: [
+            HonbakoLibraryPreferences.hideFinishedBooksKey: false,
             "General.icloudSync": false,
             "Reader.pageSizing": "fit",
             "Reader.pagedPageLayout": "auto",

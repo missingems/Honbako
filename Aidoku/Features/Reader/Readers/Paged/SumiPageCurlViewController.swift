@@ -59,8 +59,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
         }
     }
     private var journey: Journey?
-    private let liftFeedback = UIImpactFeedbackGenerator(style: .soft)
-    private let releaseFeedback = UIImpactFeedbackGenerator(style: .soft)
+    private let paperHaptics = SumiPaperHaptics()
     private var loadingTargetLeaves: [UIViewController] = []
     private var hasFingerLift = false
     private var lastDragTranslation: CGFloat = 0
@@ -127,7 +126,13 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        paperHaptics.suspend()
         cancelCurrentTurn()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        paperHaptics.prepare()
     }
 
     deinit { displayLink?.invalidate(); animationWatchdog?.cancel() }
@@ -190,6 +195,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
 
     /// Cancellation restores the last complete native page, never a half-turned bitmap.
     func cancelCurrentTurn() {
+        paperHaptics.cancel()
         if let journey { finishJourney(journey, completed: false) }
         else if turnView != nil { finish(completed: false) }
     }
@@ -398,10 +404,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 begin(targets: [target], rightToLeft: rendersRightToLeft(navigationForward: forward))
                 if turnView != nil {
                     hasFingerLift = true
-                    if view.window != nil {
-                        liftFeedback.impactOccurred(intensity: 0.3)
-                        releaseFeedback.prepare()
-                    }
+                    paperHaptics.begin(distance: turnDistance, visible: view.window != nil)
                 }
             case .changed:
                 guard turnView != nil, displayLink == nil else { return }
@@ -414,27 +417,27 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 let translation = rawTranslation * (turnsRightToLeft ? -1 : 1)
                 progress = min(1, max(0, translation / distance))
                 turnView?.update(progress: progress)
+                paperHaptics.update(progress: progress, velocity: recognizer.velocity(in: view).x)
             case .ended:
                 guard turnView != nil else { return }
-                releaseFingerLift()
                 // UIPanGestureRecognizer may retain its last velocity while a
                 // finger holds still. A paused release is no longer a flick.
                 let velocity = CACurrentMediaTime() - lastDragTime > 0.12 ? 0
                     : recognizer.velocity(in: view).x * (turnsRightToLeft ? -1 : 1)
                 let committed = SumiPageTurnIntent.shouldComplete(progress: progress, velocity: velocity, distance: turnDistance)
+                releaseFingerLift(velocity: velocity, cancelled: !committed)
                 animate(to: committed ? 1 : 0, velocity: velocity)
             case .cancelled, .failed:
-                releaseFingerLift()
+                releaseFingerLift(velocity: 0, cancelled: true)
                 if turnView != nil { animate(to: 0, velocity: 0) }
             default: break
         }
     }
 
-    private func releaseFingerLift() {
+    private func releaseFingerLift(velocity: CGFloat, cancelled: Bool) {
         guard hasFingerLift else { return }
         hasFingerLift = false
-        if view.window != nil { releaseFeedback.impactOccurred(intensity: 0.65) }
-        liftFeedback.prepare()
+        paperHaptics.release(velocity: velocity, cancelled: cancelled)
     }
 
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
@@ -447,7 +450,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                zoom.zoomScale > zoom.minimumZoomScale + 0.02 { return false }
             touched = candidate.superview
         }
-        liftFeedback.prepare()
+        paperHaptics.prepare()
         return true
     }
 

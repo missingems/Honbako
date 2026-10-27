@@ -320,7 +320,10 @@ class ReaderViewController: BaseObservingViewController {
     private func sumiLayoutReaderControls() {
         guard !sumiLaysOutControls else { return }
         sumiLaysOutControls = true
-        defer { sumiLaysOutControls = false }
+        defer {
+            sumiLaysOutControls = false
+            sumiScrubber.updateFloatingLayout()
+        }
         let paged = reader as? ReaderPagedViewController
         paged?.sumiOnPageInteraction = { [weak self] in self?.sumiScrubber.cancelPreview() }
         paged?.sumiOnPageTurnBegan = { [weak self] in self?.sumiHideControlsForPageTurn() }

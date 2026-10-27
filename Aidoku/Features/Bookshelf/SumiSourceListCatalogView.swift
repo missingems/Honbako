@@ -31,6 +31,7 @@ struct SumiSourceListCatalogView: View {
             } else {
                 ForEach(available, id: \.sourceId) { source in
                     ExternalSourceTableCell(source: source, onInstall: { Task { await reload() } })
+                        .listRowBackground(HonbakoSettingsRowBackground())
                 }
             }
         }

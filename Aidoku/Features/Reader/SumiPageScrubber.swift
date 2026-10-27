@@ -213,6 +213,13 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         return convert(frame, to: parent)
     }
 
+    /// A toolbar can relocate without changing this control's local bounds.
+    /// Re-resolve its anchor after the reader finishes placing the native bar.
+    func updateFloatingLayout() {
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+
     override func didMoveToWindow() {
         super.didMoveToWindow()
         // The handoff snapshot is a sibling above the reader, not a child of
@@ -298,7 +305,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
                 width: labelWidth, height: labelHeight)
         } else {
             let width = min(max(1, bounds.width - 16), labelWidth)
-            labelFrame = CGRect(x: bounds.midX - width / 2,
+            labelFrame = CGRect(x: (lifted ? hoverCenter.x : lensFrame.midX) - width / 2,
                 y: (lifted ? hoverCenter.y - preview.bounds.height / 2 - hoverOutset : lensFrame.minY) - labelHeight - SumiScrubberMetrics.badgeGap,
                 width: width, height: labelHeight)
         }
@@ -417,36 +424,32 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         setNeedsLayout()
     }
     private func layoutHover() {
-        let count = preview.displayedPages.isEmpty ? model.groups[safe: selectedGroup]?.count ?? 0 : preview.displayedPages.count
+        // Pairing belongs to the selected spread, not whichever old artwork
+        // happens to finish loading first.
+        let count = model.groups[safe: selectedGroup]?.count ?? preview.displayedPages.count
         let paired = count > 1
         let available = previewContainer?.bounds.size ?? window?.bounds.size ?? CGSize(width: 466, height: 678)
         let height = SumiScrubberMetrics.hoverHeight(in: available)
         let width = height * SumiScrubberMetrics.pageAspect * (paired ? 2 : 1)
-        preview.bounds = CGRect(x: 0, y: 0, width: width, height: height)
-        let lensFrame = rail.convert(lens.frame, to: self)
-        if axis == .vertical {
-            hoverCenter = CGPoint(x: sidebarEdge == .left ? lensFrame.maxX + SumiScrubberMetrics.hoverGap + width / 2
-                : lensFrame.minX - SumiScrubberMetrics.hoverGap - width / 2, y: bounds.midY)
-        } else {
-            hoverCenter = CGPoint(x: bounds.midX, y: lensFrame.minY - SumiScrubberMetrics.hoverGap - height / 2)
-        }
-        if previewContainer != nil {
-            let preferred = CGRect(x: overlayPoint(hoverCenter).x - width / 2,
-                y: overlayPoint(hoverCenter).y - height / 2, width: width, height: height)
-            let fitted = fittedOverlayFrame(preferred, preservesAspect: true)
-            preview.bounds.size = fitted.size
-            if let parent = preview.superview {
-                hoverCenter = convert(CGPoint(x: fitted.midX, y: fitted.midY), from: parent)
-            }
-        }
+        let parent = preview.superview ?? self
+        let anchor = rail.convert(lens.frame, to: parent)
+        let preferred = SumiScrubberOverlayLayout.preferredFrame(size: CGSize(width: width, height: height),
+            anchor: anchor, axis: axis, sidebarEdge: sidebarEdge, gap: SumiScrubberMetrics.hoverGap)
+        let fitted = fittedOverlayFrame(preferred, preservesAspect: true)
+        preview.bounds = CGRect(origin: .zero, size: fitted.size)
+        let target = CGPoint(x: fitted.midX, y: fitted.midY)
+        hoverCenter = convert(target, from: parent)
         hoverGlass.fit(around: preview.bounds)
         preview.layer.shadowPath = UIBezierPath(roundedRect: hoverGlass.frame,
             cornerRadius: SumiScrubberMetrics.previewCornerRadius + SumiScrubHoverGlassView.outset).cgPath
-        if preview.isHidden { preview.center = overlayPoint(hoverCenter) }
+        // A visible hover must follow resize, spread pairing and bar relocation
+        // too. Previously it kept its initial lift target until dismissed.
+        if preview.center != target { preview.center = target }
     }
 
     private func fittedOverlayFrame(_ preferred: CGRect, preservesAspect: Bool) -> CGRect {
         guard let container = previewContainer else { return preferred }
+        let overlay = floatingOverlay
         var insets = container.safeAreaInsets
         if axis == .vertical {
             // Floating controls belong to the status rail. Applying that rail's
@@ -454,9 +457,9 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             if sidebarEdge == .left { insets.left = 0 }
             else { insets.right = 0 }
         }
-        var bounds = container.bounds.inset(by: UIEdgeInsets(top: max(8, insets.top),
-            left: max(8, insets.left), bottom: max(8, insets.bottom), right: max(8, insets.right)))
-        let anchor = rail.convert(lens.frame, to: container)
+        var bounds = container.convert(container.bounds.inset(by: UIEdgeInsets(top: max(8, insets.top),
+            left: max(8, insets.left), bottom: max(8, insets.bottom), right: max(8, insets.right))), to: overlay)
+        let anchor = rail.convert(lens.frame, to: overlay)
         if preservesAspect {
             // Reserve space above the floating print for its page badge, and
             // keep the preview inward of its strip even in a narrow pane.
@@ -478,7 +481,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         var exclusions: [CGRect] = []
         if #available(iOS 27.1, *) {
             exclusions = (container.reservedRegions(kind: .division) + container.reservedRegions(kind: .occlusion))
-                .filter(\.isActive).map(\.frame)
+                .filter(\.isActive).map { container.convert($0.frame, to: overlay) }
         }
         if preservesAspect {
             // Fit the glass and its spring, not only the sharp print inside it.
@@ -486,7 +489,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             let clearance = SumiScrubHoverGlassView.maximumOutset(for: preferred.size)
             let inset = bounds.insetBy(dx: clearance, dy: clearance)
             guard !inset.isEmpty, !inset.isNull else {
-                return CGRect(x: container.bounds.midX, y: container.bounds.midY, width: 0, height: 0)
+                return CGRect(x: overlay.bounds.midX, y: overlay.bounds.midY, width: 0, height: 0)
             }
             bounds = inset
             exclusions = exclusions.map { $0.insetBy(dx: -clearance, dy: -clearance) }

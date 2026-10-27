@@ -15,10 +15,16 @@ final class HonbakoProStore: ObservableObject {
     @Published private(set) var message: String?
     private var listener: Task<Void, Never>?
 
+    nonisolated static var personalFeaturesEnabled: Bool {
+        HonbakoProAccessPolicy.personalFeaturesEnabled(infoDictionary: Bundle.main.infoDictionary)
+    }
+
     nonisolated static var cachedHasPro: Bool {
-        guard let data = UserDefaults.standard.data(forKey: cacheKey),
-              let claim = try? JSONDecoder().decode(HonbakoProEntitlement.self, from: data) else { return false }
-        return claim.isActive(at: .now, productID: productID)
+        let claim = UserDefaults.standard.data(forKey: cacheKey).flatMap {
+            try? JSONDecoder().decode(HonbakoProEntitlement.self, from: $0)
+        }
+        return HonbakoProAccessPolicy.hasPro(personalFeaturesEnabled: personalFeaturesEnabled,
+            verifiedEntitlement: claim, at: .now, productID: productID)
     }
 
     func start() {
@@ -36,7 +42,7 @@ final class HonbakoProStore: ObservableObject {
     }
 
     func loadProduct() async {
-        guard !isLoading else { return }
+        guard !Self.personalFeaturesEnabled, !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -62,7 +68,8 @@ final class HonbakoProStore: ObservableObject {
         }
         if let active, let data = try? JSONEncoder().encode(active) { UserDefaults.standard.set(data, forKey: Self.cacheKey) }
         else { UserDefaults.standard.removeObject(forKey: Self.cacheKey) }
-        let enabled = active != nil
+        let enabled = HonbakoProAccessPolicy.hasPro(personalFeaturesEnabled: Self.personalFeaturesEnabled,
+            verifiedEntitlement: active, at: .now, productID: Self.productID)
         if hasPro != enabled {
             hasPro = enabled
             NotificationCenter.default.post(name: Self.entitlementChangedNotification, object: enabled)
@@ -70,7 +77,7 @@ final class HonbakoProStore: ObservableObject {
     }
 
     func purchase() async {
-        guard !isLoading, let product else { return }
+        guard !Self.personalFeaturesEnabled, !isLoading, let product else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -91,7 +98,7 @@ final class HonbakoProStore: ObservableObject {
     }
 
     func restore() async {
-        guard !isLoading else { return }
+        guard !Self.personalFeaturesEnabled, !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {

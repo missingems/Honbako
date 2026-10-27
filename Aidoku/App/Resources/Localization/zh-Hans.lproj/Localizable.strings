@@ -1119,3 +1119,15 @@
 
 // Completed chapter state, distinct from the Read action.
 "Chapter Read" = "已读";
+
+// Reader and personal library options
+"Chapter %@ End" = "第%@话 完";
+"Hide Finished Books" = "隐藏已读完的作品";
+"All Pro features are enabled for your personal build." = "你的个人版本已启用所有Pro功能。";
+"Library" = "书库";
+
+"Cover Display" = "外屏显示";
+
+"Show Manga Cover" = "显示漫画封面";
+
+"The system chooses when a connected display can show the cover." = "系统会决定何时可在连接的屏幕上显示封面。";

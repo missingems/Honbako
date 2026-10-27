@@ -101,4 +101,21 @@ struct HonbakoLibraryShelfTests {
         #expect(SumiLibraryShelfSummary.readingOrder([finishedTutorial, urgent], stableIDs: order,
             tutorialIdentifier: tutorial.id).map(\.id) == [urgent.id])
     }
+
+    @Test("Hiding Finished changes visibility without removing the saved books or their finished dates")
+    func finishedShelfVisibility() {
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let reading = SumiBook(manga: .init(sourceKey: "test", key: "reading", title: "Reading"))
+        let older = SumiBook(manga: .init(sourceKey: "test", key: "older", title: "Older"),
+            finishedReadingAt: date)
+        let newer = SumiBook(manga: .init(sourceKey: "test", key: "newer", title: "Newer"),
+            finishedReadingAt: date.addingTimeInterval(60))
+        let books = [older, reading, newer]
+        #expect(SumiLibraryShelfSummary.finishedOrder(books, hidden: true).isEmpty)
+        let restored = SumiLibraryShelfSummary.finishedOrder(books, hidden: false)
+        #expect(restored.map(\.id) == [newer.id, older.id])
+        #expect(restored.map(\.finishedReadingAt) == [date.addingTimeInterval(60), date])
+        #expect(SumiLibraryShelfSummary.readingOrder(books, stableIDs: []).map(\.id) == [reading.id])
+        #expect(books.count == 3)
+    }
 }

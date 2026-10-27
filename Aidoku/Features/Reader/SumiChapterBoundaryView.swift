@@ -74,9 +74,17 @@ final class SumiChapterBoundaryView: UIView {
         onContinue = retry
     }
 
-    func update(type: ReaderInfoPageType, destination: AidokuRunner.Chapter?) {
+    func update(type: ReaderInfoPageType, currentChapter: AidokuRunner.Chapter? = nil, destination: AidokuRunner.Chapter?) {
         progress.stopAnimating()
-        titleLabel.text = type == .previous && destination == nil ? String(localized: "The Beginning") : String(localized: "Chapter End")
+        let finishedChapter = type == .previous ? destination : currentChapter
+        if type == .previous, destination == nil {
+            titleLabel.text = String(localized: "The Beginning")
+        } else if let number = finishedChapter?.chapterNumber {
+            let number = String(format: "%g", Double(number))
+            titleLabel.text = String(localized: "Chapter \(number) End")
+        } else {
+            titleLabel.text = String(localized: "Chapter End")
+        }
         detailLabel.text = nil
         detailLabel.isHidden = true
         continueButton.configuration?.title = nil

@@ -214,6 +214,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task {
             #if SUMI
             await SumiCatalogBootstrap.shared.prepare()
+            await HonbakoPersonalEnglishImport.runIfRequested()
             #if DEBUG
             await HonbakoDeviceSourceSetup.runIfRequested()
             #endif
@@ -335,7 +336,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         configurationForConnecting connectingSceneSession: UISceneSession,
         options: UIScene.ConnectionOptions
     ) -> UISceneConfiguration {
-        UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        #if SUMI
+        if #available(iOS 27.0, *), options.sceneAccessoryUserInfo is HonbakoCoverDisplayModel {
+            let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+            configuration.delegateClass = HonbakoCoverDisplaySceneDelegate.self
+            return configuration
+        }
+        #endif
+        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

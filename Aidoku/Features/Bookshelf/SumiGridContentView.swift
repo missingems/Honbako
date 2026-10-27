@@ -16,6 +16,7 @@ struct SumiGridContentView: View {
     @State private var pullDistance: CGFloat = 0
     @State private var libraryBooks: [SumiBook] = []
     @State private var hasPreparedLibrary = false
+    @AppStorage(HonbakoLibraryPreferences.hideFinishedBooksKey) private var hideFinishedBooks = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
@@ -24,8 +25,7 @@ struct SumiGridContentView: View {
             tutorialIdentifier: .init(sourceKey: HonbakoTutorialManga.sourceKey, mangaKey: HonbakoTutorialManga.mangaKey))
     }
     private var finished: [SumiBook] {
-        libraryBooks.filter { $0.finishedReadingAt != nil }
-            .sorted { ($0.finishedReadingAt ?? .distantPast) > ($1.finishedReadingAt ?? .distantPast) }
+        SumiLibraryShelfSummary.finishedOrder(libraryBooks, hidden: hideFinishedBooks)
     }
 
     var body: some View {
@@ -87,7 +87,7 @@ struct SumiGridContentView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .accessibilityIdentifier("Sumi.Grid")
-                .accessibilityValue(String(localized: "\(previewBooks?.count ?? libraryBooks.count) manga"))
+                .accessibilityValue(String(localized: "\(previewBooks?.count ?? (reading.count + finished.count)) manga"))
                 .onChange(of: insertion.scrollRequest) {
                     guard let bookID = insertion.bookID else { return }
                     updateLibrary()

@@ -60,19 +60,25 @@ final class SumiChapterBoundaryInteractionTests: XCTestCase {
             .press(forDuration: 0.08,
                    thenDragTo: pager.coordinate(withNormalizedOffset: CGVector(dx: 0.24, dy: 0.62)),
                    withVelocity: .slow, thenHoldForDuration: 0.08)
-        let end = app.staticTexts["Chapter End"]
+        let end = app.staticTexts["Chapter 1 End"]
         XCTAssertTrue(end.waitForExistence(timeout: 8), app.debugDescription)
         XCTAssertFalse(app.buttons["Sumi.Reader.ContinueChapter"].exists)
         XCTAssertFalse(app.buttons["Next Chapter"].exists)
         XCTAssertFalse(app.buttons["Previous Chapter"].exists)
-        attach(surface.screenshot(), "Quiet Chapter End without chapter links")
+        if paired {
+            XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 2, page 1"), reader))
+            try verifyArtwork(surface, containing: ["CHAPTER2", "PAGE01"])
+            XCTAssertLessThan(end.frame.midX, surface.frame.midX, "Chapter end belongs on the left")
+        }
+        attach(surface.screenshot(), "Numbered chapter end and adjacent next cover")
         pager.coordinate(withNormalizedOffset: CGVector(dx: 0.78, dy: 0.62))
             .press(forDuration: 0.08,
                    thenDragTo: pager.coordinate(withNormalizedOffset: CGVector(dx: 0.24, dy: 0.62)),
                    withVelocity: .slow, thenHoldForDuration: 0.08)
-        XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 2, page 1"), reader))
+        let nextPage = paired ? 2 : 1
+        XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 2, page \(nextPage)"), reader))
         XCTAssertTrue(pager.waitForExistence(timeout: 5))
-        try verifyArtwork(surface, containing: ["CHAPTER2", "PAGE01"])
+        try verifyArtwork(surface, containing: ["CHAPTER2", paired ? "PAGE02" : "PAGE01"])
         XCTAssertFalse(end.exists)
         attach(surface.screenshot(), "Next chapter shows its real first page")
 
