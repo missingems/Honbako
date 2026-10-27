@@ -38,17 +38,30 @@ final class SumiChapterBoundaryInteractionTests: XCTestCase {
         let scrubber = item("Sumi.Reader.Scrubber", app)
         XCTAssertTrue(scrubber.exists)
         let finalPage = paired ? 7 : 8
-        for _ in 0..<5 {
-            if reader.value as? String == "Chapter 1, page \(finalPage)" { break }
-            if !scrubber.exists || !scrubber.isHittable {
-                reader.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.4)).tap()
+        if !paired {
+            // XCUITest cannot synthesize a swipe on the transformed vertical
+            // toolbar's accessibility frame. Reach the end through the same
+            // physical reader gestures used by a reader instead.
+            for page in 2...8 {
+                surface.coordinate(withNormalizedOffset: CGVector(dx: 0.78, dy: 0.62))
+                    .press(forDuration: 0.08,
+                           thenDragTo: surface.coordinate(withNormalizedOffset: CGVector(dx: 0.10, dy: 0.62)),
+                           withVelocity: .slow, thenHoldForDuration: 0.08)
+                XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 1, page \(page)"), reader))
             }
-            XCTAssertTrue(wait(NSPredicate { _, _ in scrubber.exists && scrubber.isHittable }, scrubber))
-            let previousPage = reader.value as? String
-            if scrubber.frame.height > scrubber.frame.width { scrubber.swipeUp() }
-            else { scrubber.swipeLeft() }
-            XCTAssertTrue(wait(NSPredicate { _, _ in reader.value as? String != previousPage }, reader),
-                          "Wait for the selected page to settle before continuing along the larger previews")
+        } else {
+            for _ in 0..<5 {
+                if reader.value as? String == "Chapter 1, page \(finalPage)" { break }
+                if !scrubber.exists || !scrubber.isHittable {
+                    reader.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.4)).tap()
+                }
+                XCTAssertTrue(wait(NSPredicate { _, _ in scrubber.exists && scrubber.isHittable }, scrubber))
+                let previousPage = reader.value as? String
+                if scrubber.frame.height > scrubber.frame.width { scrubber.swipeUp() }
+                else { scrubber.swipeLeft() }
+                XCTAssertTrue(wait(NSPredicate { _, _ in reader.value as? String != previousPage }, reader),
+                              "Wait for the selected page to settle before continuing along the larger previews")
+            }
         }
         XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 1, page \(finalPage)"), reader),
                       "Scrubbing to the end must select the last page or spread: \(reader.value ?? "missing")")
@@ -88,7 +101,7 @@ final class SumiChapterBoundaryInteractionTests: XCTestCase {
             for page in 2...3 {
                 pager.coordinate(withNormalizedOffset: CGVector(dx: 0.78, dy: 0.62))
                     .press(forDuration: 0.08,
-                           thenDragTo: pager.coordinate(withNormalizedOffset: CGVector(dx: 0.24, dy: 0.62)),
+                           thenDragTo: pager.coordinate(withNormalizedOffset: CGVector(dx: 0.10, dy: 0.62)),
                            withVelocity: .slow, thenHoldForDuration: 0.08)
                 XCTAssertTrue(wait(NSPredicate(format: "value == %@", "Chapter 2, page \(page)"), reader),
                               "The loaded chapter must swipe forward without scrubbing first")
