@@ -19,7 +19,8 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentMode = .scaleToFill
+        contentMode = .scaleAspectFill
+        clipsToBounds = true
         backgroundColor = .clear
         isOpaque = false
         isUserInteractionEnabled = false

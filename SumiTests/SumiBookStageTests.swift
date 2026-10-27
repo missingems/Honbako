@@ -50,9 +50,13 @@ struct SumiBookStageTests {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         format.preferredRange = .standard
-        let cover = UIGraphicsImageRenderer(size: CGSize(width: 80, height: 120), format: format).image { context in
-            UIColor(red: 0.25, green: 0.5, blue: 0.75, alpha: 1).setFill()
+        let cover = UIGraphicsImageRenderer(size: CGSize(width: 240, height: 120), format: format).image { context in
+            UIColor.red.setFill()
             context.fill(CGRect(x: 0, y: 0, width: 80, height: 120))
+            UIColor(red: 0.25, green: 0.5, blue: 0.75, alpha: 1).setFill()
+            context.fill(CGRect(x: 80, y: 0, width: 80, height: 120))
+            UIColor.green.setFill()
+            context.fill(CGRect(x: 160, y: 0, width: 80, height: 120))
         }
         let spread = UIGraphicsImageRenderer(size: CGSize(width: 400, height: 300), format: format).image { context in
             UIColor.red.setFill()
@@ -87,6 +91,11 @@ struct SumiBookStageTests {
         let closed = try stagePixel(stage, at: CGPoint(x: source.midX, y: source.midY))
         for (actual, expected) in zip(closed.prefix(3), [64, 128, 191]) {
             #expect(abs(Int(actual) - expected) <= 2, "Opening must preserve original print color: \(closed)")
+        }
+        let croppedEdge = try stagePixel(stage, at: CGPoint(x: source.minX + 4, y: source.midY))
+        for (actual, expected) in zip(croppedEdge.prefix(3), [64, 128, 191]) {
+            #expect(abs(Int(actual) - expected) <= 2,
+                    "A wide cover must retain its centered crop on opening instead of stretching the side panels: \(croppedEdge)")
         }
         _ = stage.draw(progress: 1, source: source, deltaTime: 1 / 60)
         CATransaction.flush()

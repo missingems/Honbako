@@ -60,7 +60,7 @@ final class SumiReaderLoadingViewController: UIViewController, UIGestureRecogniz
         let artwork: UIView
         if let snapshot {
             let image = UIImageView(image: snapshot)
-            image.contentMode = .scaleToFill
+            image.contentMode = .scaleAspectFill
             artwork = image
         } else {
             let host = UIHostingController(rootView: BookCoverFace(book: book.presentation, showsBinding: false))

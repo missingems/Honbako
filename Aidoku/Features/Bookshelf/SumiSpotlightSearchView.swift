@@ -68,6 +68,7 @@ struct SumiSpotlightSearchView: View {
                                                     if previewBooks != nil { previewLibraryIDs.insert(book.id) }
                                                     else { await store.add(book: book) }
                                                 }, showsDivider: book.id != section.books.last?.id)
+                                                .padding(.horizontal, 8)
                                         }
                                     } header: {
                                         SumiSearchSourceHeader(name: section.name, sourceKey: section.sourceKey)
@@ -99,7 +100,6 @@ struct SumiSpotlightSearchView: View {
                                 transaction.animation = nil
                                 transaction.disablesAnimations = true
                             }
-                            .padding(.horizontal, 8)
                             .padding(.bottom, 8)
                         }
                         .accessibilityIdentifier("Honbako.Search.Results")
@@ -118,6 +118,7 @@ struct SumiSpotlightSearchView: View {
                 }
                 .frame(width: width)
                 .fixedSize(horizontal: false, vertical: true)
+                .clipShape(.rect(cornerRadius: 24))
                 .glassEffect(.regular, in: .rect(cornerRadius: 24))
                 .containerShape(.rect(cornerRadius: 24))
                 .shadow(color: .black.opacity(0.14), radius: 24, y: 10)

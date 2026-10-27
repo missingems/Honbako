@@ -63,6 +63,10 @@ final class SumiBookTransitionSource {
         }
         provider?.beginBookTransition()
         let proxy = UIImageView(image: image)
+        // Carry the visible crop with the lifted cover. The print itself stays
+        // untouched for later reuse; a default proxy would stretch that print.
+        proxy.contentMode = anchor.contentMode
+        proxy.clipsToBounds = anchor.clipsToBounds
         proxy.frame = anchor.bounds
         proxy.isUserInteractionEnabled = false
         anchor.addSubview(proxy)

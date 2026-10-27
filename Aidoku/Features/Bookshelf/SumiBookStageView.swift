@@ -44,6 +44,10 @@ final class SumiBookStageView: UIView {
             $0.magnificationFilter = .linear
             $0.allowsEdgeAntialiasing = true
         }
+        // Page snapshots already match their viewport. A provider's cover can
+        // have any aspect ratio, so crop its print proportionally at the hinge.
+        front.contentsGravity = .resizeAspectFill
+        front.masksToBounds = true
         hinge.anchorPoint = CGPoint(x: 0, y: 0.5)
         layer.addSublayer(rightPage)
         layer.addSublayer(hinge)

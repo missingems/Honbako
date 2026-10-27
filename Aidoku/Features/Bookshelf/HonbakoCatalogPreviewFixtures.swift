@@ -12,6 +12,9 @@ final class HonbakoCatalogPreviewFixtures {
     }
 
     static let shared = HonbakoCatalogPreviewFixtures()
+    private static var checksCoverLayout: Bool {
+        ProcessInfo.processInfo.arguments.contains("--honbako-cover-layout-check")
+    }
     let sources: [AidokuRunner.Source]
     private let originalArgumentDomain: [String: Any]
     private let directory: URL
@@ -26,7 +29,8 @@ final class HonbakoCatalogPreviewFixtures {
         overrides["Reader.skipDuplicateChapters"] = false
         overrides["Reader.markDuplicateChapters"] = false
         defaults.setVolatileDomain(overrides, forName: UserDefaults.argumentDomain)
-        directory = FileManager.default.temporaryDirectory.appendingPathComponent("HonbakoCatalogValidation", isDirectory: true)
+        let fixtureFolder = Self.checksCoverLayout ? "HonbakoCoverLayoutValidation" : "HonbakoCatalogValidation"
+        directory = FileManager.default.temporaryDirectory.appendingPathComponent(fixtureFolder, isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         guard !ProcessInfo.processInfo.arguments.contains("--honbako-catalog-empty") else {
             sources = []
@@ -56,7 +60,7 @@ final class HonbakoCatalogPreviewFixtures {
 
     private static func source(key: String, name: String, books: [AidokuRunner.Manga],
                                pages: [String: [AidokuRunner.Page]], searchDelay: Duration = .zero) -> AidokuRunner.Source {
-        .init(key: key, name: name, version: 1, languages: ["en"], contentRating: .safe,
+        .init(key: key, name: name, version: checksCoverLayout ? 2 : 1, languages: ["en"], contentRating: .safe,
             staticListings: [.init(id: "popular", name: "Popular")],
             runner: HonbakoCatalogPreviewRunner(books: books, pages: pages, searchDelay: searchDelay))
     }
@@ -74,6 +78,7 @@ final class HonbakoCatalogPreviewFixtures {
     }
 
     private static func cover(number: Int, title: String) -> UIImage {
+        if checksCoverLayout, number < 3 { return layoutCheckCover(number: number) }
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         format.opaque = true
@@ -87,6 +92,24 @@ final class HonbakoCatalogPreviewFixtures {
             "CATALOG".draw(in: CGRect(x: 18, y: 270, width: 204, height: 50), withAttributes: [
                 .font: UIFont.systemFont(ofSize: 26, weight: .medium), .foregroundColor: UIColor.white
             ])
+        }
+    }
+
+    /// A circular marker exposes nonuniform scaling in actual grid screenshots.
+    /// Each marker fits inside the center crop even for the wide/tall originals.
+    private static func layoutCheckCover(number: Int) -> UIImage {
+        let sizes = [CGSize(width: 640, height: 360), CGSize(width: 360, height: 360), CGSize(width: 240, height: 720)]
+        let size = sizes[number]
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            UIColor(red: 0.06, green: 0.18, blue: 0.72, alpha: 1).setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            let diameter = min(size.width, size.height) * 0.45
+            UIColor(red: 1, green: 0.88, blue: 0.02, alpha: 1).setFill()
+            context.cgContext.fillEllipse(in: CGRect(x: (size.width - diameter) / 2,
+                y: (size.height - diameter) / 2, width: diameter, height: diameter))
         }
     }
 

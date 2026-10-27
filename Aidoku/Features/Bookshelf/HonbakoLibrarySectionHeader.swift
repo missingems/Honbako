@@ -6,12 +6,12 @@ struct HonbakoLibrarySectionHeader: View {
 
     var body: some View {
         Text(title)
-            .font(.title2.bold())
+            .font(.largeTitle.bold())
             .padding(.horizontal, 16)
             .padding(.top, 21)
             .padding(.bottom, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background)
+            .background(.regularMaterial, in: .rect)
             .accessibilityAddTraits(.isHeader)
             .accessibilityIdentifier("Honbako.Library.Header.\(title)")
     }
