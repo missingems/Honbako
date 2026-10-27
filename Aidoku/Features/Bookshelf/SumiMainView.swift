@@ -6,21 +6,23 @@ struct SumiMainView: View {
     @ObservedObject var discovery: SumiDiscoveryStore
     @ObservedObject var opening: SumiGridOpeningState
     @ObservedObject var search: SumiSearchPresentation
+    @ObservedObject var insertion: SumiLibraryInsertionState
     let previewBooks: [SumiBook]?
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
     let dismissSearch: () -> Void
+    let didAddBook: (SumiBook, SumiBookTransitionSource?) async -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
-            SumiGridContentView(store: store, discovery: discovery, opening: opening,
+            SumiGridContentView(store: store, discovery: discovery, opening: opening, insertion: insertion,
                                 previewBooks: previewBooks, searchPresented: search.isPresented,
                                 updateSearchPull: search.updatePull, finishSearchPull: finishSearchPull,
                                 revealSearch: revealSearch, openBook: openBook)
-                .allowsHitTesting(!search.isPresented)
+                .allowsHitTesting(!search.isPresented && insertion.bookID == nil)
                 .accessibilityHidden(search.isPresented)
-            SumiSpotlightSearchView(store: store, presentation: search, opening: opening,
-                previewBooks: previewBooks, openBook: openBook, dismiss: dismissSearch)
+            SumiSpotlightSearchView(store: store, presentation: search, opening: opening, insertion: insertion,
+                previewBooks: previewBooks, openBook: openBook, dismiss: dismissSearch, didAddBook: didAddBook)
                 .opacity(search.revealProgress)
                 .allowsHitTesting(search.isPresented)
                 .accessibilityHidden(!search.isPresented)

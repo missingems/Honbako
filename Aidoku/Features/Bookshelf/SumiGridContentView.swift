@@ -5,6 +5,7 @@ struct SumiGridContentView: View {
     @ObservedObject var store: SumiLibraryStore
     @ObservedObject var discovery: SumiDiscoveryStore
     @ObservedObject var opening: SumiGridOpeningState
+    @ObservedObject var insertion: SumiLibraryInsertionState
     let previewBooks: [SumiBook]?
     let searchPresented: Bool
     let updateSearchPull: (CGFloat) -> Void
@@ -30,63 +31,83 @@ struct SumiGridContentView: View {
         GeometryReader { geometry in
             let count = dynamicTypeSize.isAccessibilitySize ? 2 : max(2, Int(geometry.size.width / 150))
             let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: count)
-            ScrollView {
-                if let previewBooks {
-                    LazyVGrid(columns: columns, spacing: 2) {
-                        ForEach(previewBooks) { book in
-                            SumiGridCoverTile(book: book, openBook: openBook)
-                                .opacity(opening.bookID == book.presentation.id ? 0 : 1)
-                                .accessibilityHidden(opening.bookID == book.presentation.id)
+            ScrollViewReader { scroll in
+                ScrollView {
+                    if let previewBooks {
+                        LazyVGrid(columns: columns, spacing: 2) {
+                            ForEach(previewBooks) { book in
+                                SumiGridCoverTile(book: book, openBook: openBook,
+                                    registerAnchor: { insertion.register($0, for: book.presentation.id) })
+                                    .opacity(opening.bookID == book.presentation.id || insertion.bookID == book.presentation.id ? 0 : 1)
+                                    .accessibilityHidden(opening.bookID == book.presentation.id || insertion.bookID == book.presentation.id)
+                                    .id(book.presentation.id)
+                            }
                         }
+                    } else {
+                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                            if !finished.isEmpty {
+                                Section {
+                                    HonbakoLibrarySectionView(books: finished, columns: columns,
+                                        openingBookID: opening.bookID, openBook: openBook,
+                                        insertingBookID: insertion.bookID,
+                                        registerAnchor: { id, anchor in insertion.register(anchor, for: id) })
+                                } header: {
+                                    HonbakoLibrarySectionHeader(title: "Finished")
+                                }
+                            }
+                            if !reading.isEmpty {
+                                Section {
+                                    HonbakoLibrarySectionView(books: reading, columns: columns,
+                                        openingBookID: opening.bookID, openBook: openBook,
+                                        insertingBookID: insertion.bookID,
+                                        registerAnchor: { id, anchor in insertion.register(anchor, for: id) })
+                                } header: {
+                                    HonbakoLibrarySectionHeader(title: "Reading")
+                                }
+                            }
+                            if popular.hasSources, !popular.books.isEmpty {
+                                Section {
+                                    HonbakoLibrarySectionView(books: popular.books, columns: columns,
+                                        openingBookID: opening.bookID, openBook: openBook)
+                                } header: {
+                                    HonbakoLibrarySectionHeader(title: "Popular")
+                                }
+                            }
+                        }
+                        .padding(.bottom, max(16, geometry.safeAreaInsets.bottom))
+                        if !hasPreparedLibrary { ProgressView().padding(24).accessibilityLabel("Loading library") }
                     }
-                } else {
-                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-                        if !finished.isEmpty {
-                            Section {
-                                HonbakoLibrarySectionView(books: finished, columns: columns,
-                                    openingBookID: opening.bookID, openBook: openBook)
-                            } header: {
-                                HonbakoLibrarySectionHeader(title: "Finished")
-                            }
-                        }
-                        if !reading.isEmpty {
-                            Section {
-                                HonbakoLibrarySectionView(books: reading, columns: columns,
-                                    openingBookID: opening.bookID, openBook: openBook)
-                            } header: {
-                                HonbakoLibrarySectionHeader(title: "Reading")
-                            }
-                        }
-                        if popular.hasSources, !popular.books.isEmpty {
-                            Section {
-                                HonbakoLibrarySectionView(books: popular.books, columns: columns,
-                                    openingBookID: opening.bookID, openBook: openBook)
-                            } header: {
-                                HonbakoLibrarySectionHeader(title: "Popular")
-                            }
-                        }
+                }
+                .contentMargins(0, for: .scrollContent)
+                .scrollBounceBehavior(.always, axes: .vertical)
+                .onScrollPhaseChange { old, phase in
+                    scrollPhase = phase
+                    if old == .interacting, phase != .interacting, !searchPresented {
+                        if pullDistance >= 52 { revealSearch() } else { finishSearchPull() }
+                        pullDistance = 0
                     }
-                    .padding(.bottom, max(16, geometry.safeAreaInsets.bottom))
-                    if !hasPreparedLibrary { ProgressView().padding(24).accessibilityLabel("Loading library") }
+                }
+                .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, offset in
+                    guard scrollPhase == .interacting, !searchPresented else { return }
+                    pullDistance = max(0, -offset)
+                    updateSearchPull(pullDistance)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .accessibilityIdentifier("Sumi.Grid")
+                .accessibilityValue("\(previewBooks?.count ?? libraryBooks.count) manga")
+                .onChange(of: insertion.scrollRequest) {
+                    guard let bookID = insertion.bookID else { return }
+                    updateLibrary()
+                    // Insert the saved model before asking the lazy grid for
+                    // its cover. Search still covers this repositioning.
+                    Task { @MainActor in
+                        await Task.yield()
+                        var transaction = Transaction()
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) { scroll.scrollTo(bookID, anchor: .center) }
+                    }
                 }
             }
-            .contentMargins(0, for: .scrollContent)
-            .scrollBounceBehavior(.always, axes: .vertical)
-            .onScrollPhaseChange { old, phase in
-                scrollPhase = phase
-                if old == .interacting, phase != .interacting, !searchPresented {
-                    if pullDistance >= 52 { revealSearch() } else { finishSearchPull() }
-                    pullDistance = 0
-                }
-            }
-            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, offset in
-                guard scrollPhase == .interacting, !searchPresented else { return }
-                pullDistance = max(0, -offset)
-                updateSearchPull(pullDistance)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .accessibilityIdentifier("Sumi.Grid")
-            .accessibilityValue("\(previewBooks?.count ?? libraryBooks.count) manga")
         }
         .ignoresSafeArea(.container)
         .background { Color(uiColor: .systemBackground).ignoresSafeArea() }

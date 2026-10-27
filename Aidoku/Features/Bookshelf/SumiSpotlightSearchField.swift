@@ -5,6 +5,7 @@ import UIKit
 struct SumiSpotlightSearchField: UIViewRepresentable {
     @Binding var text: String
     var isActive = true
+    var requestsKeyboard = true
     let dismiss: () -> Void
 
     func makeUIView(context: Context) -> SumiSpotlightTextField {
@@ -23,6 +24,7 @@ struct SumiSpotlightSearchField: UIViewRepresentable {
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
         field.dismissSearch = dismiss
         field.acceptsSearchFocus = isActive
+        field.requestsSearchFocus = requestsKeyboard
         return field
     }
 
@@ -30,6 +32,7 @@ struct SumiSpotlightSearchField: UIViewRepresentable {
         context.coordinator.parent = self
         field.dismissSearch = dismiss
         field.acceptsSearchFocus = isActive
+        field.requestsSearchFocus = requestsKeyboard
         if field.text != text { field.text = text }
     }
 

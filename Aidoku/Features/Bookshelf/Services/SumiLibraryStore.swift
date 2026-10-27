@@ -158,6 +158,7 @@ struct SumiReaderSelection: Identifiable {
 @MainActor
 final class SumiLibraryStore: ObservableObject {
     typealias SearchSourceLoader = @MainActor @Sendable () async -> [AidokuRunner.Source]
+    typealias CoverPreparer = @Sendable ([SumiBook]) async -> Void
     @Published private(set) var library: [SumiBook] = []
     @Published private(set) var recentlyRead: [SumiBook] = []
     @Published private(set) var searchResults: [SumiBook] = []
@@ -173,6 +174,8 @@ final class SumiLibraryStore: ObservableObject {
     private var searchSourceOrder: [String] = []
     private var unavailableSearchSources: Set<String> = []
     private let searchSourceLoader: SearchSourceLoader
+    private let searchPreparationService: SumiSearchPreparationService
+    private let coverPreparer: CoverPreparer
     private var sourceNames: [String: String] = [:]
     private var searchTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
@@ -185,8 +188,12 @@ final class SumiLibraryStore: ObservableObject {
     private var searchError: String?
     private var cancellables: Set<AnyCancellable> = []
 
-    init(searchSourceLoader: SearchSourceLoader? = nil) {
+    init(searchSourceLoader: SearchSourceLoader? = nil,
+         searchPreparationService: SumiSearchPreparationService = .shared,
+         coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) }) {
         self.searchSourceLoader = searchSourceLoader ?? { await SourceManager.shared.getLoadedSources() }
+        self.searchPreparationService = searchPreparationService
+        self.coverPreparer = coverPreparer
         for name in [
             Notification.Name.updateLibrary,
             .updateMangaDetails,
@@ -266,6 +273,8 @@ final class SumiLibraryStore: ObservableObject {
                 }.sorted { ($0.lastRead ?? .distantPast) > ($1.lastRead ?? .distantPast) }
                 return (saved: saved, recent: recent)
             }
+            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            await coverPreparer(books.saved)
             guard generation == refreshGeneration, !Task.isCancelled else { return }
             library = books.saved
             recentlyRead = books.recent
@@ -792,32 +801,22 @@ final class SumiLibraryStore: ObservableObject {
             updateErrorMessage()
         }
         let candidates = searchCandidates(result.entries, sourceKey: result.sourceKey, query: query)
-        var prepared: [SumiBook] = []
-        // A complete row can appear as soon as its chapter check is ready.
-        // Small batches also prevent a large source monopolizing preparation.
-        for start in stride(from: 0, to: candidates.count, by: 4) {
-            do {
-                let batch = Array(candidates[start..<min(start + 4, candidates.count)])
-                let previous = prepared
-                let outcome = try await SumiSearchPreparationService.shared.prepare(batch, sources: sources) { [weak self] progress in
-                    await self?.publishSourceProgress(progress, previous: previous, sourceKey: result.sourceKey,
-                                                      query: query, generation: generation)
-                }
-                guard !Task.isCancelled, generation == searchGeneration else { return }
-                prepared += outcome.books
-            } catch { return }
+        do {
+            let outcome = try await searchPreparationService.prepare(candidates, sources: sources)
+            try Task.checkCancellation()
+            await coverPreparer(outcome.books)
+            guard !Task.isCancelled, generation == searchGeneration,
+                  !unavailableSearchSources.contains(result.sourceKey) else { return }
+            for key in outcome.failedSourceKeys where providerFailures[key] == nil {
+                providerFailures[key] = "\(sourceName(for: key)): Chapter availability couldn’t be checked."
+            }
+            publishPreparedSearchResults(outcome.books, sourceKey: result.sourceKey, query: query)
+            updateErrorMessage()
+        } catch {
+            // Cancellation supersedes the entire section, never a partial row
+            // snapshot left behind from the previous query.
+            return
         }
-    }
-
-    private func publishSourceProgress(_ outcome: SumiSearchPreparationService.Outcome, previous: [SumiBook],
-                                       sourceKey: String, query: String, generation: Int) {
-        guard !Task.isCancelled, generation == searchGeneration,
-              !unavailableSearchSources.contains(sourceKey) else { return }
-        for key in outcome.failedSourceKeys where providerFailures[key] == nil {
-            providerFailures[key] = "\(sourceName(for: key)): Chapter availability couldn’t be checked."
-        }
-        publishPreparedSearchResults(previous + outcome.books, sourceKey: sourceKey, query: query)
-        updateErrorMessage()
     }
 
     private func publishPreparedSearchResults(_ books: [SumiBook], sourceKey: String, query: String) {

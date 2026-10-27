@@ -464,8 +464,24 @@ class ReaderPagedViewController: BaseObservingViewController {
     /// Closing persists only the last complete paper surface. Stop an owned
     /// curl synchronously before a caller starts saving reading progress.
     func sumiStopAnimatedNavigation() {
+        let interruptedNativeTurn = !(pageViewController is SumiPageCurlViewController)
+            && isTransitioning && !programmaticMove && sumiAnimationStepOwner == nil
+        let settledDisplayPage = currentPage
         sumiCancelAnimatedNavigation()
         (pageViewController as? SumiPageCurlViewController)?.cancelCurrentTurn()
+        if interruptedNativeTurn {
+            // A second touch may interrupt a native one-finger slide. Dispose
+            // of that pager synchronously before the book captures its paper;
+            // its delayed completion cannot change the saved reading position.
+            pendingPageMove = nil
+            sumiQueuedCanonicalFocus = nil
+            isTransitioning = false
+            let controllers = presentationControllers(for: settledDisplayPage, transition: desiredTransition)
+            if !controllers.isEmpty {
+                replacePager(with: desiredTransition, displaying: controllers)
+                settlePagerViewport()
+            }
+        }
     }
 
     private func sumiCancelAnimatedNavigation() {
@@ -726,6 +742,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     private func disableNativeCurlTaps() {
 #if SUMI
+        SumiReaderGesturePolicy.reservePinches(in: pageViewController.view)
         let pan = pageViewController is SumiPageCurlViewController || readingMode == .vertical
             ? nil : pageViewController.view.subviews.compactMap { $0 as? UIScrollView }.first?.panGestureRecognizer
         if sumiSlidePan !== pan {

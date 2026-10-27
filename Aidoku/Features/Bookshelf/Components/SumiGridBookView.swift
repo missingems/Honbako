@@ -1,5 +1,4 @@
 #if SUMI
-import Nuke
 import SwiftUI
 import UIKit
 
@@ -100,7 +99,13 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
 
     func configure(book: SumiBook) {
         let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")"
-        guard identity != requestedIdentity else { return }
+        guard identity != requestedIdentity else {
+            // A later coherent refresh can replace a prepared placeholder with
+            // warmed artwork without starting a new per-tile image request.
+            if !holdsVisibleEdition, let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book),
+               coverArtwork !== cached { applyFlatEdition(cover: cached) }
+            return
+        }
         if holdsVisibleEdition, representedBookID == book.presentation.id {
             pendingBook = book
             return
@@ -117,32 +122,22 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         identity = requestedIdentity
         bookPose = SumiGridBookPose(seed: book.presentation.placementSeed)
         coverTask?.cancel()
+        if let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book) {
+            applyFlatEdition(cover: cached)
+            return
+        }
         let fallback = ImageRenderer(content: BookPrintedFrontCover(book: book.presentation)
             .frame(width: 340, height: 500))
         fallback.scale = 1
         let placeholder = fallback.uiImage
         if let placeholder { applyFlatEdition(cover: placeholder) }
+        guard !SumiCoverArtworkLoader.shared.usesPreparedPlaceholder(for: book) else { return }
         coverTask = Task { @MainActor [weak self] in
-            let loaded = await Self.loadCover(for: book)
+            let loaded = await SumiCoverArtworkLoader.shared.loadCover(for: book)
             guard !Task.isCancelled, self?.identity == requestedIdentity else { return }
             if let loaded { self?.applyFlatEdition(cover: loaded, animated: true) }
         }
 
     }
-    private static func loadCover(for book: SumiBook) async -> UIImage? {
-        guard let url = book.coverURL else { return nil }
-        let source = await SourceManager.shared.source(for: book.sourceKey)
-        guard !Task.isCancelled else { return nil }
-        let request: URLRequest
-        if let local = url.toAidokuFileUrl() { request = URLRequest(url: local) }
-        else if let source { request = await source.getModifiedImageRequest(url: url, context: nil) }
-        else { request = URLRequest(url: url) }
-        var processors: [ImageProcessing] = [DownsampleProcessor(width: 640)]
-        if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
-        let imageRequest = ImageRequest(urlRequest: request, processors: processors,
-                                       userInfo: [.processesKey: source?.features.processesCovers ?? false])
-        return try? await ImagePipeline.shared.image(for: imageRequest)
-    }
-
 }
 #endif

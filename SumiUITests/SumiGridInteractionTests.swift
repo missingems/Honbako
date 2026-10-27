@@ -247,17 +247,19 @@ final class SumiGridInteractionTests: XCTestCase {
         let pager = try pageRenderer(app, surface)
         let toolbar = element("Sumi.Reader.Toolbar", app)
         let systemSidebar = toolbar.frame.height > toolbar.frame.width
+        let centeredTabletControls = UIDevice.current.userInterfaceIdiom == .pad
         if surface.frame.width > 800 {
             XCTAssertFalse(systemSidebar, "The open book canvas keeps its controls at the touched bottom corner")
         }
         let originalToolbarX = toolbar.frame.midX
         let leftTap = pager.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.4))
         leftTap.tap()
-        if systemSidebar {
+        if systemSidebar || centeredTabletControls {
             XCTAssertTrue(wait(NSPredicate { _, _ in !toolbar.isHittable }, toolbar, timeout: 5))
             leftTap.tap()
             XCTAssertTrue(wait(NSPredicate { _, _ in toolbar.isHittable }, toolbar, timeout: 5))
             XCTAssertEqual(toolbar.frame.midX, originalToolbarX, accuracy: 1)
+            if centeredTabletControls { XCTAssertEqual(toolbar.frame.midX, surface.frame.midX, accuracy: 2) }
         } else {
             XCTAssertTrue(wait(NSPredicate { _, _ in
                 toolbar.isHittable && toolbar.frame.midX < surface.frame.midX
@@ -267,7 +269,7 @@ final class SumiGridInteractionTests: XCTestCase {
             scrubber: element("Sumi.Reader.Scrubber", app), badge: element("Sumi.Reader.PagePosition", app))
         attach(surface.screenshot(), "Left-page tap respects the system toolbar placement")
         try tapPage(app, surface)
-        if systemSidebar {
+        if systemSidebar || centeredTabletControls {
             XCTAssertTrue(wait(NSPredicate { _, _ in !toolbar.isHittable }, toolbar, timeout: 5))
             try tapPage(app, surface)
             XCTAssertTrue(wait(NSPredicate { _, _ in toolbar.isHittable }, toolbar, timeout: 5))

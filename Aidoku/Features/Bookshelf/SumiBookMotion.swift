@@ -13,6 +13,14 @@ enum SumiBookMotion {
         swipe + velocity * 0.2 >= 0.5
     }
 
+    /// A pinch closes the book itself, never the reader's page scale. A 45%
+    /// contraction reaches the collection; opening the fingers retraces it.
+    static func pinchProgress(scale: CGFloat) -> CGFloat {
+        min(1, max(0, (1 - scale) / 0.45))
+    }
+
+    static func pinchVelocity(_ velocity: CGFloat) -> CGFloat { -velocity / 0.45 }
+
     static func spring(from: CGFloat, to: CGFloat, velocity: CGFloat, time: Double) -> CGFloat {
         let distance = Double(from - to)
         let speed = min(omega * abs(distance), max(-omega * abs(distance), Double(velocity)))

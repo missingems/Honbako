@@ -114,9 +114,13 @@ struct SumiReaderChaptersView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color(uiColor: .systemGroupedBackground))
             .accessibilityIdentifier("Sumi.Reader.Chapters")
             .navigationTitle("Chapters")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color(uiColor: .systemGroupedBackground), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done", systemImage: "xmark", action: close).disabled(committing)
@@ -125,6 +129,8 @@ struct SumiReaderChaptersView: View {
             .task(id: "\(selectedLanguage)|\(retry)") { await loadLanguage() }
             .task(id: languageDiscoveryRetry) { await loadAvailableLanguages() }
         }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .presentationBackground(Color(uiColor: .systemGroupedBackground))
         .tint(.primary)
         .interactiveDismissDisabled(committing)
     }

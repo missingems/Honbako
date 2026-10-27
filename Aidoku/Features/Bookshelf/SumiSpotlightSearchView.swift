@@ -6,9 +6,11 @@ struct SumiSpotlightSearchView: View {
     @ObservedObject var store: SumiLibraryStore
     @ObservedObject var presentation: SumiSearchPresentation
     @ObservedObject var opening: SumiGridOpeningState
+    @ObservedObject var insertion: SumiLibraryInsertionState
     let previewBooks: [SumiBook]?
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
     let dismiss: () -> Void
+    let didAddBook: (SumiBook, SumiBookTransitionSource?) async -> Void
     @State private var sourcesPresented = false
     @State private var previewLibraryIDs: Set<MangaIdentifier> = []
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -41,7 +43,8 @@ struct SumiSpotlightSearchView: View {
                 VStack(spacing: 0) {
                     HStack(spacing: 8) {
                         SumiSpotlightSearchField(text: $presentation.query,
-                            isActive: presentation.isPresented && !sourcesPresented, dismiss: dismiss)
+                            isActive: presentation.isPresented && !sourcesPresented,
+                            requestsKeyboard: presentation.requestsKeyboard, dismiss: dismiss)
                             .frame(minHeight: 52)
                         Button { sourcesPresented = true } label: {
                             Label("Settings", systemImage: "link")
@@ -61,12 +64,19 @@ struct SumiSpotlightSearchView: View {
                                     Section {
                                         ForEach(section.books) { book in
                                             SumiSpotlightResultRow(book: book,
-                                                isLifted: opening.bookID == book.presentation.id,
+                                                isLifted: opening.bookID == book.presentation.id || insertion.bookID == book.presentation.id,
                                                 isInLibrary: book.isInLibrary || previewLibraryIDs.contains(book.id),
                                                 editions: store.editions(for: book), sourceName: store.sourceName(for:),
-                                                openBook: openBook, addBook: { book in
+                                                openBook: openBook, addBook: { book, source in
                                                     if previewBooks != nil { previewLibraryIDs.insert(book.id) }
-                                                    else { await store.add(book: book) }
+                                                    else {
+                                                        await store.add(book: book)
+                                                        guard store.library.contains(where: { $0.id == book.id }) else {
+                                                            source?.finish()
+                                                            return
+                                                        }
+                                                    }
+                                                    await didAddBook(book, source)
                                                 }, showsDivider: book.id != section.books.last?.id)
                                                 .padding(.horizontal, 8)
                                         }

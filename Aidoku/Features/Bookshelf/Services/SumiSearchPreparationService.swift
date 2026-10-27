@@ -17,7 +17,6 @@ actor SumiSearchPreparationService {
     }
 
     typealias Loader = @Sendable (SumiBook, AidokuRunner.Source?) async throws -> Details?
-    typealias ProgressHandler = @Sendable (Outcome) async -> Void
     typealias MetadataLoader = @Sendable (SumiBook) async -> SumiSearchMetadataService.Metadata?
     static let shared = SumiSearchPreparationService()
     private let loader: Loader
@@ -51,8 +50,7 @@ actor SumiSearchPreparationService {
         self.loader = loader ?? Self.load
     }
 
-    func prepare(_ books: [SumiBook], sources: [String: AidokuRunner.Source] = [:],
-                 onProgress: ProgressHandler? = nil) async throws -> Outcome {
+    func prepare(_ books: [SumiBook], sources: [String: AidokuRunner.Source] = [:]) async throws -> Outcome {
         try Task.checkCancellation()
         // Source settings do not change within a search generation. Serializing
         // the entire defaults domain for every result adds main-process work
@@ -64,7 +62,6 @@ actor SumiSearchPreparationService {
             var next = 0
             var ready: [Int: SumiBook] = [:]
             var failed: Set<String> = []
-            var published: [SumiBook] = []
             for _ in 0..<min(concurrency, books.count) {
                 let index = next
                 next += 1
@@ -75,13 +72,10 @@ actor SumiSearchPreparationService {
             }
             while let result = try await group.next() {
                 try Task.checkCancellation()
-                var shouldPublish = false
                 if let book = result.book {
                     ready[result.index] = book
-                    published.append(book)
-                    shouldPublish = true
                 }
-                if let source = result.failedSource, failed.insert(source).inserted { shouldPublish = true }
+                if let source = result.failedSource { failed.insert(source) }
                 if next < books.count {
                     let index = next
                     next += 1
@@ -90,17 +84,10 @@ actor SumiSearchPreparationService {
                                               preferences: preferences[books[index].sourceKey] ?? 0)
                     }
                 }
-                if shouldPublish, let onProgress {
-                    // A ready row never waits for a slower higher-ranked title.
-                    // Late completions append rather than inserting above rows
-                    // the user can already see. The final result retains input
-                    // order for callers that do not stream progress.
-                    let snapshot = Outcome(books: published, failedSourceKeys: failed)
-                    try Task.checkCancellation()
-                    await onProgress(snapshot)
-                    try Task.checkCancellation()
-                }
             }
+            // Publish the whole source section once, with every row's chapter
+            // evidence and metadata ready. Network completion order never
+            // changes ranking or trickles individual rows into the interface.
             return Outcome(books: books.indices.compactMap { ready[$0] }, failedSourceKeys: failed)
         }
     }
@@ -124,6 +111,13 @@ actor SumiSearchPreparationService {
             defer { active.remove(key) }
             let details = try await loader(book, source)
             try Task.checkCancellation()
+            if let details {
+                guard details.manga.identifier == book.id,
+                      !details.manga.key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      !details.manga.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw URLError(.cannotParseResponse)
+                }
+            }
             let now = Date.now
             cache = cache.filter { $0.value.expires > now }
             let chapterCount = details?.manga.chapters?.count ?? 0

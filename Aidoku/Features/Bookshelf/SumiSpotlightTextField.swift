@@ -3,6 +3,12 @@ import UIKit
 
 final class SumiSpotlightTextField: UISearchTextField {
     var dismissSearch: (() -> Void)?
+    var requestsSearchFocus = true {
+        didSet {
+            guard oldValue != requestsSearchFocus else { return }
+            synchronizeFocus()
+        }
+    }
     var acceptsSearchFocus = true {
         didSet {
             guard oldValue != acceptsSearchFocus else { return }
@@ -24,7 +30,7 @@ final class SumiSpotlightTextField: UISearchTextField {
         Task { @MainActor [weak self] in
             await Task.yield()
             guard let self else { return }
-            if self.acceptsSearchFocus {
+            if self.acceptsSearchFocus, self.requestsSearchFocus {
                 guard self.window != nil else { return }
                 self.becomeFirstResponder()
             } else {

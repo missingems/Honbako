@@ -83,7 +83,7 @@ struct SumiChapterLanguageTests {
         #expect(SumiChapterLanguage.resumePage(savedPage: nil, currentPage: -1) == 1)
     }
 
-    @Test("Catalog-wide source languages cannot advertise nonexistent translations of one title")
+    @Test("Reviewed source language settings describe isolated fetch capabilities, not title choices")
     func scopedTranslationDiscovery() {
         let languages = ["en", "ja", "PT_br", "pt-BR"]
         for source in ["multi.mangadex", "multi.mangafire"] {
@@ -114,6 +114,18 @@ struct SumiChapterLanguageTests {
         #expect(!discovered.contains("fr"))
         #expect(SumiLanguageChapterLoader.translationLanguages(sourceKey: "honbako.mangadex",
             advertisedLanguages: sourceLanguages, hasPackage: false).isEmpty)
+    }
+
+    @Test("Legacy reader choices never promote source-wide languages into this title's menu")
+    func legacyTitleLanguageChoices() {
+        let cached = [chapter("english", language: "en"), chapter("portuguese", language: "pt-BR")]
+        for source in ["multi.mangadex", "multi.mangafire", "multi.webtoon"] {
+            let offered = SumiLanguageChapterLoader.offeredLanguages(chapters: cached,
+                sourceKey: source, advertisedLanguages: ["en", "ja", "fr", "pt-BR"], hasPackage: true,
+                nativeTitleLanguages: ["es"])
+            #expect(Set(offered) == ["en", "pt-br"])
+            #expect(!offered.contains("ja") && !offered.contains("fr") && !offered.contains("es"))
+        }
     }
 
     @Test("A saved native language outside the catalog list is fetched when reopening the title")

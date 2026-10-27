@@ -4,6 +4,19 @@ import UIKit
 import simd
 
 struct SumiBookMotionTests {
+    @Test("Pinch contraction progressively closes the book and expansion retraces the same path")
+    func pinchIntent() {
+        #expect(SumiBookMotion.pinchProgress(scale: 1.2) == 0)
+        #expect(SumiBookMotion.pinchProgress(scale: 1) == 0)
+        #expect(abs(SumiBookMotion.pinchProgress(scale: 0.775) - 0.5) < 0.000001)
+        #expect(abs(SumiBookMotion.pinchProgress(scale: 0.55) - 1) < 0.000001)
+        #expect(SumiBookMotion.pinchProgress(scale: 0.2) == 1)
+        #expect(!SumiBookMotion.completes(swipe: SumiBookMotion.pinchProgress(scale: 0.92), velocity: 0))
+        #expect(SumiBookMotion.completes(swipe: SumiBookMotion.pinchProgress(scale: 0.68), velocity: 0))
+        #expect(SumiBookMotion.pinchVelocity(-0.45) == 1)
+        #expect(SumiBookMotion.pinchVelocity(0.45) == -1)
+    }
+
     @Test("The leading-edge gesture reserves its first tenth for handoff and predicts completion")
     func swipeIntent() {
         #expect(SumiBookMotion.closeProgress(0.08) == 0)

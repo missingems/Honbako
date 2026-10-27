@@ -11,7 +11,7 @@ struct SumiSpotlightResultRow: View {
     let editions: [SumiBook]
     let sourceName: (String) -> String
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
-    let addBook: (SumiBook) async -> Void
+    let addBook: (SumiBook, SumiBookTransitionSource?) async -> Void
     var showsDivider = false
     @State private var anchor = SumiBookSourceAnchor()
     @State private var adding = false
@@ -119,10 +119,12 @@ struct SumiSpotlightResultRow: View {
     private func getBook() {
         guard !adding, !isInLibrary else { return }
         adding = true
-        Task { await addBook(book); adding = false }
+        let source = anchor.view.flatMap { SumiBookTransitionSource.capture($0, replacementView: { anchor.view }) }
+        Task { await addBook(book, source); adding = false }
     }
 
     private func selectBook() {
+        guard !adding else { return }
         let source = anchor.view.flatMap { SumiBookTransitionSource.capture($0, replacementView: { anchor.view }) }
         openBook(book, source)
     }

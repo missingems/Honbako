@@ -63,11 +63,23 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         _ = try visibleText(in: app, expected: ["ADD", "FINISHED", "GENERATEDFIXTURE"])
         XCTAssertEqual(get.frame.midY, result.frame.midY, accuracy: 1)
         get.tap()
+        let searchField = item("Sumi.Search.Field", app)
+        XCTAssertTrue(wait(NSPredicate { _, _ in !searchField.isHittable }, grid),
+                      "Adding a manga reveals its library destination")
+        let savedCover = app.buttons["Sumi.Grid.Book.sumi-grid-preview:book-003"]
+        XCTAssertTrue(savedCover.waitForExistence(timeout: 5))
+        XCTAssertTrue(savedCover.isHittable, "The transferred cover lands in its real library slot")
+        XCTAssertFalse(item("Sumi.DirectReader", app).exists, "Add saves the manga without opening it")
+        attach(app, "Added search cover lands in the library")
+        for _ in 0..<4 {
+            if item("Sumi.Search.Field", app).isHittable { break }
+            grid.swipeDown()
+        }
         let read = app.buttons["Sumi.Search.Read.sumi-grid-preview:book-003"]
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         XCTAssertTrue(read.label.hasPrefix("Read"))
         XCTAssertFalse(item("Sumi.DirectReader", app).exists, "Add keeps the manga without opening it")
-        attach(app, "Add changes to Read after the manga is saved")
+        attach(app, "Reopening Search shows Read for the saved manga")
         read.tap()
         let reader = item("Sumi.DirectReader", app)
         XCTAssertTrue(reader.waitForExistence(timeout: 15))

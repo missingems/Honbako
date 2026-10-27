@@ -24,9 +24,8 @@ enum SumiLanguageChapterLoader {
         return !translationLanguages(sourceKey: source.key, advertisedLanguages: source.languages, hasPackage: source.url != nil).isEmpty
     }
 
-    /// Source.languages can describe its entire catalog, not editions of one
-    /// title. Only advertise unfetched editions for reviewed per-title chapter
-    /// language contracts. Other sources still expose actual chapter labels.
+    /// Reviewed connectors can fetch an explicit language in an isolated
+    /// session. This is not used as the reader's list of available editions.
     static func translationLanguages(sourceKey: String, advertisedLanguages: [String], hasPackage: Bool) -> [String] {
         guard hasPackage, ["multi.mangadex", "multi.mangafire"].contains(sourceKey) else { return [] }
         let values = Array(Set(advertisedLanguages.compactMap(SumiChapterLanguage.normalized)))
@@ -36,8 +35,10 @@ enum SumiLanguageChapterLoader {
     static func offeredLanguages(chapters: [AidokuRunner.Chapter], sourceKey: String,
                                  advertisedLanguages: [String], hasPackage: Bool,
                                  nativeTitleLanguages: [String] = []) -> [String] {
-        let additional = sourceKey == HonbakoMangaDexRunner.sourceKey ? nativeTitleLanguages
-            : translationLanguages(sourceKey: sourceKey, advertisedLanguages: advertisedLanguages, hasPackage: hasPackage)
+        // Catalog-wide language settings are fetch capabilities, not evidence
+        // that a translation exists for this book. Legacy connectors can only
+        // offer editions already present in this title's chapter response.
+        let additional = sourceKey == HonbakoMangaDexRunner.sourceKey ? nativeTitleLanguages : []
         return Array(Set(SumiChapterLanguage.languages(in: chapters) + additional.compactMap(SumiChapterLanguage.normalized)))
             .sorted {
                 let comparison = SourceLanguage.displayName(for: $0).localizedStandardCompare(SourceLanguage.displayName(for: $1))

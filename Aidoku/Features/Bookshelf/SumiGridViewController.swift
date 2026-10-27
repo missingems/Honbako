@@ -8,6 +8,7 @@ final class SumiGridViewController: UIViewController {
     private let discovery = SumiDiscoveryStore()
     private let opening = SumiGridOpeningState()
     private let search = SumiSearchPresentation()
+    private let insertion = SumiLibraryInsertionState()
     private var openingTask: Task<Void, Never>?
     private var pendingHistorySave: Task<Void, Never>?
     private var loadingController: SumiReaderLoadingViewController?
@@ -38,9 +39,13 @@ final class SumiGridViewController: UIViewController {
         let previewBooks: [SumiBook]? = nil
         #endif
         let host = UIHostingController(rootView: SumiMainView(
-            store: store, discovery: discovery, opening: opening, search: search,
+            store: store, discovery: discovery, opening: opening, search: search, insertion: insertion,
             previewBooks: previewBooks, openBook: openBook,
-            dismissSearch: { [weak self] in self?.dismissSearch() }
+            dismissSearch: { [weak self] in self?.dismissSearch() },
+            didAddBook: { [weak self] book, source in
+                guard let self else { source?.finish(); return }
+                await self.morphAddedBook(book, source: source)
+            }
         ))
         host.view.backgroundColor = .systemBackground
         addChild(host)
@@ -83,7 +88,9 @@ final class SumiGridViewController: UIViewController {
     }
 
     private func openBook(_ book: SumiBook, source: SumiBookTransitionSource?) {
-        guard presentedViewController == nil, loadingController == nil else { source?.finish(); return }
+        guard presentedViewController == nil, loadingController == nil, insertion.bookID == nil else { source?.finish(); return }
+        search.suspendKeyboard()
+        store.cancelSearch()
         view.endEditing(true)
         // Preserve a complete cover for the animation after loading finishes.
         let snapshot = (source?.view as? UIImageView)?.image
@@ -113,6 +120,64 @@ final class SumiGridViewController: UIViewController {
             self?.prepareReader(book: book, source: source, loading: loading)
         }
         prepareReader(book: book, source: source, loading: loading)
+    }
+
+    private func morphAddedBook(_ book: SumiBook, source: SumiBookTransitionSource?) async {
+        defer { source?.finish() }
+        guard search.isPresented, insertion.bookID == nil, presentedViewController == nil, loadingController == nil else { return }
+        guard let source, let image = (source.view as? UIImageView)?.image,
+              let origin = source.frame(in: view) else {
+            dismissSearch()
+            return
+        }
+        let cover = UIImageView(image: image)
+        cover.frame = origin
+        cover.contentMode = .scaleAspectFill
+        cover.clipsToBounds = true
+        cover.layer.cornerCurve = .continuous
+        cover.layer.cornerRadius = 8
+        cover.isUserInteractionEnabled = false
+        cover.isAccessibilityElement = true
+        cover.accessibilityLabel = "Adding \(book.title) to Library"
+        cover.accessibilityIdentifier = "Sumi.Search.AddingCover"
+        view.addSubview(cover)
+        insertion.begin(bookID: book.presentation.id)
+        defer { insertion.finish(); cover.removeFromSuperview() }
+        search.suspendKeyboard()
+        view.endEditing(true)
+        // Resolve the real saved cell after the keyboard and library insertion
+        // have laid out. The search panel hides this scroll to the new slot.
+        for _ in 0..<24 {
+            view.layoutIfNeeded()
+            if view.keyboardLayoutGuide.layoutFrame.height <= view.safeAreaInsets.bottom + 2 { break }
+            if Task.isCancelled || !search.isPresented { return }
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        var destination: CGRect?
+        var previousDestination: CGRect?
+        var stableDestinationFrames = 0
+        for attempt in 0..<40 {
+            if Task.isCancelled || !search.isPresented { return }
+            view.layoutIfNeeded()
+            if let frame = insertion.frame(in: view) {
+                if frame == previousDestination { stableDestinationFrames += 1 }
+                else { stableDestinationFrames = 0 }
+                previousDestination = frame
+                if stableDestinationFrames >= 2 { destination = frame; break }
+            } else if attempt.isMultiple(of: 5) { insertion.requestScroll() }
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+        guard search.isPresented else { return }
+        dismissSearch()
+        await withCheckedContinuation { continuation in
+            UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0.18 : 0.55,
+                           delay: 0, options: [.curveEaseInOut, .beginFromCurrentState]) {
+                if let destination, !UIAccessibility.isReduceMotionEnabled {
+                    cover.frame = destination
+                    cover.layer.cornerRadius = 0
+                } else { cover.alpha = 0 }
+            } completion: { _ in continuation.resume() }
+        }
     }
 
     private func prepareReader(book: SumiBook, source: SumiBookTransitionSource?,
@@ -216,12 +281,17 @@ final class SumiGridViewController: UIViewController {
         }
         loadingController = nil
         opening.bookID = nil
+        if presentedViewController == nil { becomeFirstResponder() }
     }
 
     private func configureOpening(_ presentation: SumiDirectReaderController, book: SumiBook,
                                   source: SumiBookTransitionSource?, loading: SumiReaderLoadingViewController) {
-        presentation.modalPresentationStyle = .fullScreen
+        // Retain the search row and its scroll geometry behind the opaque
+        // reader. Reattaching a full-screen host used to autofocus its search
+        // field and move the return destination while the book was closing.
+        presentation.modalPresentationStyle = .overFullScreen
         presentation.view.backgroundColor = SumiPaperSurface.backgroundColor
+        presentation.view.accessibilityViewIsModal = true
         let reader = presentation.readerViewController
         let transition = SumiBookTransition(coverImage: source?.coverArtwork ?? loading.coverSnapshot(),
             closedPose: source?.closedPose,
@@ -269,7 +339,47 @@ final class SumiGridViewController: UIViewController {
                 #endif
             }
             source?.finish()
+            // An over-full-screen reader keeps this controller attached, so
+            // viewDidAppear is not called again to restore keyboard commands.
+            self?.becomeFirstResponder()
+            #if DEBUG
+            if let self, SumiBookPinchDiagnostics.isEnabled {
+                self.recordPinchReturn(source: source, checkpoint: "dismissal")
+                Task { @MainActor [weak self] in
+                    await Task.yield()
+                    self?.recordPinchReturn(source: source, checkpoint: "nextTurn")
+                    try? await Task.sleep(for: .milliseconds(350))
+                    self?.recordPinchReturn(source: source, checkpoint: "settled")
+                }
+            }
+            #endif
         }
     }
+
+    #if DEBUG
+    private func recordPinchReturn(source: SumiBookTransitionSource?, checkpoint: String) {
+        guard SumiBookPinchDiagnostics.isEnabled else { return }
+        let frame = source?.frame(in: view)
+        let center = frame.map { CGPoint(x: $0.midX, y: $0.midY) }
+            ?? CGPoint(x: view.bounds.midX, y: view.bounds.midY)
+        let windows: [[String: Any]] = (view.window?.windowScene?.windows ?? []).map { window in
+            let point = view.convert(center, to: window)
+            let hit = window.hitTest(point, with: nil)
+            return ["class": SumiBookPinchDiagnostics.typeName(window), "level": window.windowLevel.rawValue,
+                "hidden": window.isHidden, "enabled": window.isUserInteractionEnabled,
+                "alpha": SumiBookPinchDiagnostics.number(window.alpha), "key": window.isKeyWindow,
+                "root": SumiBookPinchDiagnostics.typeName(window.rootViewController),
+                "rootPresented": SumiBookPinchDiagnostics.typeName(window.rootViewController?.presentedViewController),
+                "frame": String(describing: window.frame), "pointX": point.x, "pointY": point.y,
+                "hitAncestry": SumiBookPinchDiagnostics.ancestry(of: hit)]
+        }
+        SumiBookPinchDiagnostics.record("libraryReturn", ["checkpoint": checkpoint,
+            "searchPresented": search.isPresented, "searchReveal": search.revealProgress,
+            "openingBookID": opening.bookID ?? "nil", "insertingBookID": insertion.bookID ?? "nil",
+            "loading": loadingController != nil, "presented": SumiBookPinchDiagnostics.typeName(presentedViewController),
+            "sourceFrame": frame.map { String(describing: $0) } ?? "nil", "presenterAncestry": SumiBookPinchDiagnostics.ancestry(of: view),
+            "windows": windows])
+    }
+    #endif
 }
 #endif

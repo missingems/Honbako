@@ -17,6 +17,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
     private var runVelocity: CGFloat = 0
     private var swipe: CGFloat = 0
     private var interactive = false
+    private var interactiveOutcome: Bool?
     private var settling = false
     private var frameSize = CGSize.zero
     private var originalCenter = CGPoint.zero
@@ -33,6 +34,9 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
     private var cancellationOpenness: CGFloat = 1
     private var cancellationCover: UIImageView?
     private var returnSourceFrame: CGRect?
+    private var returnAnchorSample: CGRect?
+    private var returnAnchorStableFrames = 0
+    private var returnAnchorWaitFrames = 0
     private var pairedPaper = false
 
     init(opening: Bool, book: SumiBookTransition) { self.opening = opening; self.book = book }
@@ -43,16 +47,29 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
     func animateTransition(using context: UIViewControllerContextTransitioning) { begin(context, interactive: false) }
 
     func begin(_ context: UIViewControllerContextTransitioning, interactive: Bool) {
-        guard let from = context.view(forKey: .from), let to = context.view(forKey: .to),
+        // Over-full-screen keeps the presenter attached to its own hierarchy.
+        // UIKit can omit that retained side from the transition's view map.
+        let mappedFrom = context.view(forKey: .from)
+        let mappedTo = context.view(forKey: .to)
+        guard let from = mappedFrom ?? context.viewController(forKey: .from)?.view,
+              let to = mappedTo ?? context.viewController(forKey: .to)?.view,
               let destination = context.viewController(forKey: .to) else {
             context.completeTransition(false); book.didFinishTransition(); return
         }
         self.context = context; self.interactive = interactive
         book.chromeTransition(true)
         let container = context.containerView
-        if opening { container.addSubview(to) } else { container.insertSubview(to, belowSubview: from) }
-        to.frame = context.finalFrame(for: destination)
-        if to.frame.isEmpty { to.frame = container.bounds }
+        let retainsPresenter = context.presentationStyle == .overFullScreen
+            || (opening ? mappedFrom == nil : mappedTo == nil)
+        if opening {
+            container.addSubview(to)
+        } else if !retainsPresenter {
+            container.insertSubview(to, belowSubview: from)
+        }
+        if opening || !retainsPresenter {
+            to.frame = context.finalFrame(for: destination)
+            if to.frame.isEmpty { to.frame = container.bounds }
+        }
         to.layoutIfNeeded()
         let moving = opening ? to : from
         paper = moving; originalCenter = moving.center; frameSize = container.bounds.size
@@ -111,6 +128,14 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
         guard interactive, !settling else { return }
         runFrom = swipe; runTo = completing ? 1 : 0; runVelocity = velocity
         lastAnimationTimestamp = nil; animationTime = 0; settling = true
+        reportInteractiveOutcome(completing)
+    }
+
+    private func reportInteractiveOutcome(_ completed: Bool) {
+        guard interactive, interactiveOutcome == nil, let context else { return }
+        interactiveOutcome = completed
+        if completed { context.finishInteractiveTransition() }
+        else { context.cancelInteractiveTransition() }
     }
 
     @objc private func cancelOpeningFromTap(_ gesture: UITapGestureRecognizer) {
@@ -187,9 +212,26 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             // the initial compositor handoff, then use one settled return slot
             // throughout the close instead of steering toward a moving target.
             let library = context.view(forKey: opening ? .from : .to)
+                ?? context.viewController(forKey: opening ? .from : .to)?.view
             library?.setNeedsLayout()
             library?.layoutIfNeeded()
-            returnSourceFrame = book.gridSourceFrame(in: context.containerView)
+            let measured = book.gridSourceFrame(in: context.containerView)
+            if let previous = returnAnchorSample,
+               abs(previous.minX - measured.minX) < 0.25, abs(previous.minY - measured.minY) < 0.25,
+               abs(previous.width - measured.width) < 0.25, abs(previous.height - measured.height) < 0.25 {
+                returnAnchorStableFrames += 1
+            } else { returnAnchorStableFrames = 0 }
+            returnAnchorSample = measured
+            returnAnchorWaitFrames += 1
+            // Reattached SwiftUI content can need another layout pass. Keep
+            // the open reader still until the destination stops moving, then
+            // freeze that exact rectangle for the complete return journey.
+            if returnAnchorStableFrames >= 2 || returnAnchorWaitFrames >= 24 {
+                returnSourceFrame = measured
+            } else {
+                apply(progress: 1, delta: link.targetTimestamp - link.timestamp)
+                return
+            }
         }
         if ready, !sourceHidden { book.sourceVisibility(true); sourceHidden = true }
         if ready, settling {
@@ -208,7 +250,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
                 swipe = runTo; trailingFrames += 1
             }
         }
-        let progress = interactive ? 1 - SumiBookMotion.closeProgress(swipe) : min(1, max(0, swipe))
+        let progress = interactive ? 1 - book.closingProgress(for: swipe) : min(1, max(0, swipe))
         apply(progress: progress, delta: link.targetTimestamp - link.timestamp)
         let returning = returnPose(progress: progress, in: context.containerView)
         let endOpenness = opening && !isCancellingOpening ? progress : returning.openness
@@ -278,6 +320,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
 
     private func finish(completed: Bool) {
         guard !finished, let context else { return }
+        let outcome = interactive ? (interactiveOutcome ?? completed) : completed
         finished = true; clock?.invalidate(); clock = nil
         if let observer { NotificationCenter.default.removeObserver(observer) }; observer = nil
         if let outsideTap { outsideTap.view?.removeGestureRecognizer(outsideTap) }; outsideTap = nil
@@ -285,16 +328,16 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
         stage?.removeFromSuperview(); stage = nil
         cancellationCover?.removeFromSuperview(); cancellationCover = nil
         backdrop.removeFromSuperview(); returnDimming.removeFromSuperview()
-        if opening, !completed {
+        if opening, !outcome {
             paper?.removeFromSuperview()
             book.openingCancelled()
         }
         book.sourceVisibility(false)
         book.chromeTransition(false)
-        if interactive {
-            if completed { context.finishInteractiveTransition() } else { context.cancelInteractiveTransition() }
-        }
-        context.completeTransition(completed)
+        // Touch release reports finish/cancel before our visual settling. Only
+        // interruption before release still needs an outcome at this point.
+        reportInteractiveOutcome(outcome)
+        context.completeTransition(outcome)
         self.context = nil
         book.didFinishTransition()
     }

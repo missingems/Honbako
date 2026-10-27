@@ -44,81 +44,105 @@ struct SumiSearchPreparationServiceTests {
         }
     }
 
-    @Test("Complete rows publish before a later chapter lookup finishes and stay where they first appeared")
-    func progressivePreparedRows() async throws {
+    @Test("A source batch publishes once after its last chapter lookup, in ranked input order")
+    func completeSourceBatch() async throws {
         let gate = Gate()
         let publications = Publications()
+        let completed = Probe()
         let service = SumiSearchPreparationService(concurrency: 3) { book, _ in
             if book.manga.key == "last" { await gate.wait() }
+            await completed.begin()
+            await completed.end()
             return Self.details(book)
         }
         let candidates = [book("first"), book("second"), book("last")]
         let task = Task {
-            try await service.prepare(candidates, onProgress: { await publications.record($0) })
+            let outcome = try await service.prepare(candidates)
+            await publications.record(outcome)
+            return outcome
         }
         defer { task.cancel(); Task { await gate.release() } }
         let deadline = ContinuousClock.now.advanced(by: .seconds(2))
-        while await publications.latestBooks.count < 2, ContinuousClock.now < deadline {
+        while await completed.count < 2, ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(5))
         }
-        let firstScreen = await publications.latestBooks
-        #expect(Set(firstScreen.map(\.manga.key)) == ["first", "second"])
-        #expect(firstScreen.allSatisfy { $0.author == "Author" && $0.releaseYear == 2009
-            && $0.manga.status == .ongoing && $0.searchLanguages?.codes == ["en"] })
+        #expect(await completed.count == 2)
+        #expect(await publications.snapshots.isEmpty, "Rows must not appear individually while the section is loading")
         await gate.release()
         let outcome = try await task.value
         #expect(outcome.books.map(\.manga.key) == ["first", "second", "last"])
         let snapshots = await publications.snapshots
-        let displayedOrder = snapshots.last?.books.map(\.id) ?? []
-        #expect(Set(displayedOrder) == Set(outcome.books.map(\.id)))
-        for snapshot in snapshots {
-            #expect(snapshot.books.map(\.id) == Array(displayedOrder.prefix(snapshot.books.count)))
-        }
-        #expect(Array(displayedOrder.prefix(firstScreen.count)) == firstScreen.map(\.id))
+        #expect(snapshots.count == 1)
+        #expect(snapshots.first?.books.map(\.id) == candidates.map(\.id))
+        #expect(outcome.books.allSatisfy { $0.author == "Author" && $0.releaseYear == 2009
+            && $0.manga.status == .ongoing && $0.searchLanguages?.codes == ["en"] })
     }
 
-    @Test("A fast later-ranked title appears immediately while a slow first title appends only when ready")
-    func slowFirstDoesNotBlockProgress() async throws {
+    @Test("A slow first title cannot make a later row appear alone or change source ranking")
+    func slowFirstKeepsAtomicRanking() async throws {
         let gate = Gate()
         let publications = Publications()
+        let completed = Probe()
         let service = SumiSearchPreparationService(concurrency: 2) { book, _ in
             if book.manga.key == "first" { await gate.wait() }
+            await completed.begin()
+            await completed.end()
             return Self.details(book)
         }
         let candidates = [book("first"), book("second")]
         let task = Task {
-            try await service.prepare(candidates, onProgress: { await publications.record($0) })
+            let outcome = try await service.prepare(candidates)
+            await publications.record(outcome)
+            return outcome
         }
         defer { task.cancel(); Task { await gate.release() } }
         let deadline = ContinuousClock.now.advanced(by: .seconds(2))
-        while await publications.latestBooks.isEmpty, ContinuousClock.now < deadline {
+        while await completed.count == 0, ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(5))
         }
-        let firstScreen = await publications.latestBooks
-        #expect(firstScreen.map(\.manga.key) == ["second"])
-        #expect(firstScreen.first?.author == "Author")
-        #expect(firstScreen.first?.releaseYear == 2009)
-        #expect(firstScreen.first?.searchLanguages?.codes == ["en"])
+        #expect(await completed.count == 1)
+        #expect(await publications.latestBooks.isEmpty)
         await gate.release()
         let outcome = try await task.value
-        #expect(outcome.books.map(\.manga.key) == ["first", "second"], "Non-streaming callers keep ranked input order")
-        #expect(await publications.latestBooks.map(\.manga.key) == ["second", "first"], "Displayed rows never jump when an earlier candidate finishes")
+        #expect(outcome.books.map(\.manga.key) == ["first", "second"])
+        #expect(await publications.latestBooks.map(\.manga.key) == ["first", "second"])
     }
 
-    @Test("Unreadable and failed rows do not block later readable results")
-    func progressSkipsUnavailableRows() async throws {
-        let publications = Publications()
+    @Test("A complete source batch excludes unreadable rows and retains actual lookup failures")
+    func batchSkipsUnavailableRows() async throws {
         let service = SumiSearchPreparationService { book, _ in
             if book.manga.key == "empty" { return nil }
             if book.manga.key == "unknown" { throw URLError(.timedOut) }
             return Self.details(book)
         }
-        let outcome = try await service.prepare([book("empty"), book("unknown"), book("readable")],
-            onProgress: { await publications.record($0) })
+        let outcome = try await service.prepare([book("empty"), book("unknown"), book("readable")])
         #expect(outcome.books.map(\.manga.key) == ["readable"])
         #expect(outcome.failedSourceKeys == ["preparation-test"])
-        #expect(await publications.latestBooks.map(\.id) == outcome.books.map(\.id))
-        #expect(await publications.snapshots.last?.failedSourceKeys == outcome.failedSourceKeys)
+    }
+
+    @Test("Malformed source details are rejected and stay retryable instead of becoming cached manga rows")
+    func invalidDetailsStayRetryable() async throws {
+        let calls = Probe()
+        let service = SumiSearchPreparationService { book, _ in
+            await calls.begin()
+            await calls.end()
+            let manga = AidokuRunner.Manga(sourceKey: book.sourceKey, key: "another-title", title: "Wrong Title")
+            return .init(manga: manga, releaseYear: nil, languages: nil)
+        }
+        let candidate = book("requested")
+        for _ in 0..<2 {
+            let outcome = try await service.prepare([candidate])
+            #expect(outcome.books.isEmpty)
+            #expect(outcome.failedSourceKeys == [candidate.sourceKey])
+        }
+        #expect(await calls.count == 2)
+        let emptyTitle = SumiSearchPreparationService { book, _ in
+            .init(manga: .init(sourceKey: book.sourceKey, key: book.manga.key, title: " \n "),
+                releaseYear: nil, languages: nil)
+        }
+        let outcome = try await emptyTitle.prepare([candidate])
+        #expect(outcome.books.isEmpty)
+        #expect(outcome.failedSourceKeys == [candidate.sourceKey])
     }
 
     @Test("Legacy publication metadata starts alongside chapter fetching and arrives in the same row")

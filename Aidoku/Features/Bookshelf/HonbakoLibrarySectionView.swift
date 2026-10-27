@@ -6,11 +6,14 @@ struct HonbakoLibrarySectionView: View {
     let columns: [GridItem]
     let openingBookID: String?
     let openBook: (SumiBook, SumiBookTransitionSource?) -> Void
+    var insertingBookID: String?
+    var registerAnchor: ((String, SumiBookSourceAnchor) -> Void)?
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 2) {
             ForEach(books) { book in
-                SumiGridCoverTile(book: book, openBook: openBook)
+                SumiGridCoverTile(book: book, openBook: openBook,
+                    registerAnchor: { anchor in registerAnchor?(book.presentation.id, anchor) })
                     .overlay(alignment: .topTrailing) {
                         if book.unreadChapterCount > 0 {
                             Text(book.unreadChapterCount, format: .number)
@@ -29,8 +32,9 @@ struct HonbakoLibrarySectionView: View {
                                 .accessibilityLabel("Finished \(date.formatted(date: .abbreviated, time: .omitted))")
                         }
                     }
-                    .opacity(openingBookID == book.presentation.id ? 0 : 1)
-                    .accessibilityHidden(openingBookID == book.presentation.id)
+                    .opacity(openingBookID == book.presentation.id || insertingBookID == book.presentation.id ? 0 : 1)
+                    .accessibilityHidden(openingBookID == book.presentation.id || insertingBookID == book.presentation.id)
+                    .id(book.presentation.id)
             }
         }
     }

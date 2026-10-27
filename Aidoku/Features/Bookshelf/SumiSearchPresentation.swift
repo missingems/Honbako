@@ -6,6 +6,7 @@ import Foundation
 final class SumiSearchPresentation: ObservableObject {
     @Published var isPresented = false
     @Published var query = ""
+    @Published private(set) var requestsKeyboard = true
     @Published private(set) var pullProgress: CGFloat = 0
 
     var revealProgress: CGFloat { isPresented ? 1 : pullProgress }
@@ -15,7 +16,8 @@ final class SumiSearchPresentation: ObservableObject {
         pullProgress = min(1, max(0, distance / 52))
     }
     func finishPull() { pullProgress = 0 }
-    func reveal() { isPresented = true; pullProgress = 0 }
+    func reveal() { requestsKeyboard = true; isPresented = true; pullProgress = 0 }
+    func suspendKeyboard() { requestsKeyboard = false }
     func dismiss() { isPresented = false; pullProgress = 0 }
 }
 #endif

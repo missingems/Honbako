@@ -7,7 +7,15 @@ import Foundation
 enum HonbakoPopularLoader {
     static func load(source: AidokuRunner.Source) async throws -> [AidokuRunner.Manga] {
         try Task.checkCancellation()
-        let listings = (try? await source.getListings()) ?? []
+        let listings: [AidokuRunner.Listing]
+        do { listings = try await source.getListings() }
+        catch is CancellationError { throw CancellationError() }
+        catch {
+            // A network/parser failure is not an empty popularity catalog.
+            // Preserve it unless the provider has a real alternative home API.
+            guard source.features.providesHome else { throw error }
+            return popularManga(in: try await source.getHome())
+        }
         try Task.checkCancellation()
         if let listing = popularListing(in: listings) {
             do {

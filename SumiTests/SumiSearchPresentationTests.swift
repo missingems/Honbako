@@ -4,6 +4,18 @@ import Testing
 
 @MainActor
 struct SumiSearchPresentationTests {
+    @Test("Opening a book suspends automatic keyboard focus until Search is deliberately revealed again")
+    func keyboardStaysResignedAfterReading() {
+        let search = SumiSearchPresentation()
+        search.reveal()
+        search.suspendKeyboard()
+        #expect(search.isPresented)
+        #expect(!search.requestsKeyboard)
+        search.dismiss()
+        search.reveal()
+        #expect(search.requestsKeyboard)
+    }
+
     @Test("Search starts hidden and a pull previews it without committing focus")
     func interactivePull() {
         let presentation = SumiSearchPresentation()

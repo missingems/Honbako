@@ -13,7 +13,7 @@ struct HonbakoPopularStoreTests {
         let cache = HonbakoPopularCache(url: url)
         let identity = HonbakoPopularConnection.Identity(sourceKey: "removed", revision: "1")
         try await cache.save([.init(identity: identity, date: .now, entries: manga(source: "removed", count: 2))], generation: 0)
-        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: { [] })
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: { [] })
         await store.refresh()
         #expect(!store.hasSources)
         #expect(store.books.isEmpty)
@@ -55,7 +55,7 @@ struct HonbakoPopularStoreTests {
         let entries = manga(source: "source", count: 2)
         let connections = Connections()
         connections.values = [.init(key: "source", load: { await calls.record(); return entries })]
-        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: { connections.values })
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: { connections.values })
         async let first: Void = store.refresh()
         async let second: Void = store.refresh()
         _ = await (first, second)
@@ -86,11 +86,11 @@ struct HonbakoPopularStoreTests {
         let url = temporaryCacheURL()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
         let entries = manga(source: "enabled", count: 2)
-        let first = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: {
+        let first = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: {
             [.init(key: "enabled", load: { entries })]
         })
         await first.refresh()
-        let second = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: {
+        let second = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: {
             [.init(key: "enabled", load: {
                 Issue.record("A matching fresh popularity cache must not access the provider")
                 return []
@@ -102,13 +102,82 @@ struct HonbakoPopularStoreTests {
         #expect(second.books.map(\.coverURL) == entries.map { $0.cover.flatMap(URL.init(string:)) })
     }
 
+    @Test("A Popular source's covers are prepared before its complete grid batch is published")
+    func coverPreparationPrecedesPublication() async throws {
+        let url = temporaryCacheURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let entries = manga(source: "source", count: 4)
+        let gate = SuspendedCatalog()
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false,
+            coverPreparer: { books in if !books.isEmpty { _ = await gate.load() } },
+            connectionLoader: { [.init(key: "source", load: { entries })] })
+        let task = Task { await store.refresh() }
+        defer { task.cancel(); Task { await gate.finish([]) } }
+        for _ in 0..<100 {
+            if await gate.started { break }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        #expect(await gate.started)
+        #expect(store.books.isEmpty)
+        #expect(store.isLoading)
+        await gate.finish([])
+        await task.value
+        #expect(store.books.map(\.id) == entries.map(\.identifier))
+    }
+
+    @Test("Returning to a fresh Popular catalog retries cover preparation without refetching metadata or reordering books")
+    func freshCatalogRetriesCoverPreparation() async throws {
+        let url = temporaryCacheURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let entries = manga(source: "source", count: 4)
+        let catalogCalls = Calls()
+        let coverCalls = Calls()
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false,
+            coverPreparer: { books in if !books.isEmpty { await coverCalls.record() } },
+            connectionLoader: { [.init(key: "source", load: { await catalogCalls.record(); return entries })] })
+        await store.refresh()
+        let original = store.books.map(\.id)
+        #expect(await coverCalls.count == 1)
+        await store.refresh()
+        #expect(await coverCalls.count == 2)
+        #expect(await catalogCalls.count == 1)
+        #expect(store.books.map(\.id) == original)
+    }
+
+    @Test("Opening search cancels cover warming for a fresh cached Popular catalog")
+    func pauseCancelsCachedCoverWarming() async throws {
+        let url = temporaryCacheURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let entries = manga(source: "source", count: 4)
+        let covers = CoverAttempts()
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false,
+            coverPreparer: { await covers.prepare($0) },
+            connectionLoader: { [.init(key: "source", load: { entries })] })
+        await store.refresh()
+        let original = store.books.map(\.id)
+        await covers.arm()
+        let refresh = Task { await store.refresh() }
+        defer { refresh.cancel() }
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while !(await covers.started), ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        try #require(await covers.started)
+        store.setPaused(true)
+        await refresh.value
+        #expect(await covers.cancelled)
+        #expect(store.books.map(\.id) == original)
+        #expect(store.failures.isEmpty)
+        #expect(!store.isLoading)
+    }
+
     @Test("A working provider publishes before a slow provider and errors do not remove its covers")
     func publishWorkingSourceIndependently() async throws {
         let url = temporaryCacheURL()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
         let entries = manga(source: "fast", count: 2)
         let gate = SuspendedCatalog()
-        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: {
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: {
             [.init(key: "fast", load: { entries }),
              .init(key: "slow", load: { await gate.load() }),
              .init(key: "broken", load: { throw URLError(.cannotConnectToHost) })]
@@ -133,7 +202,7 @@ struct HonbakoPopularStoreTests {
         let gate = SuspendedCatalog()
         let connections = Connections()
         connections.values = [.init(key: "removed", load: { await gate.load() })]
-        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: { connections.values })
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: { connections.values })
         let pending = Task { await store.refresh() }
         for _ in 0..<100 {
             if await gate.started { break }
@@ -182,7 +251,7 @@ struct HonbakoPopularStoreTests {
         let gate = SuspendedCatalog()
         let calls = Calls()
         let entries = manga(source: "source", count: 2)
-        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, connectionLoader: {
+        let store = HonbakoPopularStore(cacheURL: url, observesSourceChanges: false, coverPreparer: { _ in }, connectionLoader: {
             [.init(key: "source", load: {
                 await calls.record()
                 return await gate.load()
@@ -218,6 +287,19 @@ struct HonbakoPopularStoreTests {
     private actor Calls {
         var count = 0
         func record() { count += 1 }
+    }
+    private actor CoverAttempts {
+        private var armed = false
+        var started = false
+        var cancelled = false
+        func arm() { armed = true }
+        func prepare(_ books: [SumiBook]) async {
+            guard armed, !books.isEmpty else { return }
+            started = true
+            do { try await Task.sleep(for: .seconds(30)) }
+            catch is CancellationError { cancelled = true }
+            catch { }
+        }
     }
     private actor SuspendedCatalog {
         var started = false

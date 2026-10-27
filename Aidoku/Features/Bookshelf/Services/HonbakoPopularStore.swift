@@ -6,6 +6,7 @@ import Foundation
 @MainActor
 final class HonbakoPopularStore: ObservableObject {
     typealias ConnectionLoader = @MainActor @Sendable () async -> [HonbakoPopularConnection]
+    typealias CoverPreparer = @Sendable ([SumiBook]) async -> Void
 
     @Published private(set) var books: [SumiBook] = []
     @Published private(set) var hasSources = false
@@ -13,6 +14,7 @@ final class HonbakoPopularStore: ObservableObject {
     @Published private(set) var failures: Set<String> = []
 
     private let connectionLoader: ConnectionLoader
+    private let coverPreparer: CoverPreparer
     private let cache: HonbakoPopularCache
     private let now: @MainActor () -> Date
     private var catalogs: [HonbakoPopularConnection.Identity: HonbakoPopularCache.Catalog] = [:]
@@ -21,15 +23,19 @@ final class HonbakoPopularStore: ObservableObject {
     private var hasLoadedCache = false
     private var isPaused = false
     private var loading: Task<Void, Never>?
+    private var warming: Task<Void, Never>?
     private var requestGeneration = 0
     private var generation = 0
     private var observers: Set<AnyCancellable> = []
     private let lifetime: TimeInterval = 900
 
     init(cacheURL: URL = HonbakoPopularCache.defaultURL, observesSourceChanges: Bool = true,
-         now: @escaping @MainActor () -> Date = { .now }, connectionLoader: ConnectionLoader? = nil) {
+         now: @escaping @MainActor () -> Date = { .now },
+         coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) },
+         connectionLoader: ConnectionLoader? = nil) {
         cache = HonbakoPopularCache(url: cacheURL)
         self.now = now
+        self.coverPreparer = coverPreparer
         self.connectionLoader = connectionLoader ?? {
             await SourceManager.shared.getLoadedSources().map(HonbakoPopularConnection.init(source:))
         }
@@ -45,7 +51,7 @@ final class HonbakoPopularStore: ObservableObject {
         }.store(in: &observers)
     }
 
-    deinit { loading?.cancel() }
+    deinit { loading?.cancel(); warming?.cancel() }
 
     /// A typed search has priority over background catalog requests.
     func setPaused(_ paused: Bool) {
@@ -56,6 +62,8 @@ final class HonbakoPopularStore: ObservableObject {
             generation += 1
             loading?.cancel()
             loading = nil
+            warming?.cancel()
+            warming = nil
             isLoading = false
         }
     }
@@ -77,6 +85,10 @@ final class HonbakoPopularStore: ObservableObject {
             await loading.value
             return
         }
+        if connected == identities, let warming {
+            await warming.value
+            return
+        }
         let currentDate = now()
         let pending = connections.filter { connection in
             guard let catalog = catalogs[connection.id] else { return true }
@@ -84,15 +96,31 @@ final class HonbakoPopularStore: ObservableObject {
             return age < 0 || age >= lifetime
         }
         if connected == identities, pending.isEmpty,
-           catalogs.keys.allSatisfy({ connected.contains($0) }) { return }
+           catalogs.keys.allSatisfy({ connected.contains($0) }) {
+            // Fresh metadata can still have covers that timed out on a cold
+            // connection. Retry their bounded batch when returning to the
+            // library, then refresh the section together without a new catalog
+            // request or a per-tile reveal.
+            let current = generation
+            await warmCovers(books, generation: current)
+            guard generation == current, !Task.isCancelled, !isPaused,
+                  connected == identities else { return }
+            rebuildBooks()
+            return
+        }
         generation += 1
         let current = generation
         loading?.cancel()
+        warming?.cancel()
+        warming = nil
         identities = connected
         hasSources = !connected.isEmpty
         let allowed = Set(connected)
         catalogs = catalogs.filter { allowed.contains($0.key) }
         failures.formIntersection(Set(connected.map(\.sourceKey)))
+        await warmCovers(identities.flatMap { catalogs[$0]?.restored ?? [] }.map { SumiBook(manga: $0) },
+                         generation: current)
+        guard generation == current, !Task.isCancelled, !isPaused else { return }
         rebuildBooks()
         guard !pending.isEmpty else {
             isLoading = false
@@ -117,6 +145,8 @@ final class HonbakoPopularStore: ObservableObject {
         generation += 1
         loading?.cancel()
         loading = nil
+        warming?.cancel()
+        warming = nil
         isLoading = false
         identities.removeAll { $0.sourceKey == sourceKey }
         catalogs = catalogs.filter { $0.key.sourceKey != sourceKey }
@@ -128,12 +158,13 @@ final class HonbakoPopularStore: ObservableObject {
     }
 
     private func load(_ connections: [HonbakoPopularConnection], generation current: Int) async {
+        let coverPreparer = self.coverPreparer
         await withTaskGroup(of: Result.self) { group in
             var next = 0
             for _ in 0..<min(3, connections.count) {
                 let connection = connections[next]
                 next += 1
-                group.addTask { await Self.fetch(connection) }
+                group.addTask { await Self.fetch(connection, coverPreparer: coverPreparer) }
             }
             while let result = await group.next() {
                 guard !Task.isCancelled, generation == current else { group.cancelAll(); return }
@@ -149,10 +180,24 @@ final class HonbakoPopularStore: ObservableObject {
                 if next < connections.count {
                     let connection = connections[next]
                     next += 1
-                    group.addTask { await Self.fetch(connection) }
+                    group.addTask { await Self.fetch(connection, coverPreparer: coverPreparer) }
                 }
             }
         }
+    }
+
+    private func warmCovers(_ books: [SumiBook], generation current: Int) async {
+        guard !books.isEmpty, generation == current, !Task.isCancelled, !isPaused else { return }
+        let coverPreparer = self.coverPreparer
+        let task = Task { await coverPreparer(books) }
+        warming = task
+        await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+        guard generation == current else { return }
+        warming = nil
     }
 
     private struct Result: Sendable {
@@ -161,13 +206,16 @@ final class HonbakoPopularStore: ObservableObject {
         let cancelled: Bool
     }
 
-    nonisolated private static func fetch(_ connection: HonbakoPopularConnection) async -> Result {
+    nonisolated private static func fetch(_ connection: HonbakoPopularConnection,
+                                         coverPreparer: CoverPreparer) async -> Result {
         do {
             try Task.checkCancellation()
             let manga = try await connection.load()
             try Task.checkCancellation()
-            return Result(identity: connection.id,
-                entries: HonbakoPopularAggregation.candidates(manga, sourceKey: connection.id.sourceKey), cancelled: false)
+            let entries = HonbakoPopularAggregation.candidates(manga, sourceKey: connection.id.sourceKey)
+            await coverPreparer(entries.map { SumiBook(manga: $0) })
+            try Task.checkCancellation()
+            return Result(identity: connection.id, entries: entries, cancelled: false)
         } catch is CancellationError { return Result(identity: connection.id, entries: nil, cancelled: true) }
         catch { return Result(identity: connection.id, entries: nil, cancelled: false) }
     }

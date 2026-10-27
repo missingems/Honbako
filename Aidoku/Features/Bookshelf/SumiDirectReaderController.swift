@@ -36,6 +36,11 @@ final class SumiDirectReaderController: UINavigationController {
         bookTransition?.prioritizeBackSwipe()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        bookTransition?.prioritizeBackSwipe()
+    }
+
     func show(_ controller: UIViewController) {
         loadViewIfNeeded()
         content = controller
@@ -56,6 +61,8 @@ final class SumiDirectReaderController: UINavigationController {
     }
 
     private func finishDismissal() {
+        bookTransition?.uninstall()
+        bookTransition = nil
         guard let action = onBookDismissed else { return }
         onBookDismissed = nil
         readerViewController?.sumiBookDidClose()

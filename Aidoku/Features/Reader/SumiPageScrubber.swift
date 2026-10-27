@@ -77,6 +77,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     }())
     private let pageLabel = UILabel()
     private let preview = SumiSpreadThumbnailView()
+    private let hoverGlass = SumiScrubHoverGlassView()
     private let feedback = UISelectionFeedbackGenerator()
     private var model = SumiScrubberPages(total: 0)
     private var deferredModel: SumiScrubberPages?
@@ -132,6 +133,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         collection.register(SumiPageThumbnailCell.self, forCellWithReuseIdentifier: SumiPageThumbnailCell.reuseID)
         collection.accessibilityIdentifier = "Sumi.Reader.ThumbnailStrip"
         collection.panGestureRecognizer.addTarget(self, action: #selector(handlePan(_:)))
+        collection.panGestureRecognizer.maximumNumberOfTouches = 1
         glass.contentView.addSubview(collection)
         lens.accessibilityIdentifier = "Sumi.Reader.SelectedSpread"
         rail.addSubview(lens)
@@ -154,6 +156,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         preview.layer.shadowColor = UIColor.black.cgColor; preview.layer.shadowOpacity = 0.38
         preview.layer.shadowRadius = 16; preview.layer.shadowOffset = CGSize(width: 0, height: 8)
         preview.clipsToBounds = false; addSubview(preview)
+        preview.insertSubview(hoverGlass, at: 0)
         floatingOverlay.backgroundColor = .clear
         floatingOverlay.isUserInteractionEnabled = false
         floatingOverlay.shouldGroupAccessibilityChildren = true
@@ -293,18 +296,19 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         let labelWidth = max(100, pageLabel.intrinsicContentSize.width + 24)
         let labelHeight = max(30, pageLabel.intrinsicContentSize.height + 8)
         let lifted = scrubbing || (landing && !lowering)
+        let hoverOutset = lifted ? SumiScrubHoverGlassView.outset : 0
         let lensFrame = rail.convert(lens.frame, to: self)
         let labelFrame: CGRect
         if vertical {
             let x = sidebarEdge == .left ? lensFrame.maxX + SumiScrubberMetrics.badgeGap
                 : lensFrame.minX - labelWidth - SumiScrubberMetrics.badgeGap
             labelFrame = CGRect(x: lifted ? hoverCenter.x - labelWidth / 2 : x,
-                y: lifted ? hoverCenter.y - preview.bounds.height / 2 - labelHeight - SumiScrubberMetrics.badgeGap : bounds.midY - labelHeight / 2,
+                y: lifted ? hoverCenter.y - preview.bounds.height / 2 - hoverOutset - labelHeight - SumiScrubberMetrics.badgeGap : bounds.midY - labelHeight / 2,
                 width: labelWidth, height: labelHeight)
         } else {
             let width = min(max(1, bounds.width - 16), labelWidth)
             labelFrame = CGRect(x: bounds.midX - width / 2,
-                y: (lifted ? hoverCenter.y - preview.bounds.height / 2 : lensFrame.minY) - labelHeight - SumiScrubberMetrics.badgeGap,
+                y: (lifted ? hoverCenter.y - preview.bounds.height / 2 - hoverOutset : lensFrame.minY) - labelHeight - SumiScrubberMetrics.badgeGap,
                 width: width, height: labelHeight)
         }
         positionGlass.frame = fittedOverlayFrame(overlayFrame(labelFrame), preservesAspect: false)
@@ -411,6 +415,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         feedback.prepare()
         preview.isHidden = false; layoutHover()
         configureHover(pages: model.groups[safe: selectedGroup] ?? [])
+        hoverGlass.ripple()
         preview.layer.transform = visible ? transform : CATransform3DMakeScale(0.2, 0.2, 1)
         preview.center = visible ? position : overlayPoint(rail.convert(CGPoint(x: lens.frame.midX, y: lens.frame.midY), to: self))
         preview.alpha = visible ? CGFloat(opacity) : 1
@@ -443,8 +448,9 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
                 hoverCenter = convert(CGPoint(x: fitted.midX, y: fitted.midY), from: parent)
             }
         }
-        preview.layer.shadowPath = UIBezierPath(roundedRect: preview.bounds,
-            cornerRadius: SumiScrubberMetrics.previewCornerRadius).cgPath
+        hoverGlass.fit(around: preview.bounds)
+        preview.layer.shadowPath = UIBezierPath(roundedRect: hoverGlass.frame,
+            cornerRadius: SumiScrubberMetrics.previewCornerRadius + SumiScrubHoverGlassView.outset).cgPath
         if preview.isHidden { preview.center = overlayPoint(hoverCenter) }
     }
 
@@ -464,8 +470,9 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             // Reserve space above the floating print for its page badge, and
             // keep the preview inward of its strip even in a narrow pane.
             let badgeHeight = max(30, pageLabel.intrinsicContentSize.height + 8)
-            bounds.origin.y += badgeHeight + SumiScrubberMetrics.badgeGap
-            bounds.size.height = max(1, bounds.height - badgeHeight - SumiScrubberMetrics.badgeGap)
+            let badgeClearance = badgeHeight + SumiScrubberMetrics.badgeGap
+            bounds.origin.y += badgeClearance
+            bounds.size.height = max(1, bounds.height - badgeClearance)
             if axis == .vertical {
                 if sidebarEdge == .left {
                     let leading = max(bounds.minX, anchor.maxX + SumiScrubberMetrics.hoverGap)
@@ -481,6 +488,17 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         if #available(iOS 27.1, *) {
             exclusions = (container.reservedRegions(kind: .division) + container.reservedRegions(kind: .occlusion))
                 .filter(\.isActive).map(\.frame)
+        }
+        if preservesAspect {
+            // Fit the glass and its spring, not only the sharp print inside it.
+            // Inflating exclusions also keeps the lip on one side of the fold.
+            let clearance = SumiScrubHoverGlassView.maximumOutset(for: preferred.size)
+            let inset = bounds.insetBy(dx: clearance, dy: clearance)
+            guard !inset.isEmpty, !inset.isNull else {
+                return CGRect(x: container.bounds.midX, y: container.bounds.midY, width: 0, height: 0)
+            }
+            bounds = inset
+            exclusions = exclusions.map { $0.insetBy(dx: -clearance, dy: -clearance) }
         }
         return SumiScrubberOverlayLayout.frame(preferred, anchor: anchor, in: bounds,
             avoiding: exclusions, preservesAspect: preservesAspect)
@@ -510,6 +528,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         selectedGroup = group; feedback.selectionChanged(); feedback.prepare()
         refreshSelection(); layoutHover()
         configureHover(pages: model.groups[group])
+        hoverGlass.ripple()
         setNeedsLayout()
     }
     private func configureHover(pages: [Int]) {
@@ -679,6 +698,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         }
     }
     private func clearLanding(keepingSnapshot: Bool = false) {
+        hoverGlass.stopRipple()
         landing = false; lowering = false; preview.isHidden = true; preview.alpha = 1; preview.layer.transform = CATransform3DIdentity
         if !keepingSnapshot {
             landingBackdrop?.removeFromSuperview(); landingBackdrop = nil; isRecoveringSnapshot = false
