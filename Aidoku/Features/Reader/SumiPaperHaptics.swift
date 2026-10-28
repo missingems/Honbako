@@ -130,6 +130,13 @@ final class SumiPaperHaptics: NSObject {
         lastParameterUpdate = 0
         active = true
         prepare()
+        // A pan has already crossed the touch threshold. Keep its first
+        // contact on the display-attached path that worked in Build 22,
+        // independently of the custom engine and its asynchronous callbacks.
+        if touchFeedback.play(releasing: false, intensity: 0.6) {
+            nativeContactCount += 1
+            maximumOutputIntensity = 0.6
+        }
         _ = startCoreMotion()
         record("begin")
     }
@@ -191,11 +198,11 @@ final class SumiPaperHaptics: NSObject {
         guard active, UIApplication.shared.applicationState == .active else { return }
         // Fine, soft contacts anchor the paper fibres to the reader display.
         // They accompany continuous resistance, and remain available while a
-        // cold/interrupted engine warms up. No contact at pickup or release.
-        if travel >= 10, travel - lastContactTravel >= 14, now - lastContactTime >= 0.025 {
+        // cold/interrupted engine warms up. No hard release impact or page-landing pulse.
+        if travel >= 24, travel - lastContactTravel >= 24, now - lastContactTime >= 0.05 {
             let friction = SumiPaperHapticPolicy.motion(progress: next, velocity: self.velocity,
                 distance: distance, idleFor: 0, travel: travel)
-            let strength = min(0.18, 0.10 + friction.intensity * 0.16)
+            let strength = min(0.58, 0.42 + friction.intensity * 0.28)
             lastContactTravel = travel
             lastContactTime = now
             if touchFeedback.play(releasing: false, intensity: strength) {
@@ -241,8 +248,15 @@ final class SumiPaperHaptics: NSObject {
     }
 
     private func stopPlayback() {
+        active = false
+        stopCorePlayback()
+    }
+
+    /// Core Haptics can reset or reject live controls without ending the pan.
+    /// Its lifecycle must never cancel the native feedback for that gesture.
+    private func stopCorePlayback() {
         releaseTail?.cancel(); releaseTail = nil
-        active = false; usingCore = false
+        usingCore = false
         clock?.invalidate(); clock = nil
         try? motionPlayer?.stop(atTime: CHHapticTimeImmediate)
         intensity = 0
@@ -258,7 +272,8 @@ final class SumiPaperHaptics: NSObject {
     @objc private func accessibilityChanged() { suspend() }
 
     private func engineStopped(reset: Bool, reason: Int? = nil) {
-        cancel()
+        stopCorePlayback()
+        if UIApplication.shared.applicationState != .active { active = false }
         engineGeneration = UUID()
         engineReady = false; engineStarting = false
         if reset { motionPlayer = nil }
@@ -296,7 +311,8 @@ final class SumiPaperHaptics: NSObject {
             maximumOutputIntensity = max(maximumOutputIntensity, intensity)
         } catch {
             recordError(error, stage: "motionUpdate")
-            cancel(); engineReady = false
+            stopCorePlayback()
+            engineReady = false
         }
     }
 
@@ -356,7 +372,7 @@ final class SumiPaperHaptics: NSObject {
             "maximumMotionIntensity": maximumMotionIntensity, "maximumOutputIntensity": maximumOutputIntensity,
             "fallbackUsed": fallbackUsed
         ]
-        snapshot["profile"] = "paperFriction-v2"
+        snapshot["profile"] = "paperFriction-native-v3"
         snapshot["travelPoints"] = Double(travel)
         snapshot["nativeContactCount"] = nativeContactCount
         snapshot["nativeFeedbackAttachedToReader"] = touchFeedback.isAttached

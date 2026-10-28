@@ -1,8 +1,8 @@
 #if SUMI
 import UIKit
 
-/// Quiet paper-grain contacts on the actual reader display. Movement drives
-/// these soft contacts; finger-down, release and page landing stay silent.
+/// Native contacts attached to the reader display. Use the light generator
+/// already confirmed on the Duo; very low soft impacts were imperceptible.
 @MainActor
 final class SumiPaperTouchFeedback {
     private weak var view: UIView?
@@ -15,8 +15,8 @@ final class SumiPaperTouchFeedback {
     func prepare(in view: UIView?) {
         if let view, self.view !== view {
             self.view = view
-            lift = UIImpactFeedbackGenerator(style: .soft, view: view)
-            release = UIImpactFeedbackGenerator(style: .soft, view: view)
+            lift = UIImpactFeedbackGenerator(style: .light, view: view)
+            release = UIImpactFeedbackGenerator(style: .light, view: view)
         }
         lift?.prepare()
         release?.prepare()
@@ -33,6 +33,7 @@ final class SumiPaperTouchFeedback {
         guard let generator else { return false }
         let point = location ?? CGPoint(x: view.bounds.midX, y: view.bounds.midY)
         generator.impactOccurred(intensity: CGFloat(intensity), at: point)
+        generator.prepare()
         return true
     }
 }
