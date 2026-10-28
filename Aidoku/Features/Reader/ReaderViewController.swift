@@ -215,7 +215,9 @@ class ReaderViewController: BaseObservingViewController {
             return
         }
         sumiScrubber.isReversed = readingMode == .rtl
-        sumiScrubber.reversesThumbnailPages = readingMode == .rtl
+        // Spread leaves already match the reader’s physical page order.
+        // Reverse rail progression for RTL, without swapping the paired artwork.
+        sumiScrubber.reversesThumbnailPages = false
         let paged = reader as? ReaderPagedViewController
         sumiScrubber.update(chapterKey: chapter.key, totalPages: paged?.sumiScrubberPageCount ?? pages.count,
                             currentPage: paged?.sumiScrubberCurrentPage ?? currentPage,
