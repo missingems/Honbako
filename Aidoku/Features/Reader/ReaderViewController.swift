@@ -48,6 +48,7 @@ class ReaderViewController: BaseObservingViewController {
     }()
     private var sumiIsClosing = false
     var sumiIsPreparingOpening = false
+    var sumiOpeningFailureMessage: String?
     private var sumiDidCommitPreparedOpening = false
     private var sumiLastVisiblePages: ClosedRange<Int>?
     private lazy var sumiThumbnailLoader = SumiPageThumbnailLoader(mangaKey: manga.key)
@@ -1239,6 +1240,14 @@ extension ReaderViewController {
     }
 
     func showLoadFailAlert() {
+        #if SUMI
+        // An offscreen reader must never present a modal alert over the
+        // loading host: that steals its outside-tap cancellation gestures.
+        if sumiIsPreparingOpening {
+            sumiOpeningFailureMessage = String(localized: "The source returned no readable pages for this chapter.")
+            return
+        }
+        #endif
         let alert = UIAlertController(
             title: NSLocalizedString("FAILED_CHAPTER_LOAD"),
             message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO"),

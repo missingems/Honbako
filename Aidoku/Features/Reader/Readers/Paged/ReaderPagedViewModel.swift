@@ -122,6 +122,11 @@ class ReaderPagedViewModel {
     }
 
     #if SUMI
+    func sumiCancelLoading() {
+        sumiLoadGeneration += 1
+        sumiCancelPreload()
+    }
+
     /// Only one neighboring chapter is prepared. Advancing into that exact
     /// chapter retains its request; jumping elsewhere or closing cancels it.
     func sumiCancelPreload(except chapter: AidokuRunner.Chapter? = nil) {

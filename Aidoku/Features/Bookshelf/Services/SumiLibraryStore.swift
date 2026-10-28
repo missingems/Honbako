@@ -386,6 +386,7 @@ final class SumiLibraryStore: ObservableObject {
         } catch is CancellationError {
             return book
         } catch {
+            guard !Task.isCancelled else { return book }
             operationError = String(localized: "Title details could not be loaded: \(error.localizedDescription)")
             updateErrorMessage()
             return book
@@ -432,6 +433,7 @@ final class SumiLibraryStore: ObservableObject {
         do {
             await SumiCatalogBootstrap.shared.prepare()
             try Task.checkCancellation()
+            let source = await SourceManager.shared.source(for: book.sourceKey)
             let preferredLanguage = SumiChapterLanguage.persistedLanguage(mangaID: book.id)
             let initialHistory = try await latestReaderHistory(for: book)
             var detailed = book
@@ -452,13 +454,12 @@ final class SumiLibraryStore: ObservableObject {
             } ?? false
             let missingPreferredLanguage = initialHistory == nil && SumiChapterLanguage.normalized(preferredLanguage) != nil
                 && SumiChapterLanguage.filter(stored.chapters, language: preferredLanguage).isEmpty
-            if stored.chapters.isEmpty || missingSavedChapter || missingPreferredLanguage
-                || (initialHistory == nil && detailed.manga.viewer == .unknown) {
+            if source != nil && (stored.chapters.isEmpty || missingSavedChapter || missingPreferredLanguage
+                || (initialHistory == nil && detailed.manga.viewer == .unknown)) {
                 detailed = await fetchDetails(for: detailed)
                 try Task.checkCancellation()
                 stored = await MangaManager.shared.getNextChapter(mangaId: book.id, fallbackChapters: detailed.manga.chapters)
             }
-            let source = await SourceManager.shared.source(for: book.sourceKey)
             let ascending = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getMangaChapterFilters(mangaId: book.id, context: context).flags
                     & ChapterFlagMask.sortAscending != 0
@@ -492,7 +493,9 @@ final class SumiLibraryStore: ObservableObject {
                     updateErrorMessage()
                     return nil
                 }
-                operationError = latestHistory == nil
+                operationError = source == nil
+                    ? String(localized: "This title’s source is unavailable and this chapter hasn’t been downloaded.")
+                    : latestHistory == nil
                     ? String(localized: "No readable chapters are available for this title.")
                     : String(localized: "Your last-read chapter is unavailable. It has not been replaced with another chapter.")
                 updateErrorMessage()
@@ -511,6 +514,7 @@ final class SumiLibraryStore: ObservableObject {
         } catch is CancellationError {
             return nil
         } catch {
+            guard !Task.isCancelled else { return nil }
             operationError = String(localized: "Your reading position could not be loaded: \(error.localizedDescription)")
             updateErrorMessage()
             return nil

@@ -558,6 +558,18 @@ class ReaderPagedViewController: BaseObservingViewController {
         return Array(Set(displays.flatMap { presentationIndices(for: $0) })).sorted()
     }
 
+    var sumiOpeningImageFailed: Bool {
+        canonicalControllers(in: pageViewController.viewControllers ?? []).contains(where: \.sumiImageLoadFailed)
+    }
+
+    func sumiAbandonOpening() {
+        viewModel.sumiCancelLoading()
+        nextChapterPreloadTask?.cancel()
+        nextChapterPreloadTask = nil
+        pagePrefetcher.reset()
+        pageViewControllers.forEach { $0.sumiReleasePreloadedImage() }
+    }
+
     /// Opening waits for the actual selected chapter's visible artwork, rather
     /// than treating a page-list response or an offscreen prefetched image as ready.
     var sumiReadyForOpening: Bool {

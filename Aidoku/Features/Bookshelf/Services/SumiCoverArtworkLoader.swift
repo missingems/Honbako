@@ -21,7 +21,7 @@ final class SumiCoverArtworkLoader {
         let source: ObjectIdentifier?
         let version: Int
         let preferences: Int
-        let variant = "original-1024-material-v1"
+        let variant = "original-1024-unlit-print-v2"
 
         init(book: SumiBook, source: AidokuRunner.Source?) {
             id = book.id
@@ -189,7 +189,6 @@ final class SumiCoverArtworkLoader {
         var processors: [ImageProcessing] = []
         if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
         processors.append(DownsampleProcessor(width: 1024, scaleFactor: 1))
-        processors.append(HonbakoCoverMaterialProcessor())
         let request = ImageRequest(urlRequest: urlRequest, processors: processors,
             userInfo: [.processesKey: source?.features.processesCovers ?? false])
         requests[key] = RequestEntry(request: request, source: source, stored: .now)

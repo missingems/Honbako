@@ -27,6 +27,7 @@ class ReaderPageViewController: BaseObservingViewController {
     private(set) var zoomView: ZoomableScrollView?
     private(set) var pageView: ReaderPageView?
     #if SUMI
+    var sumiImageLoadFailed: Bool { pageSet && !reloadButton.isHidden }
     var sumiPageSizing: ReaderPageSizing? = .fit {
         didSet { zoomView?.pageSizingOverride = sumiPageSizing }
     }
