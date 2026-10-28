@@ -1,0 +1,54 @@
+{
+  "title": "The Bookshop Between Pages",
+  "edition": "English online edition",
+  "author": "Honbako",
+  "content": "Original Honbako tutorial artwork and localized story text already included in this project. Exported without image modification by HonbakoTutorialManga in the native app test.",
+  "renderer": "Aidoku/Features/Bookshelf/Services/HonbakoTutorialManga.swift",
+  "export_test": "HonbakoOriginalExternalSourceTests.testExportOriginalComicAssets",
+  "created_for": "Honbako first-party external-source review sample",
+  "third_party_catalogs": false,
+  "assets": {
+    "cover.png": {
+      "sha256": "e8030e88b72c0721367ac76f04824aee5ad35674bfa22a9edba0991949af8b6a",
+      "bytes": 2985951,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-1.png": {
+      "sha256": "aa6dff3be49c8d08a990e90aafdf1391d7823f519a7cb1b29cdecc84caafcb3c",
+      "bytes": 3092024,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-2.png": {
+      "sha256": "010dec8ec6339eaa982b8ab49115faa81132b25e48ab46c39555cc138e759a99",
+      "bytes": 3297025,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-3.png": {
+      "sha256": "b794c497416da31a5c7689671dcddb69c8fd0c023a6e20c64d57f86f08a89823",
+      "bytes": 3304435,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-4.png": {
+      "sha256": "15ffb82d63a6955a283821abb760524c86e88ccd205c10191026256c1b113101",
+      "bytes": 2968637,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-5.png": {
+      "sha256": "bdceb699041bc319db09c36a01a52521898ef1c9e45d47ac8c9ae6408fa84a93",
+      "bytes": 3300832,
+      "width": 1024,
+      "height": 1536
+    },
+    "page-6.png": {
+      "sha256": "1a26ac9f45fcb558de90d7de5f574555ccbb21d06228f14329d83667da5efbc1",
+      "bytes": 3310111,
+      "width": 1024,
+      "height": 1536
+    }
+  }
+}

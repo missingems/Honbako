@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "en.honbako-originals",
+    "name": "Honbako Originals",
+    "version": 1,
+    "url": "https://missingems.github.io/Honbako/originals/",
+    "contentRating": 0,
+    "languages": [
+      "en"
+    ]
+  },
+  "listings": [
+    {
+      "id": "originals",
+      "name": "Original Story"
+    }
+  ],
+  "config": {
+    "maximumParallelRequests": 2
+  }
+}

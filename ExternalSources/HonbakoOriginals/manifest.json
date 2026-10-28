@@ -1,0 +1,17 @@
+{
+  "source_id": "en.honbako-originals",
+  "version": 1,
+  "story": "The Bookshop Between Pages \u2014 Online Edition",
+  "story_count": 1,
+  "chapter_count": 1,
+  "page_count": 6,
+  "content_origin": "Existing original Honbako tutorial artwork and project text, exported by the app renderer",
+  "source_list_url": "https://missingems.github.io/Honbako/sources/index.json",
+  "package_url": "https://missingems.github.io/Honbako/sources/packages/en.honbako-originals-v1.aix",
+  "content_base_url": "https://missingems.github.io/Honbako/originals/bookshop/",
+  "compiler": "wabt1.0.39",
+  "abi": "AidokuRunner0.7/Postcard",
+  "network_imports": false,
+  "package_sha256": "441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec",
+  "wasm_sha256": "4974ce844a37d572fbe211b5692f9e9068ae3b55dc84aedc10b5f979c3669470"
+}
