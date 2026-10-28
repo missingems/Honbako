@@ -14,6 +14,7 @@ final class SumiGridViewController: UIViewController {
     private var pendingHistorySave: Task<Void, Never>?
     private var loadingController: SumiReaderLoadingViewController?
     private var stagedReader: SumiDirectReaderController?
+    private var hostController: UIHostingController<SumiMainView>?
     #if DEBUG
     private let fixtures: SumiGridPreviewFixtures?
     #endif
@@ -26,7 +27,9 @@ final class SumiGridViewController: UIViewController {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override var prefersStatusBarHidden: Bool { true }
+    override var prefersStatusBarHidden: Bool {
+        isViewLoaded && HonbakoDisplayCanvas.usesReservedCanvas(in: view)
+    }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .all }
 
@@ -48,6 +51,7 @@ final class SumiGridViewController: UIViewController {
                 await self.morphAddedBook(book, source: source)
             }
         ))
+        hostController = host
         host.view.backgroundColor = .systemBackground
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -60,6 +64,13 @@ final class SumiGridViewController: UIViewController {
             host.view.bottomAnchor.constraint(equalTo: canvas.bottomAnchor)
         ])
         host.didMove(toParent: self)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let hostController else { return }
+        let regions: SafeAreaRegions = HonbakoDisplayCanvas.usesReservedCanvas(in: view) ? .keyboard : .all
+        if hostController.safeAreaRegions != regions { hostController.safeAreaRegions = regions }
     }
 
     override var canBecomeFirstResponder: Bool { true }

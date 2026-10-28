@@ -346,6 +346,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             configuration.delegateClass = HonbakoCoverDisplaySceneDelegate.self
             return configuration
         }
+        if connectingSceneSession.role == .windowApplication {
+            let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+            configuration.sceneClass = UIWindowScene.self
+            configuration.delegateClass = SceneDelegate.self
+            return configuration
+        }
         #endif
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }

@@ -1210,3 +1210,19 @@
 "The system chooses when a connected display can show the cover." = "The system chooses when a connected display can show the cover.";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved.";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "The Bookshop Between Pages";
+"Tutorial.Story.CoverSubtitle" = "An Original Story With Mina & Nori";
+"Tutorial.Story.Empty.Title" = "An Empty Book";
+"Tutorial.Story.Empty.Body" = "On a rainy evening, Mina found a book with no story inside. Nori tapped its cover. Every story needs a way in.\n\nSwipe left to turn the page. Tap the paper to find the reading controls.";
+"Tutorial.Story.Key.Title" = "A Key to New Stories";
+"Tutorial.Story.Key.Body" = "A brass key slipped from the book. It could open Mina’s own shelves, or a doorway to another library.\n\nPull down in the library, tap the link button for Settings, then choose Local Files, Personal Server, or Source Lists.";
+"Tutorial.Story.Door.Title" = "A Door to Other Shelves";
+"Tutorial.Story.Door.Body" = "Mina turned the key. Beyond the door waited shelves belonging to other storytellers. Nori let her choose.\n\nIn Settings → Source Lists → Add Source List, paste a trusted provider’s HTTPS list URL. Add it, then install the source you want.";
+"Tutorial.Story.Read.Title" = "The First Story";
+"Tutorial.Story.Read.Body" = "One book glowed among the shelves. Mina lifted it, and a whole new world unfolded.\n\nEnable your connection in Settings. Pull down to search, then choose Add beside a title. Tap its cover to start reading.";
+"Tutorial.Story.Bookmark.Title" = "A Ribbon for Tomorrow";
+"Tutorial.Story.Bookmark.Body" = "Nori laid a ribbon between the pages. “We can come back,” Mina whispered.\n\nTap a page for the page strip and chapter menu. Preview a page by scrubbing. Choose Language to see the translations available for that book.";
+"Tutorial.Story.Morning.Title" = "A New Morning";
+"Tutorial.Story.Morning.Body" = "By sunrise, the empty book had become a beginning. Mina closed it gently. Outside, every window held another story.\n\nPinch inward or use Close to return to your library. Resume opens your saved place. Your own files and sources stay yours.";

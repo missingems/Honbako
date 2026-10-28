@@ -661,7 +661,9 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     private var pagerContentFrame: CGRect {
 #if SUMI
-        SumiReaderPresentation.contentFrame(in: view.bounds, safeAreaInsets: view.window?.safeAreaInsets ?? view.safeAreaInsets)
+        SumiReaderPresentation.contentFrame(in: view.bounds,
+            safeAreaInsets: view.window?.safeAreaInsets ?? view.safeAreaInsets,
+            avoidsDisplayCutout: HonbakoDisplayCanvas.avoidsDisplayCutout(in: view))
 #else
         view.bounds
 #endif

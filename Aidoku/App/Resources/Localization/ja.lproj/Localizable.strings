@@ -1124,3 +1124,19 @@
 "The system chooses when a connected display can show the cover." = "接続された画面に表紙を表示できるかどうかは、システムが判断します。";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "iPhone Duoの外側に表紙を表示する間は、カメラを使用します。写真や動画の撮影・保存は行いません。";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "ページのあいだの本屋";
+"Tutorial.Story.CoverSubtitle" = "ミナとノリのオリジナルストーリー";
+"Tutorial.Story.Empty.Title" = "まっしろな本";
+"Tutorial.Story.Empty.Body" = "雨の夜、ミナは物語のない本を見つけました。ノリが表紙をちょん。どんな物語にも、入口があるのです。\n\n左にスワイプすると次のページへ。ページをタップすると読書の操作が現れます。";
+"Tutorial.Story.Key.Title" = "新しい物語の鍵";
+"Tutorial.Story.Key.Body" = "本から真鍮の鍵がこぼれました。ミナの本棚にも、別の図書館への扉にも使えそうです。\n\nライブラリを下に引き、リンクのボタンから「設定」へ。「ローカルファイル」「個人サーバー」「ソースリスト」を選べます。";
+"Tutorial.Story.Door.Title" = "ほかの本棚への扉";
+"Tutorial.Story.Door.Body" = "鍵を回すと、たくさんの語り手の本棚が現れました。ノリはミナが選ぶのを待っています。\n\n「設定」→「ソースリスト」→「ソースリストを追加」で、信頼できる提供者のHTTPSリストURLを貼り付けます。追加したら、使いたいソースをインストールします。";
+"Tutorial.Story.Read.Title" = "はじまりの物語";
+"Tutorial.Story.Read.Body" = "本棚の一冊が光りました。ミナが手に取ると、新しい世界が広がります。\n\n「設定」で接続を有効にし、ライブラリを下に引いて検索。本の横の「追加」を選び、表紙をタップして読み始めましょう。";
+"Tutorial.Story.Bookmark.Title" = "明日のためのしおり";
+"Tutorial.Story.Bookmark.Body" = "ノリはページにリボンを置きました。「また戻ってこようね」とミナがささやきます。\n\nページをタップするとページ一覧とチャプターメニューが現れます。一覧を動かすとプレビューできます。「言語」では、その本で読める翻訳を選べます。";
+"Tutorial.Story.Morning.Title" = "新しい朝";
+"Tutorial.Story.Morning.Body" = "朝になるころ、まっしろな本は物語の入口になっていました。窓の向こうにも、次の物語が待っています。\n\n内側にピンチするか「閉じる」でライブラリへ。「続きから」で保存した場所に戻れます。自分のファイルやソースは、自分で選べます。";

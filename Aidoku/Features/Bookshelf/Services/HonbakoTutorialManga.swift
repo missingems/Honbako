@@ -11,7 +11,7 @@ enum HonbakoTutorialManga {
     nonisolated static let languages = ["en", "ja", "zh-Hans", "zh-Hant"]
     private static let seedKey = "Honbako.Tutorial.Installed.v1"
     private static var installation: Task<Void, Never>?
-    static let source = AidokuRunner.Source(key: sourceKey, name: String(localized: "On This Device"), version: 1,
+    static let source = AidokuRunner.Source(key: sourceKey, name: String(localized: "On This Device"), version: 2,
         languages: languages, contentRating: .safe, staticListings: [], runner: HonbakoTutorialRunner())
 
     static func ensureInstalled() async {
@@ -60,13 +60,13 @@ enum HonbakoTutorialManga {
     static func makeManga() throws -> AidokuRunner.Manga {
         let language = language(for: Locale.preferredLanguages.first ?? "en")
         let cover = try renderedFile(art: "HonbakoTutorialCoverArt", language: language,
-            title: "Your First Chapter", body: "An Original Reading Tutorial", file: "cover.png", cover: true)
+            title: "Tutorial.Story.Title", body: "Tutorial.Story.CoverSubtitle", file: "cover.png", cover: true)
         let date = Calendar(identifier: .gregorian).date(from: DateComponents(year: 2026, month: 10, day: 27))
         let chapters = languages.map {
-            AidokuRunner.Chapter(key: "\($0)-first-chapter", title: text("Your First Chapter", language: $0),
+            AidokuRunner.Chapter(key: "\($0)-first-chapter", title: text("Tutorial.Story.Title", language: $0),
                 chapterNumber: 1, dateUploaded: date, language: $0)
         }
-        return .init(sourceKey: sourceKey, key: mangaKey, title: text("Your First Chapter", language: language),
+        return .init(sourceKey: sourceKey, key: mangaKey, title: text("Tutorial.Story.Title", language: language),
             cover: cover.absoluteString, authors: ["Honbako"],
             description: text("An original story about a bookseller, a curious cat, and your next favorite book.", language: language),
             status: .completed, contentRating: .safe, viewer: .rightToLeft, updateStrategy: .never, chapters: chapters)
@@ -77,15 +77,18 @@ enum HonbakoTutorialManga {
             throw URLError(.resourceUnavailable)
         }
         let lessons = [
-            ("Turn the Page", "Swipe left to follow the story. In landscape, turn the pages like a book."),
-            ("Find Your Place", "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there."),
-            ("A Book to Return To", "Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search.")
+            ("HonbakoTutorialPage1Art", "Tutorial.Story.Empty.Title", "Tutorial.Story.Empty.Body"),
+            ("HonbakoTutorialSourcesArt", "Tutorial.Story.Key.Title", "Tutorial.Story.Key.Body"),
+            ("HonbakoTutorialCollectionArt", "Tutorial.Story.Door.Title", "Tutorial.Story.Door.Body"),
+            ("HonbakoTutorialPage2Art", "Tutorial.Story.Read.Title", "Tutorial.Story.Read.Body"),
+            ("HonbakoTutorialReturnArt", "Tutorial.Story.Bookmark.Title", "Tutorial.Story.Bookmark.Body"),
+            ("HonbakoTutorialPage3Art", "Tutorial.Story.Morning.Title", "Tutorial.Story.Morning.Body")
         ]
         return try lessons.enumerated().map { index, lesson in
-            let url = try renderedFile(art: "HonbakoTutorialPage\(index + 1)Art", language: language,
-                title: lesson.0, body: lesson.1, file: "page-\(index + 1).png", cover: false)
+            let url = try renderedFile(art: lesson.0, language: language,
+                title: lesson.1, body: lesson.2, file: "page-\(index + 1).png", cover: false)
             return AidokuRunner.Page(content: .url(url: url), thumbnail: url,
-                description: text(lesson.0, language: language))
+                description: text(lesson.1, language: language))
         }
     }
 
@@ -97,7 +100,7 @@ enum HonbakoTutorialManga {
     private static func renderedFile(art name: String, language: String, title: String, body: String,
                                      file: String, cover: Bool) throws -> URL {
         let folder = FileManager.default.applicationSupportDirectory
-            .appendingPathComponent("HonbakoTutorial/v1/\(language)", isDirectory: true)
+            .appendingPathComponent("HonbakoTutorial/v2/\(language)", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         var excluded = URLResourceValues(); excluded.isExcludedFromBackup = true
         var location = folder; try? location.setResourceValues(excluded)
@@ -113,11 +116,11 @@ enum HonbakoTutorialManga {
             paragraph.lineBreakMode = .byWordWrapping
             let heading = text(title, language: language)
             let detail = text(body, language: language)
-            (heading as NSString).draw(in: CGRect(x: 64, y: 1220, width: 896, height: cover ? 88 : 66),
-                withAttributes: [.font: UIFont.systemFont(ofSize: cover ? 64 : 46, weight: .bold),
+            (heading as NSString).draw(in: CGRect(x: 64, y: 1200, width: 896, height: cover ? 140 : 72),
+                withAttributes: [.font: UIFont.systemFont(ofSize: cover ? 58 : 44, weight: .bold),
                     .foregroundColor: UIColor.black, .paragraphStyle: paragraph])
-            (detail as NSString).draw(in: CGRect(x: 72, y: cover ? 1338 : 1308, width: 880, height: 194),
-                withAttributes: [.font: UIFont.systemFont(ofSize: cover ? 34 : 36, weight: .regular),
+            (detail as NSString).draw(in: CGRect(x: 72, y: cover ? 1360 : 1280, width: 880, height: cover ? 148 : 230),
+                withAttributes: [.font: UIFont.systemFont(ofSize: cover ? 34 : 30, weight: .regular),
                     .foregroundColor: UIColor.black, .paragraphStyle: paragraph])
         }
         guard let data = page.pngData() else { throw URLError(.cannotDecodeContentData) }

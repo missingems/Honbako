@@ -1054,3 +1054,19 @@
 "The system chooses when a connected display can show the cover." = "系統會決定何時可在連接的螢幕上顯示封面。";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "在iPhone Duo外螢幕顯示封面時會使用相機。不會錄製或儲存照片和影片。";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "書頁之間的書店";
+"Tutorial.Story.CoverSubtitle" = "米娜與小黑貓的原創故事";
+"Tutorial.Story.Empty.Title" = "一本空白的書";
+"Tutorial.Story.Empty.Body" = "雨夜，米娜發現了一本沒有故事的書。小黑貓輕輕碰了碰封面。每個故事，都需要一個入口。\n\n向左輕掃，翻開下一頁。輕點紙面，閱讀工具就會出現。";
+"Tutorial.Story.Key.Title" = "通往故事的鑰匙";
+"Tutorial.Story.Key.Body" = "一把黃銅鑰匙從書裡滑落。它能打開米娜自己的書架，也能打開通往其他圖書館的門。\n\n在書庫下拉，輕點連結按鈕進入「設定」，然後選擇「本機檔案」「個人伺服器」或「來源列表」。";
+"Tutorial.Story.Door.Title" = "另一座書架";
+"Tutorial.Story.Door.Body" = "米娜轉動鑰匙。門後，是不同講述者的書架。小黑貓安靜地等著她挑選。\n\n打開「設定」→「來源列表」→「加入來源列表」，貼上可信提供者的HTTPS列表連結。加入後，再安裝想使用的來源。";
+"Tutorial.Story.Read.Title" = "第一個故事";
+"Tutorial.Story.Read.Body" = "書架上的一本書亮了起來。米娜把它捧起，一個新世界隨之展開。\n\n先在「設定」中啟用連線，再回書庫下拉搜尋。輕點書名旁的「加入」，然後輕點封面，開始閱讀。";
+"Tutorial.Story.Bookmark.Title" = "留給明天的書籤";
+"Tutorial.Story.Bookmark.Body" = "小黑貓把一條緞帶放進書頁。「我們還會回來的。」米娜輕聲說。\n\n輕點頁面，顯示縮圖列和章節選單。拖動縮圖列預覽頁面；選擇「語言」，查看這本書實際提供的譯本。";
+"Tutorial.Story.Morning.Title" = "新的一天";
+"Tutorial.Story.Morning.Body" = "天亮時，空白的書已經變成了故事的起點。米娜輕輕合上它。窗外的每一扇窗，都藏著另一段故事。\n\n向內捏合，或輕點「關閉」，回到書庫。「繼續閱讀」會打開已儲存的位置。自己的檔案與來源，由自己選擇。";

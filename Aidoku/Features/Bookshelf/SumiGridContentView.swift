@@ -84,7 +84,7 @@ struct SumiGridContentView: View {
                 }
             }
         }
-        .ignoresSafeArea(.container)
+        .ignoresSafeArea(.container, edges: .bottom)
         .background { Color(uiColor: .systemBackground).ignoresSafeArea() }
         .task { await prepareLibrary() }
         .onChange(of: store.library) { updateLibrary() }
