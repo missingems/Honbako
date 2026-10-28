@@ -100,6 +100,28 @@ class ReaderPagedViewController: BaseObservingViewController {
     private let bookSpineView = ReaderBookSpineView()
 #if SUMI
     private var sumiAnimationGeneration = UUID()
+    private let sumiCanvasEdges = SumiPageEdgeBackgroundView()
+
+    var sumiCanvasStatusBarStyle: UIStatusBarStyle? {
+        guard HonbakoDisplayCanvas.avoidsDisplayCutout(in: view), let color = sumiCanvasEdges.colors?.top else { return nil }
+        let luminance = Int(color.red) * 299 + Int(color.green) * 587 + Int(color.blue) * 114
+        return luminance < 128_000 ? .lightContent : .darkContent
+    }
+
+    private func sumiUpdateCanvasEdges() {
+        guard HonbakoDisplayCanvas.avoidsDisplayCutout(in: view) else {
+            sumiCanvasEdges.update(image: nil)
+            return
+        }
+        let visible = canonicalControllers(in: pageViewController.viewControllers ?? [])
+        let insets = view.window?.safeAreaInsets ?? view.safeAreaInsets
+        let page = insets.right > insets.left ? visible.last : visible.first
+        sumiCanvasEdges.frame = view.bounds
+        sumiCanvasEdges.layout(imageFrame: pagerContentFrame)
+        // The image pipeline already prepared these colors before revealing
+        // the bitmap. Extending the notch band reuses the same cache.
+        sumiCanvasEdges.update(image: page?.pageView?.imageView.image)
+    }
     private var sumiLastLayoutSize: CGSize = .zero
     private var sumiChapterStateView: SumiChapterBoundaryView?
 
@@ -1087,6 +1109,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     private func updateBookSpine() {
 #if SUMI
+        sumiUpdateCanvasEdges()
         guard usesBookLayout else {
             bookSpineView.update(pageFrames: [], enabled: false)
             return
@@ -1178,6 +1201,11 @@ class ReaderPagedViewController: BaseObservingViewController {
         pageViewController.delegate = self
         pageViewController.dataSource = self
         #if SUMI
+        view.addSubview(sumiCanvasEdges)
+        sumiCanvasEdges.onColorsChanged = { [weak self] in
+            self?.parent?.setNeedsStatusBarAppearanceUpdate()
+            self?.navigationController?.setNeedsStatusBarAppearanceUpdate()
+        }
         pageViewController.view.frame = pagerContentFrame
         pageViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         #endif
@@ -1571,6 +1599,7 @@ extension ReaderPagedViewController {
         #endif
         page.pageView?.onReferenceContentChanged = { [weak self, weak page] in
             guard let self, let page else { return }
+            self.sumiUpdateCanvasEdges()
             for case let wide as ReaderBookWideLeafViewController in self.bookControllers.values
                 where wide.canonicalController === page { wide.refreshImage() }
         }

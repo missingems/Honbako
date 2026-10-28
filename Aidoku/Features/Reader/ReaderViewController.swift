@@ -595,6 +595,13 @@ class ReaderViewController: BaseObservingViewController {
     override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
         UIStatusBarAnimation.fade
     }
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        #if SUMI
+        (reader as? ReaderPagedViewController)?.sumiCanvasStatusBarStyle ?? super.preferredStatusBarStyle
+        #else
+        super.preferredStatusBarStyle
+        #endif
+    }
     override var prefersStatusBarHidden: Bool {
         statusBarHidden
     }
