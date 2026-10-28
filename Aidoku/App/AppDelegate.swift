@@ -358,7 +358,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        InterfaceOrientationCoordinator.shared.supportedOrientations
+        #if SUMI
+        if window?.rootViewController is HonbakoCoverDisplayHostingController { return .portrait }
+        #endif
+        return InterfaceOrientationCoordinator.shared.supportedOrientations
     }
 }
 

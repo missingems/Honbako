@@ -47,12 +47,11 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         image = SumiCoverArtworkLoader.shared.cachedCover(for: book)
         status.imageState = image == nil ? "loading" : "ready"
         record("coverRequested")
-        guard image == nil else { return }
         imageTask = Task { [weak self] in
-            let loaded = await SumiCoverArtworkLoader.shared.loadCover(for: book, source: source)
+            let loaded = await SumiCoverArtworkLoader.shared.loadDisplayCover(for: book, source: source)
             guard !Task.isCancelled, let self, bookID == manga.identifier else { return }
-            image = loaded
-            status.imageState = loaded == nil ? "unavailable" : "ready"
+            if let loaded { image = loaded }
+            status.imageState = image == nil ? "unavailable" : "ready"
             record("coverResolved")
         }
     }

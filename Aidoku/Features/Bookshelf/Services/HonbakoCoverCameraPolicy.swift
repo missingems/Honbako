@@ -7,7 +7,9 @@ struct HonbakoCoverCameraPolicy {
     let coverEnabled: Bool
     let foreground: Bool
 
-    var usesCameraAccessory: Bool { personalBuild && hingePresent }
+    // This is a reader option in both personal and TestFlight builds.
+    // Capture still requires the cover toggle, permission and an open reader.
+    var usesCameraAccessory: Bool { hingePresent }
     var shouldRunCamera: Bool {
         usesCameraAccessory && hingeOpen && readerPresented && coverEnabled && foreground
     }

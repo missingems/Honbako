@@ -1,6 +1,6 @@
 # Privacy and release data-flow review
 
-Engineering audit: 27 October 2026. This is preparation for the owner's declarations, not a published privacy policy or a legal attestation.
+Engineering audit: updated 28 October 2026. This is preparation for the owner's declarations, not a published privacy policy or a legal attestation.
 
 | Flow | Evidence in this checkout | Submission implication |
 | --- | --- | --- |
@@ -10,6 +10,7 @@ Engineering audit: 27 October 2026. This is preparation for the owner's declarat
 | User-selected sources and servers | Source manager, HTTP(S) source lists, native connector, imported source runners | Queries, identifiers, credentials when configured, image requests and network information reach providers. Their retention/collection policies are not established by this source audit. |
 | Pro | StoreKit verified transactions; cached product/expiry/revocation/verification dates | Apple processes payment. No developer payment server or raw card handling was found. Real monthly product configuration remains unverified. |
 | Alerts | `NotificationManager`, background library refresh, local notification requests | Permission and background refresh are required. This is not a developer-operated real-time push feed. |
+| Optional outer cover display | `HonbakoCoverDisplaySession`, video-only camera input and a camera-capture scene accessory | Explicit camera permission; no microphone, recordings, photo output, video-data output or developer transmission of camera frames. Capture stops when the feature is hidden, the book closes, the hinge closes or the app backgrounds. Disclose this optional camera use in review. |
 | Diagnostics | Local logger and opt-in DEBUG-only gesture/performance probes | No advertising/analytics SDK or developer analytics endpoint found in app source. TestFlight separately supplies Apple's testing diagnostics under its own settings. Review the final SDK privacy report. |
 
 `Aidoku/App/Resources/PrivacyInfo.xcprivacy` describes the app-owned required-reason APIs found in the audit: UserDefaults `CA92.1`; file metadata in the app/CloudKit containers `C617.1`; metadata for user-granted files `3B52.1`. Apple's current definitions were checked in [required-reason API documentation](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api). The system-uptime performance probe is DEBUG-only. The ZIPFoundation checkout has its own manifest. Root must confirm manifests are actually present in the final archive and review all integrated SDKs; the app manifest does not replace SDK obligations.

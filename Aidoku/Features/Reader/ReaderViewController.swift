@@ -214,8 +214,8 @@ class ReaderViewController: BaseObservingViewController {
             sumiScrubber.update(chapterKey: chapter.key, totalPages: 0, currentPage: 1, spreads: [])
             return
         }
-        sumiScrubber.isReversed = false
-        sumiScrubber.reversesThumbnailPages = false
+        sumiScrubber.isReversed = readingMode == .rtl
+        sumiScrubber.reversesThumbnailPages = readingMode == .rtl
         let paged = reader as? ReaderPagedViewController
         sumiScrubber.update(chapterKey: chapter.key, totalPages: paged?.sumiScrubberPageCount ?? pages.count,
                             currentPage: paged?.sumiScrubberCurrentPage ?? currentPage,
@@ -229,7 +229,9 @@ class ReaderViewController: BaseObservingViewController {
         if navigationItem.title != nil { navigationItem.title = nil }
         guard let navigationController else { return }
         if !navigationController.isNavigationBarHidden { navigationController.setNavigationBarHidden(true, animated: false) }
-        let usesNative = traitCollection.userInterfaceIdiom != .pad && sumiSystemToolbarEdge != nil
+        // Manga direction owns the rail axis. A horizontal manga never moves
+        // into a device-provided vertical toolbar.
+        let usesNative = sumiUsesVerticalScrubber && sumiSystemToolbarEdge != nil
         if #available(iOS 27.1, *), usesNative, let nativeToolbar = navigationController.toolbar {
             if !sumiUsesNativeToolbar {
                 sumiReaderToolbar.removeFromSuperview()
@@ -333,8 +335,9 @@ class ReaderViewController: BaseObservingViewController {
         let isTablet = traitCollection.userInterfaceIdiom == .pad
         let bottomSide = SumiReaderControlsLayout.bottomSide(in: view.bounds,
             isTablet: isTablet, requestedSide: sumiRequestedToolbarEdge)
-        let systemSide = isTablet ? nil : sumiSystemToolbarEdge
-        let axis: NSLayoutConstraint.Axis = systemSide == nil ? .horizontal : .vertical
+        let systemSide = sumiUsesVerticalScrubber ? sumiSystemToolbarEdge : nil
+        let axis: NSLayoutConstraint.Axis = sumiUsesVerticalScrubber ? .vertical : .horizontal
+        let placementSide = sumiUsesVerticalScrubber ? (systemSide ?? sumiRequestedToolbarEdge ?? .right) : bottomSide
         if sumiReaderToolbar.axis != axis {
             sumiToolbarRelocation?.cancel()
             sumiToolbarRelocation = nil
@@ -342,7 +345,7 @@ class ReaderViewController: BaseObservingViewController {
         }
         sumiReaderToolbar.axis = axis
         sumiReaderToolbar.expandsHorizontalStrip = isTablet
-        sumiReaderToolbar.sidebarEdge = systemSide ?? bottomSide ?? .right
+        sumiReaderToolbar.sidebarEdge = placementSide ?? .right
         sumiConfigureNativeControls()
         var exclusions: [CGRect] = []
         if #available(iOS 27.1, *) {
@@ -374,10 +377,14 @@ class ReaderViewController: BaseObservingViewController {
             : view.bounds.width - toolbarInsets.left - toolbarInsets.right - 16
         let size = sumiReaderToolbar.preferredSize(availableLength: available)
         sumiReaderToolbar.frame = SumiReaderControlsLayout.toolbarFrame(in: view.bounds,
-            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: systemSide ?? bottomSide, size: size,
+            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: placementSide, size: size,
             axis: axis)
         sumiReaderToolbar.layoutIfNeeded()
         sumiUpdateAccessibilityChildren()
+    }
+
+    private var sumiUsesVerticalScrubber: Bool {
+        readingMode == .vertical || readingMode == .webtoon || readingMode == .continuous
     }
 
     private var sumiSystemToolbarEdge: UIRectEdge? {
@@ -390,7 +397,7 @@ class ReaderViewController: BaseObservingViewController {
         case .trailing: systemEdge = .right
         default: systemEdge = nil
         }
-        return SumiReaderControlsLayout.sidebarEdge(systemEdge: systemEdge, hasInnerFold: sumiUsesInnerCanvas)
+        return systemEdge
     }
 
     private var sumiUsesInnerCanvas: Bool {
@@ -428,8 +435,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiHandlePageTap(at point: CGPoint) {
-        guard traitCollection.userInterfaceIdiom != .pad,
-              sumiSystemToolbarEdge == nil, view.bounds.width > view.bounds.height else {
+        guard sumiUsesVerticalScrubber || (traitCollection.userInterfaceIdiom != .pad && view.bounds.width > view.bounds.height) else {
             toggleBarVisibility()
             return
         }

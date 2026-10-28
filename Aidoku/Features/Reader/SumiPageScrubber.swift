@@ -45,8 +45,8 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     var hoverImageProvider: ((Int) async -> UIImage?)?
     var landingSurface: (() -> UIView?)?
     var isLandingReady: ((Int) -> Bool)?
-    /// Logical ordering of cells along the native scroll axis. Sumi uses false:
-    /// a leftward horizontal drag (upward in a side bar) reveals later pages.
+    /// Match the source: right-to-left manga begins at the right end of a
+    /// horizontal strip; vertical manga progresses downward through the rail.
     var isReversed = false {
         didSet {
             guard oldValue != isReversed else { return }

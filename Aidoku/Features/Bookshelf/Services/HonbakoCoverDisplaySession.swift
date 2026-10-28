@@ -3,8 +3,8 @@ import AidokuRunner
 import AVFoundation
 import UIKit
 
-/// The owner explicitly allows the camera route on hinged hardware. Other
-/// installations offer ordinary external-display content without camera access.
+/// The optional outer cover uses the camera accessory on hinged hardware.
+/// Camera permission and the visible Show Manga Cover preference gate capture.
 @MainActor
 final class HonbakoCoverDisplaySession {
     private let model = HonbakoCoverDisplayModel()
@@ -27,7 +27,7 @@ final class HonbakoCoverDisplaySession {
         self.owner = owner
         foreground = UIApplication.shared.applicationState == .active
         if observers.isEmpty { observeLifecycle() }
-        if #available(iOS 27.1, *), HonbakoProStore.personalFeaturesEnabled, interaction == nil {
+        if #available(iOS 27.1, *), interaction == nil {
             let hinge = UIHingeInteraction { [weak self] _, update in
                 guard let self else { return }
                 hingePresent = update.hinge != nil

@@ -9,14 +9,13 @@ import UIKit
 final class SumiPaperHaptics: NSObject {
     private var engine: CHHapticEngine?
     private var motionPlayer: (any CHHapticAdvancedPatternPlayer)?
+    private var liftPlayer: (any CHHapticPatternPlayer)?
+    private var releasePlayer: (any CHHapticPatternPlayer)?
+    private var cancelledReleasePlayer: (any CHHapticPatternPlayer)?
     private var engineReady = false
     private var engineStarting = false
     private var engineGeneration = UUID()
     private var clock: CADisplayLink?
-    private var releaseTail: Task<Void, Never>?
-    private var travel: CGFloat = 0
-    private var lastContactTravel: CGFloat = 0
-    private var lastContactTime: CFTimeInterval = 0
     private var active = false
     private var usingCore = false
     private var progress: CGFloat = 0
@@ -29,6 +28,7 @@ final class SumiPaperHaptics: NSObject {
     private var suppliedVelocity: CGFloat = 0
     private var derivedVelocity: CGFloat = 0
     private var intensity: Float = 0
+    private let fallback = UIImpactFeedbackGenerator(style: .soft)
     private let touchFeedback = SumiPaperTouchFeedback()
     private var nativeContactCount = 0
     private let inputMode: String
@@ -65,6 +65,7 @@ final class SumiPaperHaptics: NSObject {
     /// overriding any system haptic/mute policy. Unsupported devices use UIKit.
     func prepare(in view: UIView? = nil) {
         touchFeedback.prepare(in: view)
+        fallback.prepare()
         guard UIApplication.shared.applicationState == .active, !UIAccessibility.isReduceMotionEnabled,
               supportsHaptics,
               !engineReady, !engineStarting else { return }
@@ -96,9 +97,9 @@ final class SumiPaperHaptics: NSObject {
                     if let failure { recordError(failure, stage: "engineStart") }
                     // Engine warmup may finish just after finger-down. Promote
                     // this same gesture instead of leaving its entire motion
-                    // on the fallback path. Finger-down itself stays silent.
+                    // on the fallback path. The lift already played once.
                     if engineReady, active, !usingCore, !UIAccessibility.isReduceMotionEnabled {
-                        _ = startCoreMotion()
+                        _ = startCoreMotion(playLift: false)
                     }
                     record("engineStartCompleted")
                 }
@@ -123,31 +124,27 @@ final class SumiPaperHaptics: NSObject {
         nativeContactCount = 0
         touchFeedback.update(location: location)
         progress = 0; velocity = 0; intensity = 0
-        travel = 0; lastContactTravel = 0; lastContactTime = 0
         suppliedVelocity = 0; derivedVelocity = 0
         lastMovement = CACurrentMediaTime(); lastTick = lastMovement
         lastProgressSample = lastMovement
         lastParameterUpdate = 0
         active = true
         prepare()
-        // A pan has already crossed the touch threshold. Keep its first
-        // contact on the display-attached path that worked in Build 22,
-        // independently of the custom engine and its asynchronous callbacks.
-        if touchFeedback.play(releasing: false, intensity: 0.6) {
-            nativeContactCount += 1
-            maximumOutputIntensity = 0.6
-        }
-        _ = startCoreMotion()
+        let nativeContact = touchFeedback.play(releasing: false, intensity: 0.6)
+        if nativeContact { nativeContactCount += 1 }
+        if !startCoreMotion(playLift: !nativeContact), !nativeContact { playFallback(SumiPaperHapticPolicy.liftIntensity) }
+        maximumOutputIntensity = nativeContact ? 0.6 : SumiPaperHapticPolicy.liftIntensity
         record("begin")
     }
 
-    @discardableResult private func startCoreMotion() -> Bool {
+    @discardableResult private func startCoreMotion(playLift: Bool) -> Bool {
         guard active, engineReady, !UIAccessibility.isReduceMotionEnabled,
-              engine?.isMutedForHaptics == false, let motionPlayer else { return false }
+              engine?.isMutedForHaptics == false, let motionPlayer, let liftPlayer else { return false }
         do {
             // The cached pattern starts silent. Start playback first, then
             // send live control parameters to that running player.
             try motionPlayer.start(atTime: CHHapticTimeImmediate)
+            if playLift { try liftPlayer.start(atTime: CHHapticTimeImmediate) }
             usingCore = true
             coreStartedForGesture = true
             clock?.invalidate()
@@ -171,7 +168,6 @@ final class SumiPaperHaptics: NSObject {
         let now = CACurrentMediaTime()
         let next = min(1, max(0, progress))
         let delta = next - self.progress
-        travel += abs(delta) * distance
         let elapsed = max(1.0 / 240, now - lastProgressSample)
         suppliedVelocity = velocity.isFinite ? velocity : 0
         // Keep slow drags measurable at 120 Hz; filtering each small sample
@@ -195,49 +191,40 @@ final class SumiPaperHaptics: NSObject {
         // Short gestures must reach the motor even if there is no intervening
         // display-link tick. The same throttle also covers clock-driven decay.
         sendMotion(now: now, fromGesture: true)
-        guard active, UIApplication.shared.applicationState == .active else { return }
-        // Fine, soft contacts anchor the paper fibres to the reader display.
-        // They accompany continuous resistance, and remain available while a
-        // cold/interrupted engine warms up. No hard release impact or page-landing pulse.
-        if travel >= 24, travel - lastContactTravel >= 24, now - lastContactTime >= 0.05 {
-            let friction = SumiPaperHapticPolicy.motion(progress: next, velocity: self.velocity,
-                distance: distance, idleFor: 0, travel: travel)
-            let strength = min(0.58, 0.42 + friction.intensity * 0.28)
-            lastContactTravel = travel
-            lastContactTime = now
-            if touchFeedback.play(releasing: false, intensity: strength) {
-                nativeContactCount += 1
-                if !usingCore { fallbackUsed = true }
-                maximumOutputIntensity = max(maximumOutputIntensity, strength)
-            }
-        }
     }
 
-    func release(velocity _: CGFloat, cancelled: Bool = false) {
+    func release(velocity: CGFloat, cancelled: Bool = false) {
         guard active else { return }
-        active = false
-        clock?.invalidate(); clock = nil
-        guard UIApplication.shared.applicationState == .active else { stopPlayback(); return }
-        // Paper friction relaxes at finger-up, without the former medium impact.
-        // No haptic is attached to the page landing or programmatic scrub flip.
-        if usingCore, engineReady, intensity > 0.01, !cancelled {
+        let wasCore = usingCore
+        stopPlayback()
+        defer { record(cancelled ? "endCancelled" : "end") }
+        guard UIApplication.shared.applicationState == .active else { return }
+        let releaseVelocity = CACurrentMediaTime() - lastMovement > 0.12 ? 0
+            : (velocity.isFinite && abs(velocity) > 1 ? velocity : self.velocity)
+        let strength = SumiPaperHapticPolicy.releaseIntensity(velocity: releaseVelocity, distance: distance, cancelled: cancelled)
+        if touchFeedback.play(releasing: true, intensity: cancelled ? 0.5 : 0.85) {
+            nativeContactCount += 1
+            maximumOutputIntensity = max(maximumOutputIntensity, cancelled ? 0.5 : 0.85)
+            // The native contact supplies finger-up after the continuous
+            // paper texture stops; avoid a duplicate Core Haptics impact.
+            touchFeedback.prepare(in: nil)
+            return
+        }
+        if wasCore, engineReady {
             do {
-                let curve = CHHapticParameterCurve(parameterID: .hapticIntensityControl,
-                    controlPoints: [.init(relativeTime: 0, value: intensity),
-                                    .init(relativeTime: 0.035, value: 0)], relativeTime: 0)
-                try motionPlayer?.scheduleParameterCurve(curve, atTime: CHHapticTimeImmediate)
-                let gesture = gestureID
-                releaseTail = Task { [weak self] in
-                    do { try await Task.sleep(for: .milliseconds(40)) } catch { return }
-                    guard let self, gestureID == gesture, !active else { return }
-                    stopPlayback()
-                }
+                // Fixed event intensities make the finger-up perceptible even
+                // on an engine that resets player controls between starts.
+                let player = cancelled ? cancelledReleasePlayer : releasePlayer
+                try player?.start(atTime: CHHapticTimeImmediate)
+                maximumOutputIntensity = max(maximumOutputIntensity, cancelled ? 0.48 : 0.72)
+                return
             } catch {
-                recordError(error, stage: "frictionRelease")
-                stopPlayback()
+                engineReady = false
+                recordError(error, stage: "release")
             }
-        } else { stopPlayback() }
-        record(cancelled ? "endCancelled" : "end")
+        }
+        playFallback(strength)
+        fallback.prepare()
     }
 
     /// Cancellation/rotation/closing is silent, and stops even a paused leaf.
@@ -248,22 +235,19 @@ final class SumiPaperHaptics: NSObject {
     }
 
     private func stopPlayback() {
-        active = false
-        stopCorePlayback()
-    }
-
-    /// Core Haptics can reset or reject live controls without ending the pan.
-    /// Its lifecycle must never cancel the native feedback for that gesture.
-    private func stopCorePlayback() {
-        releaseTail?.cancel(); releaseTail = nil
-        usingCore = false
+        active = false; usingCore = false
         clock?.invalidate(); clock = nil
         try? motionPlayer?.stop(atTime: CHHapticTimeImmediate)
+        try? liftPlayer?.stop(atTime: CHHapticTimeImmediate)
+        try? releasePlayer?.stop(atTime: CHHapticTimeImmediate)
+        try? cancelledReleasePlayer?.stop(atTime: CHHapticTimeImmediate)
         intensity = 0
     }
 
     @objc func suspend() {
         cancel()
+        try? liftPlayer?.stop(atTime: CHHapticTimeImmediate)
+        try? releasePlayer?.stop(atTime: CHHapticTimeImmediate)
         engineGeneration = UUID()
         engineReady = false; engineStarting = false
         engine?.stop(completionHandler: nil)
@@ -272,11 +256,10 @@ final class SumiPaperHaptics: NSObject {
     @objc private func accessibilityChanged() { suspend() }
 
     private func engineStopped(reset: Bool, reason: Int? = nil) {
-        stopCorePlayback()
-        if UIApplication.shared.applicationState != .active { active = false }
+        cancel()
         engineGeneration = UUID()
         engineReady = false; engineStarting = false
-        if reset { motionPlayer = nil }
+        if reset { motionPlayer = nil; liftPlayer = nil; releasePlayer = nil; cancelledReleasePlayer = nil }
         record(reset ? "engineReset" : "engineStopped", stoppedReason: reason)
         // Restart only for the next real interaction, never during a system
         // interruption or while the app is backgrounded.
@@ -290,12 +273,12 @@ final class SumiPaperHaptics: NSObject {
         guard active, usingCore else { return }
         guard UIApplication.shared.applicationState == .active,
               !UIAccessibility.isReduceMotionEnabled else { cancel(); return }
-        let sample = SumiPaperHapticPolicy.motion(progress: progress, velocity: velocity, distance: distance, idleFor: now - lastMovement, travel: travel)
+        let sample = SumiPaperHapticPolicy.motion(progress: progress, velocity: velocity, distance: distance, idleFor: now - lastMovement)
         let firstMovement = sample.intensity > 0 && nonzeroMotionUpdateCount == 0
         guard force || firstMovement || now - lastParameterUpdate >= 1.0 / 60 else { return }
         let blend: Float = firstMovement ? 1 : Float(1 - exp(-max(0, now - lastTick) / 0.025))
         lastTick = now
-        if now - lastMovement >= 0.07 { intensity = 0 }
+        if now - lastMovement >= 0.14 { intensity = 0 }
         else { intensity += (sample.intensity - intensity) * blend }
         do {
             guard let motionPlayer else { return }
@@ -311,15 +294,14 @@ final class SumiPaperHaptics: NSObject {
             maximumOutputIntensity = max(maximumOutputIntensity, intensity)
         } catch {
             recordError(error, stage: "motionUpdate")
-            stopCorePlayback()
-            engineReady = false
+            cancel(); engineReady = false
         }
     }
 
     private func makePlayers(engine: CHHapticEngine) throws {
         let paper = CHHapticEvent(eventType: .hapticContinuous, parameters: [
             .init(parameterID: .hapticIntensity, value: 1),
-            .init(parameterID: .hapticSharpness, value: 0.25)
+            .init(parameterID: .hapticSharpness, value: 0.12)
         ], relativeTime: 0, duration: 10)
         let motion = try engine.makeAdvancedPlayer(with: .init(events: [paper], parameters: [
             .init(parameterID: .hapticIntensityControl, value: 0, relativeTime: 0)
@@ -335,6 +317,37 @@ final class SumiPaperHaptics: NSObject {
             }
         }
         motionPlayer = motion
+        liftPlayer = try engine.makePlayer(with: .init(events: [
+            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                .init(parameterID: .hapticIntensity, value: SumiPaperHapticPolicy.liftIntensity),
+                .init(parameterID: .hapticSharpness, value: 0.25)
+            ], relativeTime: 0)
+        ], parameters: []))
+        // One small release, followed by a decaying paper tail. It begins at
+        // finger-up and is never retriggered when the visual page lands.
+        releasePlayer = try engine.makePlayer(with: releasePattern(strength: 0.72))
+        cancelledReleasePlayer = try engine.makePlayer(with: releasePattern(strength: 0.48))
+    }
+
+    private func releasePattern(strength: Float) throws -> CHHapticPattern {
+        try CHHapticPattern(events: [
+            CHHapticEvent(eventType: .hapticTransient, parameters: [
+                .init(parameterID: .hapticIntensity, value: strength),
+                .init(parameterID: .hapticSharpness, value: 0.25)
+            ], relativeTime: 0),
+            CHHapticEvent(eventType: .hapticContinuous, parameters: [
+                .init(parameterID: .hapticIntensity, value: strength * 0.4),
+                .init(parameterID: .hapticSharpness, value: 0.12)
+            ], relativeTime: 0.008, duration: 0.10)
+        ], parameterCurves: [.init(parameterID: .hapticIntensityControl,
+            controlPoints: [.init(relativeTime: 0, value: 1), .init(relativeTime: 0.025, value: 0.7),
+                            .init(relativeTime: 0.108, value: 0)], relativeTime: 0)])
+    }
+
+    private func playFallback(_ strength: Float) {
+        fallbackUsed = true
+        maximumOutputIntensity = max(maximumOutputIntensity, strength)
+        fallback.impactOccurred(intensity: CGFloat(strength))
     }
 
     private func recordError(_ error: Error, stage: String) {
@@ -372,8 +385,6 @@ final class SumiPaperHaptics: NSObject {
             "maximumMotionIntensity": maximumMotionIntensity, "maximumOutputIntensity": maximumOutputIntensity,
             "fallbackUsed": fallbackUsed
         ]
-        snapshot["profile"] = "paperFriction-native-v3"
-        snapshot["travelPoints"] = Double(travel)
         snapshot["nativeContactCount"] = nativeContactCount
         snapshot["nativeFeedbackAttachedToReader"] = touchFeedback.isAttached
         snapshot["audioHapticsAllowedDuringRecording"] = AVAudioSession.sharedInstance().allowHapticsAndSystemSoundsDuringRecording

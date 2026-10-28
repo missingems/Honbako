@@ -16,6 +16,7 @@ final class HonbakoCoverDisplaySceneDelegate: UIResponder, UIWindowSceneDelegate
         // This accessory is decorative. It never takes key-window status from
         // the reader, so keyboard input and app navigation stay on the book.
         window.isHidden = false
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
         self.window = window
         model.setSceneConnected(true, role: session.role.rawValue, size: scene.coordinateSpace.bounds.size)
     }
@@ -34,34 +35,4 @@ final class HonbakoCoverDisplaySceneDelegate: UIResponder, UIWindowSceneDelegate
     }
 }
 
-private struct HonbakoCoverDisplayView: View {
-    @ObservedObject var model: HonbakoCoverDisplayModel
-
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Color(uiColor: .systemBackground)
-                if let image = model.image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                } else {
-                    Text(model.title)
-                        .font(.body.weight(.medium))
-                        .multilineTextAlignment(.center)
-                        .padding(24)
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-        }
-        .ignoresSafeArea()
-        .accessibilityLabel(model.title)
-    }
-}
-
-private final class HonbakoCoverDisplayHostingController: UIHostingController<HonbakoCoverDisplayView> {
-    override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
-}
 #endif

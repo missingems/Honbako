@@ -157,6 +157,27 @@ final class SumiCoverArtworkLoader {
         await loadCoverEntry(for: book, source: providedSource)?.image
     }
 
+    /// The outer display gets a separate 2048px decoded edition. Keep the
+    /// library's smaller edition visible while this original-resolution print loads.
+    func loadDisplayCover(for book: SumiBook, source: AidokuRunner.Source?) async -> UIImage? {
+        guard let coverURL = book.coverURL, !Task.isCancelled else { return nil }
+        let url = Self.highQualityCoverURL(coverURL)
+        let request: URLRequest
+        if let local = url.toAidokuFileUrl() { request = URLRequest(url: local) }
+        else if let source { request = await source.getModifiedImageRequest(url: url, context: nil) }
+        else { request = URLRequest(url: url) }
+        guard !Task.isCancelled else { return nil }
+        var processors: [ImageProcessing] = []
+        if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
+        processors.append(DownsampleProcessor(width: 2048, scaleFactor: 1))
+        let task = ImagePipeline.shared.imageTask(with: ImageRequest(urlRequest: request, processors: processors,
+            userInfo: [.processesKey: source?.features.processesCovers ?? false]))
+        let image = await withTaskCancellationHandler {
+            try? await task.image
+        } onCancel: { task.cancel() }
+        return Task.isCancelled ? nil : image
+    }
+
     private func loadCoverEntry(for book: SumiBook, source providedSource: AidokuRunner.Source? = nil) async -> LoadedCover? {
         guard let coverURL = book.coverURL, !Task.isCancelled else { return nil }
         let url = Self.highQualityCoverURL(coverURL)
