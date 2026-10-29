@@ -1,0 +1,136 @@
+{
+  "source": {
+    "source_id": "en.honbako-originals",
+    "version": 1,
+    "story": "The Bookshop Between Pages \u2014 Online Edition",
+    "story_count": 1,
+    "chapter_count": 1,
+    "page_count": 6,
+    "content_origin": "Existing original Honbako tutorial artwork and project text, exported by the app renderer",
+    "source_list_url": "https://missingems.github.io/Honbako/sources/index.json",
+    "package_url": "https://missingems.github.io/Honbako/sources/packages/en.honbako-originals-v1.aix",
+    "content_base_url": "https://missingems.github.io/Honbako/originals/bookshop/",
+    "compiler": "wabt1.0.39",
+    "abi": "AidokuRunner0.7/Postcard",
+    "network_imports": false,
+    "package_sha256": "441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec",
+    "wasm_sha256": "4974ce844a37d572fbe211b5692f9e9068ae3b55dc84aedc10b5f979c3669470"
+  },
+  "asset_provenance": {
+    "title": "The Bookshop Between Pages",
+    "edition": "English online edition",
+    "author": "Honbako",
+    "content": "Original Honbako tutorial artwork and localized story text already included in this project. Exported without image modification by HonbakoTutorialManga in the native app test.",
+    "renderer": "Aidoku/Features/Bookshelf/Services/HonbakoTutorialManga.swift",
+    "export_test": "HonbakoOriginalExternalSourceTests.testExportOriginalComicAssets",
+    "created_for": "Honbako first-party external-source review sample",
+    "third_party_catalogs": false,
+    "assets": {
+      "cover.png": {
+        "sha256": "e8030e88b72c0721367ac76f04824aee5ad35674bfa22a9edba0991949af8b6a",
+        "bytes": 2985951,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-1.png": {
+        "sha256": "aa6dff3be49c8d08a990e90aafdf1391d7823f519a7cb1b29cdecc84caafcb3c",
+        "bytes": 3092024,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-2.png": {
+        "sha256": "010dec8ec6339eaa982b8ab49115faa81132b25e48ab46c39555cc138e759a99",
+        "bytes": 3297025,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-3.png": {
+        "sha256": "b794c497416da31a5c7689671dcddb69c8fd0c023a6e20c64d57f86f08a89823",
+        "bytes": 3304435,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-4.png": {
+        "sha256": "15ffb82d63a6955a283821abb760524c86e88ccd205c10191026256c1b113101",
+        "bytes": 2968637,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-5.png": {
+        "sha256": "bdceb699041bc319db09c36a01a52521898ef1c9e45d47ac8c9ae6408fa84a93",
+        "bytes": 3300832,
+        "width": 1024,
+        "height": 1536
+      },
+      "page-6.png": {
+        "sha256": "1a26ac9f45fcb558de90d7de5f574555ccbb21d06228f14329d83667da5efbc1",
+        "bytes": 3310111,
+        "width": 1024,
+        "height": 1536
+      }
+    }
+  },
+  "publication": {
+    "commit": "9d25eabbc4608c964bfeffea35dd242a340f9005",
+    "parent": "c3517113ee4dfe00f554df5c2eaa56fe6ec3ed80",
+    "paths": [
+      "ExternalSources/HonbakoOriginals/Payload/icon.png",
+      "ExternalSources/HonbakoOriginals/Payload/main.wasm",
+      "ExternalSources/HonbakoOriginals/Payload/source.json",
+      "ExternalSources/HonbakoOriginals/README.md",
+      "ExternalSources/HonbakoOriginals/build.py",
+      "ExternalSources/HonbakoOriginals/compile.mjs",
+      "ExternalSources/HonbakoOriginals/manifest.json",
+      "ExternalSources/HonbakoOriginals/package.json",
+      "ExternalSources/HonbakoOriginals/source.wat",
+      "site/originals/bookshop/assets.json",
+      "site/originals/bookshop/cover.png",
+      "site/originals/bookshop/index.html",
+      "site/originals/bookshop/page-1.png",
+      "site/originals/bookshop/page-2.png",
+      "site/originals/bookshop/page-3.png",
+      "site/originals/bookshop/page-4.png",
+      "site/originals/bookshop/page-5.png",
+      "site/originals/bookshop/page-6.png",
+      "site/originals/index.html",
+      "site/sources/icons/en.honbako-originals.png",
+      "site/sources/index.html",
+      "site/sources/index.json",
+      "site/sources/packages/en.honbako-originals-v1.aix"
+    ],
+    "source_list_url": "https://missingems.github.io/Honbako/sources/index.json",
+    "review_submission": false
+  },
+  "hosting_deployment": {
+    "run": "https://github.com/missingems/Honbako/actions/runs/40715352878",
+    "status": "success"
+  },
+  "tests": {
+    "offline_native_tests_passed": 8,
+    "hosted_native_tests_passed": 1,
+    "failures": 0,
+    "hosted_flow": [
+      "add_live_source_list",
+      "assert_no_automatic_install",
+      "install_selected_aix",
+      "search_Bookshop",
+      "decode_one_chapter",
+      "fetch_cover_and_all_six_pages",
+      "verify_all_image_hashes_and_dimensions",
+      "reload_installed_source"
+    ],
+    "test_device": "Honbako Capture iphone",
+    "app_version": "0.2.0",
+    "build": 30,
+    "live_http_files_verified": 13,
+    "app_source_hashes_unchanged": true
+  },
+  "scope": "Only first-party original sample; no third-party provider rights asserted.",
+  "owner_instruction": "Keep it prepared for now",
+  "beta_review_submitted": false,
+  "public_link_enabled": false,
+  "build_groups": 0,
+  "individual_testers": 0,
+  "what_to_test_saved_and_verified_after_reload": true,
+  "beta_review_notes_saved_and_verified_after_reload": true
+}

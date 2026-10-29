@@ -375,7 +375,14 @@ struct SumiAnimatedNavigationTests {
             let visible = try #require(pager.viewControllers?.first)
             #expect(!visible.view.isHidden)
             #expect(context.reader.sumiCurrentCanonicalPage == 4)
-            #expect(pager.view.bounds.size == size)
+            #expect(context.reader.view.bounds.size == size)
+            // Notched phones reserve their top and side cutouts while the
+            // Duo canvas uses the full viewport. Rotation must respect both.
+            let insets = HonbakoDisplayCanvas.avoidsDisplayCutout(in: context.reader.view)
+                ? context.reader.view.safeAreaInsets : .zero
+            let paperFrame = CGRect(x: insets.left, y: insets.top,
+                width: size.width - insets.left - insets.right, height: size.height - insets.top)
+            #expect(pager.view.frame == paperFrame)
             #expect(context.reader.pageViewControllers[4].pageView?.imageView.image != nil)
             if let spread = visible as? ReaderBookSpreadViewController {
                 #expect(spread.leaves.allSatisfy { $0.parent === spread && !$0.view.isHidden })

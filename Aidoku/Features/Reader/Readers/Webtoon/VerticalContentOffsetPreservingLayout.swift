@@ -40,6 +40,36 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
     private var preservedViewportAnchor: ViewportAnchor?
 
+    #if SUMI
+    private struct HeldViewportAnchor {
+        let indexPath: IndexPath
+        let identifier: AnyHashable?
+    }
+    private var heldViewportAnchor: HeldViewportAnchor?
+
+    /// Initial image dimensions can change after scrolling to a bookmark.
+    /// Hold the actual item edge through those layouts until the reader moves.
+    func holdPosition(at indexPath: IndexPath) {
+        heldViewportAnchor = HeldViewportAnchor(indexPath: indexPath, identifier: itemIdentifiers[indexPath])
+        invalidateLayout()
+    }
+
+    func clearHeldPosition() { heldViewportAnchor = nil }
+
+    private func heldTargetOffset() -> CGPoint? {
+        guard let collectionView, let anchor = heldViewportAnchor else { return nil }
+        let path = anchor.identifier.flatMap { identifier in itemIdentifiers.first { $0.value == identifier }?.key }
+            ?? anchor.indexPath
+        guard let frame = currentAttributes[path]?.frame,
+              frame.minY.isFinite, frame.height > 0,
+              contentSize.height.isFinite, contentSize.height > 0 else { return nil }
+        let inset = collectionView.adjustedContentInset
+        let minimumY = -inset.top
+        let maximumY = max(minimumY, contentSize.height - collectionView.bounds.height + inset.bottom)
+        return CGPoint(x: collectionView.contentOffset.x, y: min(max(frame.minY, minimumY), maximumY))
+    }
+    #endif
+
     func preserveVisiblePosition() {
         guard let collectionView else { return }
 
@@ -88,7 +118,12 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         guard let collectionView else { return }
 
         // Anchor the top visible cell using the previous layout
-        let anchor = isChangingCellsAbove ? currentAttributes.values
+        #if SUMI
+        let preservesChangedCells = isChangingCellsAbove && heldViewportAnchor == nil
+        #else
+        let preservesChangedCells = isChangingCellsAbove
+        #endif
+        let anchor = preservesChangedCells ? currentAttributes.values
             .filter { $0.frame.maxY > collectionView.contentOffset.y }
             .min { $0.frame.minY < $1.frame.minY } : nil
         let anchorIdentifier = anchor.flatMap { itemIdentifiers[$0.indexPath] }
@@ -161,6 +196,14 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
                 onOffsetPreserved?(offset)
             }
         }
+        #if SUMI
+        if let offset = heldTargetOffset(), abs(offset.y - collectionView.contentOffset.y) > 0.5 {
+            UIView.performWithoutAnimation {
+                collectionView.contentOffset = offset
+                onOffsetPreserved?(offset)
+            }
+        }
+        #endif
     }
 
     func itemIdentifier(for indexPath: IndexPath) -> AnyHashable? {
@@ -206,6 +249,9 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     }
 
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        #if SUMI
+        if let offset = heldTargetOffset() { return offset }
+        #endif
         guard
             let collectionView,
             let anchor = preservedViewportAnchor,

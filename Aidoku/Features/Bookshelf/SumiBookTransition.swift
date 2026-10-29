@@ -12,7 +12,9 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
     let readerSurface: () -> UIView?
     let paired: () -> Bool
     var sourceVisibility: (Bool) -> Void = { _ in }
+    var revealSourceForHandoff: () -> Void = {}
     var chromeTransition: (Bool) -> Void = { _ in }
+    var closingBegan: () -> Void = {}
     var openingCancellationBegan: () -> Void = {}
     var openingCancelled: () -> Void = {}
     private var animator: SumiBookOpeningAnimator?
@@ -23,6 +25,8 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
     private var interactive = false
     private var pendingEnd: (Bool, CGFloat)?
     private var isPinching = false
+    var closesAtCenter: Bool { isPinching }
+    var prepareReturn: (() async -> Void)?
     private var gestureHostObserver: SumiBookGestureHostObserver?
     private let panSuspension = SumiBookPanSuspension()
 
@@ -137,8 +141,15 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
                       width: height * aspect, height: height)
     }
 
+    /// An explicit provider returning nil means its current cell has not been
+    /// laid out (or is hidden). Never substitute the obsolete opening cell.
+    func resolvedGridSourceFrame(in container: UIView) -> CGRect? {
+        if let gridSourceFrameProvider { return gridSourceFrameProvider(container) }
+        return sourceFrame(in: container)
+    }
+
     func gridSourceFrame(in container: UIView) -> CGRect {
-        gridSourceFrameProvider?(container) ?? sourceFrame(in: container)
+        resolvedGridSourceFrame(in: container) ?? hoveringFrame(in: container)
     }
 
     func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
@@ -244,7 +255,7 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
         case .changed:
             interactiveFraction = fraction; animator?.updateInteractive(fraction: fraction)
         case .ended, .cancelled, .failed:
-            let complete = gesture.state == .ended && SumiBookMotion.completes(swipe: fraction, velocity: velocity)
+            let complete = gesture.state == .ended && SumiBookMotion.completesBackSwipe(travel: gesture.translation(in: space).x * sign, velocity: gesture.velocity(in: space).x * sign, width: width)
             pendingEnd = (complete, velocity)
             animator?.endInteractive(completing: complete, velocity: velocity)
         default: break

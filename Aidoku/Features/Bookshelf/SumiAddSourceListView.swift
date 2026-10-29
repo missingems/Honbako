@@ -26,7 +26,6 @@ struct SumiAddSourceListView: View {
                         .accessibilityIdentifier("Sumi.Sources.ListURL")
                 } header: { Text("Source List URL") }
                 footer: { Text("Use the link supplied by your provider. You’ll choose the sources to add afterward.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
                 if let errorMessage { Text(errorMessage).foregroundStyle(.secondary) }
             }
             .navigationTitle("Add Source List")

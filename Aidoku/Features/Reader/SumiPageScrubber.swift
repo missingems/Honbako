@@ -45,8 +45,9 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
     var hoverImageProvider: ((Int) async -> UIImage?)?
     var landingSurface: (() -> UIView?)?
     var isLandingReady: ((Int) -> Bool)?
-    /// Match the source: right-to-left manga begins at the right end of a
-    /// horizontal strip; vertical manga progresses downward through the rail.
+    /// Invert the rail's native progression when explicitly requested. The
+    /// Honbako reader keeps native progression to match its leftward page turns;
+    /// the same rail progresses downward when mounted vertically.
     var isReversed = false {
         didSet {
             guard oldValue != isReversed else { return }

@@ -2,31 +2,28 @@
 import UIKit
 
 extension ReaderViewController {
-    /// Keep the lifted cover visible until the selected chapter's actual image
-    /// is decoded, rather than opening an empty reader after metadata arrives.
+    /// Warm the selected image briefly, then show its mounted loading or retry
+    /// surface inside the navigable reader. Only unresolved chapter metadata
+    /// should keep a bookmark behind the whole-book loading screen.
     @MainActor
-    func sumiWaitForOpening() async -> Bool {
-        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
+    func sumiWaitForOpening(imageWarmup: Duration = .seconds(2)) async -> Bool {
+        let started = ContinuousClock.now
+        let imageDeadline = started.advanced(by: imageWarmup)
+        let deadline = started.advanced(by: .seconds(30))
         while !Task.isCancelled, ContinuousClock.now < deadline {
             if sumiOpeningFailureMessage != nil { return false }
             view.setNeedsLayout()
             view.layoutIfNeeded()
             if let pager = reader as? ReaderPagedViewController {
-                if pager.sumiOpeningImageFailed {
-                    sumiOpeningFailureMessage = String(localized: "The source couldn’t load this page. Check your connection or try again.")
-                    return false
-                }
                 pager.view.setNeedsLayout()
                 pager.view.layoutIfNeeded()
-                if pager.sumiReadyForOpening { return true }
+                if pager.sumiCanPresentOpening
+                    || (ContinuousClock.now >= imageDeadline && pager.sumiCanPresentLoadingOpening) { return true }
             } else if let vertical = reader as? ReaderWebtoonViewController {
-                if vertical.sumiOpeningImageFailed {
-                    sumiOpeningFailureMessage = String(localized: "The source couldn’t load this page. Check your connection or try again.")
-                    return false
-                }
                 vertical.view.setNeedsLayout()
                 vertical.view.layoutIfNeeded()
-                if vertical.sumiReadyForOpening { return true }
+                if vertical.sumiCanPresentOpening
+                    || (ContinuousClock.now >= imageDeadline && vertical.sumiCanPresentLoadingOpening) { return true }
             }
             do { try await Task.sleep(for: .milliseconds(40)) }
             catch { return false }

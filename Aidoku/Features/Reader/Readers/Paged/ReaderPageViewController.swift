@@ -27,7 +27,7 @@ class ReaderPageViewController: BaseObservingViewController {
     private(set) var zoomView: ZoomableScrollView?
     private(set) var pageView: ReaderPageView?
     #if SUMI
-    var sumiImageLoadFailed: Bool { pageSet && !reloadButton.isHidden }
+    var sumiImageLoadFailed: Bool { pageView?.sumiImageLoadFailed == true }
     var sumiPageSizing: ReaderPageSizing? = .fit {
         didSet { zoomView?.pageSizingOverride = sumiPageSizing }
     }
@@ -66,6 +66,7 @@ class ReaderPageViewController: BaseObservingViewController {
 
     var page: Page?
     private var pageSet = false
+    private var pageLoadGeneration = 0
     private var didLoadPageSuccessfully = false
     private var sourceId: String?
     private var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
@@ -110,6 +111,9 @@ class ReaderPageViewController: BaseObservingViewController {
                     fatalError("ReaderPageViewController with type page requires a temporary page store")
                 }
                 pageView = ReaderPageView(parent: self, temporaryPageStore: temporaryPageStore)
+                #if SUMI
+                pageView?.sumiRetryPage = { [weak self] in self?.reload() }
+                #endif
         }
     }
 
@@ -251,17 +255,19 @@ class ReaderPageViewController: BaseObservingViewController {
     }
     #endif
 
-    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) {
+    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false, forceReload: Bool = false) {
         guard !pageSet, let pageView else { return }
         pageSet = true
+        pageLoadGeneration += 1
+        let generation = pageLoadGeneration
         self.page = page
         self.sourceId = sourceId
         updateDoubleTapZoomSetting()
         reloadButton.isHidden = true
         zoomView?.zoomEnabled = false
         Task {
-            let result = await pageView.setPage(page, sourceId: sourceId, skipProcessing: skipProcessing)
-            guard self.page == page else { return }
+            let result = await pageView.setPage(page, sourceId: sourceId, skipProcessing: skipProcessing, forceReload: forceReload)
+            guard self.page == page, pageLoadGeneration == generation, !Task.isCancelled else { return }
 
             didLoadPageSuccessfully = result
             zoomView?.zoomEnabled = result && !isInDoublePageController
@@ -269,7 +275,11 @@ class ReaderPageViewController: BaseObservingViewController {
                 view.layoutIfNeeded()
                 zoomView?.updatePageSizing(resetZoom: true)
             }
+            #if SUMI
+            reloadButton.isHidden = true
+            #else
             reloadButton.isHidden = result
+            #endif
 
             // Update aspect ratio
             let oldAspectRatio = imageAspectRatio
@@ -329,14 +339,22 @@ class ReaderPageViewController: BaseObservingViewController {
 
     @objc func reload() {
         guard let page else { return }
+        #if SUMI && DEBUG
+        SumiGridPreviewFixtures.recoverFailedPageIfNeeded(page)
+        #endif
         pageSet = false
         reloadButton.isHidden = true
         pageView?.progressView.setProgress(value: 0, withAnimation: false)
+        #if SUMI
+        pageView?.sumiBeginImageLoad()
+        #else
         pageView?.progressView.isHidden = false
-        setPage(page, sourceId: sourceId)
+        #endif
+        setPage(page, sourceId: sourceId, forceReload: true)
     }
 
     func clearPage() {
+        pageLoadGeneration += 1
         page = nil
         pageSet = false
         pageView?.setPageImage(nil)
@@ -347,6 +365,7 @@ class ReaderPageViewController: BaseObservingViewController {
     #if SUMI
     func sumiReleasePreloadedImage() {
         guard pageSet else { return }
+        pageLoadGeneration += 1
         page = nil
         pageSet = false
         didLoadPageSuccessfully = false

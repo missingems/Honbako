@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "build": 30,
+  "external_sources": true,
+  "private_pro_unlock": false,
+  "automatic_manga_import": false,
+  "app_store_candidate_preserved": {
+    "version": "0.1.0",
+    "build": 29
+  },
+  "tests": "passed_both_variants",
+  "archive_uploaded": true,
+  "beta_review_submitted": false,
+  "public_link_enabled": false,
+  "testers_invited": 0,
+  "feedback_email_confirmation": "approved_and_saved",
+  "authorized_provider_review_endpoint": "https://missingems.github.io/Honbako/sources/index.json",
+  "collection_mode_executed_tests": 41,
+  "external_mode_executed_tests": 47,
+  "beta_information_saved": true,
+  "apple_processing_status": "ready_to_submit",
+  "empty_external_group_created": true,
+  "what_to_test_saved": true,
+  "external_group_builds": 0,
+  "setup_continuation_approval": "owner_requested_keep_prepared",
+  "automatic_review_handoff_blocked": false,
+  "own_source_review_sample": "published_and_live_tested",
+  "original_source_verification_record": "original-source-verification.json"
+}

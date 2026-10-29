@@ -1,0 +1,108 @@
+Honbako App Review test plan
+Updated 28 October 2026 — app28 selected/content-rights-blocked; subscription+group staged; no final submission; 14 tests passed
+
+INTERNAL VERIFICATION CHECKLIST — NOT APPLE REVIEW NOTES
+
+Current recorded evidence, 28 October 2026
+- Build 28, version 0.1.0, archive/upload succeeded with genuine public Xcode 27.1 build 27A9275, valid signature and public flags NO/NO. User browser reauthentication completed. Build 28 was offered in Apple's eligible list, selected and saved; the updated 3,114-character main review notes were saved. Actual build-28 Add for Review validation now reports only the missing content-rights declaration; beta-toolchain and privacy-policy URL errors are resolved. The native build-28 Light product review image and Pro notes are saved/reload-verified. Product and group Add for Review succeeded; both are Ready for Review, and the existing draft contains their two ready items. The app version is not staged; the draft cannot submit until an app version is added. No final Submit was clicked.
+- All 14 build-28 iOS tests passed: nine self-host transport regressions, four Pro policy/entitlement tests and one local StoreKit integration. Log: /tmp/Honbako-Build28-ReviewTests.log, TEST SUCCEEDED. They do not cover reader pagination, native purchase/restore button calls or a genuine sandbox-account purchase. Evidence: review/build28-verification.json.
+- Native evidence in review/gui-build28/ui-verification.json records 11 captures. Genuine Komga wrong/correct authentication, enabled connection, search/catalog, Add to Shelf, native first-page PNG streaming and three distinct original previews passed. Live Kavita/Suwayomi GUI success is not claimed.
+- Getting Started, Local Files setup, Files picker and cancellation/close passed. Completing a comic-file import remains unverified. Local iPad semantic Page 2 committed distinct tutorial artwork; closing saved the bookshelf position. Remote page advance/resume/bookmarks remain unverified; no defect was identified because compact Device Hub drag/scroll also failed in Settings while semantic iPad page selection worked.
+- The normal Apple product at US$1.99 and Free/Pro sections were captured on build 28. review/Honbako-Pro-Build28.jpg uses native Light appearance/default text size 3 and is UPLOADED, SAVED AND RELOAD-VERIFIED, replacing build 27. Its HTTPS source persists. A bounded Dark private-image attempt failed due to native input routing; no Dark product image was created. Actual paid purchase/restore is not verified.
+- All 24 Dark native build-28 screenshots are uploaded and verified: 3 of 10 observed after each of eight locale/device sets, page autosaved with Save disabled, verification recorded 2026-10-28 11:25:55 UTC and final browser proof app-store-dark-proof.png. They supersede Light v3/build-26 designs. Native/output dimensions and hashes, eight Debug simulator NO/NO Dark capture proofs and primary/independent visual QA passed. Complete licensed silver Apple frames, larger subtitles and no extra top brand are preserved; no additional image generation or UI recoloring. Collection guide and Free/Pro comparison are included in all four languages, and both plans are ad-free.
+- The disposable Komga service was stopped gracefully. Its 126 MB temporary data and Desktop capture duplicates were removed; preserved evidence remains in the repository. The two owned capture apps/data were also removed, both simulators shut down and keyboard capture OFF/text size3 restored; screenshot-captures/build28-dark/capture-cleanup.json confirms final proof preservation. The development loopback fixture is not an external review server/account.
+- Published Data Not Collected and all four privacy-policy URLs are confirmed. Content rights, engine licensing and export owner confirmations remain false. Checkmarks below cover only completed observations; mixed or incomplete cases remain pending.
+
+Record for each run
+[ ] Candidate version/build, actual toolchain build number, device/OS, app language and test date recorded.
+[ ] Public flags are HONBAKO_PERSONAL_FEATURES=NO and HONBAKO_IMPORT_ENGLISH_50=NO. Do not use the private Pro-unlocked build 26 to validate Free gating or normal purchases.
+[ ] Use a clean app installation for the Free/fresh-install pass. Use a separate test device/install for StoreKit local fixtures so fixture prices and sessions do not contaminate the real-product paywall check.
+[ ] Prepare an original or authorized CBZ/ZIP, a reachable personal-server library and, separately, an authorized Apple test account if purchase testing will be performed. Do not invent credentials or silently mark unavailable cases as passed.
+
+A. Fresh install and account-free tutorial
+1. [ ] Launch a fresh public-policy build. Expect the original tutorial to be available without a Honbako account or a third-party connection; no third-party library is imported automatically.
+2. [ ] Open The Bookshop Between Pages and confirm pages actually load. Read several portrait pages and open/close the controls by tapping a page.
+3. [ ] Repeat the help and primary reading checks in English, Japanese, Simplified Chinese and Traditional Chinese. Confirm labels and paragraphs fit at normal and large Dynamic Type sizes.
+
+B. Getting Started and local collection import
+1. [ ] Pull down on the library, open the link/Settings button, and open Getting Started. Expect clear routes for comics in Files, an existing personal server, and a provider connection.
+2. [x] With Local Files absent, Set Up Local Files was available and Import a Comic disabled. Setup completed; returning showed Local Files Is Connected and enabled Import a Comic.
+3. [x] Import a Comic opened the native Files picker; cancel returned to Local File Import, and closing returned to the guide.
+4. [ ] Open Import a Comic again, choose a valid CBZ or ZIP, inspect its page preview, confirm series/chapter details and finish the import. This route supports CBZ/ZIP archives; do not assume CBR, PDF, EPUB or OPDS support.
+5. [ ] Return to Settings, enable Local Files under Included in Search, tap Done, search for the imported title and tap Add. Open the book and confirm real imported pages render.
+6. [ ] Disconnect the network and reopen that imported book. Expect locally imported pages and saved reading position to remain usable on Free. Reconnect afterward.
+7. [ ] Optionally open a CBZ/ZIP from the Files app in Honbako after Local Files setup. Verify it enters the same import flow. Keep this separate from Import Source File, which accepts a compatible .aix provider connection.
+
+C. Personal servers and provider connections
+1. [ ] In Settings → Personal Server, verify the actual choices are Komga, Kavita and Suwayomi. The same chooser is reachable through Getting Started → Personal Server.
+2. [x] Komga: the genuine disposable server accepted its /komga base path without a trailing slash. Wrong authentication showed Unable to log in; correct dedicated test access completed setup.
+3. [ ] Kavita: enter the server address and use an offered username/password, API-key or server-provided sign-in method. Verify unavailable methods are not falsely promised.
+4. [ ] Suwayomi: enter the server address and use the login method its server advertises, including no-login mode only when the server actually allows it.
+5. [ ] For each server actually available for testing, enable its connection under Included in Search, search a known original/authorized title, add it, open its chapter list and render actual pages. Record unavailable server types as NOT EXECUTED; a successful Komga test does not verify the other two.
+6. [ ] Verify an unreachable address and a rejected login show an actionable failure rather than adding a working-looking connection. Retry valid access, then reopen the app and confirm the successful connection still works.
+7. [ ] Provider-list route, if an authorized compatible list is supplied: Settings → Source Lists → Add Source List, enter its link, add it, open the list and install an individual source. Merely adding a list must not be represented as installing every source. Enable the chosen source and search it.
+8. [ ] Compatible source-file route, if supplied: Settings → Import Source File, select the .aix file, confirm the connection appears, enable it and search. Test picker cancellation without substituting a comic archive for a connection file.
+
+Server access for Apple versus development
+- If Apple should test server features without operating its own server, the owner must supply an externally reachable review server with stable original/authorized sample content and an appropriate limited account through private App Store Connect review information. That endpoint/account is not yet supplied by this plan.
+- The disposable DEVELOPMENT-ONLY Komga fixture at http://127.0.0.1:8878/komga used two original three-page portfolios. It has been stopped gracefully and its temporary JAR/data removed. Loopback is not an Apple-reachable review account or endpoint.
+- Do not paste localhost, the loopback fixture or its development credentials into Apple review-account fields or the reviewer-facing draft. No credentials or private contacts are included in this file.
+
+D. Free and Pro behavior
+1. [ ] On a fresh Free install, open Settings → Honbako Pro. Expect both plans to say No ads. Free should explain reading/organizing the collection and reading imported files offline; Pro should add chapter downloads, notifications and iCloud library/progress sync.
+2. [ ] Use a server/source book, rather than the bundled tutorial, for gating checks. Open Chapters and Language → Offline Reading → Download This Chapter (and a chapter-row download action). On Free expect the Pro page, with no chapter download started.
+3. [ ] Add that book to the library, then choose New Chapter Notifications. On Free expect the Pro page and no Pro chapter-alert activation. The bundled tutorial already exists locally and does not expose these server-download/alert actions.
+4. [ ] Open Settings → iCloud Sync on Free. Expect Pro guidance rather than enabled automatic library/progress mirroring. Confirm local reading, local imports and their saved positions still work.
+5. [ ] After a verified Pro entitlement, verify the same controls become available. Download only the supplied authorized sample chapter, observe completion, go offline and read it. Test canceling an active download separately from canceling a subscription.
+6. [ ] With Pro and a library book, request chapter notifications and handle iOS permission. A permission denial must remain understandable; do not expect an alert at a fixed time because provider availability and iOS scheduling control delivery.
+
+E. Native StoreKit, restore, cancellation and sync
+1. [ ] On a clean non-fixture environment, open the Pro page and record the real Apple product name, monthly period and localized price. The configured U.S. base is US$1.99 for com.missingems.honbaku.pro (Apple product 6827839648, group 22521322). Other storefronts can display their own currency/price. A local US$0.99 fixture is not this check.
+2. [ ] Confirm the price and Subscribe appear near the top, with Restore Purchases and Manage Subscription available. Open Terms of Use and Privacy Policy, return to the app, then open/dismiss Privacy Information without losing the paywall.
+3. [ ] If an authorized Apple test environment/account is available, tap Subscribe and cancel the Apple purchase sheet. Expect no Pro unlock. Record an unavailable account or skipped purchase as NOT EXECUTED.
+4. [ ] In the authorized test environment, complete a native purchase and wait for verified Pro Is Active. Check the Pro actions from section D, background/reopen and confirm access is retained. Record the environment and outcome; prior local StoreKit tests do not satisfy this UI step.
+5. [ ] Restore Purchases: test with no active entitlement and with an active test subscription. Expect the appropriate message and access state. A loading state should prevent duplicate purchase/restore taps, and failures should leave a usable page.
+6. [ ] Manage Subscription should open Apple's subscription management. Cancel renewal there and return; a still-paid, unexpired subscription retains access. At an actual test expiry or refund/revocation, reopen/refresh and verify current entitlement state. Do not equate purchase-sheet cancellation, renewal cancellation and refund.
+7. [ ] Billing Grace Period remains off; do not claim grace-period support from this plan. Pending/approval/error cases should display accurate state without an unverified unlock when those test cases are available.
+8. [ ] After Pro activation, reopen the app to enable automatic iCloud sync. With the same Apple iCloud account and working configured connections on a second device, compare library/progress after reading. Record actual observations. Downloaded page files and source packages remain local; immediate cross-device delivery is not promised.
+
+F. Reader orientation, previews, saved position and reopening
+1. [ ] With device rotation unlocked, open the tutorial or a paged CBZ/server book in portrait. Swipe pages, reveal controls, slowly scrub the thumbnail strip to inspect a larger preview, then release/settle to navigate. Tap a thumbnail as a separate check.
+2. [ ] Rotate the same book to landscape. Expect a readable spread retaining the logical reading page. With Reduce Motion off, check the paged landscape curl; with Reduce Motion on, expect the spread without that custom curl. If a source supplies a vertical webtoon, verify vertical reading stays vertical through rotation instead of expecting a paged spread.
+3. [ ] Open Chapters and Language, inspect available language choices and current/unread/page-progress indicators, choose a readable chapter, and return using Done. Do not assume every source offers all four interface languages as reading translations.
+4. [ ] Stop partway through an unfinished chapter, note the page, then use Close Book or pinch inward. Reopen its cover/Resume (or Open bookmark in details, when offered) and verify the saved chapter/page. Bookmarks here are automatic saved reading positions, not a separate Add Bookmark toolbar button.
+5. [ ] Background and reopen, then fully quit/relaunch and reopen that same book. Verify library membership and saved reading position persist. For a completed chapter, check the appropriate continuation behavior separately from the unfinished-bookmark case.
+
+G. Evidence to update before final Apple notes
+[x] Public-GM build-28 archive/upload succeeded; actual toolchain 27A9275, signature and public flags NO/NO verified. Apple processed 28 and offered it in the eligible build list.
+[x] User reauthenticated App Store Connect, selected/saved build 28 and saved the updated 3,114-character main review notes.
+[x] Actual build-28 Add for Review validation attempted: only missing content-rights declaration remains. Beta-toolchain and privacy-policy URL errors are resolved; app validation has not passed, the app is not staged and no final submission occurred. The subscription and group are staged separately in the existing draft.
+[x] All 14 iOS tests passed: nine self-host transport regressions, four Pro policy/entitlement checks and one local StoreKit integration. These tests do not cover reader pagination or genuine native purchase/restore.
+[x] Native 11-capture evidence records Komga authentication/search/shelf/first-page streaming/previews, guide/setup/picker/cancel, local tutorial semantic Page 2 and saved shelf label, and the genuine US$1.99 Pro page with Free/Pro sections.
+[x] Build-28 Light product review JPEG uploaded/saved at default text size 3; HTTPS source persisted after reload, replacing build 27. Development service stopped gracefully, temporary 126 MB data and Desktop raw duplicates removed.
+[x] All 24 native build-28 Dark captures rendered and passed native/output dimensions, hashes, eight public NO/NO capture proofs and primary/independent visual QA.
+[x] All 24 Dark screenshots uploaded across eight locale/device sets; 3 of 10 observed for each set, autosave confirmed and final browser proof retained. Light v3 is superseded.
+[x] Pro review notes saved/reload-verified; product and group Add for Review succeeded, both Ready for Review. Existing draft has two ready items and a disabled Submit button requiring an app version.
+[x] Dark private-image attempt documented as blocked/no image; two owned capture apps removed and simulators shut down after keyboard OFF/text3 restoration.
+[ ] Obtain the owner's accurate content-rights declaration and supporting evidence, then retry app-version Add for Review to join the existing two-item draft. Keep unconfirmed rights/engine/export owner confirmations false; final Submit remains unclicked.
+[ ] Remote committed page advance, resume and bookmarks remain unverified through CUA; no identified reader defect. Completing CBZ import, other server GUIs and actual native purchase/restore remain unverified.
+[ ] If further purchase checks are authorized, record exact Subscribe/Restore/Manage outcomes and distinguish local StoreKit fixture tests from a genuine sandbox-account purchase.
+[ ] Update the concise draft only with completed facts; supply an externally reachable server/account privately if Apple should test personal servers without its own server.
+
+REVIEWER-FACING DRAFT — UNDER 2500 CHARACTERS
+Short alternative draft only; the separate 3,114-character main draft in review-notes.txt is already saved. Build 28 is selected. Actual Add for Review is blocked only by missing content rights; external server-access arrangements remain pending.
+BEGIN REVIEWER DRAFT
+Honbako is a reader for your own collection on iPhone and iPad. The included original six-page tutorial, The Bookshop Between Pages, works without an account. External catalogs and servers are added explicitly by the user.
+
+1. Open the tutorial. Swipe portrait pages, rotate to landscape, and tap a page to show controls. Drag the page strip to preview, then release to navigate. Open Chapters and Language, inspect chapter progress, close the book and reopen it to resume the saved position.
+
+2. Pull down in the library, open Settings, then Getting Started. Choose Set Up Local Files and confirm. Back in Getting Started, choose Import a Comic, select a CBZ or ZIP containing comic pages, confirm series/chapter details and import. Enable Local Files under Included in Search, tap Done, search for the imported title and choose Add. Imported files remain readable locally.
+
+3. Settings → Personal Server supports Komga, Kavita and Suwayomi. Enter a reachable server address and use its sign-in options. An externally reachable review server and account have not yet been supplied; the owner must provide them privately for server testing. Settings → Source Lists also accepts a provider's compatible list; open it to install individual sources. Import Source File accepts compatible .aix connection files.
+
+4. Open Settings → Honbako Pro. Free and Pro are both ad-free. Free supports reading and organizing your collection, including imported local files. Pro adds chapter downloads, chapter notifications and iCloud library/progress sync. The paywall shows Apple's localized monthly price (U.S. base US$1.99), Subscribe, Restore Purchases, Manage Subscription, Terms of Use and Privacy Policy.
+
+5. In Apple's permitted test environment, cancel a purchase to confirm Free stays active, or complete an authorized test purchase. Restore Purchases checks for an active subscription. Manage Subscription opens Apple's subscription controls. Canceling renewal does not end an already-paid period immediately.
+
+6. With Pro, add a server book to the library before enabling chapter notifications. Delivery depends on source availability and iOS background refresh. Reopen the app after Pro becomes active to enable automatic iCloud sync. Downloads and source files stay on the device.
+END REVIEWER DRAFT

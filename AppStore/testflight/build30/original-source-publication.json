@@ -1,0 +1,31 @@
+{
+  "commit": "9d25eabbc4608c964bfeffea35dd242a340f9005",
+  "parent": "c3517113ee4dfe00f554df5c2eaa56fe6ec3ed80",
+  "paths": [
+    "ExternalSources/HonbakoOriginals/Payload/icon.png",
+    "ExternalSources/HonbakoOriginals/Payload/main.wasm",
+    "ExternalSources/HonbakoOriginals/Payload/source.json",
+    "ExternalSources/HonbakoOriginals/README.md",
+    "ExternalSources/HonbakoOriginals/build.py",
+    "ExternalSources/HonbakoOriginals/compile.mjs",
+    "ExternalSources/HonbakoOriginals/manifest.json",
+    "ExternalSources/HonbakoOriginals/package.json",
+    "ExternalSources/HonbakoOriginals/source.wat",
+    "site/originals/bookshop/assets.json",
+    "site/originals/bookshop/cover.png",
+    "site/originals/bookshop/index.html",
+    "site/originals/bookshop/page-1.png",
+    "site/originals/bookshop/page-2.png",
+    "site/originals/bookshop/page-3.png",
+    "site/originals/bookshop/page-4.png",
+    "site/originals/bookshop/page-5.png",
+    "site/originals/bookshop/page-6.png",
+    "site/originals/index.html",
+    "site/sources/icons/en.honbako-originals.png",
+    "site/sources/index.html",
+    "site/sources/index.json",
+    "site/sources/packages/en.honbako-originals-v1.aix"
+  ],
+  "source_list_url": "https://missingems.github.io/Honbako/sources/index.json",
+  "review_submission": false
+}

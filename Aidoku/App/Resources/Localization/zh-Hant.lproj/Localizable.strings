@@ -818,7 +818,7 @@
 "1. Choose a Connection" = "1. 選擇連線";
 "Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust." = "先閱讀原創入門漫畫，再加入自己的檔案、連接個人伺服器，或選擇信任的書源列表或檔案。";
 "2. Find Manga" = "2. 尋找漫畫";
-"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "返回書架並向下拉即可搜尋。搜尋會使用你在設定中啟用的連線。";
+"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "返回書架，使用頂部工具列的搜尋。搜尋會使用設定中啟用的連線。";
 "3. Build Your Library" = "3. 建立書架";
 "Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading." = "點一下搜尋結果旁的「加入」即可收藏到書架。點一下「閱讀」或「繼續閱讀」即可開始。";
 "Connect to a server you manage to search your own library." = "連接你管理的伺服器，搜尋自己的書庫。";
@@ -1002,7 +1002,7 @@
 "Find Your Place" = "找到閱讀位置";
 "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there." = "點一下頁面以顯示控制項。拖動頁面瀏覽列進行預覽，放開即可跳轉。";
 "A Book to Return To" = "隨時回來接著讀";
-"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "雙指向內捏合，或使用「關閉」返回書架。閱讀位置會自動儲存。在書架中向下拉即可搜尋。";
+"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "向內捏合或使用關閉返回書架。閱讀位置會保存。請使用頂部工具列的搜尋。";
 
 // Monthly Pro and in-app data information.
 "Monthly Subscription" = "按月訂閱";
@@ -1061,12 +1061,160 @@
 "Tutorial.Story.Empty.Title" = "一本空白的書";
 "Tutorial.Story.Empty.Body" = "雨夜，米娜發現了一本沒有故事的書。小黑貓輕輕碰了碰封面。每個故事，都需要一個入口。\n\n向左輕掃，翻開下一頁。輕點紙面，閱讀工具就會出現。";
 "Tutorial.Story.Key.Title" = "通往故事的鑰匙";
-"Tutorial.Story.Key.Body" = "一把黃銅鑰匙從書裡滑落。它能打開米娜自己的書架，也能打開通往其他圖書館的門。\n\n在書庫下拉，輕點連結按鈕進入「設定」，然後選擇「本機檔案」「個人伺服器」或「來源列表」。";
+"Tutorial.Story.Key.Body" = "一把黃銅鑰匙從書中滑落。它既能開啟米娜自己的書架，也能通向另一個書庫。\n\n點一下頂部工具列的設定，再選擇本機檔案、個人伺服器或來源清單。";
 "Tutorial.Story.Door.Title" = "另一座書架";
 "Tutorial.Story.Door.Body" = "米娜轉動鑰匙。門後，是不同講述者的書架。小黑貓安靜地等著她挑選。\n\n打開「設定」→「來源列表」→「加入來源列表」，貼上可信提供者的HTTPS列表連結。加入後，再安裝想使用的來源。";
 "Tutorial.Story.Read.Title" = "第一個故事";
-"Tutorial.Story.Read.Body" = "書架上的一本書亮了起來。米娜把它捧起，一個新世界隨之展開。\n\n先在「設定」中啟用連線，再回書庫下拉搜尋。輕點書名旁的「加入」，然後輕點封面，開始閱讀。";
+"Tutorial.Story.Read.Body" = "書架間的一本書亮了起來。米娜將它捧起，一個全新的世界就此展開。\n\n在設定中啟用連線。點一下頂部工具列的搜尋，再點一下書名旁的加入。點一下封面即可開始閱讀。";
 "Tutorial.Story.Bookmark.Title" = "留給明天的書籤";
 "Tutorial.Story.Bookmark.Body" = "小黑貓把一條緞帶放進書頁。「我們還會回來的。」米娜輕聲說。\n\n輕點頁面，顯示縮圖列和章節選單。拖動縮圖列預覽頁面；選擇「語言」，查看這本書實際提供的譯本。";
 "Tutorial.Story.Morning.Title" = "新的一天";
 "Tutorial.Story.Morning.Body" = "天亮時，空白的書已經變成了故事的起點。米娜輕輕合上它。窗外的每一扇窗，都藏著另一段故事。\n\n向內捏合，或輕點「關閉」，回到書庫。「繼續閱讀」會打開已儲存的位置。自己的檔案與來源，由自己選擇。";
+
+"Privacy Policy" = "隱私權政策";
+
+// Free and Pro plan comparison.
+"Honbako.Plan.Free" = "免費";
+"Honbako.Plan.Pro" = "Pro";
+"Honbako.Plan.Collection" = "閱讀並整理自己的藏書";
+"Honbako.Plan.ImportedOffline" = "離線閱讀匯入的檔案";
+"Honbako.Plan.AdFree" = "無廣告";
+"Honbako.Plan.FreeLimitations" = "章節下載、新章節通知，以及透過 iCloud 同步書庫和閱讀進度，需要 Pro。";
+"Honbako.Plan.EverythingInFree" = "包含免費版的所有功能";
+
+// Bring your own collection: Getting Started and connection help.
+"Honbako.CollectionGuide.Intro.Title" = "帶入你的收藏";
+"Honbako.CollectionGuide.Intro.Body" = "先閱讀內建的原創教學，再匯入自己的漫畫檔案或連接個人書庫伺服器。";
+"Honbako.CollectionGuide.Local.Title" = "「檔案」中的漫畫";
+"Honbako.CollectionGuide.Local.Body" = "從「檔案」App匯入包含漫畫頁面的CBZ或ZIP檔案。首次使用時先設定「本機檔案」，再選擇檔案並確認系列和章節資訊。";
+"Honbako.CollectionGuide.Local.Setup" = "設定本機檔案";
+"Honbako.CollectionGuide.Local.Connected" = "本機檔案已連接";
+"Honbako.CollectionGuide.Local.Import" = "匯入漫畫";
+"Honbako.CollectionGuide.Local.Footer" = "設定「本機檔案」後，你也可以在「檔案」App中用Honbako開啟CBZ或ZIP。";
+"Honbako.CollectionGuide.Server.Title" = "你的個人伺服器";
+"Honbako.CollectionGuide.Server.Body" = "連接你現有的Komga、Kavita或Suwayomi書庫。輸入伺服器位址，並依其提供的方式登入。此裝置需要能夠存取該伺服器。";
+"Honbako.CollectionGuide.Sources.Title" = "連接內容提供者";
+"Honbako.CollectionGuide.Sources.Body" = "加入提供者給出的相容書源列表連結。開啟列表，再安裝你想使用的書源。";
+"Honbako.CollectionGuide.Sources.Footer" = "「匯入書源檔案」接受相容的.aix連接檔案。CBZ或ZIP漫畫請使用「本機檔案」。";
+"Honbako.CollectionGuide.Search.Title" = "尋找並收藏你的書";
+"Honbako.CollectionGuide.Search.Body" = "在設定的搜尋範圍中啟用連線。點一下完成，再使用頂部工具列的搜尋尋找書名。";
+"Honbako.CollectionGuide.Save.Body" = "點一下搜尋結果旁的「加入」即可收藏到書架。開啟封面開始閱讀；「繼續閱讀」會返回已儲存的頁面。";
+"Honbako.CollectionGuide.Settings.Subtitle" = "從「檔案」匯入漫畫，或連接你自己的書庫。";
+
+"Honbako.ExternalBeta.Footer" = "外部書源測試版。加入書源列表或書源套件以連接內容提供者。不會自動加入連接。";
+"Honbako.ExternalBeta.Intro" = "先閱讀原創教學，再加入自己的檔案、個人伺服器或內容提供者連接。";
+
+/* Library empty and hidden-finished states. */
+"Honbako.Library.Empty.Title" = "書庫已準備就緒";
+"Honbako.Library.Empty.Detail" = "在搜尋中找到作品並加入書庫，即可開始閱讀。";
+"Honbako.Library.Hidden.Title" = "已隱藏讀完的作品";
+"Honbako.Library.Hidden.Detail" = "顯示已讀完的作品，再次閱讀。";
+"Honbako.Library.ShowFinished" = "顯示已讀完的作品";
+"Honbako.Library.FindBooks" = "尋找作品";
+
+"Honbako.Guide.guide-find.Title" = "搜尋與刪除";
+"Honbako.Guide.guide-find.Subtitle" = "找到故事，為下一本留出空間。";
+"Honbako.Guide.guide-find.1.Title" = "點一下即可搜尋";
+"Honbako.Guide.guide-find.1.Body" = "點一下側邊欄的搜尋圖示或搜尋列，開啟玻璃效果的結果列表，然後輸入書名。搜尋會使用設定中啟用的連線。點一下加入可加入書架，也可以點一下封面閱讀。\n\n捲動時仍可使用搜尋和設定。關閉搜尋可返回書架。";
+"Honbako.Guide.guide-find.2.Title" = "整理書架";
+"Honbako.Guide.guide-find.2.Body" = "開啟書籍，點一下頁面顯示閱讀控制。開啟章節與語言，選擇從書架移除。\n\n這只移除書架記錄，不會刪除伺服器或檔案App中的原始書籍。";
+"Honbako.Guide.guide-find.3.Title" = "隨時找回來";
+"Honbako.Guide.guide-find.3.Body" = "移除內建指南後，它不會在下次啟動時自動回來。需要時，在此裝置上的連線中搜尋標題，再點一下加入。\n\n請在設定的搜尋範圍中啟用此連線。";
+"Honbako.Guide.guide-find.4.Title" = "讀完也不會遺失";
+"Honbako.Guide.guide-find.4.Body" = "讀完已完結書籍的全部章節後，它會移到已讀完。設定 → 書架 → 隱藏已讀完書籍可隱藏這個分區，關閉後即可恢復。\n\n隱藏書籍不會將它從書架移除。";
+"Honbako.Guide.guide-connect.Title" = "你的收藏";
+"Honbako.Guide.guide-connect.Subtitle" = "本機檔案、個人伺服器，以及每本書的閱讀進度。";
+"Honbako.Guide.guide-connect.1.Title" = "匯入自己的檔案";
+"Honbako.Guide.guide-connect.1.Body" = "開啟頂部工具列的設定，選擇本機檔案，透過匯入畫面加入CBZ或ZIP漫畫檔案。本機檔案保存在目前裝置。\n\n請在其他裝置上個別匯入。iCloud進度同步不會複製漫畫檔案。";
+"Honbako.Guide.guide-connect.2.Title" = "連接個人伺服器";
+"Honbako.Guide.guide-connect.2.Body" = "在設定 → 個人伺服器中選擇Komga、Kavita或Suwayomi。輸入伺服器位址及其需要的登入資訊，保留位址後的完整路徑。\n\n裝置需要能夠透過本機網路、VPN或遠端存取連接伺服器。";
+"Honbako.Guide.guide-connect.3.Title" = "同時搜尋多個書庫";
+"Honbako.Guide.guide-connect.3.Body" = "你可以加入多個伺服器。在設定的搜尋範圍中，啟用要搜尋的連線，也可以包括本機檔案。\n\n結果會標明來源。同一作品在不同伺服器上屬於不同副本。Honbako不會在伺服器之間移動或合併檔案。";
+"Honbako.Guide.guide-connect.4.Title" = "保存並同步進度";
+"Honbako.Guide.guide-connect.4.Body" = "Honbako Pro可透過你的私人iCloud同步書架、書籤、語言選擇和閱讀進度。在各裝置使用相同的iCloud帳號，並在設定 → iCloud同步中檢查狀態。\n\n下載內容和來源檔案保留在各裝置上。請分別連接相同伺服器，並個別匯入本機檔案。";
+"Honbako.Guide.guide-read.Title" = "按你的方式閱讀";
+"Honbako.Guide.guide-read.Subtitle" = "翻頁、保存位置，以及離線閱讀。";
+"Honbako.Guide.guide-read.1.Title" = "跟隨頁面前進";
+"Honbako.Guide.guide-read.1.Body" = "從右向左閱讀的書籍，向左滑動即可前進。頁面列也使用相同方向，向左拖移可預覽後面的頁面。\n\n點一下頁面顯示控制，在章節與語言中選擇章節或可用譯本。";
+"Honbako.Guide.guide-read.2.Title" = "從兩側合上書";
+"Honbako.Guide.guide-read.2.Body" = "用兩根手指向內捏合。書的兩側會向中間合攏，隨後封面回到書架中的位置。\n\n放手前改變主意？張開手指即可回到頁面。也可以使用關閉按鈕返回。";
+"Honbako.Guide.guide-read.3.Title" = "明天接著讀";
+"Honbako.Guide.guide-read.3.Body" = "閱讀位置會保存在目前裝置。從書架開啟書籍，或在搜尋中選擇繼續閱讀，即可返回保存的位置。\n\n讀完的書在已讀完分區中，隨時可以再次開啟。";
+"Honbako.Guide.guide-read.4.Title" = "帶一本書出門";
+"Honbako.Guide.guide-read.4.Body" = "內建指南和已匯入的本機書籍可離線閱讀。Pro支援從相容連線下載章節。開啟章節與語言 → 離線閱讀進行下載。\n\n免費版和Pro均無廣告。請在離線前下載；只連接伺服器不會把頁面保存在本機。";
+
+"Search Manga" = "搜尋漫畫";
+
+"Honbako.Search.EmptyHint" = "搜尋已啟用的收藏，或按標題尋找內建指南。";
+
+// Japanese reading guide and original practice page.
+"Honbako.Guide.guide-japanese.Title" = "讀日語";
+"Honbako.Guide.guide-japanese.Subtitle" = "每一頁，學一點。";
+"Honbako.Guide.guide-japanese.1.Title" = "直接在書頁上閱讀";
+"Honbako.Guide.guide-japanese.1.Body" = "日語漫畫頁面會直接顯示逐詞羅馬字。輕點詞語即可聆聽發音或查看翻譯。\n\n輕點頁面顯示閱讀控制，打開「章節與語言」，再使用「在頁面上顯示羅馬字」開關顯示或隱藏標註。\n\n下一頁是本箱原創的練習頁面。";
+"Honbako.Guide.guide-japanese.2.Title" = "練習頁面";
+"Honbako.Guide.guide-japanese.2.Body" = "下一幅圖為本箱原創，包含橫排和直排日語。";
+"Honbako.Guide.guide-japanese.3.Title" = "先聽，再讀";
+"Honbako.Guide.guide-japanese.3.Body" = "輕點漫畫中的詞語，查看日語原文、假名和羅馬字。使用「聽發音」或「慢速聽發音」確認發音。選擇「整句」可聽發音或翻譯完整句子。\n\n先試著自己朗讀，再聽一次。人名或有多種讀法的詞語可能因語境而異。";
+"Honbako.Guide.guide-japanese.4.Title" = "按需查看含義";
+"Honbako.Guide.guide-japanese.4.Body" = "輕點句子彈出視窗中的「Translate」查看英語翻譯。Apple 可能會先要求下載日語和英語語言資料。只翻譯選取的文字，不會顯示後面的頁面。\n\n小型振假名、藝術字或直排文字可能辨識不準。必要時先更正辨識的日語，再進行翻譯。";
+
+// Japanese reading guide interface.
+"Japanese Guide" = "日語助手";
+"Guide Options" = "助手選項";
+"Show Markers" = "顯示標記";
+"Show Romaji" = "顯示羅馬字";
+"Scan Again" = "重新辨識";
+"Enter Japanese Text" = "輸入日語";
+"Tap a phrase to hear it, see its reading, or reveal the translation." = "輕點短句，聽發音、查看讀音或顯示譯文。";
+"Romaji on Page" = "在頁面上顯示羅馬字";
+"Finding Japanese text…" = "正在辨識日語文字⋯";
+"Couldn’t Scan This Page" = "無法辨識此頁";
+"No Japanese Text Found" = "找不到日語文字";
+"Small lettering and stylized speech bubbles can be difficult to recognize. You can enter a phrase yourself." = "小字和特殊樣式的對話框可能難以辨識。你也可以自行輸入短句。";
+"Phrases on This Page" = "本頁短句";
+"How to Learn with This Page" = "如何用此頁學習";
+"Try reading the Japanese first, then use the romaji to check your pronunciation. Listen once at normal speed and once slowly. Hide the romaji when you’re ready to try again." = "先試著讀日語，再用羅馬字檢查發音。以正常速度聽一遍，再慢速聽一遍。準備好後隱藏羅馬字，再試著讀一次。";
+"Romaji is a reading aid. Japanese particles and names may sound different from their written form; use Listen to hear the original Japanese." = "羅馬字是輔助讀音。日語助詞和姓名的發音可能與書寫形式不同，請使用「聽發音」來聽原文。";
+"Check the recognized text before translating. You can correct missed characters in the phrase popup. Automatic readings are estimates, especially for names and words with more than one reading." = "翻譯前請檢查辨識結果。你可以在短句彈出視窗中修正漏辨或誤辨的文字。自動產生的讀音僅供參考，尤其是姓名和多音詞。";
+"Translation uses Apple’s system service. The first translation may ask you to download Japanese and English language support." = "翻譯使用 Apple 系統服務。首次翻譯時，系統可能會提示下載日語和英語語言支援。";
+"Only this page is scanned. Text recognition happens on your device." = "只辨識目前頁面。文字辨識在你的裝置上完成。";
+"The page image isn’t available yet. Return to the book, let it finish loading, then open the guide again." = "頁面圖片尚未就緒。請返回書本，等頁面載入完成後再開啟助手。";
+"Text recognition couldn’t finish. Try scanning again, or enter a Japanese phrase yourself." = "文字辨識未能完成。請重新辨識，或自行輸入日語短句。";
+"Current manga page" = "目前漫畫頁";
+"Phrase %lld: %@" = "短句 %lld：%@";
+"Hear the pronunciation or reveal a translation" = "聽發音或顯示譯文";
+"Enter Japanese text" = "輸入日語文字";
+"Japanese" = "日語";
+"Correct any missed characters before listening or translating." = "聽發音或翻譯前，請修正漏辨或誤辨的文字。";
+"Read This Phrase" = "閱讀此短句";
+"Kana" = "假名";
+"Romaji" = "羅馬字";
+"Japanese Reading" = "日語讀音";
+"A reading isn’t available for this text. You can still listen to the Japanese or try a shorter phrase." = "此文字暫時沒有讀音。你仍可聽日語原文，或嘗試更短的短句。";
+"This is a suggested reading. Names, unusual spellings, and words with several readings may sound different in context." = "這是建議讀音。姓名、特殊寫法和多音詞的實際發音可能隨語境變化。";
+"Text recognition is uncertain. Check the Japanese against the page." = "辨識結果不確定，請對照頁面檢查日語原文。";
+"Listen" = "聽發音";
+"Listen Slowly" = "慢速聽發音";
+"Stop Audio" = "停止朗讀";
+"Pronunciation" = "發音";
+"A Japanese system voice isn’t available. Add a Japanese voice in iPhone Settings to hear this phrase." = "日語系統語音無法使用。請在 iPhone 設定中加入日語語音，以聽取此短句。";
+"Translating…" = "正在翻譯⋯";
+"Translation is available on iPhone and iPad. Apple’s translation service doesn’t run in Simulator." = "翻譯可在 iPhone 和 iPad 上使用。Apple 翻譯服務無法在模擬器中執行。";
+"Translate to English" = "翻譯成英語";
+"Translate Again" = "重新翻譯";
+"Meaning" = "含義";
+"Translate when you’re ready to check your understanding. Apple may ask to download Japanese and English language support. Short phrases can lose context." = "準備好檢查理解程度時，再查看翻譯。Apple 可能會提示下載日語和英語語言支援。短句翻譯可能缺少語境。";
+"Translation couldn’t finish. Check language downloads and try again. You can keep using the reading and pronunciation tools." = "翻譯未能完成。請檢查語言下載後重試。你仍可繼續使用讀音和發音功能。";
+"Read Japanese on this page with romaji, pronunciation, and tap-to-translate help." = "借助羅馬字、發音和輕點翻譯來閱讀本頁日語。";
+
+// Word-by-word Japanese reading aids.
+"Reading Unavailable" = "暫無讀音";
+"Hear or translate this word" = "聆聽或翻譯這個詞";
+"Whole Phrase" = "整句";
+"Selected Word" = "所選詞語";
+"Tap a word to hear or translate it. Choose Whole Phrase for the full sentence." = "輕點詞語可聆聽發音或翻譯。選擇「整句」查看完整句子。";
+"Tap a word or phrase to hear it, see its reading, or reveal the translation." = "輕點詞語或句子，聆聽發音、查看讀音或顯示翻譯。";
+
+// Japanese reading help stays on the live manga page.
+"Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "直接在漫畫上顯示逐詞羅馬字。輕點詞語可聆聽發音或查看翻譯。";

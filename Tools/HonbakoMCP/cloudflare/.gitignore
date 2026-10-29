@@ -1,0 +1,6 @@
+.wrangler/
+.dev.vars*
+.env*
+secrets*.json
+*credential*.json
+*migration*.json

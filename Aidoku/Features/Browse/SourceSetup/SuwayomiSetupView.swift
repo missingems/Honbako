@@ -32,7 +32,7 @@ struct SuwayomiSetupView: View {
 
     private func check(server: String) async -> ServerCheck {
         guard
-            let serverUrl = URL(string: server),
+            let serverUrl = SelfHostedServerURL(server)?.url,
             let loginType = await SuwayomiHelper.getLoginType(server: serverUrl)
         else {
             return ServerCheck()

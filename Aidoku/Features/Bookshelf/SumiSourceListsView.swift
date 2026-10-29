@@ -46,7 +46,6 @@ struct SumiSourceListsView: View {
                         }
                     }
                 } footer: { Text("Open a list to choose sources. Adding a list does not install its sources.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
             }
         }
         .navigationTitle("Source Lists")

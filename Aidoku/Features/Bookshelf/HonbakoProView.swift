@@ -12,11 +12,10 @@ struct HonbakoProView: View {
             List {
                 Section {
                     Text(feature.map { String(localized: "\($0.title) is included with Honbako Pro.") } ?? String(localized: "More ways to keep your reading with you."))
-                    Label("Download chapters for offline reading", systemImage: "arrow.down.circle")
-                    Label("New chapter notifications", systemImage: "bell")
-                    Label("Sync library and reading progress with iCloud", systemImage: "icloud")
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
+                Section {
+                    HonbakoPlanComparisonView(proPrice: store.product?.displayPrice)
+                }
                 Section {
                     if store.hasPro {
                         Label("Pro Is Active", systemImage: "checkmark.circle")
@@ -43,14 +42,13 @@ struct HonbakoProView: View {
                         Text("Payment is charged to your Apple Account when confirmed. Your subscription renews monthly unless canceled. Manage or cancel it in App Store subscriptions.")
                     }
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
                 Section {
                     Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                    Link("Privacy Policy", destination: URL(string: "https://missingems.github.io/Honbako/privacy/")!)
                     Button("Privacy Information") { privacyPresented = true }
                 } footer: {
                     Text("Notifications depend on source availability and iOS background refresh. iCloud sync starts after reopening the app. Pro doesn’t include manga or grant rights to download third-party content.")
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
             }
             .navigationTitle("Honbako Pro")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }

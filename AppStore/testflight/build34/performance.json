@@ -1,0 +1,30 @@
+{
+  "before": {
+    "cold_60_tiles_seconds": [
+      0.029154,
+      0.030511,
+      0.029504,
+      0.029908,
+      0.029146
+    ],
+    "mean_seconds": 0.0296446,
+    "ordinary_scroll_callbacks": 600,
+    "search_publications": 600,
+    "test_result": "passed"
+  },
+  "after": {
+    "cold_60_tiles_seconds": [
+      0.021498,
+      0.024016,
+      0.024232,
+      0.019774,
+      0.021962
+    ],
+    "mean_seconds": 0.0222964,
+    "ordinary_scroll_callbacks": 600,
+    "search_publications": 0,
+    "test_result": "passed"
+  },
+  "cold_tile_time_reduction_percent": 24.787651039312387,
+  "scope": "Same simulator, debug configuration, five timed 60-tile cold placeholder iterations; no network. This is a component cost comparison, not an FPS or physical-device benchmark. No memory reduction claimed."
+}

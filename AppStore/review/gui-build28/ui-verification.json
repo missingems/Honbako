@@ -1,0 +1,148 @@
+{
+  "build": "28",
+  "version": "0.1.0",
+  "bundleIdentifier": "com.missingems.honbaku",
+  "device": "Honbako Capture iphone-large",
+  "runtime": "iOS 27.0",
+  "viewer": "/Applications/Xcode.app/Contents/Applications/DeviceHub.app",
+  "uiDriver": "mcp__cua_repl native app; screenshot coordinates, keyboard capture enabled",
+  "server": {
+    "implementation": "genuine official Komga 1.27.0 JAR",
+    "url": "http://127.0.0.1:8878/komga",
+    "scope": "loopback-only disposable test account and original-art CBZ portfolios; not an Apple-reachable review server",
+    "jarSha256": "0793722490fd698ed1fd563377dd1319c9343a44cafdf4595008a4d332456c9b"
+  },
+  "passed": [
+    "Original six-page tutorial opens in reader",
+    "Settings > Getting Started opens complete collection guide",
+    "Guide > Set Up Local Files succeeds and shows Local Files Is Connected",
+    "Guide > Import a Comic > Import File opens native Files picker",
+    "Cancel Files picker returns to Local File Import; close returns to guide",
+    "Personal Server > Komga accepts server URL with /komga path and no trailing slash",
+    "Wrong password shows Unable to log in and remains in setup",
+    "Correct dedicated password completes setup; OS Save Password dismissed with Not Now",
+    "Connected source appears enabled in Included in Search",
+    "Search Honbako returns Honbako Original Art under Honbako Local Komga",
+    "Add saves server series into bookshelf",
+    "Opening server series displays native reader and streams original Tideglass PNG page 1 of 3",
+    "Reader page previews load the distinct Lantern Railway and Library of Tides PNGs",
+    "Chapter list displays Original Art Portfolio 1 and 2",
+    "Clean build28 iPad native accessibility Page 2 button commits original tutorial to distinct page2 A Key to New Stories",
+    "Closing iPad tutorial restores bookshelf accessibility value Chapter1 Page2of6",
+    "Pro page displays genuine Apple product Honbako Pro Monthly, Monthly Subscription, $1.99 per month, without test suffix",
+    "New Pro page shows Free and Pro plan sections and standard subscription/restore/manage controls"
+  ],
+  "notVerified": [
+    "Remote physical swipe/committed page-two navigation",
+    "Remote resume beyond page one",
+    "Bookmark creation/restoration",
+    "Second remote chapter navigation completion",
+    "Actual purchase and refund via App Store account"
+  ],
+  "limitations": [
+    "Compact Device Hub window hides app AX children and coordinate drag/scroll did not commit page navigation or vertically scroll Settings. Same behavior occurred on local tutorial.",
+    "Full public Device Hub exposes iPad native app accessibility; semantic Page2 control successfully commits local tutorial.",
+    "Connected iPhone still exposes no app accessibility children, so remote page2/resume and bookmarks remain unverified rather than classified as defects.",
+    "iPad app installed clean from existing shared build28 product; no StoreKit test scheme launched on that device. Its search shortcut could not be routed, so pricing capture used connected iPhone.",
+    "No actual paid purchase made."
+  ],
+  "pricingPlanCapture": {
+    "catalogProductName": "Honbako Pro Monthly",
+    "displayPrice": "$1.99 per month",
+    "testProduct": false,
+    "defaultTextSizeImage": "review/Honbako-Pro-Build28.jpg",
+    "comparisonTextSizeXSImage": "review/Honbako-Pro-Build28-Comparison.jpg",
+    "note": "Native Device Hub screenshots; text size changed temporarily from default3 to0 to expose the Pro settings entry, then restored3. Screenshot6.20.45usesXS; screenshot6.21.11usesdefault. JPEG conversion changes format only. No source layout, price, compositing, or purchase changes.",
+    "currentCatalog": "Normal Apple product, $1.99/month. No local test name or $0.99 fixture price."
+  },
+  "evidence": [
+    {
+      "step": "tutorial-reader",
+      "path": "review/gui-build28/tutorial-reader.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.02.24 PM.png",
+      "sha256": "e35d83672b46369927f193c169fe97939fd6643b55124a32c857ebb40ca921a8",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "getting-started-guide",
+      "path": "review/gui-build28/getting-started-guide.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.03.29 PM.png",
+      "sha256": "7aa13b25b6b8b74e764ac01dbd085ad6d9f272986ccfb983a20ca70a8e82ab2a",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "native-files-picker",
+      "path": "review/gui-build28/native-files-picker.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.04.15 PM.png",
+      "sha256": "c93fce6c1cb30d4cbfc0ec02453bab4e04fe0a932196db4fe88861e7cb9e003f",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "komga-wrong-password",
+      "path": "review/gui-build28/komga-wrong-password.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.05.20 PM.png",
+      "sha256": "2ebafee24542b1039494179658aed630611e821bd1aa5fbce4abcc9c5b20ce6f",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "komga-connected-settings",
+      "path": "review/gui-build28/komga-connected-settings.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.06.03 PM.png",
+      "sha256": "131201ab3bccf34daf96b0bf15387543c6211e31cb0ac29d3de728be1c61d0ce",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "komga-live-catalog",
+      "path": "review/gui-build28/komga-live-catalog.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.06.25 PM.png",
+      "sha256": "ef456335510f22efa35573771a93457221e553fe6bc0fa8c10a249bb9b662227",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "komga-streamed-page",
+      "path": "review/gui-build28/komga-streamed-page.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.06.46 PM.png",
+      "sha256": "cf6f047caedf1e29ad0abcefee00b4229fca0d4354a0725ee3fc270ec4cdce2d",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "komga-chapter-list",
+      "path": "review/gui-build28/komga-chapter-list.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.08.48 PM.png",
+      "sha256": "1a68e1ed88101bbfed8995dbd0d748e5b88e29e22ce56f6c24416cfa271af987",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "pro-price-and-plans-xs",
+      "path": "review/gui-build28/pro-price-and-plans-xs.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.20.45 PM.png",
+      "sha256": "5e7c7095d31dd183d818b4c1f8774a242a81a813e613b45244472662dbf35d1f",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "pro-price-and-plans-default",
+      "path": "review/gui-build28/pro-price-and-plans-default.png",
+      "nativeSource": "Screenshot Honbako Capture iphone-large 28-10-2026 at 6.21.11 PM.png",
+      "sha256": "712f144cc0f413f46624c6d296de891915a48afb8813b69904b33dac04111a02",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    },
+    {
+      "step": "tutorial-page-two-ipad",
+      "path": "review/gui-build28/tutorial-page-two-ipad.png",
+      "nativeSource": "Screenshot Honbako Capture ipad-11 28-10-2026 at 6.17.26 PM.png",
+      "sha256": "e29071b1a2e89b4cceffcfefae42e70bfbfc825857f7256d5c8cb00774b955f2",
+      "captureMethod": "Device Hub native Screenshot button through CUA; image copied without compositing"
+    }
+  ],
+  "serverCleanup": "Task-created Komga server stopped gracefully with SIGINT; process exited; temporary JAR, CBZ portfolios, database, and logs removed.",
+  "nativeCaptureCount": 11,
+  "testDeviceRestoration": {
+    "iphoneTextSize": 3,
+    "captureKeyboard": "off",
+    "note": "Default text size restored before default review screenshot; keyboard capture off in final full viewer."
+  },
+  "desktopDuplicateCleanup": {
+    "removedCount": 11,
+    "preservedEvidenceCopies": "/Users/jun/Documents/Codex/Honbako/AppStore/review/gui-build28"
+  }
+}

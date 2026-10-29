@@ -187,6 +187,9 @@ final class SumiCoverArtworkLoader {
         else if let loaded = SourceStore.shared.source(for: book.sourceKey) { source = loaded }
         else { source = await SourceManager.shared.source(for: book.sourceKey) }
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
+        // A restored external-catalog entry must not fetch its remote cover
+        // after that connection has been excluded from the collection reader.
+        guard source != nil || url.isFileURL || url.toAidokuFileUrl() != nil else { return nil }
         if let source { resolvedSources[book.sourceKey] = source }
         let key = Key(book: book, source: source)
         while active.contains(key) || active.count >= concurrency {

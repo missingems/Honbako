@@ -38,6 +38,12 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
     private var returnAnchorStableFrames = 0
     private var returnAnchorWaitFrames = 0
     private var pairedPaper = false
+    private var returnPreparation: Task<Void, Never>?
+    private var returnPrepared = true
+    private var returnPreparationStarted: CFTimeInterval = 0
+    private var returnDestinationVisible = true
+    private var returnSourceRevealed = false
+    private var returnHandoffFrames = 0
 
     init(opening: Bool, book: SumiBookTransition) { self.opening = opening; self.book = book }
     func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
@@ -57,7 +63,17 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             context.completeTransition(false); book.didFinishTransition(); return
         }
         self.context = context; self.interactive = interactive
+        if !opening { book.closingBegan() }
         book.chromeTransition(true)
+        if !opening, let prepare = book.prepareReturn {
+            returnPrepared = false
+            returnPreparationStarted = CACurrentMediaTime()
+            returnPreparation = Task { @MainActor [weak self] in
+                await prepare()
+                guard !Task.isCancelled, let self, !finished else { return }
+                returnPrepared = true
+            }
+        }
         let container = context.containerView
         let retainsPresenter = context.presentationStyle == .overFullScreen
             || (opening ? mappedFrom == nil : mappedTo == nil)
@@ -86,7 +102,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
         let image = UIAccessibility.isReduceMotionEnabled ? nil : Self.capture(surface)
         pairedPaper = book.paired()
         if !UIAccessibility.isReduceMotionEnabled, let image {
-            stage = try? SumiBookStageView(frame: container.bounds, cover: book.coverImage, spread: image, paired: pairedPaper, closedPose: book.closedPose)
+            stage = try? SumiBookStageView(frame: container.bounds, cover: book.coverImage, spread: image, paired: pairedPaper, closedPose: book.closedPose, centeredClose: !opening && book.closesAtCenter)
         }
         if let stage { stage.alpha = 0; container.addSubview(stage) }
         if opening {
@@ -206,6 +222,16 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             }
         }
         let ready = stage == nil || (stage?.completedFrames ?? 0) >= 2
+        if !returnPrepared {
+            if link.targetTimestamp - returnPreparationStarted < 2 {
+                apply(progress: 1, delta: link.targetTimestamp - link.timestamp)
+                return
+            }
+            // A suspended database/layout task cannot strand UIKit's close.
+            returnPreparation?.cancel()
+            returnPreparation = nil
+            returnPrepared = true
+        }
         if ready, (!opening || isCancellingOpening), returnSourceFrame == nil {
             // The hidden library may still have its pre-rotation grid geometry
             // when UIKit first reattaches it. Keep the reader fully visible for
@@ -215,14 +241,25 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
                 ?? context.viewController(forKey: opening ? .from : .to)?.view
             library?.setNeedsLayout()
             library?.layoutIfNeeded()
-            let measured = book.gridSourceFrame(in: context.containerView)
+            returnAnchorWaitFrames += 1
+            guard let measured = book.resolvedGridSourceFrame(in: context.containerView) else {
+                if returnAnchorWaitFrames < 30 {
+                    apply(progress: 1, delta: link.targetTimestamp - link.timestamp)
+                    return
+                }
+                // Deleted or intentionally hidden books have no receiving cell.
+                // Close and fade in the centre rather than fly to an old slot.
+                returnSourceFrame = book.hoveringFrame(in: context.containerView)
+                returnDestinationVisible = false
+                advanceAnimation(link, ready: ready)
+                return
+            }
             if let previous = returnAnchorSample,
                abs(previous.minX - measured.minX) < 0.25, abs(previous.minY - measured.minY) < 0.25,
                abs(previous.width - measured.width) < 0.25, abs(previous.height - measured.height) < 0.25 {
                 returnAnchorStableFrames += 1
             } else { returnAnchorStableFrames = 0 }
             returnAnchorSample = measured
-            returnAnchorWaitFrames += 1
             // Reattached SwiftUI content can need another layout pass. Keep
             // the open reader still until the destination stops moving, then
             // freeze that exact rectangle for the complete return journey.
@@ -233,7 +270,12 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
                 return
             }
         }
-        if ready, !sourceHidden { book.sourceVisibility(true); sourceHidden = true }
+        advanceAnimation(link, ready: ready)
+    }
+
+    private func advanceAnimation(_ link: CADisplayLink, ready: Bool) {
+        guard let context else { return }
+        if ready, !sourceHidden, !returnSourceRevealed { book.sourceVisibility(true); sourceHidden = true }
         if ready, settling {
             if let lastAnimationTimestamp {
                 // The first layout must not consume the opening animation.
@@ -264,7 +306,19 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
         let renderedEnd = stage == nil || (sourceMatches
             && stage?.completedProgress.map { abs($0 - endOpenness) < 0.002 } == true)
         if trailingFrames >= 2, renderedEnd {
-            finish(completed: isCancellingOpening ? false : interactive ? runTo == 1 : true)
+            let completed = isCancellingOpening ? false : interactive ? runTo == 1 : true
+            if !opening, completed, returnDestinationVisible {
+                if !returnSourceRevealed {
+                    book.revealSourceForHandoff()
+                    returnSourceRevealed = true
+                    return
+                }
+                // SwiftUI opacity changes are asynchronous. Leave the exact
+                // closed cover over its live cell for real compositor frames.
+                returnHandoffFrames += 1
+                guard returnHandoffFrames >= 2 else { return }
+            }
+            finish(completed: completed)
         }
     }
 
@@ -293,7 +347,9 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             }
             return
         }
-        let frame = opening && !isCancellingOpening
+        let frame = !opening && book.closesAtCenter
+            ? SumiBookPinchPose(progress: openness, origin: source, viewport: container.bounds).coverFrame
+            : opening && !isCancellingOpening
             ? SumiBookMotion.paperFrame(source: source, destination: container.bounds, paired: pairedPaper, progress: openness)
             : returning.paperFrame(in: container.bounds, paired: pairedPaper, startingAt: cancellationPaperFrame)
         paper.transform = CGAffineTransform(scaleX: frame.width / max(1, paper.bounds.width), y: frame.height / max(1, paper.bounds.height))
@@ -304,7 +360,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             // Keep the print opaque until its open geometry exactly matches
             // the native reader, avoiding ghost pages during the handoff.
             paper.alpha = 0
-            stage.alpha = 1
+            stage.alpha = returnDestinationVisible ? 1 : min(1, max(0, progress / 0.15))
             if !stage.draw(progress: openness, source: source, paperFrame: frame, deltaTime: delta) {
                 self.stage = nil; stage.removeFromSuperview(); paper.alpha = progress
             }
@@ -322,6 +378,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
         guard !finished, let context else { return }
         let outcome = interactive ? (interactiveOutcome ?? completed) : completed
         finished = true; clock?.invalidate(); clock = nil
+        returnPreparation?.cancel(); returnPreparation = nil
         if let observer { NotificationCenter.default.removeObserver(observer) }; observer = nil
         if let outsideTap { outsideTap.view?.removeGestureRecognizer(outsideTap) }; outsideTap = nil
         paper?.transform = .identity; paper?.center = originalCenter; paper?.alpha = 1
@@ -332,7 +389,11 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             paper?.removeFromSuperview()
             book.openingCancelled()
         }
-        book.sourceVisibility(false)
+        // The source slot stays empty for the complete reader lifetime. In
+        // particular, cancelling an interactive close must not reveal a second
+        // cover behind the still-open reader or UIKit's next return snapshot.
+        let readerRemainsOpen = opening ? outcome : !outcome
+        book.sourceVisibility(readerRemainsOpen)
         book.chromeTransition(false)
         // Touch release reports finish/cancel before our visual settling. Only
         // interruption before release still needs an outcome at this point.

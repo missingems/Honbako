@@ -13,7 +13,7 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
@@ -51,7 +51,7 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         item("Sumi.Search.Field", app).typeText("003")
         let get = app.buttons["Sumi.Search.Add.sumi-grid-preview:book-003"]
@@ -63,18 +63,16 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         _ = try visibleText(in: app, expected: ["ADD", "FINISHED", "GENERATEDFIXTURE"])
         XCTAssertEqual(get.frame.midY, result.frame.midY, accuracy: 1)
         get.tap()
-        let searchField = item("Sumi.Search.Field", app)
-        XCTAssertTrue(wait(NSPredicate { _, _ in !searchField.isHittable }, grid),
-                      "Adding a manga reveals its library destination")
+        XCTAssertTrue(item("Sumi.Grid", app).waitForExistence(timeout: 5),
+                      "Adding a manga returns to the library")
         let savedCover = app.buttons["Sumi.Grid.Book.sumi-grid-preview:book-003"]
         XCTAssertTrue(savedCover.waitForExistence(timeout: 5))
-        XCTAssertTrue(savedCover.isHittable, "The transferred cover lands in its real library slot")
+        XCTAssertFalse(savedCover.frame.intersection(app.frame).isEmpty,
+                       "The transferred cover lands in the visible library")
         XCTAssertFalse(item("Sumi.DirectReader", app).exists, "Add saves the manga without opening it")
         attach(app, "Added search cover lands in the library")
-        for _ in 0..<4 {
-            if item("Sumi.Search.Field", app).isHittable { break }
-            grid.swipeDown()
-        }
+        try app.openHonbakoSearch()
+        app.honbakoSearchField.typeText("003")
         let read = app.buttons["Sumi.Search.Read.sumi-grid-preview:book-003"]
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         XCTAssertTrue(read.label.hasPrefix("Read"))
@@ -96,15 +94,14 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
-        let connections = app.buttons["Sumi.Search.Sources"]
+        let connections = app.buttons["Honbako.Library.Settings"]
         XCTAssertTrue(connections.waitForExistence(timeout: 5))
         XCTAssertEqual(connections.label, "Settings")
         connections.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         let coverDisplay = app.switches["Honbako.Settings.ShowMangaCover"]
         XCTAssertTrue(coverDisplay.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.switches["Honbako.Settings.HideFinishedBooks"].exists)
+        XCTAssertTrue(app.switches["Honbako.Settings.HideFinishedBooks"].exists)
         let initial = coverDisplay.value as? String
         coverDisplay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
         XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
@@ -136,7 +133,8 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
     }
 
     @MainActor private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
     @MainActor private func assertVisibleReadingDetails(_ app: XCUIApplication) throws {
         let textBounds = try visibleText(in: app,

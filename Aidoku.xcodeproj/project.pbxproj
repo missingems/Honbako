@@ -59,14 +59,14 @@
 			membershipExceptions = (
 				Aidoku.xcconfig,
 				Sumi.xcconfig,
-				"Sumi-Info.plist",
+				"Sumi-Info.plist", "Sumi-External-Info.plist",
 				Info.plist,
 			);
 			target = FB1B4834277CE1920056D02C /* Aidoku */;
 		};
 		EB2C502497E359E889EB8DAE /* Sumi exceptions */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (Aidoku.xcconfig, Sumi.xcconfig, Info.plist, "Sumi-Info.plist", "App/Resources/Localization/InfoPlist.strings", );
+			membershipExceptions = (Aidoku.xcconfig, Sumi.xcconfig, Info.plist, "Sumi-Info.plist", "Sumi-External-Info.plist", "App/Resources/Localization/InfoPlist.strings", );
 			target = 3E365F52C231C670FEA1FCB6 /* Sumi */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -869,15 +869,15 @@
 				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;
+				INFOPLIST_FILE = "$(HONBAKO_INFO_PLIST_$(HONBAKO_EXTERNAL_SOURCES))";
 				INFOPLIST_KEY_CFBundleDisplayName = Honbako;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Honbako needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako needs permission to connect to local Komga and Kavita servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako connects to your local book servers and paired Mac companion";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Honbako needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -912,15 +912,15 @@
 				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;
+				INFOPLIST_FILE = "$(HONBAKO_INFO_PLIST_$(HONBAKO_EXTERNAL_SOURCES))";
 				INFOPLIST_KEY_CFBundleDisplayName = Honbako;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Honbako needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako needs permission to connect to local Komga and Kavita servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako connects to your local book servers and paired Mac companion";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Honbako needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

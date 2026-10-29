@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+*.log
+state.json
+mcp-token
+server.json
+server.lock
+client-configs/
+*.tmp

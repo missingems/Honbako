@@ -1,0 +1,16 @@
+{
+  "devices": [
+    {
+      "name": "Honbako Capture iphone",
+      "udid": "04492D57-7FB3-47FD-8A03-75CE5A4A40FE",
+      "uninstalled": [
+        "com.missingems.honbaku"
+      ],
+      "shutdown": true
+    }
+  ],
+  "keyboard_capture_restored_off": true,
+  "text_size": 3,
+  "temporary_export_removed": true,
+  "shared_derived_data_retained": true
+}

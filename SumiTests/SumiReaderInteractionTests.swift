@@ -39,10 +39,14 @@ struct SumiReaderInteractionTests {
 
     @Test("Short deliberate turns and flicks finish; small nudges and reversed drags cancel")
     func turnIntent() {
+        #expect(SumiPageTurnIntent.shouldComplete(progress: 0.15, velocity: 0, distance: 450))
+        #expect(SumiPageTurnIntent.shouldComplete(progress: 0.08, velocity: 0, distance: 900))
         #expect(SumiPageTurnIntent.shouldComplete(progress: 0.30, velocity: 0, distance: 450))
         #expect(SumiPageTurnIntent.shouldComplete(progress: 0.08, velocity: 280, distance: 450))
         #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.05, velocity: 800, distance: 100))
-        #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.16, velocity: 0, distance: 450))
+        #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.10, velocity: 0, distance: 450))
         #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.55, velocity: -200, distance: 450))
+        #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.25, velocity: 0, distance: 900, translation: 24))
+        #expect(SumiPageTurnIntent.shouldComplete(progress: 0.25, velocity: 0, distance: 900, translation: 68))
     }
 }

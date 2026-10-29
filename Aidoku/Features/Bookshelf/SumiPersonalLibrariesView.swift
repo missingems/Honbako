@@ -8,8 +8,7 @@ struct SumiPersonalLibrariesView: View {
                 NavigationLink("Komga") { KomgaSetupView() }
                 NavigationLink("Kavita") { KavitaSetupView() }
                 NavigationLink("Suwayomi") { SuwayomiSetupView() }
-            } footer: { Text("Connect to a server you manage to search your own library.") }
-            .listRowBackground(HonbakoSettingsRowBackground())
+            } footer: { Text("Honbako.CollectionGuide.Server.Body") }
         }
         .navigationTitle("Personal Server")
         .navigationBarTitleDisplayMode(.inline)

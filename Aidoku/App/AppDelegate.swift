@@ -156,7 +156,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         #if SUMI
         SumiDefaults.register()
         _ = SumiReadingProvenance.currentDevice
+        #if DEBUG
+        // Local StoreKit tests create their session before the first StoreKit query.
+        if !ProcessInfo.processInfo.arguments.contains("--honbako-storekit-tests") {
+            HonbakoProStore.shared.start()
+        }
+        #else
         HonbakoProStore.shared.start()
+        #endif
         HonbakoChapterAlerts.shared.start()
         honbakoEntitlementObserver = NotificationCenter.default.addObserver(
             forName: HonbakoProStore.entitlementChangedNotification, object: nil, queue: .main
@@ -218,7 +225,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task {
             #if SUMI
             await SumiCatalogBootstrap.shared.prepare()
-            await HonbakoPersonalEnglishImport.runIfRequested()
             #if DEBUG
             await HonbakoDeviceSourceSetup.runIfRequested()
             #endif
@@ -572,6 +578,13 @@ extension AppDelegate {
     func handleUrl(url: URL) {
         #if SUMI
         let appScheme = "honbako"
+        #if !HONBAKO_EXTERNAL_SOURCES
+        // Source packages and source-list links are outside the personal-collection release.
+        if url.pathExtension.lowercased() == "aix"
+            || (url.scheme?.lowercased() == appScheme && url.host?.lowercased() == "addsourcelist") {
+            return
+        }
+        #endif
         #else
         let appScheme = "aidoku"
         #endif

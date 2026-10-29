@@ -1,0 +1,45 @@
+Honbako build 29 — personal-collection review test plan
+Updated 28 October 2026
+
+RECORDED BUILD-29 RESULTS
+- Public Xcode 27.1 (27A9275), version 0.1.0/build29, public flags NO/NO and strict signature verified; upload succeeded and Apple offered29 as Ready to Submit.
+- Build29 selected/saved, four listing descriptions saved, exact3062-character app notes verified against the local copy. Pro notes updated to29 and Pro/group restored as two ready draft items.
+- 38 tests/eight suites passed, including five collection-scope regressions; self-host transport; Pro policy/entitlement; local StoreKit purchase/cached access/refund; bootstrap; cover and search preparation. Log /tmp/Honbako-Build29-ReviewTests.log, result /tmp/Honbako-Build29-ReviewTests.xcresult.
+- No genuine sandbox-account purchase or native purchase/restore button execution was performed. Unit/local StoreKit results do not establish those flows.
+- Settings GUI verification on29 remains NOT EXECUTED: Device Hub did not route Search gesture/shortcut. Do not count that automation limitation as an observed app defect or as a passing GUI test.
+- Actual Add for Review29 reports only missing Content Rights Information. App version not staged; Pro/group are staged; no final Submit.
+- 24 public Dark screenshots stay uploaded; build28 captures still represent the unchanged library/reader UI. The private Light build28 Pro image still represents the unchanged paywall and its capture version is disclosed.
+- Support/privacy site scope deployed and verified HTTP200. Preview keyboard restoredOFF/text3; owned preview app uninstalled and simulator shut down; temporary export deleted; shared DerivedData retained.
+
+A. Tutorial and local collections — APPLE REVIEW ROUTE
+1. Fresh public install: open the original six-page tutorial without an account. Inspect page controls, Chapters and Language, close/reopen and confirm saved progress.
+2. Pull down the library, open Settings → Getting Started. Set Up Local Files, return to the guide, Import a Comic, select an original/authorized CBZ or ZIP, confirm details and import. Enable Local Files under Included in Search; search, Add and Read. Also test picker cancellation.
+3. Confirm Settings and Getting Started have only local/personal-server content setup, with no Source Lists or Import Source File route.
+4. Inspect malformed inputs and canceled imports without deleting user files.
+
+B. Personal servers
+1. Settings → Personal Server offers Komga, Kavita and Suwayomi. Use a reachable server containing original/authorized sample content; use the authentication methods the selected server offers.
+2. Reject wrong credentials and an unreachable URL, then connect correctly, enable the connection, search, Add, open chapter list and read actual pages. Test reopen/persistence and proxy-prefix addresses.
+3. Historical build28 native Komga authentication/catalog/first-page evidence exists in review/gui-build28. Live build29 Komga/Kavita/Suwayomi GUI success is NOT claimed from the automated transport/configuration tests.
+4. Apple has not been supplied an external review server/account. Do not put the stopped development loopback fixture or its credentials into Apple account fields. Tutorial/local import work without an account.
+
+C. Collection boundary — AUTOMATED RESULTS PASSED
+1. Local/Komga/Kavita/Suwayomi configurations survive stored-config decoding and load native source info.
+2. Prior demo/MangaDex configurations remain unavailable after stored/backup loading; package records cannot acquire local-reader privileges by choosing a reserved source identifier.
+3. Adding even an unavailable source list is rejected without persisting it. Package ingestion, catalog installation and catalog/demo creation are rejected.
+4. Inspect source-list deep links and .aix handoff manually when a native UI environment is available. Runtime installation and stored-load guards already have regression coverage.
+
+D. Free/Pro, purchases and sync — REVIEWER CHECKLIST
+1. Both plans ad-free. Free reads/organizes local collections; server chapter downloads, chapter alerts and iCloud library/progress sync require Pro. Imported local files remain usable offline.
+2. Pro screen: actual localized monthly price (U.S. base$1.99), Subscribe, Restore Purchases, Manage Subscription, Terms and Privacy. No private-beta unlock in29.
+3. In an authorized Apple test environment, cancel a purchase, then test a completed purchase and restore with/without an active entitlement. Record unavailable cases as NOT EXECUTED. No real charge should be initiated merely for screenshots.
+4. Test expiry/refund separately from canceling renewal; an unexpired paid period remains active. Billing grace remains off.
+5. With Pro and authorized sample content, download/read offline, request notification permission, and test private iCloud library/progress across devices. Alert timing and sync delivery are not guaranteed. Downloaded pages stay local.
+
+E. Final submission requirements
+- Confirm the accurate content-rights declaration; collection-only scope does not by itself establish the appropriate Apple checkbox answer.
+- Complete owner distribution-license and export confirmations. Preserve the existing owner-confirmed Data Not Collected publication and18+ rating unless practices/scope change.
+- Add app version0.1.0/build29 to the existing two-item draft only after Apple validation passes.
+- Review the concrete draft before any final Submit. No submission has occurred.
+
+Historical full build28 checklist: review/build28-before-collection-only/review-test-plan.txt.

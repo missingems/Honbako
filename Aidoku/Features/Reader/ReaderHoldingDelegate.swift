@@ -23,4 +23,13 @@ protocol ReaderHoldingDelegate: AnyObject {
     func displayPage(_ page: Int) // show page on toolbar but don't set it as current page
     func setSliderOffset(_ offset: CGFloat)
     func setCompleted()
+    #if SUMI
+    @MainActor func sumiPageContentDidChange()
+    #endif
 }
+
+#if SUMI
+extension ReaderHoldingDelegate {
+    @MainActor func sumiPageContentDidChange() {}
+}
+#endif

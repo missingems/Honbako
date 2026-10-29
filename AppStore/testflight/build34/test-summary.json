@@ -1,0 +1,43 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "04492D57-7FB3-47FD-8A03-75CE5A4A40FE",
+        "deviceName": "Honbako Capture iphone",
+        "modelName": "iPhone 18 Pro",
+        "osBuildNumber": "24A434",
+        "osVersion": "27.0",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "passedTests": 97,
+      "skippedTests": 4,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "Honbako \u00b7 Built with macOS 27.0.1",
+  "expectedFailures": 0,
+  "failedTests": 0,
+  "finishTime": 1793228717.019,
+  "passedTests": 97,
+  "result": "Passed",
+  "runtimeWarnings": [],
+  "skippedTests": 4,
+  "startTime": 1793228668.736,
+  "statistics": [],
+  "testFailures": [],
+  "title": "Test - Honbako",
+  "topInsights": [
+    {
+      "category": "Longest Test Runs",
+      "impact": "40% of duration",
+      "text": "3 longest test runs with outlier durations exceeding 2.15s (three standard deviations)"
+    }
+  ],
+  "totalTestCount": 101
+}

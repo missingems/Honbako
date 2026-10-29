@@ -7,7 +7,7 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
         let app = launch(checkCoverLayout: true)
         defer { app.terminate() }
         XCTAssertFalse(item("Honbako.Library.Header.Popular", app).exists)
-        item("Sumi.Grid", app).swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         guard field.waitForExistence(timeout: 5), app.keyboards.firstMatch.waitForExistence(timeout: 5) else {
             XCTFail("Search must expose the configured source catalog")
@@ -55,7 +55,7 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
     func testSourceHeaderBlurSpansTheSearchWidthAndStaysPinned() throws {
         let app = launch()
         defer { app.terminate() }
-        item("Sumi.Grid", app).swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         guard field.waitForExistence(timeout: 5), app.keyboards.firstMatch.waitForExistence(timeout: 5) else {
             XCTFail("Search and keyboard must appear")
@@ -93,7 +93,8 @@ final class HonbakoCoverLayoutInteractionTests: XCTestCase {
 
     @MainActor
     private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     private struct Marker {

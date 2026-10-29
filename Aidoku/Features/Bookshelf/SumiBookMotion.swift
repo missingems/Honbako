@@ -6,11 +6,19 @@ enum SumiBookMotion {
     static let omega = 2 * Double.pi / response
 
     static func closeProgress(_ swipe: CGFloat) -> CGFloat {
-        max(0, (min(1, max(0, swipe)) - 0.1) / 0.9)
+        min(1, max(0, swipe))
     }
 
     static func completes(swipe: CGFloat, velocity: CGFloat) -> Bool {
         swipe + velocity * 0.2 >= 0.5
+    }
+
+    /// Keep the return gesture within thumb reach even on a wide inner display.
+    static func completesBackSwipe(travel: CGFloat, velocity: CGFloat, width: CGFloat) -> Bool {
+        guard travel >= 12 else { return false }
+        if velocity < -140 { return false }
+        let threshold = min(80, max(36, width * 0.18))
+        return travel + max(0, velocity) * 0.16 >= threshold
     }
 
     /// A pinch closes the book itself, never the reader's page scale. A 45%

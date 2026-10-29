@@ -189,7 +189,11 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
 
     private func renderPlaceholder() {
         guard let book = placeholderBook, !holdsVisibleEdition, !isBookTransitionActive else { return }
-        let size = bounds.width > 1 && bounds.height > 1 ? bounds.size : CGSize(width: 340, height: 500)
+        // UIViewRepresentable configures a new tile before SwiftUI gives it a
+        // size. Defer that first bitmap instead of drawing a large throwaway
+        // placeholder and immediately rendering it again during layout.
+        guard bounds.width > 1, bounds.height > 1 else { return }
+        let size = bounds.size
         let scale = max(1, traitCollection.displayScale)
         guard placeholderSize != size || placeholderScale != scale else { return }
         // Render at the actual tile's point size. Rendering a 17pt body label

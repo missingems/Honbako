@@ -12,15 +12,21 @@ final class SumiGridPreviewFixtures {
     private static weak var active: SumiGridPreviewFixtures?
     let books: [SumiBook]
     private let directory: URL
+    private let failedPageURL: URL
     private let originalArgumentDomain: [String: Any]
     private var positions: [String: (chapterKey: String, page: Int)] = ["book-002": ("chapter-2", 4)]
 
     init() {
+        // Explicit UI validation stays awake until this test app terminates.
+        UIApplication.shared.isIdleTimerDisabled = true
         let defaults = UserDefaults.standard
         originalArgumentDomain = defaults.volatileDomain(forName: UserDefaults.argumentDomain)
         var overrides = originalArgumentDomain
         overrides.merge([
             "General.incognitoMode": true,
+            // Touch tests address the reader display; the decorative accessory
+            // has its own geometry and is verified separately.
+            HonbakoCoverDisplayPreferences.showCoverKey: false,
             "Reader.pagedPageLayout": "auto", "Reader.pagesToPreload": 8,
             "Reader.liveText": false, "Reader.autoScroll": false,
             "Reader.skipDuplicateChapters": false, "Reader.markDuplicateChapters": false,
@@ -29,6 +35,7 @@ final class SumiGridPreviewFixtures {
         defaults.setVolatileDomain(overrides, forName: UserDefaults.argumentDomain)
         let fixtureDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("SumiGridValidation", isDirectory: true)
         directory = fixtureDirectory
+        failedPageURL = fixtureDirectory.appendingPathComponent("retry-page-\(UUID().uuidString).png")
         try? FileManager.default.createDirectory(at: fixtureDirectory, withIntermediateDirectories: true)
         books = (1...100).map { number in
             let key = String(format: "book-%03d", number)
@@ -107,9 +114,25 @@ final class SumiGridPreviewFixtures {
         guard isEnabled, manga.sourceKey == sourceKey else { return nil }
         let chapterNumber = Int(chapter.chapterNumber ?? 1)
         return (1...8).map { page in
-            Page(sourceId: sourceKey, chapterId: chapter.id, index: page - 1,
-                 image: pageImage(chapter: chapterNumber, page: page))
+            if ProcessInfo.processInfo.arguments.contains("--honbako-page-failure-check"),
+               manga.key == "book-002", chapter.key == "chapter-2", page == 4,
+               let failedPageURL = active?.failedPageURL {
+                // Exercise the real image pipeline failure, then recover this
+                // same canonical page on the explicit retry action.
+                return Page(sourceId: sourceKey, chapterId: chapter.id, index: page - 1,
+                            imageURL: failedPageURL.absoluteString)
+            }
+            return Page(sourceId: sourceKey, chapterId: chapter.id, index: page - 1,
+                        image: ProcessInfo.processInfo.arguments.contains("--honbako-japanese-guide-check")
+                            ? HonbakoJapanesePracticePage.render() : pageImage(chapter: chapterNumber, page: page))
         }
+    }
+
+    static func recoverFailedPageIfNeeded(_ page: Page) {
+        guard isEnabled, ProcessInfo.processInfo.arguments.contains("--honbako-page-failure-check"),
+              let active, page.sourceId == sourceKey, page.index == 3,
+              page.imageURL == active.failedPageURL.absoluteString else { return }
+        try? pageImage(chapter: 2, page: 4).pngData()?.write(to: active.failedPageURL, options: .atomic)
     }
 
     /// Compatibility with the same opt-in page-provider seam used by previews.
@@ -121,6 +144,11 @@ final class SumiGridPreviewFixtures {
         let multilingual = ProcessInfo.processInfo.arguments.contains("--sumi-grid-languages")
         return (1...3).reversed().flatMap { number -> [AidokuRunner.Chapter] in
             var chapter = AidokuRunner.Chapter(key: "chapter-\(number)", title: "Fixture chapter \(number)", chapterNumber: Float(number))
+            if ProcessInfo.processInfo.arguments.contains("--honbako-japanese-guide-chinese-check") {
+                chapter.language = "zh-Hans"
+            } else if ProcessInfo.processInfo.arguments.contains("--honbako-japanese-guide-check") {
+                chapter.language = "ja"
+            }
             guard multilingual else { return [chapter] }
             chapter.language = "en"
             var translation = AidokuRunner.Chapter(key: "chapter-\(number)-es", title: "Capítulo \(number)", chapterNumber: Float(number))

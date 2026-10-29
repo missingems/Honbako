@@ -6,8 +6,9 @@ Swipe through portrait pages or turn pages in a landscape book. Preview a page b
 
 Honbako Pro is a monthly auto-renewing subscription for offline reading, chapter alerts, and iCloud library and progress sync. Alerts depend on the source and iOS background refresh, so delivery times vary. Downloads require permission from the content provider.
 
-No third-party manga is included. Content and translations depend on the files or connections you add.
+No third-party manga catalog is included. Import your own comic files or connect your personal Komga, Kavita or Suwayomi server. External source lists and source packages are not supported. Content and translations depend on your collection.
 
 U.S. monthly price: US$1.99. Local pricing is shown by the App Store.
 
+Privacy Policy: https://missingems.github.io/Honbako/privacy/
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/

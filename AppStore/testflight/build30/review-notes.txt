@@ -1,0 +1,24 @@
+Honbako 0.2.0 build 30 is an external-source-enabled TestFlight variant. The separate App Store candidate remains collection-only version 0.1.0 build 29.
+
+FIRST-PARTY REVIEW SOURCE — NO SIGN-IN REQUIRED
+Use our own Honbako Originals source, hosted in the app's GitHub repository. It contains only an online edition of our original six-page illustrated tutorial, The Bookshop Between Pages. No third-party manga provider or account is needed for this test.
+
+1. Open Settings → Source Lists and add:
+https://missingems.github.io/Honbako/sources/index.json
+2. Open Honbako Original Sources and install Honbako Originals (version 1). Adding the list alone does not install the source.
+3. Enable Honbako Originals under Included in Search, then search for Bookshop.
+4. Open The Bookshop Between Pages — Online Edition, view its one chapter and read all six pages. Add it to the library, close and resume.
+5. For file-import testing, download the .aix package from the installation page below, then use Settings → Import Source File.
+Installation and package: https://missingems.github.io/Honbako/sources/
+Browser-readable comic: https://missingems.github.io/Honbako/originals/bookshop/
+
+The source catalog is static and contains one story. It is not expected to produce new-chapter alerts. The source package returns only our own hosted content URLs. No providers, external manga or automatic manga import are preconfigured. Other user-added connections depend on the user's permissions and server access.
+
+The bundled offline original tutorial, local comic import and personal Komga/Kavita/Suwayomi connections are also available. No Honbako account is required. Optional private-server tests need the reviewer's own reachable server; the first-party source above covers external installation and online reading without credentials.
+
+Build 30 has normal Pro purchases and restore, with no private Pro unlock. Settings → Honbako Pro shows Subscribe, Restore Purchases, Manage Subscription, Terms and Privacy. Both plans are ad-free. Pro adds downloads, alerts and private iCloud library/progress sync. The U.S. base monthly price is US$1.99; TestFlight purchases use Apple's test environment.
+
+Optional Duo cover display uses Apple's video-only camera accessory, with no photo/video recording or microphone. It stops when hidden, closed, folded or backgrounded.
+
+Support: https://missingems.github.io/Honbako/support/
+Privacy: https://missingems.github.io/Honbako/privacy/

@@ -158,6 +158,7 @@ struct SelfHostedSourceSetupView: View {
 
             Section {
                 TextField(sourceName, text: $name)
+                    .accessibilityIdentifier("SelfHosted.Name")
                     .autocorrectionDisabled()
                     .submitLabel(.next)
                     .focused($focusedField, equals: .name)
@@ -175,6 +176,7 @@ struct SelfHostedSourceSetupView: View {
             }
             Section {
                 TextField(placeholderServer ?? NSLocalizedString("SERVER_URL"), text: $server)
+                    .accessibilityIdentifier("SelfHosted.ServerURL")
                     .keyboardType(.URL)
                     .textContentType(.URL)
                     .textInputAutocapitalization(.never)
@@ -222,7 +224,8 @@ struct SelfHostedSourceSetupView: View {
                 }
                 if check.canLoginApiKey && (!hasMultipleLoginMethods || loginMethod == .apiKey) {
                     Section {
-                        TextField(NSLocalizedString("API_KEY"), text: $apiKey)
+                        SecureField(NSLocalizedString("API_KEY"), text: $apiKey)
+                            .accessibilityIdentifier("SelfHosted.APIKey")
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .submitLabel(.done)
@@ -257,6 +260,7 @@ struct SelfHostedSourceSetupView: View {
                         .disabled(isLoading)
 
                         SecureField(NSLocalizedString("PASSWORD"), text: $password)
+                            .accessibilityIdentifier("SelfHosted.Password")
                             .textContentType(.password)
                             .submitLabel(.done)
                             .focused($focusedField, equals: .password)
@@ -352,6 +356,7 @@ struct SelfHostedSourceSetupView: View {
                     }
                 }
                 .disabled(submitDisabled)
+                .accessibilityIdentifier("SelfHosted.Continue")
             }
         }
         .navigationTitle(title)
@@ -363,7 +368,7 @@ struct SelfHostedSourceSetupView: View {
     }
 
     var submitDisabled: Bool {
-        server.isEmpty || name.isEmpty
+        server.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || !uniqueName || !uniqueServer
             || state == .loading || isLoadingLoginState
             || (
@@ -390,7 +395,10 @@ struct SelfHostedSourceSetupView: View {
 
         // store existing komga servers to check against for uniqueness
         let relatedSources = sources.filter({ $0.sourceId.hasPrefix(sourceKeyPrefix) })
-        self.existingServers = Set(relatedSources.compactMap { UserDefaults.standard.string(forKey: "\($0.sourceId).server") })
+        self.existingServers = Set(relatedSources.compactMap {
+            UserDefaults.standard.string(forKey: "\($0.sourceId).server")
+                .flatMap { SelfHostedServerURL($0)?.sourceString }
+        })
     }
 
     func submit() {
@@ -414,22 +422,29 @@ struct SelfHostedSourceSetupView: View {
     }
 
     func ensureUniqueServer() {
-        let serverString = (server.last == "/" ? String(server[..<server.index(before: server.endIndex)]) : server)
-            .trimmingCharacters(in: .whitespaces)
-        uniqueServer = !existingServers.contains(serverString)
+        guard let address = SelfHostedServerURL(server) else {
+            uniqueServer = true
+            return
+        }
+        uniqueServer = !existingServers.contains(address.sourceString)
     }
 
     func checkServer() async {
         error = nil
         state = .loading
 
-        // trim whitespace
-        name = name.trimmingCharacters(in: .whitespaces)
-        server = server.trimmingCharacters(in: .whitespaces)
-
-        // remove trailing slash
-        if server.last == "/" {
-            server.removeLast()
+        name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let address = SelfHostedServerURL(server) else {
+            state = .initial
+            error = .connection
+            return
+        }
+        server = address.sourceString
+        ensureUniqueName()
+        ensureUniqueServer()
+        guard uniqueName, uniqueServer, !name.isEmpty else {
+            state = .initial
+            return
         }
 
         let serverCheck = await checkHandler(server)
@@ -466,7 +481,7 @@ struct SelfHostedSourceSetupView: View {
         // trim whitespace (again, in case name was changed)
         name = name.trimmingCharacters(in: .whitespaces)
 
-        guard let serverURL = server.urlWithTrailingSlash() else {
+        guard let serverURL = SelfHostedServerURL(server)?.url else {
             state = .logIn(check)
             error = .connection
             return
@@ -495,7 +510,7 @@ struct SelfHostedSourceSetupView: View {
 
     func noLogIn() async {
         guard
-            let serverURL = server.urlWithTrailingSlash(),
+            let serverURL = SelfHostedServerURL(server)?.url,
             let noLogInHandler
         else {
             state = .initial

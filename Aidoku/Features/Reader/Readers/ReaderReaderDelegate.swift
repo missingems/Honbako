@@ -38,3 +38,14 @@ protocol ReaderDictionaryReader: ReaderReaderDelegate {
     func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode)
     func dismissActiveDictionaryOverlay() -> Bool
 }
+
+#if SUMI
+/// Selection anchors are in the reader window, including zoom and spread transforms.
+typealias HonbakoJapaneseSelectionHandler = @MainActor (HonbakoJapaneseRegion, Int?, CGRect) -> Void
+
+@MainActor
+protocol HonbakoJapaneseReader: ReaderReaderDelegate {
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?)
+    func setJapaneseLearningActive(_ active: Bool)
+}
+#endif

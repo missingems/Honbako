@@ -1,8 +1,7 @@
 #if SUMI
 import UIKit
 
-/// Three independent controls keep navigation separate from page exploration.
-/// This view positions them as a group without adding a fourth material surface.
+/// Native controls keep closing, page exploration, and chapter navigation distinct.
 final class SumiReaderToolbar: UIView {
     var close: (() -> Void)?
     var chapters: (() -> Void)?
@@ -107,9 +106,16 @@ final class SumiReaderToolbar: UIView {
         scrubber.isHidden = false
         scrubber.alpha = 1
         scrubberGlass.contentView.addSubview(scrubber)
-        accessibilityElements = [closeButton, scrubber, chaptersButton]
+        updateAccessibilityElements()
         updateOverlayVisibility()
         setNeedsLayout()
+    }
+
+    private func updateAccessibilityElements() {
+        var elements: [Any] = [closeButton]
+        if let scrubber { elements.append(scrubber) }
+        elements.append(chaptersButton)
+        accessibilityElements = elements
     }
 
     override func layoutSubviews() {

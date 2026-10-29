@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const factory = process.env.HONBAKO_WABT_MODULE ? require(path.resolve(process.env.HONBAKO_WABT_MODULE)) : require('wabt');
+const wabt = await factory();
+const module = wabt.parseWat(process.argv[2], fs.readFileSync(process.argv[2], 'utf8'));
+module.resolveNames(); module.validate();
+const { buffer } = module.toBinary({ write_debug_names: true, canonicalize_lebs: true });
+if (!WebAssembly.validate(buffer)) throw new Error('Generated module failed WebAssembly validation');
+fs.writeFileSync(process.argv[3], buffer);
+module.destroy();

@@ -189,6 +189,8 @@ final class SumiLibraryStore: ObservableObject {
     private var refreshTask: Task<Void, Never>?
     private var searchGeneration = 0
     private var refreshGeneration = 0
+    private var publishedRefreshGeneration = 0
+    private enum RefreshOutcome { case applied, superseded, failed }
     private var loadingCount = 0
     private var mutatingBooks: Set<MangaIdentifier> = []
     private var libraryError: String?
@@ -200,7 +202,13 @@ final class SumiLibraryStore: ObservableObject {
          searchPreparationService: SumiSearchPreparationService = .shared,
          coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) },
          tutorialInstaller: (@MainActor @Sendable () async -> Void)? = nil) {
-        self.searchSourceLoader = searchSourceLoader ?? { await SourceManager.shared.getLoadedSources() }
+        self.searchSourceLoader = searchSourceLoader ?? {
+            var sources = await SourceManager.shared.getLoadedSources()
+            if UserDefaults.standard.object(forKey: HonbakoGuideLibrary.searchEnabledKey) as? Bool ?? true {
+                sources.append(HonbakoTutorialManga.source)
+            }
+            return sources
+        }
         self.searchPreparationService = searchPreparationService
         self.coverPreparer = coverPreparer
         self.tutorialInstaller = tutorialInstaller
@@ -231,14 +239,37 @@ final class SumiLibraryStore: ObservableObject {
         refreshTask?.cancel()
     }
 
-    func refresh() async {
+    func refresh() async { _ = await refreshSnapshot() }
+
+    /// Closing requires a snapshot published after its history save. A newer
+    /// notification refresh may supersede ours; that is not a completed read.
+    /// Retry only supersession, with both an attempt bound and cancellation.
+    func refreshForReturn() async -> Bool {
+        refreshTask?.cancel()
+        let deadline = ContinuousClock.now.advanced(by: .milliseconds(1500))
+        for _ in 0..<3 {
+            guard !Task.isCancelled, ContinuousClock.now < deadline else { return false }
+            let requestedGeneration = refreshGeneration + 1
+            switch await refreshSnapshot() {
+            case .applied: return true
+            case .failed: return false
+            case .superseded:
+                guard !Task.isCancelled else { return false }
+                if publishedRefreshGeneration >= requestedGeneration { return true }
+            }
+        }
+        return false
+    }
+
+    private func refreshSnapshot() async -> RefreshOutcome {
         refreshGeneration += 1
         let generation = refreshGeneration
         beginLoading()
         defer { endLoading() }
+        let outcome: RefreshOutcome
         do {
             await tutorialInstaller?()
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
             let books = try await CoreDataManager.shared.container.performBackgroundTask { context in
                 let request = LibraryMangaObject.fetchRequest()
                 request.predicate = NSPredicate(format: "manga != nil")
@@ -285,9 +316,9 @@ final class SumiLibraryStore: ObservableObject {
                 }.sorted { ($0.lastRead ?? .distantPast) > ($1.lastRead ?? .distantPast) }
                 return (saved: saved, recent: recent)
             }
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
             await coverPreparer(books.saved)
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
             library = books.saved
             recentlyRead = books.recent
             libraryError = nil
@@ -299,11 +330,15 @@ final class SumiLibraryStore: ObservableObject {
             searchResults = searchResults.map(enrich)
             searchEditions = searchEditions.mapValues { $0.map(enrich) }
             updateSearchSections()
+            publishedRefreshGeneration = generation
+            outcome = .applied
         } catch {
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
             libraryError = String(localized: "Your reading library could not be loaded: \(error.localizedDescription)")
+            outcome = .failed
         }
         updateErrorMessage()
+        return outcome
     }
 
     func editions(for book: SumiBook) -> [SumiBook] {
@@ -493,11 +528,18 @@ final class SumiLibraryStore: ObservableObject {
                     updateErrorMessage()
                     return nil
                 }
-                operationError = source == nil
-                    ? String(localized: "This title’s source is unavailable and this chapter hasn’t been downloaded.")
-                    : latestHistory == nil
-                    ? String(localized: "No readable chapters are available for this title.")
-                    : String(localized: "Your last-read chapter is unavailable. It has not been replaced with another chapter.")
+                if latestHistory == nil, chapters.isEmpty, let native = source?.runner as? HonbakoMangaDexRunner {
+                    let configured = await native.selectedChapterLanguages()
+                    let languages = SumiChapterLanguage.normalized(preferredLanguage).map { [$0] } ?? configured
+                    let names = languages.map { SourceLanguage.displayName(for: $0) }.formatted(.list(type: .and))
+                    operationError = String(localized: "MangaDex has no readable chapters in \(names) for this title. Its title and cover can still be listed.")
+                } else {
+                    operationError = source == nil
+                        ? String(localized: "This title’s source is unavailable and this chapter hasn’t been downloaded.")
+                        : latestHistory == nil
+                        ? String(localized: "No readable chapters are available for this title.")
+                        : String(localized: "Your last-read chapter is unavailable. It has not been replaced with another chapter.")
+                }
                 updateErrorMessage()
                 return nil
             }

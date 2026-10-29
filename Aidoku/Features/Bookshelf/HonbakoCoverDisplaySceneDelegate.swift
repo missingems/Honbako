@@ -16,7 +16,6 @@ final class HonbakoCoverDisplaySceneDelegate: UIResponder, UIWindowSceneDelegate
         // This accessory is decorative. It never takes key-window status from
         // the reader, so keyboard input and app navigation stay on the book.
         window.isHidden = false
-        scene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
         self.window = window
         model.setSceneConnected(true, role: session.role.rawValue, size: scene.coordinateSpace.bounds.size)
     }

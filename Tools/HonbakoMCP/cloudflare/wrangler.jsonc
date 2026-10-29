@@ -1,0 +1,35 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "honbako-mcp",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "PUBLIC_ORIGIN": "https://honbako-mcp.jun-19c.workers.dev",
+    "OWNER_NAME": "personal-owner-v1"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "HONBAKO_OWNER",
+        "class_name": "HonbakoOwner"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "HonbakoOwner"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "19cc8706f23e127305e14dfd41191162"
+}

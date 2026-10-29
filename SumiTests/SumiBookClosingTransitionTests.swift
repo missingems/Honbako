@@ -3,6 +3,7 @@ import Testing
 import UIKit
 
 @MainActor
+@Suite(.serialized)
 struct SumiBookClosingTransitionTests {
     @Test("Interactive release reports finish or cancellation once before visual completion")
     func interactiveOutcomePrecedesCompletion() async throws {
@@ -109,6 +110,138 @@ struct SumiBookClosingTransitionTests {
         #expect(context.completed == true)
         #expect(presenter.superview === host.view)
         #expect(presenter.frame == presenterFrame, "The retained Search layout is never moved into transition-container coordinates")
+    }
+
+    @Test("A reordered book waits for refreshed shelves before choosing its new receiving cell")
+    func resolvesDestinationAfterPreparation() async throws {
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive })
+        let window = UIWindow(windowScene: scene)
+        let host = UIViewController()
+        window.rootViewController = host
+        window.isHidden = false
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 450, height: 800))
+        host.view.addSubview(container)
+        let context = ClosingContext(container: container)
+        let oldSlot = CGRect(x: 12, y: 30, width: 100, height: 150)
+        let finishedSlot = CGRect(x: 220, y: 430, width: 100, height: 150)
+        var currentSlot: CGRect? = oldSlot
+        var resume: CheckedContinuation<Void, Never>?
+        let transition = SumiBookTransition(coverImage: nil,
+            sourceFrameProvider: { _ in oldSlot }, gridSourceFrameProvider: { _ in currentSlot },
+            readerSurface: { context.from.view }, paired: { false }, sourceView: { nil })
+        transition.prepareReturn = {
+            await withCheckedContinuation { resume = $0 }
+            currentSlot = finishedSlot
+        }
+        let animator = SumiBookOpeningAnimator(opening: false, book: transition)
+        animator.begin(context, interactive: false)
+        let stage = try #require(context.containerView.subviews.compactMap { $0 as? SumiBookStageView }.first)
+        let waitingDeadline = ContinuousClock.now.advanced(by: .seconds(1))
+        while (resume == nil || stage.completedFrames < 2), ContinuousClock.now < waitingDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(resume != nil)
+        #expect(stage.completedProgress == 1, "Never fly toward the opening slot while history is still being saved")
+        currentSlot = nil
+        resume?.resume()
+        resume = nil
+        let deadline = ContinuousClock.now.advanced(by: .seconds(3))
+        while (stage.completedProgress ?? 1) >= 0.98, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(stage.completedSourceFrame == finishedSlot)
+        while context.completed == nil, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(context.completed == true)
+    }
+
+    @Test("An unavailable current cell never resolves to its obsolete opening rectangle")
+    func missingCurrentCellDoesNotUseOldSlot() {
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 450, height: 800))
+        let oldSlot = CGRect(x: 12, y: 30, width: 100, height: 150)
+        let transition = SumiBookTransition(coverImage: nil,
+            sourceFrameProvider: { _ in oldSlot }, gridSourceFrameProvider: { _ in nil },
+            readerSurface: { nil }, paired: { false }, sourceView: { nil })
+        #expect(transition.resolvedGridSourceFrame(in: container) == nil)
+        #expect(transition.gridSourceFrame(in: container) != oldSlot)
+        #expect(transition.gridSourceFrame(in: container).midX == container.bounds.midX)
+    }
+
+    @Test("Interrupting return preparation cancels its task and releases the transition")
+    func interruptionCancelsPreparation() async throws {
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive })
+        let window = UIWindow(windowScene: scene)
+        let host = UIViewController()
+        window.rootViewController = host
+        window.isHidden = false
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 450, height: 800))
+        host.view.addSubview(container)
+        let context = ClosingContext(container: container)
+        var cancelled = false
+        let transition = SumiBookTransition(coverImage: nil,
+            readerSurface: { context.from.view }, paired: { false }, sourceView: { nil })
+        transition.prepareReturn = {
+            do { try await Task.sleep(for: .seconds(10)) }
+            catch { cancelled = true }
+        }
+        let animator = SumiBookOpeningAnimator(opening: false, book: transition)
+        animator.begin(context, interactive: false)
+        await Task.yield()
+        container.bounds.size.width += 1
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while (context.completed == nil || !cancelled), ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(context.completed == false)
+        #expect(cancelled)
+    }
+
+    @Test("The receiving cover is revealed underneath the exact closed stage before that stage is removed")
+    func receivingCoverHandoffHasNoEmptyFrame() async throws {
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive })
+        let window = UIWindow(windowScene: scene)
+        let host = UIViewController()
+        window.rootViewController = host
+        window.isHidden = false
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 450, height: 800))
+        host.view.addSubview(container)
+        let context = ClosingContext(container: container)
+        let slot = CGRect(x: 130, y: 270, width: 100, height: 150)
+        let receiver = UIView(frame: slot)
+        receiver.isHidden = true
+        context.to.view.addSubview(receiver)
+        let transition = SumiBookTransition(coverImage: nil,
+            gridSourceFrameProvider: { _ in slot }, readerSurface: { context.from.view },
+            paired: { false }, sourceView: { receiver })
+        var revealedAtFrames: Int?
+        var stage: SumiBookStageView?
+        transition.revealSourceForHandoff = {
+            #expect(stage?.superview === container)
+            #expect(stage?.completedProgress == 0)
+            #expect(stage?.completedSourceFrame == slot)
+            #expect(context.completed == nil)
+            receiver.isHidden = false
+            revealedAtFrames = stage?.completedFrames
+        }
+        let animator = SumiBookOpeningAnimator(opening: false, book: transition)
+        animator.begin(context, interactive: false)
+        stage = try #require(container.subviews.compactMap { $0 as? SumiBookStageView }.first)
+        let deadline = ContinuousClock.now.advanced(by: .seconds(3))
+        while context.completed == nil, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(context.completed == true)
+        #expect(!receiver.isHidden)
+        let handoffFrames = try #require(revealedAtFrames)
+        #expect((stage?.completedFrames ?? 0) >= handoffFrames + 2)
+        #expect(stage?.superview == nil)
     }
 
     @Test("Closing a rotated portrait reader keeps its settled slot and single-page geometry through the whole return")

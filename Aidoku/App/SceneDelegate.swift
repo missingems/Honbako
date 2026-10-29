@@ -52,6 +52,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
             self.window = window
             window.makeKeyAndVisible()
+            #if SUMI
+            _ = HonbakoAutomationService.shared
+            #endif
 
             #if !SUMI
             let incognitoBannerView = IncognitoBannerView()

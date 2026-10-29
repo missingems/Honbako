@@ -53,7 +53,11 @@ actor SourceManager {
     var sourceListLoadFinished = false
 
     private init() {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        sourceListURLs = []
+        #else
         sourceListURLs = AppSettings.browse.sourceLists.get()
+        #endif
         disabledSourceKeys = AppSettings.browse.disabledSources.get()
     }
 
@@ -470,6 +474,9 @@ extension SourceManager {
     }
 
     func installExternalSources(keys: Set<String>) async -> (AsyncStream<String>, Int)? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         guard !keys.isEmpty else { return nil }
 
         let missingKeys = await missingExternalSourceKeys(in: keys)
@@ -509,11 +516,15 @@ extension SourceManager {
         }
 
         return (stream, sources.count)
+        #endif
     }
 
     /// Native descriptors only select a bundled allowlisted implementation.
     /// Existing executable-package imports retain their established path.
     func installExternalSource(_ info: ExternalSourceInfo) async -> AidokuRunner.Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         await waitForSourcesLoad()
         if info.nativeRunner != nil {
             #if SUMI
@@ -538,9 +549,13 @@ extension SourceManager {
         }
         guard let url = info.fileURL else { return nil }
         return await importSource(from: url)
+        #endif
     }
 
     func importSource(from url: URL) async -> AidokuRunner.Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         await waitForSourcesLoad()
 
         // download and unzip source aix
@@ -665,6 +680,7 @@ extension SourceManager {
         notifySourcesLoaded(keys: [result.key])
 
         return result
+        #endif
     }
 
     enum CustomSourceKind {
@@ -749,6 +765,9 @@ extension SourceManager {
                     UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
                 }
         }
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard config.isPersonalCollection else { return nil }
+        #endif
         let source = config.toSource()
 
         // add to coredata
@@ -768,6 +787,9 @@ extension SourceManager {
     }
 
     func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) async {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard config.isPersonalCollection else { return }
+        #endif
         let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
             let source = CoreDataManager.shared.getSource(key: key, context: context)
             source?.customSource = config.encode() as NSObject
@@ -961,6 +983,9 @@ extension SourceManager {
 // MARK: - Source List Management
 extension SourceManager {
     func addSourceList(url: URL, allowUnavailable: Bool = false) async -> Bool {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return false
+        #else
         guard !sourceListURLs.contains(url) else {
             return false
         }
@@ -989,6 +1014,7 @@ extension SourceManager {
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
 
         return true
+        #endif
     }
 
     func removeSourceList(url: URL) async {

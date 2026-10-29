@@ -1,0 +1,34 @@
+{
+  "owned_devices_cleaned": [
+    {
+      "udid": "04492D57-7FB3-47FD-8A03-75CE5A4A40FE",
+      "action": "removed disposable native test app and generated comic cache"
+    }
+  ],
+  "temporary_export_removed": true,
+  "shared_derived_data_retained": true,
+  "final_archive_retained": true,
+  "small_passing_test_results_retained": true,
+  "recordings_created": false,
+  "original_source_temporary_files_removed": [
+    {
+      "path": "/tmp/honbako-original-source-tools",
+      "bytes": 10053497
+    },
+    {
+      "path": "/tmp/honbako-original-source-npm-cache",
+      "bytes": 3161622
+    },
+    {
+      "path": "/tmp/Honbako-OriginalSourceAssetsExport",
+      "bytes": 22262373
+    },
+    {
+      "path": "/tmp/Honbako-OriginalSource-Offline.xcresult",
+      "bytes": 22548831
+    }
+  ],
+  "original_comic_pngs_retained_in_published_site": true,
+  "small_live_source_result_retained": "/tmp/Honbako-OriginalSource-Live.xcresult",
+  "build30_archive_info_hash_unchanged_after_source_tests": true
+}

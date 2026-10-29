@@ -1,0 +1,8 @@
+2026-10-29 09:11:53.273 xcodebuild[71432:304880436] Starting upload
+2026-10-29 09:13:04.787 xcodebuild[71432:304882235] Progress 0%: Uploading “Sumi.ipa” is complete.
+2026-10-29 09:13:04.787 xcodebuild[71432:304882235] Progress 0%: Uploading “Sumi.ipa” is complete.
+2026-10-29 09:13:04.787 xcodebuild[71432:304882235] Progress 100%: Uploading “Sumi.ipa” is complete.
+2026-10-29 09:13:04.788 xcodebuild[71432:304882235] Progress 100%: Uploading “Sumi.ipa” is complete.
+2026-10-29 09:13:05.116 xcodebuild[71432:304882235] Progress 100%: Uploaded package is processing.
+2026-10-29 09:13:05.119 xcodebuild[71432:304882235] Progress 100%: Upload succeeded.
+** EXPORT SUCCEEDED **

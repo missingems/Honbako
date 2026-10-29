@@ -1,0 +1,18 @@
+External-sources beta — version 0.2.0, build 35
+
+Use our own Honbako Originals sample. No sign-in is required; it contains one original six-page story.
+Source list: https://missingems.github.io/Honbako/sources/index.json
+Instructions and .aix package: https://missingems.github.io/Honbako/sources/
+
+1. A new installation adds the original story plus Search & Delete, Your Collections, and Read Your Way. Each guide has four offline pages in English, Japanese, Simplified Chinese and Traditional Chinese. Remove a guide through Chapters and Language → Remove from Library. Reopen the app: it must stay removed. Use toolbar Search to find it under On This Device and add it again.
+2. Tap the native Search toolbar button, enter a title, then Cancel to minimize it. Settings must remain reachable. Scroll toward later books to hide the toolbar; scroll back to show it. Pulling down must not open a search overlay or the keyboard. Settings → Getting Started explains files, servers and source lists.
+3. Settings → Source Lists: add the URL above. Open Honbako Original Sources and install Honbako Originals version 1. Adding the list must not install the source automatically. Enable it under Included in Search.
+4. Search for Bookshop. Open The Bookshop Between Pages — Online Edition, inspect its one chapter, add it to your library and read all six pages. Close, resume and relaunch. Later search pages and unmatched queries should be empty.
+5. Download the .aix package from the instructions page and use Settings → Import Source File. Check cancellation and rejection of an invalid package. Comic CBZ/ZIP files belong in Local Files.
+6. Check the bundled offline tutorial and local comic import still work. If you have your own reachable Komga, Kavita or Suwayomi server, test its connection separately.
+7. Both plans are ad-free. On Free, chapter downloads/alerts/iCloud sync should open Pro. Check the monthly price, Subscribe and Restore Purchases in Apple's TestFlight test environment. This beta has no private Pro unlock. The original sample is static, so no new-chapter alerts are expected from it.
+8. Mark a completed book finished and check the Finished shelf and reversible Hide Finished Books setting. Check dark mode and larger text.
+9. Read and scrub right-to-left in portrait and landscape. Pinch inward: both page halves should fold toward the middle, the cover should close at the center, then return to its actual slot. Try a partial pinch and release to cancel; your page must not change. Open the returned cover again. Check pinching with reading controls visible does not open Chapters.
+10. Open a book from search, close it and verify the result row does not shift or refocus the keyboard. Unavailable connections should leave the app usable.
+
+No external providers or external manga are installed automatically. Original offline guides are added once. Report the build, source name/version, device/OS, reproduction steps and error text. Remove passwords, tokens and personal server addresses before sharing public screenshots.

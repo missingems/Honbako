@@ -12,6 +12,8 @@ struct HonbakoStoreKitIntegrationTests {
 
     @Test("A verified monthly StoreKit test purchase unlocks Pro, and refund removes the entitlement")
     func verifiedMonthlySubscription() async throws {
+        try #require(ProcessInfo.processInfo.arguments.contains("--honbako-storekit-tests"),
+            "Use the HonbakoStoreKitTests scheme to initialize the local StoreKit session before the app starts its store.")
         let bundle = Bundle(for: BundleMarker.self)
         let url = try #require(bundle.url(forResource: "HonbakoPro", withExtension: "storekit"))
         let session = try SKTestSession(contentsOf: url)
@@ -19,6 +21,7 @@ struct HonbakoStoreKitIntegrationTests {
         session.disableDialogs = true
         session.clearTransactions()
         let store = HonbakoProStore.shared
+        store.start()
         defer {
             session.clearTransactions()
             Task { @MainActor in await store.refreshEntitlement() }
@@ -38,6 +41,8 @@ struct HonbakoStoreKitIntegrationTests {
             "\($0.id): type=\($0.type), period=\(String(describing: $0.subscription?.subscriptionPeriod))"
         }.joined(separator: "; ")
         let product = try #require(store.product, "Local StoreKit catalog: \(catalogDescription); message: \(store.message ?? "none")")
+        try #require(product.subscription?.subscriptionGroupID == "7AFB68E2",
+            "Run this test with the HonbakoStoreKitTests scheme so StoreKit uses the local fixture before app launch.")
         #expect(product.type == .autoRenewable)
         #expect(product.subscription?.subscriptionPeriod.value == 1)
         #expect(product.subscription?.subscriptionPeriod.unit == .month)

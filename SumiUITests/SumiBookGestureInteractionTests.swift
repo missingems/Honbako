@@ -90,7 +90,7 @@ final class SumiBookGestureInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
@@ -134,7 +134,8 @@ final class SumiBookGestureInteractionTests: XCTestCase {
     }
 
     @MainActor private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     @MainActor private func wait(_ predicate: NSPredicate, _ element: XCUIElement, timeout: TimeInterval = 10) -> Bool {

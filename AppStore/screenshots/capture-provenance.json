@@ -1,107 +1,262 @@
 {
-  "build": "16",
-  "source": "Native app screenshots from disposable iOS/iPadOS simulators; actual bundled tutorial, no source fixtures or mockups",
-  "configuration": "Debug",
-  "devices": {
-    "iphone": "iPhone 17 Pro, iOS27.0,1206x2622",
-    "ipad": "iPad Pro13-inch(M5),iPadOS27.0,2064x2752"
+  "design": "Near-black canvas with high-contrast centered headlines and enlarged subtitles, no marketing brand label, complete licensed silver Apple product bezels; unchanged native dark-mode app screenshot content",
+  "image_generation_used_for_this_redesign": false,
+  "ui_fabricated": false,
+  "source_capture_build": 28,
+  "source_capture_configuration": "Debug simulator",
+  "source_capture_appearance": "Dark",
+  "source_capture_flags": {
+    "HONBAKO_PERSONAL_FEATURES": "NO",
+    "HONBAKO_IMPORT_ENGLISH_50": "NO"
   },
+  "source_capture_provenance": "screenshot-captures/build28-dark/capture-manifest.json",
+  "apple_design_resource_license": "Owner explicitly accepted 2026-10-28",
+  "apple_bezel_sources": [
+    "https://developer.apple.com/design/resources/",
+    "https://devimages-cdn.apple.com/design/resources/download/Bezel-iPhone-18.dmg",
+    "https://devimages-cdn.apple.com/design/resources/download/Bezel-iPad-Pro-%28M5%29.dmg"
+  ],
   "captures": [
     {
-      "file": "screenshots/en-US/ipad/01-library.jpg",
-      "sha256": "19a966c2380ca0a114a354d372482cd59df301d4025e14fae1f92d26fbe8db47"
-    },
-    {
-      "file": "screenshots/en-US/ipad/02-reader.jpg",
-      "sha256": "fdf8bd0f9b3321b6fcd6f5a91193242ceee49ae64e2592468f06c8311829d37c"
-    },
-    {
-      "file": "screenshots/en-US/ipad/03-chapters.jpg",
-      "sha256": "067fcaa1c84901c53fc76a74da270bd0033692706076881f9317e847e11b09a3"
-    },
-    {
       "file": "screenshots/en-US/iphone/01-library.jpg",
-      "sha256": "7295095364504d6d1ba83178086d864e6216f55dffd91e1ce919237ff234b4f4"
+      "raw_capture": "screenshot-captures/build28-dark/en-US/iphone/01-library.jpg",
+      "raw_sha256": "c6008aa2d5fb6bd66433b84b8110ce27e0a8c5e6ae099d908304c2496ef0a968",
+      "apple_bezel": "iphone",
+      "sha256": "2c14a2b84a43ecc5e89842aa30fda75e0524251fd3b9d6cda1b376ab62490eaa",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/en-US/iphone/02-reader.jpg",
-      "sha256": "651c69a0b79a27f43b13e77af8517e90fa5ebc9cfce8b1a083a1bc23ca425577"
+      "raw_capture": "screenshot-captures/build28-dark/en-US/iphone/02-reader.jpg",
+      "raw_sha256": "fbac989dc1943eca0a4904de47ae5324ce909723f6c6903bb4329ac1abcc6e16",
+      "apple_bezel": "iphone",
+      "sha256": "3e0d129c362e79c26c7e145d1e080df25ce7b2d457736b4edd57326644700a7c",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/en-US/iphone/03-chapters.jpg",
-      "sha256": "1a771188a4b5dd4bf437f60b5294109eebae20d3033758747823a182e0357149"
+      "raw_capture": "screenshot-captures/build28-dark/en-US/iphone/03-chapters.jpg",
+      "raw_sha256": "0770aa3a26f62715bb00cd2c9e76c58c9cb0b8ad8fd881b639b30610d688194b",
+      "apple_bezel": "iphone",
+      "sha256": "fcb3bdc94b352fc9eff7020ccc8687094d99b69f0d880e1787d63d06955c33b5",
+      "width": 1206,
+      "height": 2622
     },
     {
-      "file": "screenshots/ja/ipad/01-library.jpg",
-      "sha256": "77c22853a177671c114bb6af0e40e30bd4b58c22ac79d408952de017dc1dfa4b"
+      "file": "screenshots/en-US/ipad/01-library.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/en-US/ipad/01-library.jpg",
+      "raw_sha256": "0b96d6985e69149365938feee2b5edb332037f58974e361a298e1555450c3b64",
+      "apple_bezel": "ipad-landscape",
+      "sha256": "471e9e270838d8fdaecd4a2b0c56ebb854bea5d8ed9d1a8923d6c79055f7f113",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/ja/ipad/02-reader.jpg",
-      "sha256": "ec50fcc15aa70ed49b667eb2e89e2cd6b8f1fc6aee52f04ae15cc01e2d8cfe96"
+      "file": "screenshots/en-US/ipad/02-reader.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/en-US/ipad/02-reader.jpg",
+      "raw_sha256": "c6865c3c7d1e83a36956e9419175ab039bc712abcc00bd1e86df545b39048cc5",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "a570c64379ab518c6f83b843e5c780804cd119352682fe6e65b7b5f5a74ad740",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/ja/ipad/03-chapters.jpg",
-      "sha256": "1f16e16adb6b32c761b4fe42235e2b368969f4a1a42568bc105cce30d933fdec"
+      "file": "screenshots/en-US/ipad/03-chapters.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/en-US/ipad/03-chapters.jpg",
+      "raw_sha256": "829cac4fb52f3e1cc9661d3b7fc7957b3c77df22ad95eea9feec1ad32bfe43e3",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "b97085d0a6068308d75c9cb964fa8c9cfb54f9cdaa9605d3d739ba9324ef7ddf",
+      "width": 2064,
+      "height": 2752
     },
     {
       "file": "screenshots/ja/iphone/01-library.jpg",
-      "sha256": "f324951bc242e7624a12a8063e147882d06604bee84c1ed5bd0b050f6dcf7d65"
+      "raw_capture": "screenshot-captures/build28-dark/ja/iphone/01-library.jpg",
+      "raw_sha256": "502003e15f39fc8e628a48f0316551a254c877ebf2c85f1cc5a5dbed2cdd6ef9",
+      "apple_bezel": "iphone",
+      "sha256": "864f48f5d9908a333e897806b2db7f48e17486367ee1215ada92fe241461ec51",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/ja/iphone/02-reader.jpg",
-      "sha256": "86b075155ce83f283f702903b145f579aa3b2ba276315f98941c875105a8d360"
+      "raw_capture": "screenshot-captures/build28-dark/ja/iphone/02-reader.jpg",
+      "raw_sha256": "059f75b0a96ec1788a31e138d99847791bb23926a539e08ef868511b6da96ae3",
+      "apple_bezel": "iphone",
+      "sha256": "9e3eaf00a27c7d2c62c879bb3eebe75365c0de9343592d689166947efd74a4b1",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/ja/iphone/03-chapters.jpg",
-      "sha256": "d5251fa68d3296be138005b277e810ff08da38000add522455d3afc2bd02e791"
+      "raw_capture": "screenshot-captures/build28-dark/ja/iphone/03-chapters.jpg",
+      "raw_sha256": "0747f36e2394351d1f3b254976f5ebdd514711602df01f12aa7343f8b2b3f9fc",
+      "apple_bezel": "iphone",
+      "sha256": "4e206c9675f37318ff85c2b50e1b3de1106fd8191b0b155975b74113910153ed",
+      "width": 1206,
+      "height": 2622
     },
     {
-      "file": "screenshots/zh-Hans/ipad/01-library.jpg",
-      "sha256": "9471d18ca7fc9f434e976f3187ce44231fb1e55ea17a5e6c27805e3d25b2b61b"
+      "file": "screenshots/ja/ipad/01-library.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/ja/ipad/01-library.jpg",
+      "raw_sha256": "4bf84566cf31cea2c40d8bc294d839bff1b779ba77ecf2b13f610d3243194f2f",
+      "apple_bezel": "ipad-landscape",
+      "sha256": "c3b8280cbff07e3177f687137fa68452b82afe4b91268308e7d7789878be2425",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/zh-Hans/ipad/02-reader.jpg",
-      "sha256": "8eef38af47688fada2f49c9a1ad48d859182d1fb1a423d6c16a72f7d359e3e13"
+      "file": "screenshots/ja/ipad/02-reader.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/ja/ipad/02-reader.jpg",
+      "raw_sha256": "f03d42346ae5d82bb36839a72c2457265c237ecc918b35547e34410b7d9f64f7",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "a9acc474e914431dc0dd22372eb8ab3442745d7d08d261b058113da4ea7b0e0c",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/zh-Hans/ipad/03-chapters.jpg",
-      "sha256": "80c78e060e6967c207f7dd9f7ebd177033a3c3f09a6ac69992e64007b51afff7"
+      "file": "screenshots/ja/ipad/03-chapters.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/ja/ipad/03-chapters.jpg",
+      "raw_sha256": "5e8d538b13228567b7d931ec7b1227c2e302ac30790cb0a355a8b90b623631b3",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "595133f660049dfe05852ee282f425d6cccea67f9f783430f44e31659c2f725e",
+      "width": 2064,
+      "height": 2752
     },
     {
       "file": "screenshots/zh-Hans/iphone/01-library.jpg",
-      "sha256": "1986a6b347224987e5f5f8bf72d5bce4057c0559ba671e4530ce1c0597831229"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/iphone/01-library.jpg",
+      "raw_sha256": "91d57ea8f68e9d0399a580969a6db493864fc4415f35a80393000caa7987f3ff",
+      "apple_bezel": "iphone",
+      "sha256": "256998d0f20c38e45dc4e4922178af359c1c1e35e0878ac9686ae8cfbf585d67",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/zh-Hans/iphone/02-reader.jpg",
-      "sha256": "04c1064c784a292d03b763b218f5523a323fa1ee2769655712fd68078242b4d2"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/iphone/02-reader.jpg",
+      "raw_sha256": "8dd119f9f9e00e4c010587a5cc82c7e45c5d91a8f9b0c830ba61a7461a4c0044",
+      "apple_bezel": "iphone",
+      "sha256": "7b64610e6ffc6c0ba02b81d9998bcda7b113fcd31bd92a2d9a554aaf48045799",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/zh-Hans/iphone/03-chapters.jpg",
-      "sha256": "942b3f84e9bfebb4c0d0575f1b09792f579e11e325562b58c1539e72fcd9b376"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/iphone/03-chapters.jpg",
+      "raw_sha256": "b755b9b7c75a5f4c0e087c50c624c7b3761a8fd0132241e135aef22f92bc94b3",
+      "apple_bezel": "iphone",
+      "sha256": "b18ba1988680ac90a46160cb4e981b78b37f7c1f3e7c7afa1153b499c0c648e9",
+      "width": 1206,
+      "height": 2622
     },
     {
-      "file": "screenshots/zh-Hant/ipad/01-library.jpg",
-      "sha256": "0da5709096d37e5abd4ba59f4db63db852bf0d73949a16a6127cfe2391938fe6"
+      "file": "screenshots/zh-Hans/ipad/01-library.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/ipad/01-library.jpg",
+      "raw_sha256": "aaae9acf30021631bb53f4f87b24bfc7c099c32e6c36c577ad3da3050a643726",
+      "apple_bezel": "ipad-landscape",
+      "sha256": "975dce48912700e5b161b482654caaed17595699cc3f3353abe326747b2ec1da",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/zh-Hant/ipad/02-reader.jpg",
-      "sha256": "caebfda44f51aa1bcc6c8c89cf1868a8bb2ad0efc1eff6a12f33d2986c382cde"
+      "file": "screenshots/zh-Hans/ipad/02-reader.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/ipad/02-reader.jpg",
+      "raw_sha256": "bec6198e804a7f1b2b83862fbf3c745aa1637adecef99f635a88f7c7a15cb221",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "9c5c402c65c820a0a71d616e581eb3cc09b9def8b40a01473b9fb9dd2bcb1a64",
+      "width": 2064,
+      "height": 2752
     },
     {
-      "file": "screenshots/zh-Hant/ipad/03-chapters.jpg",
-      "sha256": "86863b0c8b2a2aabc32cac0693e4d0d69b4f58baf7eebcd21f4b9ae894b4c15a"
+      "file": "screenshots/zh-Hans/ipad/03-chapters.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hans/ipad/03-chapters.jpg",
+      "raw_sha256": "fb54388db24ace0e09d8cb96cae4a1f51603a9d4c2d2270823458c182f960991",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "fbd3977582c18c4ec99d6f9e75df6bc014ef92a4dcc23c05998962cbfc3a78c0",
+      "width": 2064,
+      "height": 2752
     },
     {
       "file": "screenshots/zh-Hant/iphone/01-library.jpg",
-      "sha256": "c0327e457bfcac59c847e4cb54771f264544f016ef4e9ee7190634ae09262403"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/iphone/01-library.jpg",
+      "raw_sha256": "be908f0b4afa03c92a88feeb6c9d145b5d6903b62eb7604b3392774678ff9c6a",
+      "apple_bezel": "iphone",
+      "sha256": "80f317cf005fa016c4fa5f6fae734e2548fa2fedb252174c2822f5365eed9403",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/zh-Hant/iphone/02-reader.jpg",
-      "sha256": "32a723c06f43e56e76313eddf7337e1b6eaf4a82a53bc45fc967ba71482db8d3"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/iphone/02-reader.jpg",
+      "raw_sha256": "81c7bef51e884aa63d70668059f569726cce8758c01b4f47bb82d2cf4d6adb61",
+      "apple_bezel": "iphone",
+      "sha256": "e1f7a39dd1835f84188bac02149287509f3178ff866fbfbd02fde0e151c42462",
+      "width": 1206,
+      "height": 2622
     },
     {
       "file": "screenshots/zh-Hant/iphone/03-chapters.jpg",
-      "sha256": "5962c20cb47e14d83630ac91ec256102fd705cb02d9bb8c16ecf9dc4fc009c82"
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/iphone/03-chapters.jpg",
+      "raw_sha256": "dcd8d7927a26877dc7d61f602f70c5ff863cd2381e07905150474bbf1c87dace",
+      "apple_bezel": "iphone",
+      "sha256": "1a90132a7710a973d636c79ac82d5c5acdf658db5ffe28ae97ce5558e7bf5e14",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/01-library.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/ipad/01-library.jpg",
+      "raw_sha256": "13643ee2804ca3e88a7daa18b83a092b374b42494b114a17b58c6ac7c53ba85a",
+      "apple_bezel": "ipad-landscape",
+      "sha256": "1e6abe9c0b1316b04c93a24a4a24d665a8fb91676c9646f7c7f7af5fc0fdb2a5",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/02-reader.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/ipad/02-reader.jpg",
+      "raw_sha256": "22544b1ad6590af0cb458e1c8ced1ba89a4c857bf386453773758d8b77b490c0",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "6cf8923f9c64aeac2ae66384e3c7f3c31df02b060f246e45884259d5874c9482",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "file": "screenshots/zh-Hant/ipad/03-chapters.jpg",
+      "raw_capture": "screenshot-captures/build28-dark/zh-Hant/ipad/03-chapters.jpg",
+      "raw_sha256": "b1ce265af92244f2249be5dfd04794c846d8a54fb62636e1325685fbc115543d",
+      "apple_bezel": "ipad-portrait",
+      "sha256": "665a5d0aa16535fb2670b34b2bcf2e48a76d8844f5a873854edb13d7fee500e1",
+      "width": 2064,
+      "height": 2752
     }
-  ]
+  ],
+  "uploadedToAppStoreConnect": true,
+  "appStoreConnectAppID": "6827059668",
+  "uploadedRevision": "Dark native build28; official silver Apple frames; enlarged subtitles; no extra top branding",
+  "verifiedCustomSets": 8,
+  "screenshotsPerCustomSet": 3,
+  "uploadVerification": {
+    "recorded_at_utc": "2026-10-28T11:25:55Z",
+    "observed_by": "Root App Store Connect browser verification",
+    "verified_custom_sets": 8,
+    "screenshots_per_custom_set": 3,
+    "set_counts": {
+      "en-US/iphone": 3,
+      "en-US/ipad": 3,
+      "ja/iphone": 3,
+      "ja/ipad": 3,
+      "zh-Hans/iphone": 3,
+      "zh-Hans/ipad": 3,
+      "zh-Hant/iphone": 3,
+      "zh-Hant/ipad": 3
+    },
+    "observed_ui_count_per_set": "3 of 10",
+    "autosaved": true,
+    "save_button_enabled": false,
+    "browser_proof_artifact": "app-store-dark-proof.png"
+  }
 }

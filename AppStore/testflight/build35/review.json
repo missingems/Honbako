@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "build": 35,
+  "default_books": [
+    "The Bookshop Between Pages",
+    "Search & Delete",
+    "Your Collections",
+    "Read Your Way"
+  ],
+  "guide_languages": [
+    "en",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "guide_pages_each": 4,
+  "guide_artwork": "Original typography, system fonts, SF Symbols and geometry; no generated artwork.",
+  "guide_seed_behavior": "Each new guide is installed once. Removed guides remain removed and can be found and added from the local catalog.",
+  "native_search": "Native searchable toolbar, compact Search button, Settings, native cancellation. No pull-to-search overlay in the library path.",
+  "scroll_visibility": "Toolbar hides toward later content and returns while scrolling back. Publishes only visibility changes.",
+  "pinch_close": "Both page halves fold around the center before the closed cover travels to its exact source slot; reversible, with Reduce Motion fallback.",
+  "sync_scope": "Guides distinguish local files, independent server collections, and Pro iCloud library/progress sync. Files are not merged between servers or copied by iCloud progress sync.",
+  "distribution_scope": "TestFlight upload only; existing beta review and tester-distribution hold preserved.",
+  "physical_duo_visual_check": "Not performed; compact and wide native captures and simulator interactions are the evidence."
+}

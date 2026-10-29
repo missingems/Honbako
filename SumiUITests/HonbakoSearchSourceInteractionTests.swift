@@ -91,7 +91,7 @@ final class HonbakoSearchSourceInteractionTests: XCTestCase {
 
     @MainActor
     private func search(_ text: String, in app: XCUIApplication) throws {
-        item("Sumi.Grid", app).swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
@@ -100,7 +100,8 @@ final class HonbakoSearchSourceInteractionTests: XCTestCase {
 
     @MainActor
     private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     @MainActor

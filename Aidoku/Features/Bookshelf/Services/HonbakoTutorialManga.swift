@@ -11,7 +11,7 @@ enum HonbakoTutorialManga {
     nonisolated static let languages = ["en", "ja", "zh-Hans", "zh-Hant"]
     private static let seedKey = "Honbako.Tutorial.Installed.v1"
     private static var installation: Task<Void, Never>?
-    static let source = AidokuRunner.Source(key: sourceKey, name: String(localized: "On This Device"), version: 2,
+    static let source = AidokuRunner.Source(key: sourceKey, name: String(localized: "On This Device"), version: 3,
         languages: languages, contentRating: .safe, staticListings: [], runner: HonbakoTutorialRunner())
 
     static func ensureInstalled() async {
@@ -44,6 +44,7 @@ enum HonbakoTutorialManga {
             } catch {
                 LogManager.logger.error("Bundled tutorial setup failed: \(error.localizedDescription)")
             }
+            await HonbakoGuideLibrary.ensureInstalled()
         }
         installation = task
         await task.value
@@ -100,7 +101,7 @@ enum HonbakoTutorialManga {
     private static func renderedFile(art name: String, language: String, title: String, body: String,
                                      file: String, cover: Bool) throws -> URL {
         let folder = FileManager.default.applicationSupportDirectory
-            .appendingPathComponent("HonbakoTutorial/v2/\(language)", isDirectory: true)
+            .appendingPathComponent("HonbakoTutorial/v3/\(language)", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         var excluded = URLResourceValues(); excluded.isExcludedFromBackup = true
         var location = folder; try? location.setResourceValues(excluded)

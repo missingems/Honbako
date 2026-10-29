@@ -3,21 +3,15 @@ import SwiftUI
 
 struct HonbakoLibrarySectionHeader: View {
     let title: String
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.colorSchemeContrast) private var contrast
-
     var body: some View {
         Text(LocalizedStringKey(title))
             .font(.title2.bold())
-            .foregroundStyle(Color.primary.shadow(.inner(
-                color: contrast == .increased ? .clear
-                    : colorScheme == .dark ? .black.opacity(0.28) : .white.opacity(0.22),
-                radius: 0.7, x: 0, y: 0.75)))
+            .foregroundStyle(.primary)
             .padding(.horizontal, 16)
-            .padding(.top, 34)
-            .padding(.bottom, 18)
+            .padding(.top, 24)
+            .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: .rect)
+            .background(Color(uiColor: .systemBackground))
             .accessibilityAddTraits(.isHeader)
             .accessibilityIdentifier("Honbako.Library.Header.\(title)")
     }

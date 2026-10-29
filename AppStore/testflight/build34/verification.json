@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "build": 34,
+  "configuration": "external_sources",
+  "external_sources": true,
+  "private_pro_unlock": false,
+  "automatic_manga_import": false,
+  "reported_tests": 101,
+  "skipped_tests": [
+    "\u200b\u279c Test \"Previously installed public catalogs and demo sources cannot load from backups or existing storage\" skipped.",
+    "\u200b\u200b\u279c Test \"Package records cannot gain local-reader privileges through a reserved source identifier\" skipped.",
+    "\u200b\u200b\u279c Test \"Source-list restoration cannot re-enable external lists even when unavailable lists are accepted\" skipped.",
+    "\u200b\u200b\u279c Test \"External package ingestion and catalog creation are rejected before installation\" skipped."
+  ],
+  "executed_tests": 97,
+  "suite_count": 17,
+  "test_result": "passed",
+  "rtl_integration_regressions": "passed",
+  "design_capture_test": "passed_separate_run",
+  "benchmark_tests": "2_passed_separate_runs",
+  "beta_review_submitted": false,
+  "external_group_attached": false,
+  "testers_invited": 0,
+  "public_link_enabled": false,
+  "app_store_candidate_preserved": {
+    "version": "0.1.0",
+    "build": 29
+  },
+  "archive": {
+    "CFBundleShortVersionString": "0.2.0",
+    "CFBundleVersion": "34",
+    "CFBundleIdentifier": "com.missingems.honbaku",
+    "HonbakoExternalSources": "YES",
+    "HonbakoPersonalFeatures": "NO",
+    "HonbakoImportEnglish50": "NO",
+    "path": "/Users/jun/Documents/Codex/2026-10-24/help-me-clone-x20/work/honbako/Honbako-ExternalTestFlight-Build34.xcarchive",
+    "signature_verified": true,
+    "source_package_document_type": true,
+    "DTXcodeBuild": "27A9275",
+    "DTSDKName": "iphoneos27.1"
+  },
+  "source_hashes_unchanged_after_archive": true,
+  "beta_information_saved": false,
+  "beta_information_save_blocker": "App Store Connect browser session expired; new sign-in requested. Updated text retained locally.",
+  "apple_processing_status": "processing_as_reported_by_xcode",
+  "archive_uploaded": true,
+  "upload_status": "succeeded",
+  "apple_processing_complete_verified": false,
+  "upload_log_sha256": "3568e6460d27739f425c096a92f86c1d6dd04d9a9793db54bbde613344d79f22",
+  "what_to_test_saved": false,
+  "browser_session": "signed_out",
+  "distribution_hold_preserved": true
+}

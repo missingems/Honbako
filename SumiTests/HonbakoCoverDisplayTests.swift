@@ -3,24 +3,27 @@ import Foundation
 import Testing
 
 struct HonbakoCoverDisplayTests {
-    @Test("Camera permission is never needed for ordinary hardware or nonpersonal builds")
-    func cameraIsOwnerAndHingeOnly() {
+    @Test("Both public and personal builds use the optional camera accessory only on hinged hardware")
+    func cameraIsHingeOnlyInEveryBuild() {
         for personal in [false, true] {
             for hinge in [false, true] {
                 let policy = HonbakoCoverCameraPolicy(personalBuild: personal, hingePresent: hinge,
                     hingeOpen: true, readerPresented: true, coverEnabled: true, foreground: true)
-                #expect(policy.shouldRunCamera == (personal && hinge))
+                #expect(policy.usesCameraAccessory == hinge)
+                #expect(policy.shouldRunCamera == hinge)
             }
         }
     }
 
     @Test("Hidden covers, closed folds, dismissed readers and backgrounding all stop the camera")
     func cameraStopsOutsideReading() {
-        for closedGate in 0..<4 {
-            let policy = HonbakoCoverCameraPolicy(personalBuild: true, hingePresent: true,
-                hingeOpen: closedGate != 0, readerPresented: closedGate != 1,
-                coverEnabled: closedGate != 2, foreground: closedGate != 3)
-            #expect(!policy.shouldRunCamera)
+        for personal in [false, true] {
+            for closedGate in 0..<4 {
+                let policy = HonbakoCoverCameraPolicy(personalBuild: personal, hingePresent: true,
+                    hingeOpen: closedGate != 0, readerPresented: closedGate != 1,
+                    coverEnabled: closedGate != 2, foreground: closedGate != 3)
+                #expect(!policy.shouldRunCamera)
+            }
         }
     }
 

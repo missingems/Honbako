@@ -1,0 +1,25 @@
+{
+  "base": "1de8dc588b4208dea4add593f6c9cc009237cd56",
+  "commit": "c3517113ee4dfe00f554df5c2eaa56fe6ec3ed80",
+  "paths": [
+    "site/privacy/index.html",
+    "site/support/index.html"
+  ],
+  "pushed_to": "refs/heads/main",
+  "unrelated_worktree_and_index_unchanged": true,
+  "private_contact_values_omitted": true,
+  "live_verification": [
+    {
+      "url": "https://missingems.github.io/Honbako/support/",
+      "http_status": 200,
+      "beta_scope_verified": true
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/privacy/",
+      "http_status": 200,
+      "beta_scope_verified": true
+    }
+  ],
+  "deployment_run": "https://github.com/missingems/Honbako/actions/runs/40691320916",
+  "deployment_status": "success"
+}

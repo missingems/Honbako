@@ -1,0 +1,19 @@
+{
+  "name": "Honbako Original Sources",
+  "feedbackURL": "https://github.com/missingems/Honbako/issues",
+  "sources": [
+    {
+      "id": "en.honbako-originals",
+      "name": "Honbako Originals",
+      "version": 1,
+      "iconURL": "icons/en.honbako-originals.png",
+      "downloadURL": "packages/en.honbako-originals-v1.aix",
+      "languages": [
+        "en"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://missingems.github.io/Honbako/originals/",
+      "minAppVersion": "0.9.0"
+    }
+  ]
+}

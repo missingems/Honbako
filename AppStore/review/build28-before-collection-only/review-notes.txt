@@ -1,0 +1,34 @@
+Honbako 0.1.0 Build 28 — App Review draft
+Copy only the text between BEGIN/END APP REVIEW NOTES after final verification.
+
+BEGIN APP REVIEW NOTES
+Honbako 0.1.0 (build 28) is a reader for your own collection on iPhone and iPad. The included original six-page tutorial, The Bookshop Between Pages, works without an account. External catalogs and servers are added explicitly by the user.
+
+1. Open the tutorial. Swipe portrait pages, rotate to landscape, and tap a page to show controls. Drag the page strip to preview, then release to navigate. Open Chapters and Language, inspect chapter progress, close the book and reopen it to resume the saved position.
+
+2. Pull down in the library, open Settings, then Getting Started. Choose Set Up Local Files and confirm. Back in Getting Started, choose Import a Comic, select a CBZ or ZIP containing comic pages, confirm series/chapter details and import. Enable Local Files under Included in Search, tap Done, search for the imported title and choose Add. Imported files remain readable locally.
+
+3. Settings → Personal Server supports Komga, Kavita and Suwayomi. Enter a reachable server address and use its sign-in options. Personal server testing requires a reachable server and its own sign-in. Honbako has no developer-hosted manga catalog; the tutorial and local import work without an account. Settings → Source Lists also accepts a provider's compatible list; open it to install individual sources. Import Source File accepts compatible .aix connection files.
+
+4. Open Settings → Honbako Pro. Free and Pro are both ad-free. Free supports reading and organizing your collection, including imported local files. Pro adds chapter downloads, chapter notifications and iCloud library/progress sync. The paywall shows Apple's localized monthly price (U.S. base US$1.99), Subscribe, Restore Purchases, Manage Subscription, Terms of Use and Privacy Policy.
+
+5. In Apple's permitted test environment, cancel a purchase to confirm Free stays active, or complete an authorized test purchase. Restore Purchases checks for an active subscription. Manage Subscription opens Apple's subscription controls. Canceling renewal does not end an already-paid period immediately.
+
+6. With Pro, add a server book to the library before enabling chapter notifications. Delivery depends on source availability and iOS background refresh. Reopen the app after Pro becomes active to enable automatic iCloud sync. Downloads and source files stay on the device.
+
+Store screenshots show original cover-art portfolios imported as local CBZs. Each portfolio contains one art page, and these sample files are not bundled. The six-page tutorial is the story shown in reader and chapter screenshots.
+
+The interface and Getting Started guide are available in English, Japanese, Simplified Chinese and Traditional Chinese.
+
+Optional iPhone Duo cover display: Settings → Show Manga Cover requests camera permission for Apple's video-only scene accessory. No photos/video are recorded or saved, no microphone is attached, and no camera frames are sent to the developer. The session stops when hidden, closed, folded or backgrounded.
+
+Support: https://missingems.github.io/Honbako/support/
+Privacy Policy: https://missingems.github.io/Honbako/privacy/
+END APP REVIEW NOTES
+
+INTERNAL STATUS — NOT PART OF THE COPYABLE APP REVIEW NOTES
+Build 28 archive/upload succeeded with genuine public Xcode 27.1 build 27A9275 and public flags NO/NO. It is selected and saved in the app draft, and the 3,114-character notes above are saved unchanged. After the image replacement and IAP staging, actual app-version Add for Review was retried: ONLY missing Content Rights Information remains; beta-toolchain and privacy-policy URL errors are resolved. The app version remains Prepare for Submission and is not staged. No final Submit was clicked.
+The build-28 Light/default-text-size-3 private product review JPEG at review/Honbako-Pro-Build28.jpg replaced build 27, autosaved and retained its HTTPS SOURCE after reload. It shows the real Apple US$1.99 product and Free/Pro sections. Pro review notes are saved/reload-verified, with an exact copy at review/Honbako-Pro-Build28-review-notes.txt. Product and group Add for Review succeeded: both are Ready for Review. The existing iOS draft contains Items Ready to Submit (2): Honbako Pro Monthly subscription and Honbako Pro subscription group. Submit is disabled because an app version must be added. The draft proof is app-store-pro-ready-proof.png in task artifacts; account-name-free app blocker proof is review/AppStore-Build28-Content-Rights-Blocker.png.
+All 24 public Dark build-28 screenshots remain uploaded and verified across eight locale/device sets at 3 of 10 each, autosaved with Save disabled. Light v3/build-26 designs are superseded. Native dimensions, output/raw hashes, eight Debug simulator NO/NO Dark proofs and primary/independent visual QA passed. Complete licensed silver frames, enlarged subtitles and no extra top brand are preserved; no additional image generation or UI recoloring. The bounded private Dark Pro-image attempt was blocked by native input routing and created NO Dark product image; evidence: review/Honbako-Pro-Build28-Dark-attempt.json. Capture apps/data were removed from the two owned simulators; both were shut down after keyboard capture OFF/text size3 restoration. Cleanup evidence: screenshot-captures/build28-dark/capture-cleanup.json.
+The iOS run passed 14 tests: nine self-host regressions, four Pro policy/entitlement checks and one local StoreKit integration. These do not cover reader pagination, native purchase/restore button execution or genuine sandbox-account purchase. Native 11-capture evidence verifies Komga wrong/correct authentication, enabled connection, search/catalog, Add to Shelf, first PNG page and three distinct previews; guide/Local Files setup/picker/cancel; local tutorial semantic Page2 and saved shelf label; real Apple price and Free/Pro sections. Remote committed page advance/resume/bookmarks and completed CBZ import remain unverified; no reader defect identified. The development Komga service was stopped gracefully and temporary data/Desktop duplicates removed.
+Published Data Not Collected, four privacy-policy URLs and the saved 18+ rating are confirmed. Review contact remains private in App Store Connect; public support uses GitHub issues. No externally reachable review server/account is supplied. Content rights, engine licensing and export owner confirmations remain false. Pending accurate owner rights evidence, then add the selected app version to the existing two-item draft. Build27 is superseded history; build26 remains the separate private Pro-unlocked beta. See review/build28-verification.json and review-test-plan.txt.

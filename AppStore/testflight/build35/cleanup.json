@@ -1,0 +1,11 @@
+{
+  "temporary_test_bundles_and_duplicate_exports_removed": true,
+  "removed_bytes": 949065528,
+  "source_scripts_removed": true,
+  "shared_derived_data_retained": true,
+  "final_design_captures_and_test_summaries_retained": true,
+  "temporary_upload_export_removed": true,
+  "temporary_distribution_logs_removed": true,
+  "generated_ui_fixture_bytes_removed": 1030600,
+  "final_archive_retained": true
+}

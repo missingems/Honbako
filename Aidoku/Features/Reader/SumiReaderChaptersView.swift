@@ -9,6 +9,9 @@ struct SumiReaderChaptersView: View {
     let source: AidokuRunner.Source?
     let manga: AidokuRunner.Manga?
     let languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)?
+    let setJapaneseLearning: ((Bool) -> Void)?
+    private let offersJapaneseLearning: Bool
+    @State private var japaneseLearningEnabled: Bool
     let canRead: (AidokuRunner.Chapter) -> Bool
     let select: (AidokuRunner.Chapter, Bool) -> Void
     let close: () -> Void
@@ -34,6 +37,7 @@ struct SumiReaderChaptersView: View {
          currentPage: Int = 0, currentTotalPages: Int = 0,
          source: AidokuRunner.Source? = nil, manga: AidokuRunner.Manga? = nil,
          languageSelection: ((String?, [AidokuRunner.Chapter]) -> Void)? = nil,
+         japaneseLearningEnabled: Bool? = nil, setJapaneseLearning: ((Bool) -> Void)? = nil,
          canRead: @escaping (AidokuRunner.Chapter) -> Bool,
          select: @escaping (AidokuRunner.Chapter, Bool) -> Void, close: @escaping () -> Void) {
         self.currentKey = currentKey
@@ -42,6 +46,9 @@ struct SumiReaderChaptersView: View {
         self.source = source
         self.manga = manga
         self.languageSelection = languageSelection
+        self.setJapaneseLearning = setJapaneseLearning
+        offersJapaneseLearning = japaneseLearningEnabled != nil
+        _japaneseLearningEnabled = State(initialValue: japaneseLearningEnabled ?? false)
         self.canRead = canRead
         self.select = select
         self.close = close
@@ -77,6 +84,17 @@ struct SumiReaderChaptersView: View {
     var body: some View {
         NavigationStack {
             List {
+                if offersJapaneseLearning {
+                    Section {
+                        Toggle("Romaji on Page", isOn: $japaneseLearningEnabled)
+                            .tint(Color(uiColor: .systemGreen))
+                            .accessibilityIdentifier("Honbako.Reader.Japanese.ToggleInChapters")
+                            .disabled(committing)
+                            .onChange(of: japaneseLearningEnabled) { _, enabled in setJapaneseLearning?(enabled) }
+                    } footer: {
+                        Text("Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation.")
+                    }
+                }
                 languageSection
                 if let manga, let current = chapters.first(where: { $0.key == currentKey }) {
                     HonbakoReaderActionsView(manga: manga, chapter: current,

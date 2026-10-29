@@ -1,0 +1,15 @@
+{
+  "image": "Honbako-Pro-Build28.jpg",
+  "version": "0.1.0",
+  "build": 28,
+  "configuration": "Debug simulator app, ordinary launch, personal unlock and automatic import both NO",
+  "capture": "Native Device Hub screenshot at default text size 3; JPEG format conversion only",
+  "product_id": "com.missingems.honbaku.pro",
+  "display_name": "Honbako Pro Monthly",
+  "display_price": "$1.99 per month",
+  "test_fixture_product": false,
+  "sha256": "2182864d91ad871cd73fb9810a2795ba4633cfc31090cecd46d5548c2e1e1b95",
+  "uploaded_to_app_store_connect": false,
+  "upload_blocker": "App Store Connect browser session expired; owner sign-in pending",
+  "full_native_evidence": "gui-build28/ui-verification.json"
+}

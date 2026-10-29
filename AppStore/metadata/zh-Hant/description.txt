@@ -6,8 +6,9 @@
 
 Honbako Pro 是按月自動續訂的訂閱，提供離線閱讀、新章節提醒，以及透過 iCloud 同步書架和閱讀進度。提醒取決於書源和 iOS 背景重新整理，送達時間可能不同。下載須取得內容提供者許可。
 
-Honbako 不內附第三方漫畫。作品和譯本的可用性取決於你加入的檔案或連線。
+Honbako 不內附第三方漫畫目錄。可匯入自己的漫畫檔案，或連接個人的 Komga、Kavita 或 Suwayomi 伺服器。不支援外部書源列表或書源套件。作品和譯本取決於你的收藏。
 
 美國區價格為每月 US$1.99，其他地區價格以 App Store 為準。
 
+隱私權政策: https://missingems.github.io/Honbako/privacy/
 使用條款：https://www.apple.com/legal/internet-services/itunes/dev/stdeula/

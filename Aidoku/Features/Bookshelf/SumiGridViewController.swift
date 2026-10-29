@@ -27,9 +27,6 @@ final class SumiGridViewController: UIViewController {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override var prefersStatusBarHidden: Bool {
-        isViewLoaded && HonbakoDisplayCanvas.usesReservedCanvas(in: view)
-    }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .all }
 
@@ -66,13 +63,6 @@ final class SumiGridViewController: UIViewController {
         host.didMove(toParent: self)
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        guard let hostController else { return }
-        let regions: SafeAreaRegions = HonbakoDisplayCanvas.usesReservedCanvas(in: view) ? .keyboard : .all
-        if hostController.safeAreaRegions != regions { hostController.safeAreaRegions = regions }
-    }
-
     override var canBecomeFirstResponder: Bool { true }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -95,6 +85,7 @@ final class SumiGridViewController: UIViewController {
 
     @objc private func dismissSearch() {
         view.endEditing(true)
+        search.query = ""
         search.dismiss()
         store.cancelSearch()
     }
@@ -259,9 +250,10 @@ final class SumiGridViewController: UIViewController {
             configureOpening(presentation, book: book, source: source, loading: loading)
             loading.view.isUserInteractionEnabled = false
             present(presentation, animated: true) { [weak self, weak presentation, weak reader] in
-                self?.removeLoading()
+                let isPresented = presentation?.presentingViewController != nil
+                self?.removeLoading(preservingSource: isPresented)
                 self?.openingTask = nil
-                guard presentation?.presentingViewController != nil else { return }
+                guard isPresented else { return }
                 reader?.sumiDidOpenPreparedBook()
                 if !AppSettings.general.incognitoMode.get() {
                     Task { await CoreDataManager.shared.setOpened(mangaId: book.id) }
@@ -315,7 +307,7 @@ final class SumiGridViewController: UIViewController {
         }
     }
 
-    private func removeLoading() {
+    private func removeLoading(preservingSource: Bool = false) {
         openingDeadline?.cancel()
         openingDeadline = nil
         if let loadingController {
@@ -325,7 +317,10 @@ final class SumiGridViewController: UIViewController {
             loadingController.removeFromParent()
         }
         loadingController = nil
-        opening.bookID = nil
+        // A successful opening replaces the loading cover with the reader,
+        // not with another copy in its library slot. Keep the SwiftUI source
+        // hidden before UIKit takes any future interactive-return snapshot.
+        if !preservingSource { opening.bookID = nil }
         if presentedViewController == nil { becomeFirstResponder() }
     }
 
@@ -347,8 +342,12 @@ final class SumiGridViewController: UIViewController {
                     return loading.zoomSourceView.convert(loading.zoomSourceView.bounds, to: container)
                 }
                 return source?.frame(in: container)
-            }, gridSourceFrameProvider: { container in
-                source?.frame(in: container)
+            }, gridSourceFrameProvider: { [weak self] container in
+                guard let self else { return nil }
+                if search.isPresented { return source?.frame(in: container) }
+                // Resolve by book identity, never by the cell lifted on opening.
+                guard !opening.isPreparingReturn || opening.returnLayoutComplete else { return nil }
+                return insertion.frame(for: book.presentation.id, in: container)
             }, readerSurface: { [weak reader] in
             reader?.reader?.view
         }, paired: { [weak reader] in
@@ -357,12 +356,40 @@ final class SumiGridViewController: UIViewController {
             if let loading, self?.loadingController === loading { return loading.zoomSourceView }
             return source?.view
         }
+        transition.prepareReturn = { [weak self, weak reader] in
+            guard let self else { return }
+            if !search.isPresented { opening.beginReturnPreparation() }
+            await reader?.updateReadPosition()
+            let refreshed = await store.refreshForReturn()
+            guard refreshed, !Task.isCancelled, !search.isPresented else { return }
+            opening.prepareReturn(to: book.presentation.id)
+            // Await the actual refreshed SwiftUI shelf pass, not the previous
+            // cell whose layout was intentionally frozen while reading.
+            for _ in 0..<30 {
+                if opening.returnLayoutComplete { break }
+                try? await Task.sleep(for: .milliseconds(16))
+                guard !Task.isCancelled else { return }
+                view.layoutIfNeeded()
+            }
+        }
         presentation.bookTransition = transition
+        transition.closingBegan = { [weak reader] in reader?.sumiBookClosingBegan() }
         transition.chromeTransition = { [weak reader] transitioning in reader?.sumiSetBookTransitioning(transitioning) }
+        transition.revealSourceForHandoff = { [weak self] in
+            guard let self else { return }
+            // Keep the receiving shelf snapshot frozen until the compositor
+            // has replaced the closed stage with this live source.
+            opening.bookID = nil
+            hostController?.view.setNeedsLayout()
+            hostController?.view.layoutIfNeeded()
+        }
         transition.sourceVisibility = { [weak self, weak loading] hidden in
             guard let self else { return }
             if let loading, loadingController === loading { loading.zoomSourceView.isHidden = hidden }
-            else { opening.bookID = hidden ? book.presentation.id : nil }
+            else {
+                opening.bookID = hidden ? book.presentation.id : nil
+                if !hidden { opening.finishReturnPreparation() }
+            }
         }
         transition.openingCancellationBegan = { [weak self, weak loading] in
             self?.openingTask?.cancel()

@@ -71,8 +71,19 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var nextPreviewSplitPages: [Page]?
 
     private var isTransitioning = false {
-        didSet { updatePageTurnCadence() }
+        didSet {
+            updatePageTurnCadence()
+            #if SUMI
+            if isTransitioning { (delegate as? ReaderViewController)?.sumiDismissJapanesePhrase(resumeAutoScroll: false) }
+            sumiUpdateJapaneseLearningVisibility()
+            #endif
+        }
     }
+    #if SUMI
+    private var sumiJapaneseLearningEnabled = true
+    private var sumiJapaneseLearningActive = false
+    private var sumiJapaneseSelectionHandler: HonbakoJapaneseSelectionHandler?
+    #endif
     private(set) var pageTurnCadence: ReaderPageTurnCadence?
     private var transitionPagerFrame: CGRect?
     private var programmaticMove = false
@@ -219,6 +230,22 @@ class ReaderPagedViewController: BaseObservingViewController {
         return viewModel.pages[safe: actual - 1]
     }
 
+    /// Only returns an actually displayed, loaded leaf. Reading the source page
+    /// never initiates an offscreen fetch or captures the surrounding interface.
+    func sumiVisiblePageForCoaching() -> Page? {
+        guard isViewLoaded, view.window != nil, sumiReadyForOpening, !isTransitioning, !sumiIsShowingIndex else { return nil }
+        let selected = sumiCurrentCanonicalPage
+        let visibleDisplays = canonicalControllers(in: pageViewController.viewControllers ?? []).compactMap { controller -> Int? in
+            guard case .page = controller.type, let index = pageViewControllers.firstIndex(of: controller) else { return nil }
+            return pageIndex(from: index)
+        }
+        let preferred = sumiScrubberCurrentPage
+        let display = visibleDisplays.contains(preferred) && actualPageIndex(from: preferred) == selected
+            ? preferred : visibleDisplays.first { actualPageIndex(from: $0) == selected }
+        guard let display, let page = sumiPageForScrubber(display), page.type == .imagePage, !page.isTextPage else { return nil }
+        return page
+    }
+
     func sumiIsDisplayPageVisible(_ displayPage: Int) -> Bool {
         canonicalControllers(in: pageViewController.viewControllers ?? []).contains { page in
             guard case .page = page.type, let index = pageViewControllers.firstIndex(of: page) else { return false }
@@ -239,6 +266,9 @@ class ReaderPagedViewController: BaseObservingViewController {
     }
 
     func sumiPrepareDisplayPage(_ displayPage: Int) async -> Bool {
+        // An explicit scrub supersedes an interrupted native turn. Settle and
+        // discard its old neighbor queue before preflight waits for idle pages.
+        sumiStopAnimatedNavigation()
         sumiPreparedScrubberTarget = nil
         guard displayPage > 0, displayPage <= displayPageCount, let chapterID = chapter?.id else { return false }
         let source = actualPageIndex(from: displayPage)
@@ -592,26 +622,51 @@ class ReaderPagedViewController: BaseObservingViewController {
         pageViewControllers.forEach { $0.sumiReleasePreloadedImage() }
     }
 
-    /// Opening waits for the actual selected chapter's visible artwork, rather
-    /// than treating a page-list response or an offscreen prefetched image as ready.
-    var sumiReadyForOpening: Bool {
+    /// Image-dependent animations still require the complete decoded spread.
+    var sumiReadyForOpening: Bool { sumiOpeningSurfaceReady(allowsPageFailure: false, allowsLoading: false) }
+
+    /// A failed saved page is an interactive retry surface, not a failed book.
+    /// Keep its exact chapter and canonical position while allowing navigation.
+    var sumiCanPresentOpening: Bool { sumiOpeningSurfaceReady(allowsPageFailure: true, allowsLoading: false) }
+
+    /// After a brief warmup, the mounted page's loading surface keeps the book
+    /// navigable even while its image server is slow or unreachable.
+    var sumiCanPresentLoadingOpening: Bool { sumiOpeningSurfaceReady(allowsPageFailure: true, allowsLoading: true) }
+
+    var sumiCanCompleteVisibleChapter: Bool {
+        guard sumiReadyForOpening, let chapter else { return false }
+        return canonicalControllers(in: pageViewController.viewControllers ?? []).contains { page in
+            guard page.page?.chapterId == chapter.key,
+                  let index = pageViewControllers.firstIndex(of: page) else { return false }
+            return actualPageIndex(from: pageIndex(from: index)) == viewModel.pages.count
+                && page.pageView?.sumiIsImageReady == true
+        }
+    }
+
+    private func sumiOpeningSurfaceReady(allowsPageFailure: Bool, allowsLoading: Bool) -> Bool {
         guard isViewLoaded, currentPage >= 1, !isTransitioning,
               let chapter, viewModel.chapter?.key == chapter.key,
               !viewModel.pages.isEmpty else { return false }
+        func pageIsReady(_ page: ReaderPageViewController) -> Bool {
+            page.pageView?.sumiIsImageReady == true || (allowsPageFailure && page.sumiImageLoadFailed)
+                || (allowsLoading && page.isViewLoaded && page.page?.chapterId == chapter.key)
+        }
         let requested = sumiCurrentCanonicalPage
         let visible = pageViewController.viewControllers ?? []
         let containsRequested = canonicalControllers(in: visible).contains { page in
             guard case .page = page.type, let index = pageViewControllers.firstIndex(of: page),
                   actualPageIndex(from: pageIndex(from: index)) == requested else { return false }
-            return page.pageView?.sumiIsImageReady == true
+            return pageIsReady(page)
         }
         return containsRequested && leafControllers(in: visible).allSatisfy { leaf in
             if let page = leaf as? ReaderPageViewController {
                 if case .info = page.type { return true }
-                return page.pageView?.sumiIsImageReady == true
+                return pageIsReady(page)
             }
             if let wide = leaf as? ReaderBookWideLeafViewController {
-                return wide.canonicalController.pageView?.sumiIsImageReady == true && wide.sumiIsImageReady
+                return (wide.canonicalController.pageView?.sumiIsImageReady == true && wide.sumiIsImageReady)
+                    || (allowsPageFailure && wide.sumiImageLoadFailed)
+                    || (allowsLoading && wide.isViewLoaded && wide.canonicalController.page?.chapterId == chapter.key)
             }
             return leaf is ReaderBookBlankViewController
         }
@@ -1045,6 +1100,7 @@ class ReaderPagedViewController: BaseObservingViewController {
                     side: { if case .wideLeft = slot { return .left }; return .right }())
                 #if SUMI
                 wide.sumiPageSizing = sumiPresentation.pageSizing
+                sumiConfigureJapaneseLearning(on: wide)
                 #endif
                 wide.loadViewIfNeeded()
                 #if !SUMI
@@ -1109,6 +1165,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     private func updateBookSpine() {
 #if SUMI
+        defer { sumiUpdateJapaneseLearningVisibility() }
         sumiUpdateCanvasEdges()
         guard usesBookLayout else {
             bookSpineView.update(pageFrames: [], enabled: false)
@@ -1220,6 +1277,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         super.viewDidAppear(animated)
         updatePageTurnCadence()
         #if SUMI
+        sumiUpdateJapaneseLearningVisibility()
         if !(pageViewController is SumiPageCurlViewController) { sumiPaperHaptics.prepare(in: view) }
         preloadNextChapter(pageCount: SumiNextChapterPreloadPolicy.firstPages)
         #endif
@@ -1343,6 +1401,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         #if SUMI
+        setJapaneseLearningActive(false)
         sumiPaperHaptics.suspend()
         sumiCancelAnimatedNavigation()
         nextChapterPreloadTask?.cancel()
@@ -1590,6 +1649,7 @@ extension ReaderPagedViewController {
         )
         #if SUMI
         page.sumiPageSizing = sumiPresentation.pageSizing
+        sumiConfigureJapaneseLearning(on: page)
         #endif
         #if !SUMI
         page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
@@ -1602,6 +1662,9 @@ extension ReaderPagedViewController {
             self.sumiUpdateCanvasEdges()
             for case let wide as ReaderBookWideLeafViewController in self.bookControllers.values
                 where wide.canonicalController === page { wide.refreshImage() }
+            #if SUMI
+            self.delegate?.sumiPageContentDidChange()
+            #endif
         }
         if hasImageCallbacks {
             page.onImageisWideImage = { [weak self, weak page] isWide in
@@ -2023,20 +2086,24 @@ extension ReaderPagedViewController {
         let originalPage = sourcePage ?? viewModel.pages[safe: pageIndex - 1] ?? viewModel.pages.first
         let chapterId = originalPage?.chapterId ?? chapter?.id ?? ""
 
-        let leftPage = Page(
+        var leftPage = Page(
             sourceId: sourceId,
             chapterId: chapterId,
             index: originalPage?.index ?? max(0, pageIndex - 1),
             image: leftImage,
             language: originalPage?.language
         )
-        let rightPage = Page(
+        var rightPage = Page(
             sourceId: sourceId,
             chapterId: chapterId,
             index: originalPage?.index ?? max(0, pageIndex - 1),
             image: rightImage,
             language: originalPage?.language
         )
+        #if SUMI
+        leftPage.sumiJapaneseLearningEligible = originalPage?.sumiJapaneseLearningEligible ?? false
+        rightPage.sumiJapaneseLearningEligible = originalPage?.sumiJapaneseLearningEligible ?? false
+        #endif
         return reverseOrder ? [leftPage, rightPage] : [rightPage, leftPage]
     }
 
@@ -2451,6 +2518,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         #if SUMI
         // A discarded pre-rotation pager cannot report against the replacement.
         guard pageViewController === self.pageViewController else { return }
+        defer { sumiUpdateJapaneseLearningVisibility() }
         isTransitioning = sumiSequenceIsActive
         #else
         isTransitioning = false
@@ -3078,3 +3146,58 @@ extension ReaderPagedViewController {
         Self.splitPosition[key] = (page, offset)
     }
 }
+
+#if SUMI
+extension ReaderPagedViewController: HonbakoJapaneseReader {
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?) {
+        sumiJapaneseLearningEnabled = enabled
+        sumiJapaneseSelectionHandler = onSelect
+        for page in pageViewControllers { sumiConfigureJapaneseLearning(on: page) }
+        for case let wide as ReaderBookWideLeafViewController in bookControllers.values {
+            sumiConfigureJapaneseLearning(on: wide)
+        }
+        sumiUpdateJapaneseLearningVisibility()
+    }
+
+    func setJapaneseLearningActive(_ active: Bool) {
+        sumiJapaneseLearningActive = active
+        sumiUpdateJapaneseLearningVisibility()
+    }
+
+    private func sumiConfigureJapaneseLearning(on page: ReaderPageViewController) {
+        page.pageView?.configureJapaneseLearning(enabled: sumiJapaneseLearningEnabled) { [weak self, weak page] region, wordID, anchor in
+            guard let self, let page, sumiCanSelectJapanese(on: page) else { return }
+            sumiJapaneseSelectionHandler?(region, wordID, anchor)
+        }
+    }
+
+    private func sumiConfigureJapaneseLearning(on wide: ReaderBookWideLeafViewController) {
+        let enabled = sumiJapaneseLearningEnabled && wide.canonicalController.page?.sumiJapaneseLearningEligible == true
+        wide.configureJapaneseLearning(enabled: enabled) { [weak self, weak wide] region, wordID, anchor in
+            guard let self, let wide, sumiCanSelectJapanese(on: wide) else { return }
+            sumiJapaneseSelectionHandler?(region, wordID, anchor)
+        }
+    }
+
+    private func sumiCanSelectJapanese(on leaf: UIViewController) -> Bool {
+        guard sumiJapaneseLearningEnabled, sumiJapaneseLearningActive, isViewLoaded,
+              view.window != nil, !isTransitioning, sumiChapterStateView == nil else { return false }
+        return leafControllers(in: pageViewController.viewControllers ?? []).contains { $0 === leaf }
+    }
+
+    /// Cached pages and the source image behind a wide-page proxy never scan.
+    private func sumiUpdateJapaneseLearningVisibility() {
+        guard isViewLoaded else { return }
+        let canShow = sumiJapaneseLearningEnabled && sumiJapaneseLearningActive && !isTransitioning
+            && view.window != nil && sumiChapterStateView == nil
+        let visibleLeaves = canShow ? leafControllers(in: pageViewController.viewControllers ?? []) : []
+        let visibleIDs = Set(visibleLeaves.map(ObjectIdentifier.init))
+        for page in pageViewControllers {
+            page.pageView?.setJapaneseLearningVisible(visibleIDs.contains(ObjectIdentifier(page)))
+        }
+        for case let wide as ReaderBookWideLeafViewController in bookControllers.values {
+            wide.setJapaneseLearningVisible(visibleIDs.contains(ObjectIdentifier(wide)))
+        }
+    }
+}
+#endif

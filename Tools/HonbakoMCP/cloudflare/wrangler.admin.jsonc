@@ -1,0 +1,27 @@
+{
+  "name": "honbako-mcp-admin",
+  "main": "admin-worker.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "vars": {
+    "OWNER_NAME": "personal-owner-v1"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "HONBAKO_OWNER",
+        "class_name": "HonbakoOwner",
+        "script_name": "honbako-mcp"
+      }
+    ]
+  },
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "19cc8706f23e127305e14dfd41191162"
+}

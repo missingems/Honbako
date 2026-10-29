@@ -13,7 +13,7 @@ struct HonbakoCoverDisplayView: View {
                 if let image = model.image {
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFit()
+                        .scaledToFill()
                         .colorMultiply(Color(white: 0.78))
                         .overlay {
                             Image(uiImage: SumiPaperSurface.inkTile)
@@ -22,6 +22,7 @@ struct HonbakoCoverDisplayView: View {
                                 .accessibilityHidden(true)
                         }
                         .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
                 } else {
                     Text(model.title)
                         .font(.body.weight(.medium))

@@ -1,49 +1,41 @@
 #if SUMI
 import SwiftUI
+#if HONBAKO_EXTERNAL_SOURCES
 import UniformTypeIdentifiers
+#endif
 
 /// Connections are added deliberately. Search uses only enabled connections.
 struct SumiSourcesView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(HonbakoGuideLibrary.searchEnabledKey) private var searchGuides = true
     @State private var sources: [SourceInfo] = []
     @State private var changing: Set<String> = []
     @State private var importing = false
     @State private var errorMessage: String?
     @State private var proPresented = false
+    @ObservedObject private var automation = HonbakoAutomationService.shared
     @AppStorage(HonbakoCoverDisplayPreferences.showCoverKey) private var showMangaCover = true
+    @AppStorage(HonbakoLibraryPreferences.hideFinishedBooksKey) private var hideFinishedBooks = false
 
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    NavigationLink {
-                        HonbakoLibraryOnboardingView(
-                            localFilesAdded: sources.contains { $0.sourceId == LocalSourceRunner.sourceKey },
-                            importSource: { importing = true }
-                        )
-                    } label: {
-                        Label("Getting Started", systemImage: "book.closed")
-                    }
+                Section("Library") {
+                    Toggle("Hide Finished Books", isOn: $hideFinishedBooks)
+                        .accessibilityIdentifier("Honbako.Settings.HideFinishedBooks")
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section {
                     Toggle("Show Manga Cover", isOn: $showMangaCover)
                         .accessibilityIdentifier("Honbako.Settings.ShowMangaCover")
                 } header: { Text("Cover Display") }
                 footer: {
-                    if HonbakoProStore.personalFeaturesEnabled {
-                        Text("Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved.")
-                    } else {
-                        Text("The system chooses when a connected display can show the cover.")
-                    }
+                    Text("Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved.")
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section {
-                    if sources.isEmpty {
-                        Text("No connections yet").foregroundStyle(.secondary)
-                    }
+                    Toggle("On This Device", isOn: $searchGuides)
+                        .accessibilityIdentifier("Honbako.Settings.SearchGuides")
                     ForEach(sources, id: \.sourceId) { source in
                         Toggle(isOn: Binding(
                             get: { !source.disabled },
@@ -59,7 +51,6 @@ struct SumiSourcesView: View {
                     }
                 } header: { Text("Included in Search") }
                 footer: { Text("Connections provide the books you can find in Honbako.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
 
                 Section("Your Content") {
                     NavigationLink { LocalSetupView() } label: {
@@ -70,15 +61,27 @@ struct SumiSourcesView: View {
                         Label("Personal Server", systemImage: "externaldrive")
                     }
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
+
+                #if HONBAKO_EXTERNAL_SOURCES
                 Section {
                     NavigationLink { SumiSourceListsView() } label: {
                         Label("Source Lists", systemImage: "link")
                     }
                     Button("Import Source File", systemImage: "square.and.arrow.down") { importing = true }
                 } header: { Text("More Sources") }
-                footer: { Text("Honbako includes an original tutorial. Add your own files or a connection to read more.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
+                footer: { Text("Honbako.ExternalBeta.Footer") }
+
+                #endif
+
+                Section {
+                    NavigationLink {
+                        HonbakoAutomationSettingsView()
+                    } label: {
+                        Label(automation.isEnabled ? "MCP Server" : "Turn On MCP Server", systemImage: "point.3.connected.trianglepath.dotted")
+                            .badge(automation.pendingApprovals.count)
+                    }
+                    .accessibilityIdentifier("Honbako.Automation")
+                }
 
                 Section {
                     Button { proPresented = true } label: {
@@ -86,7 +89,6 @@ struct SumiSourcesView: View {
                     }
                     NavigationLink { SumiCloudSyncView() } label: { Label("iCloud Sync", systemImage: "icloud") }
                 }
-                .listRowBackground(HonbakoSettingsRowBackground())
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -101,6 +103,7 @@ struct SumiSourcesView: View {
             .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in Task { await reload() } }
         }
         .tint(.blue)
+        #if HONBAKO_EXTERNAL_SOURCES
         .fileImporter(isPresented: $importing, allowedContentTypes: [UTType(filenameExtension: "aix") ?? .zip]) { result in
             switch result {
             case let .success(url):
@@ -115,6 +118,7 @@ struct SumiSourcesView: View {
             case let .failure(error): errorMessage = error.localizedDescription
             }
         }
+        #endif
         .alert("Connection Unavailable", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK", role: .cancel) { errorMessage = nil }
         } message: { Text(errorMessage ?? "") }
