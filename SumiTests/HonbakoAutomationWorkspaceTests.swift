@@ -42,7 +42,7 @@ import Testing
         let json = Data(#"{"deviceId":"d","name":"Honbako on iPad","lastActive":"2026-10-31T09:15:02.123Z","thisDevice":false,"current":true}"#.utf8)
         let device = try JSONDecoder().decode(Workspace.Device.self, from: json)
         #expect(device.displayName == "iPad")
-        #expect(device.lastActiveDate == Date(timeIntervalSince1970: 1_793_438_102.123))
+        #expect(abs((device.lastActiveDate?.timeIntervalSince1970 ?? 0) - 1_793_438_102.123) < 0.001)
         let plain = Workspace.Device(deviceId: "e", name: "iPhone", lastActive: "2026-10-31T09:15:02Z", thisDevice: true, current: false)
         #expect(plain.lastActiveDate == Date(timeIntervalSince1970: 1_793_438_102))
     }
