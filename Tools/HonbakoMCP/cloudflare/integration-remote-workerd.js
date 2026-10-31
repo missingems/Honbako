@@ -118,7 +118,7 @@ try {
   const connect = async token => {
     client = new Client({name:'remote-fixture',version:'1'});
     await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`), {requestInit:{headers:{authorization:`Bearer ${token}`}},fetch:(url,init)=>mf.dispatchFetch(String(url),{...init,headers:Object.fromEntries(new Headers(init?.headers))})}));
-    assert.equal((await client.listTools()).tools.length,13);
+    assert.equal((await client.listTools()).tools.length,14);
     const library = await client.callTool({name:'honbako_search_library',arguments:{query:'Owned'}}); assert.equal(library.structuredContent.matches[0].title,'Owned Original');
     const history = await client.callTool({name:'honbako_get_reading_history',arguments:{limit:100}});
     assert.equal(history.structuredContent.kind,'history.read');
@@ -145,5 +145,5 @@ try {
   assert.equal((await json('/remote/api/device/disconnect',{},phone.deviceToken)).status,200);
   assert.equal((await json('/remote/mcp',{jsonrpc:'2.0',id:1,method:'tools/list'},refreshed.access_token)).status,401);
   assert.equal((await aliasTools()).status,401);
-  process.stdout.write(JSON.stringify({originAliases:true,issuerIsolation:true,aliasPersistence:true,runtime:'workerd',entry:productionEntry?'production':'sandbox',deployed:false,fixtureOnly:true,appleLibraryLoads:true,appleOutboundTransport:true,ocspBinaryTransport:true,invalidAppleProofRejected:true,oauthConsent:true,pkce:true,refreshRotation:true,tenantIsolation:true,tools:13,historyJobs:true,sourceApproval:true,persistenceRestart:true,disconnectRevokes:true})+'\n');
+  process.stdout.write(JSON.stringify({originAliases:true,issuerIsolation:true,aliasPersistence:true,runtime:'workerd',entry:productionEntry?'production':'sandbox',deployed:false,fixtureOnly:true,appleLibraryLoads:true,appleOutboundTransport:true,ocspBinaryTransport:true,invalidAppleProofRejected:true,oauthConsent:true,pkce:true,refreshRotation:true,tenantIsolation:true,tools:14,historyJobs:true,sourceApproval:true,persistenceRestart:true,disconnectRevokes:true})+'\n');
 } finally { await client?.close().catch(()=>{}); await mf?.dispose(); await fs.rm(directory,{recursive:true,force:true}); }
