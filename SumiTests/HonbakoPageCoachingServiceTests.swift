@@ -20,6 +20,22 @@ import UIKit
         #expect(fixture.service.currentPage?.page.page == 1)
     }
 
+    @Test("While the server is refusing requests, the session tick sends nothing, then resumes")
+    func rateLimitPausesSharing() async throws {
+        let fixture = CoachingServiceFixture()
+        defer { fixture.close() }
+        try fixture.start()
+        try await coachingEventually { fixture.probe.getRequests >= 1 }
+        fixture.probe.limitedUntil = fixture.probe.now.addingTimeInterval(60)
+        try await Task.sleep(for: .milliseconds(100))
+        let uploads = fixture.probe.uploads.count, polls = fixture.probe.getRequests
+        try await Task.sleep(for: .milliseconds(1600))
+        #expect(fixture.probe.uploads.count == uploads)
+        #expect(fixture.probe.getRequests == polls, "Two session ticks passed without a request")
+        fixture.probe.now = fixture.probe.now.addingTimeInterval(61)
+        try await coachingEventually { fixture.probe.getRequests > polls }
+    }
+
     @Test("A stream the server closed starts a fresh session instead of retrying the dead one")
     func closedStreamStartsFreshSession() async throws {
         let fixture = CoachingServiceFixture()
@@ -279,7 +295,8 @@ private final class CoachingServiceFixture {
             try await probe.request(path, method, body)
         }, connected: { probe.connected }, foreground: { probe.foreground },
         privateReading: { probe.privateReading }, now: { probe.now },
-        connectionIdentity: { probe.connectionIdentity }, loadImage: { capture in await probe.load(capture) })
+        connectionIdentity: { probe.connectionIdentity }, loadImage: { capture in await probe.load(capture) },
+        limitedUntil: { probe.limitedUntil })
         probe.capture = probe.makeCapture()
     }
 
@@ -294,6 +311,7 @@ private final class CoachingWireProbe {
     var foreground = true
     var privateReading = false
     var connectionIdentity: String? = "fixture-companion"
+    var limitedUntil: Date?
     var now = Date(timeIntervalSince1970: 1_800_000_000)
     var capture: HonbakoPageCoachingCapture?
     var holdImages = false

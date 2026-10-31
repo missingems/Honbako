@@ -40,7 +40,7 @@ async function connectMcp(token) {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${origin}/mcp`), {
     requestInit: { headers: { authorization: `Bearer ${token}` } }, fetch: (url, init) => mf.dispatchFetch(String(url), { ...init, headers: Object.fromEntries(new Headers(init?.headers)) })
   }));
-  const tools = await client.listTools(); assert.equal(tools.tools.length, 13); return tools.tools.length;
+  const tools = await client.listTools(); assert.equal(tools.tools.length, 14); return tools.tools.length;
 }
 async function call(name, args = {}) {
   const value = await client.callTool({ name, arguments: args }); assert.ok(!value.isError, name); return value.structuredContent;

@@ -22,6 +22,16 @@ final class HonbakoAutomationService: ObservableObject {
     @Published private(set) var approvingJobID: String?
     @Published private(set) var lastReading: Models.Reading?
     @Published private(set) var lastSync: Date?
+    /// The other devices on this Pro purchase that share the hosted workspace.
+    @Published private(set) var devices: [HonbakoAutomationWorkspace.Device] = []
+    @Published private(set) var joinedOtherDevices = false
+    @Published private(set) var handledNotices: [HonbakoAutomationWorkspace.HandledNotice] = []
+    @Published private(set) var isRemovingDevice = false
+    /// Shown in MCP settings while the hosted server is refusing requests (429).
+    @Published private(set) var limitMessage: String?
+    /// Until then, polling and page sharing send nothing; user actions still go through.
+    private(set) var limitedUntil: Date?
+    private var limitAttempts = 0
     var endpoint: String { connection?.endpoint.absoluteString ?? "" }
 
     private let defaults = UserDefaults.standard
@@ -50,12 +60,19 @@ final class HonbakoAutomationService: ObservableObject {
     private var preparedBooks: [String: [SumiBook]] = [:]
     private var outbox: [String: Models.JobUpdate] = [:]
     private var receipts: [String: Models.ImportReceipt] = [:]
+    private var isRejoining = false
+    private var rejoinAttempted = false
     private static let enabledKey = "Honbako.Automation.Enabled"
     private static let sharingKey = "Honbako.Automation.ShareReading"
     private static let readingKey = "Honbako.Automation.LastReading"
     private static let outboxKey = "Honbako.Automation.Outbox"
     private static let receiptsKey = "Honbako.Automation.Receipts"
     private static let snapshotTimeKey = "Honbako.Automation.LastSnapshotMilliseconds"
+    private static let workspaceKey = "Honbako.Automation.WorkspaceID"
+    private static let permissionsRevisionKey = "Honbako.MCP.PermissionsRevision"
+    private static let permissionsPendingKey = "Honbako.MCP.PermissionsPending"
+    /// Shown in the Devices list and in "Handled on iPad" on the other devices.
+    static var deviceName: String { UIDevice.current.model }
 
     private var fixtureBlocked: Bool {
         #if DEBUG
@@ -67,7 +84,7 @@ final class HonbakoAutomationService: ObservableObject {
         #endif
     }
     private var canPoll: Bool {
-        isEnabled && connection != nil && !isMovingConnection && !fixtureBlocked && UIApplication.shared.applicationState == .active
+        isEnabled && connection != nil && !isMovingConnection && !isRejoining && !fixtureBlocked && UIApplication.shared.applicationState == .active
     }
 
     private init() {
@@ -94,7 +111,7 @@ final class HonbakoAutomationService: ObservableObject {
         session?.invalidateAndCancel()
     }
 
-    func connect(endpoint value: String, code: String, name: String = "Honbako on iPhone") async {
+    func connect(endpoint value: String, code: String, name: String? = nil) async {
         guard !isConnecting, !isDisconnecting, !isMovingConnection else { return }
         guard !fixtureBlocked, UIApplication.shared.applicationState == .active else {
             errorMessage = "Open Honbako to connect to your companion."
@@ -110,6 +127,7 @@ final class HonbakoAutomationService: ObservableObject {
         let identity = generation
         defer { isConnecting = false }
         do {
+            let name = name ?? "Honbako on \(Self.deviceName)"
             let body = Models.PairRequest(code: code.trimmingCharacters(in: .whitespacesAndNewlines), name: String(name.prefix(80)))
             let data = try await request(endpoint: endpoint, path: "api/pair", method: "POST", body: JSONEncoder().encode(body))
             let paired = try JSONDecoder().decode(Models.PairResponse.self, from: data)
@@ -171,6 +189,8 @@ final class HonbakoAutomationService: ObservableObject {
     }
 
     var usesManagedRemote: Bool { connection.map { HonbakoRemoteMCP.isManaged($0.endpoint) } ?? false }
+    /// The server shares this purchase's workspace across devices, with one set of switches.
+    private var usesSharedWorkspace: Bool { usesManagedRemote && defaults.string(forKey: Self.workspaceKey) != nil }
 
     /// Existing pairings stay on their original production or Sandbox workspace.
     private var managedRemoteEndpoint: URL {
@@ -196,20 +216,19 @@ final class HonbakoAutomationService: ObservableObject {
         do {
             let endpoint = proof.endpoint
             let identity = try HonbakoAutomationCredentials.remoteIdentity(endpoint: endpoint)
-            let body = HonbakoRemoteMCP.Enrollment(installationId: identity.installationId,
-                deviceSecret: identity.deviceSecret, name: "Honbako on iPhone", signedTransaction: proof.signedTransaction)
-            let data = try await request(endpoint: endpoint, path: "enroll", method: "POST", body: JSONEncoder().encode(body), timeout: 30)
-            let enrolled = try JSONDecoder().decode(HonbakoRemoteMCP.Enrolled.self, from: data)
-            guard enrolled.endpoint == endpoint, enrolled.deviceId == identity.installationId,
-                  HonbakoAutomationPolicy.validDeviceToken(enrolled.deviceToken) else { throw BridgeError.invalidResponse }
+            let enrolled = try await enroll(endpoint: endpoint, identity: identity, proof: proof)
             let connected = Models.Connection(endpoint: endpoint, deviceId: enrolled.deviceId, deviceToken: enrolled.deviceToken)
             try HonbakoAutomationCredentials.save(connected)
             connection = connected
             outbox = [:]; receipts = [:]; persistQueues()
             isEnabled = true; defaults.set(true, forKey: Self.enabledKey)
             adoptDefaultSharing()
+            // A device joining others takes the account's switches; a first device offers its own.
+            defaults.set(enrolled.workspaceId, forKey: Self.workspaceKey)
+            defaults.set(0, forKey: Self.permissionsRevisionKey); defaults.set(false, forKey: Self.permissionsPendingKey)
+            joinedOtherDevices = enrolled.joinedOtherDevices == true
             invalidateLibrary(); persistReadingSoon()
-            status = "Remote MCP enabled"
+            status = HonbakoAutomationWorkspace.enrolledStatus(joinedOtherDevices: enrolled.joinedOtherDevices)
             resume()
         } catch BridgeError.httpStatus(402) {
             errorMessage = "Apple could not confirm an active Pro subscription for remote MCP. Restore Purchases and try again."
@@ -218,12 +237,60 @@ final class HonbakoAutomationService: ObservableObject {
         } catch BridgeError.refused(_, "purchase_mismatch") {
             errorMessage = "This iPhone’s remote server belongs to a different Pro purchase. Sign in with the Apple Account that bought Pro and tap Restore Purchases, or contact jun@honbako.xyz."
         } catch BridgeError.refused(_, "device_limit") {
-            errorMessage = "Your Pro subscription is already using remote MCP on five devices. Turn off Connect Remotely on one you no longer use, then try again."
-        } catch BridgeError.refused(_, "rate_limited") {
+            errorMessage = "Your Pro subscription is already using remote MCP on five devices. On one of them, remove a device you no longer use in MCP Server → Devices, then try again."
+        } catch BridgeError.rateLimited {
             errorMessage = "Too many setup attempts. Wait a few minutes, then try again."
         } catch {
             errorMessage = "Couldn’t enable the remote MCP server. Try again when you’re connected to the internet."
         }
+    }
+
+    private func enroll(endpoint: URL, identity: HonbakoRemoteMCPIdentity,
+                        proof: HonbakoRemotePurchaseProof) async throws -> HonbakoRemoteMCP.Enrolled {
+        let body = HonbakoRemoteMCP.Enrollment(installationId: identity.installationId,
+            deviceSecret: identity.deviceSecret, name: Self.deviceName, signedTransaction: proof.signedTransaction)
+        let data = try await request(endpoint: endpoint, path: "enroll", method: "POST", body: JSONEncoder().encode(body), timeout: 30)
+        let enrolled = try JSONDecoder().decode(HonbakoRemoteMCP.Enrolled.self, from: data)
+        guard enrolled.endpoint == endpoint, enrolled.deviceId == identity.installationId,
+              HonbakoAutomationPolicy.validDeviceToken(enrolled.deviceToken),
+              enrolled.workspaceId.map(HonbakoAutomationPolicy.validIdentifier) ?? true else { throw BridgeError.invalidResponse }
+        return enrolled
+    }
+
+    /// Pairings made before shared workspaces enroll once more, so this device joins the
+    /// other devices on its Pro purchase. Polling stops meanwhile: joining closes this
+    /// device's old workspace, and a late poll with its old token must not look like a removal.
+    private func rejoinSharedWorkspaceIfNeeded() -> Bool {
+        guard HonbakoAutomationWorkspace.needsRejoin(managed: usesManagedRemote, enabled: isEnabled,
+                workspaceId: defaults.string(forKey: Self.workspaceKey), attempted: rejoinAttempted),
+              canPoll, let previous = connection else { return false }
+        rejoinAttempted = true
+        pause()
+        isRejoining = true
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { isRejoining = false; resume() }
+            guard let proof = await HonbakoProStore.shared.remotePurchaseProof(), proof.endpoint == previous.endpoint,
+                  let identity = try? HonbakoAutomationCredentials.remoteIdentity(endpoint: previous.endpoint),
+                  identity.installationId == previous.deviceId,
+                  let enrolled = try? await enroll(endpoint: previous.endpoint, identity: identity, proof: proof),
+                  let workspaceId = enrolled.workspaceId,
+                  isEnabled, connection?.deviceId == previous.deviceId, connection?.endpoint == previous.endpoint else { return }
+            // Keep the existing pairing if the new one can't be saved; this retries next launch.
+            let joined = Models.Connection(endpoint: previous.endpoint, deviceId: enrolled.deviceId, deviceToken: enrolled.deviceToken)
+            guard (try? HonbakoAutomationCredentials.save(joined)) != nil else { return }
+            if joined.deviceToken != previous.deviceToken {
+                // Requests queued in the old workspace closed with it.
+                connection = joined; outbox = [:]; pendingApprovals = []; preparedBooks = [:]; persistQueues()
+                defaults.set(0, forKey: Self.permissionsRevisionKey)
+            }
+            defaults.set(workspaceId, forKey: Self.workspaceKey)
+            if enrolled.joinedOtherDevices == true {
+                joinedOtherDevices = true
+                status = HonbakoAutomationWorkspace.enrolledStatus(joinedOtherDevices: true)
+            }
+        }
+        return true
     }
 
     func aiAuthorization(requestID: String, approved: Bool? = nil) async throws -> Data {
@@ -339,6 +406,7 @@ final class HonbakoAutomationService: ObservableObject {
         return Models.Connection(endpoint: endpoint, deviceId: previous.deviceId, deviceToken: previous.deviceToken)
     }
 
+    /// Turns off this device only. Other devices on the same Pro purchase keep the AI connection.
     func disconnect() async {
         guard !isDisconnecting else { return }
         HonbakoPageCoachingService.shared.stop()
@@ -349,13 +417,55 @@ final class HonbakoAutomationService: ObservableObject {
             cleared = (try? await request(endpoint: connection.endpoint, path: "api/device/disconnect", method: "POST",
                 body: Data("{}".utf8), token: connection.deviceToken, timeout: 3)) != nil
         }
+        forgetConnection()
+        errorMessage = cleared ? nil : "Disconnected on this device. Your companion was unreachable and may retain its last shared page and library snapshot until you clear them there."
+        isDisconnecting = false
+    }
+
+    /// Removes every device and AI connection on this Pro purchase. Unlike turning off one
+    /// device, nothing changes here unless the server confirms, so no device is left connected.
+    func disconnectAllDevices() async {
+        guard !isDisconnecting, usesManagedRemote, let connection else { return }
+        HonbakoPageCoachingService.shared.stop()
+        isDisconnecting = true
+        pause()
+        do {
+            _ = try await request(endpoint: connection.endpoint, path: "api/device/disconnect-all", method: "POST",
+                body: Data("{}".utf8), token: connection.deviceToken)
+            forgetConnection()
+            errorMessage = nil
+        } catch {
+            errorMessage = "Couldn’t disconnect your devices. Check your internet connection and try again."
+        }
+        isDisconnecting = false
+        if isEnabled { resume() }
+    }
+
+    /// Removes another device from this Pro purchase's workspace. Removing this device turns it off.
+    func removeDevice(_ id: String) async {
+        guard let current = connection, usesManagedRemote, isEnabled, !isRemovingDevice else { return }
+        guard id != current.deviceId else { await disconnect(); return }
+        isRemovingDevice = true
+        defer { isRemovingDevice = false }
+        do {
+            _ = try await request(endpoint: current.endpoint, path: "api/device/remove", method: "POST",
+                body: JSONEncoder().encode(HonbakoAutomationWorkspace.RemoveRequest(deviceId: id)), token: current.deviceToken)
+            devices.removeAll { $0.deviceId == id }
+        } catch BridgeError.httpStatus(404) {
+            devices.removeAll { $0.deviceId == id }
+        } catch {
+            errorMessage = "Couldn’t remove that device. Check your internet connection and try again."
+        }
+    }
+
+    private func forgetConnection() {
         isEnabled = false; defaults.set(false, forKey: Self.enabledKey)
         connection = nil; HonbakoAutomationCredentials.clear()
         pendingApprovals = []; preparedBooks = [:]; outbox = [:]; receipts = [:]
+        devices = []; joinedOtherDevices = false; handledNotices = []
+        defaults.removeObject(forKey: Self.workspaceKey)
         cachedLibrary = []; cachedSources = []; libraryStore = nil; persistQueues()
         status = "Not connected"
-        errorMessage = cleared ? nil : "Disconnected on this device. Your companion was unreachable and may retain its last shared page and library snapshot until you clear them there."
-        isDisconnecting = false
         session?.invalidateAndCancel(); session = nil
     }
 
@@ -368,6 +478,7 @@ final class HonbakoAutomationService: ObservableObject {
 
     func setSharingReading(_ enabled: Bool) {
         guard sharesReadingPosition != enabled else { return }
+        markPermissionsChanged()
         sharesReadingPosition = enabled
         if !enabled {
             outbox = outbox.filter { !$0.value.isHistoryResult }
@@ -401,10 +512,53 @@ final class HonbakoAutomationService: ObservableObject {
         guard ["LibraryAccess", "LibraryChanges", "SourceChanges", "PageAccess", "Annotations"].contains(key) else { return }
         objectWillChange.send()
         defaults.set(enabled, forKey: "Honbako.MCP." + key)
+        markPermissionsChanged()
         invalidateState()
         if key == "PageAccess" || key == "Annotations" { HonbakoPageCoachingService.shared.refreshVisiblePage() }
         if canPoll {
             pollIdentity = UUID(); pollTask?.cancel(); pollTask = nil; resume()
+        }
+    }
+
+    /// Remote switches belong to the whole account; this device saves its change on the next poll.
+    private func markPermissionsChanged() {
+        if usesSharedWorkspace { defaults.set(true, forKey: Self.permissionsPendingKey) }
+    }
+    private func pushPermissions(_ connection: Models.Connection) async throws {
+        let body = try JSONEncoder().encode(HonbakoAutomationWorkspace.PermissionsUpdate(permissions: permissions))
+        let data = try await request(endpoint: connection.endpoint, path: "api/device/permissions", method: "POST",
+            body: body, token: connection.deviceToken)
+        let saved = try JSONDecoder().decode(HonbakoAutomationWorkspace.PermissionsReply.self, from: data).permissions
+        defaults.set(saved.revision, forKey: Self.permissionsRevisionKey)
+        // A change made while this was in flight is pushed on the next poll.
+        if saved.values == permissions { defaults.set(false, forKey: Self.permissionsPendingKey) }
+    }
+    /// Shows another device's switches here. The next snapshot carries them.
+    private func adoptPermissions(_ values: [String: Bool], revision: Int) {
+        objectWillChange.send()
+        for (field, key) in HonbakoAutomationWorkspace.permissionKeys {
+            if let value = values[field] { defaults.set(value, forKey: "Honbako.MCP." + key) }
+        }
+        if let reading = values["readingRead"], reading != sharesReadingPosition {
+            sharesReadingPosition = reading
+            defaults.set(reading, forKey: Self.sharingKey)
+            if !reading {
+                outbox = outbox.filter { !$0.value.isHistoryResult }; persistQueues()
+                persistenceTask?.cancel(); persistenceTask = nil
+            } else { persistReadingSoon() }
+        }
+        defaults.set(revision, forKey: Self.permissionsRevisionKey)
+        HonbakoPageCoachingService.shared.refreshVisiblePage()
+        invalidateState()
+    }
+    private func applyWorkspace(_ info: HonbakoAutomationWorkspace.Info, connection: Models.Connection) async {
+        devices = info.devices
+        switch HonbakoAutomationWorkspace.permissionSync(server: info.permissions,
+            localRevision: defaults.integer(forKey: Self.permissionsRevisionKey),
+            pendingPush: defaults.bool(forKey: Self.permissionsPendingKey)) {
+        case .none: break
+        case .push: try? await pushPermissions(connection)
+        case .adopt(let values, let revision): adoptPermissions(values, revision: revision)
         }
     }
 
@@ -498,7 +652,10 @@ final class HonbakoAutomationService: ObservableObject {
                 try await finish(jobID, status: "completed", result: result)
                 status = "Added approved books"
             } catch is CancellationError { /* Leave the durable server request available to resume. */ }
-            catch {
+            catch BridgeError.refused(409, "already_handled") {
+                // Another device answered first. Its answer stands; this one never fails it.
+                if identity == generation { noteHandled(jobID, title: approval.title, by: nil) }
+            } catch {
                 if identity == generation {
                     await fail(jobID, message: approval.isSourceChange
                         ? "The source change couldn’t be confirmed. Check Sources before retrying; a change may already have been applied."
@@ -508,6 +665,16 @@ final class HonbakoAutomationService: ObservableObject {
                 }
             }
         }
+    }
+
+    private func noteHandled(_ id: String, title: String, by device: String?) {
+        removeApproval(id)
+        handledNotices.removeAll { $0.id == id }
+        handledNotices.insert(.init(id: id, title: title, deviceName: HonbakoAutomationWorkspace.deviceLabel(device)), at: 0)
+        handledNotices = Array(handledNotices.prefix(5))
+    }
+    func handledNotice(for jobID: String) -> HonbakoAutomationWorkspace.HandledNotice? {
+        handledNotices.first { $0.id == jobID }
     }
 
     func sourceName(for id: String) -> String { cachedSources.first { $0.id == id }?.name ?? id }
@@ -562,7 +729,7 @@ final class HonbakoAutomationService: ObservableObject {
         approvalTask?.cancel(); approvalTask = nil; approvingJobID = nil
     }
     private func resume() {
-        guard canPoll, pollTask == nil else { return }
+        guard canPoll, pollTask == nil, !rejoinSharedWorkspaceIfNeeded() else { return }
         let identity = generation
         let runIdentity = UUID()
         pollIdentity = runIdentity
@@ -576,9 +743,14 @@ final class HonbakoAutomationService: ObservableObject {
                     // newer pairing or an endpoint migration already committed.
                     guard !Task.isCancelled, identity == generation, runIdentity == pollIdentity else { break }
                     isEnabled = false; defaults.set(false, forKey: Self.enabledKey)
+                    let remote = usesManagedRemote
                     connection = nil; HonbakoAutomationCredentials.clear()
-                    status = "Pair with your companion again"
+                    devices = []; joinedOtherDevices = false; defaults.removeObject(forKey: Self.workspaceKey)
+                    status = remote ? "This device was removed from MCP Server. Turn on Connect Remotely to connect it again." : "Pair with your companion again"
                     break
+                } catch BridgeError.rateLimited {
+                    guard !Task.isCancelled, runIdentity == pollIdentity else { break }
+                    status = limitMessage ?? status
                 } catch BridgeError.httpStatus(402) {
                     guard !Task.isCancelled, identity == generation else { break }
                     status = "Remote MCP requires Pro"
@@ -588,7 +760,8 @@ final class HonbakoAutomationService: ObservableObject {
                     guard !Task.isCancelled, runIdentity == pollIdentity else { break }
                     status = "Companion unavailable — waiting to reconnect"
                 }
-                do { try await Task.sleep(for: .seconds(3)) } catch { break }
+                let wait = max(3, limitedUntil?.timeIntervalSinceNow ?? 0)
+                do { try await Task.sleep(for: .seconds(wait)) } catch { break }
             }
             if identity == generation, runIdentity == pollIdentity { pollTask = nil }
         }
@@ -605,9 +778,14 @@ final class HonbakoAutomationService: ObservableObject {
 
     private func cycle(_ identity: UUID) async throws {
         try check(identity)
+        try throwIfLimited()
         guard let connection else { throw CancellationError() }
         await flushOutbox()
         try check(identity)
+        if usesSharedWorkspace, defaults.bool(forKey: Self.permissionsPendingKey) {
+            try? await pushPermissions(connection)
+            try check(identity)
+        }
         if stateDirty || Date.now.timeIntervalSince(lastStateSent) >= 15 {
             let state = try await snapshot(identity)
             let encoded = try JSONEncoder().encode(state)
@@ -619,9 +797,18 @@ final class HonbakoAutomationService: ObservableObject {
             lastStateSent = .now; lastSync = .now
         }
         let data = try await request(endpoint: connection.endpoint, path: "api/device/jobs", token: connection.deviceToken)
-        let jobs = try JSONDecoder().decode(Models.Jobs.self, from: data).jobs
+        let decoded = try JSONDecoder().decode(Models.Jobs.self, from: data), jobs = decoded.jobs
         try check(identity)
         let live = Set(jobs.map(\.id))
+        let answered = HonbakoAutomationWorkspace.handledElsewhere(pending: pendingApprovals.map(\.id).filter { $0 != approvingJobID },
+            handled: decoded.handled ?? [], live: live)
+        for approval in pendingApprovals where answered[approval.id] != nil {
+            noteHandled(approval.id, title: approval.title, by: answered[approval.id])
+        }
+        if let workspace = decoded.workspace {
+            await applyWorkspace(workspace, connection: connection)
+            try check(identity)
+        }
         pendingApprovals.removeAll { !live.contains($0.id) && $0.id != approvingJobID }
         preparedBooks = preparedBooks.filter { live.contains($0.key) || $0.key == approvingJobID }
         let readyJobs = jobs.filter { job in
@@ -667,6 +854,7 @@ final class HonbakoAutomationService: ObservableObject {
                     try await prepareApproval(job, identity: identity)
                 }
             } catch is CancellationError { throw CancellationError() }
+            catch BridgeError.refused(409, "already_handled") { removeApproval(job.id) }
             catch { await fail(job.id, message: "This request is unavailable, disabled in MCP permissions, or has invalid items.") }
         }
         status = pendingApprovals.isEmpty ? "Connected" : "Requests are waiting for your approval"
@@ -802,7 +990,7 @@ final class HonbakoAutomationService: ObservableObject {
                 try await postStatus(jobID: id, update: update, connection: connection)
                 guard !Task.isCancelled, identity == generation, canPoll else { break }
                 outbox[id] = nil; persistQueues()
-            } catch BridgeError.conflict {
+            } catch BridgeError.conflict, BridgeError.refused(409, _) {
                 guard !Task.isCancelled, identity == generation, canPoll else { break }
                 outbox[id] = nil; persistQueues()
             } catch BridgeError.httpStatus(404) {
@@ -838,13 +1026,30 @@ final class HonbakoAutomationService: ObservableObject {
         try Task.checkCancellation()
         guard let response = response as? HTTPURLResponse, data.count <= 1_048_576 else { throw BridgeError.invalidResponse }
         if response.statusCode == 401 { throw BridgeError.unauthorized }
-        if [409, 429].contains(response.statusCode), let code = try? JSONDecoder().decode(ErrorBody.self, from: data).error.code,
-           ["purchase_mismatch", "device_limit", "rate_limited"].contains(code) {
+        let code = try? JSONDecoder().decode(ErrorBody.self, from: data).error.code
+        // Any other 429, ours or Cloudflare's, pauses background requests until Retry-After.
+        if response.statusCode == 429, code != "device_limit" {
+            noteRateLimit(retryAfter: HonbakoAutomationRateLimit.retryAfter(response.value(forHTTPHeaderField: "Retry-After"), now: .now))
+            throw BridgeError.rateLimited
+        }
+        if [409, 429].contains(response.statusCode), let code, ["purchase_mismatch", "device_limit", "already_handled"].contains(code) {
             throw BridgeError.refused(response.statusCode, code)
         }
         if response.statusCode == 409 { throw BridgeError.conflict }
         guard (200...299).contains(response.statusCode) else { throw BridgeError.httpStatus(response.statusCode) }
+        limitAttempts = 0
+        if let limitedUntil, limitedUntil <= .now { self.limitedUntil = nil; limitMessage = nil }
         return data
+    }
+    private func noteRateLimit(retryAfter: TimeInterval?) {
+        limitAttempts += 1
+        let now = Date.now, until = now.addingTimeInterval(HonbakoAutomationRateLimit.delay(retryAfter: retryAfter, attempt: limitAttempts))
+        let resume = max(limitedUntil ?? until, until)
+        limitedUntil = resume
+        limitMessage = HonbakoAutomationRateLimit.message(resumeAt: resume, now: now)
+    }
+    private func throwIfLimited() throws {
+        if let limitedUntil, limitedUntil > .now { throw BridgeError.rateLimited }
     }
     var coachingConnectionIdentity: String? {
         connection.map { "\($0.deviceId)|\($0.endpoint.absoluteString)" }
@@ -857,6 +1062,7 @@ final class HonbakoAutomationService: ObservableObject {
         guard allowed.contains(path), let current = connection, isEnabled, !isConnecting, !isDisconnecting else {
             throw BridgeError.invalidResponse
         }
+        try throwIfLimited()
         let data: Data
         do {
             data = try await request(endpoint: current.endpoint, path: path, method: method, body: body, token: current.deviceToken)
@@ -915,6 +1121,8 @@ final class HonbakoAutomationService: ObservableObject {
         case invalidResponse, unauthorized, conflict, unavailableSource, importFailed, httpStatus(Int)
         /// A 409 or 429 whose body names why, such as `purchase_mismatch` or `device_limit`.
         case refused(Int, String)
+        /// A 429 from the hosted server or Cloudflare; `limitedUntil` says how long to wait.
+        case rateLimited
     }
     private struct ErrorBody: Decodable {
         struct Detail: Decodable { let code: String }

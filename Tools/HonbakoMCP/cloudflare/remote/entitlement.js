@@ -6,6 +6,11 @@ export const ANNUAL_PRODUCT = 'com.missingems.honbaku.pro.annual';
 export const PRODUCTS = new Set([PRODUCT, ANNUAL_PRODUCT]);
 export const BUNDLE = 'com.missingems.honbaku';
 export const LEASE_MS = 15 * 60 * 1000;
+// Apple documents inAppOwnershipType as PURCHASED or FAMILY_SHARED. Only an explicit
+// PURCHASED joins the purchaser's shared workspace; anything else (FAMILY_SHARED, a
+// missing or unknown value) gets its own per-installation workspace instead.
+// Pending: confirm the live values with a sandbox Family Sharing purchase.
+export const purchasedByOwner = transaction => transaction?.inAppOwnershipType === 'PURCHASED';
 const denied = () => new BridgeError(402, 'pro_required', 'An active Honbako Pro subscription is required for remote MCP');
 
 // Both the device JWS and a fresh server-to-server subscription status must agree.
@@ -44,7 +49,8 @@ export class AppleProVerifier {
       if (e?.status === 2) throw new BridgeError(503, 'purchase_check_unavailable', 'Apple’s certificate check is temporarily unavailable');
       throw denied();
     }
-    return this.current(transaction.originalTransactionId);
+    const lease = await this.current(transaction.originalTransactionId);
+    return { ...lease, familyShared: lease.familyShared || !purchasedByOwner(transaction) };
   }
   async current(originalTransactionId) {
     await this.ready();
@@ -64,12 +70,12 @@ export class AppleProVerifier {
           expiresAt = Math.max(expiresAt, renewal.gracePeriodExpiresDate);
         }
         this.validate(transaction, expiresAt);
-        if (transaction.originalTransactionId === originalTransactionId) active.push(expiresAt);
+        if (transaction.originalTransactionId === originalTransactionId) active.push({ expiresAt, purchased: purchasedByOwner(transaction) });
       } catch { /* An unverified or inactive record cannot grant hosting. */ }
     }
     if (!active.length) throw denied();
-    const expiresAt = Math.max(...active);
-    return { originalTransactionId, purchaseHash: digest(`${this.environment}:${originalTransactionId}`),
+    const expiresAt = Math.max(...active.map(a => a.expiresAt));
+    return { originalTransactionId, purchaseHash: digest(`${this.environment}:${originalTransactionId}`), familyShared: active.some(a => !a.purchased),
       expiresAt, checkedAt: this.clock(), leaseUntil: Math.min(expiresAt, this.clock() + LEASE_MS) };
   }
 }

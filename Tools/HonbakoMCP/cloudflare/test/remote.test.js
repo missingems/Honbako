@@ -9,7 +9,7 @@ import { SqliteBridgeStore } from '../storage.js';
 import { BridgeError } from '../../src/store.js';
 const BASE = 'https://honbako.example/remote', ROUTE_KEY = 'K'.repeat(43);
 const at = Date.now();
-const active = { bundleId: BUNDLE, productId: PRODUCT, type: 'Auto-Renewable Subscription', environment: 'Production', originalTransactionId: '12345', expiresDate: at + 86400000 };
+const active = { bundleId: BUNDLE, productId: PRODUCT, type: 'Auto-Renewable Subscription', environment: 'Production', originalTransactionId: '12345', expiresDate: at + 86400000, inAppOwnershipType: 'PURCHASED' };
 function verifier(transaction = active, status = 1, renewal) {
   return new AppleProVerifier({}, { clock: () => at, signedVerifier: { async verifyAndDecodeTransaction() { return transaction; },
     async verifyAndDecodeRenewalInfo(value) { if (!value || !renewal) throw new Error('missing renewal'); return renewal; } },
@@ -209,31 +209,4 @@ test('A registration in use slides its 30-day window while idle registrations st
   await assert.rejects(authorization(broker, { client_id: idle.client.client_id }), { status: 400, message: /expired/ });
   f.advance(31 * 86400000);
   await assert.rejects(broker.fetch(form({ grant_type: 'refresh_token', client_id: used.client.client_id, refresh_token: issued.refresh_token })), { status: 401, code: 'invalid_client' });
-});
-test('Disconnect releases the purchase slot and binding; active workspaces keep takeover and purchase protections', async () => {
-  const f = fixture(), phones = [];
-  for (let i = 0; i < 5; i++) { const w = f.make(), identity = enrollment(); phones.push({ w, identity, paired: await w.enroll(identity) }); }
-  const sixth = f.make(), sixthIdentity = enrollment();
-  const limited = await sixth.enroll(sixthIdentity).catch(e => e);
-  assert.equal(limited.code, 'device_limit');
-  const { w, identity, paired } = phones[0];
-  const mismatch = await w.enroll(identity, f.lease('other-apple-account')).catch(e => e);
-  assert.deepEqual([mismatch.status, mismatch.code], [409, 'purchase_mismatch']);
-  const disconnected = await w.fetch(req('/api/device/disconnect', paired.deviceToken, {}));
-  assert.deepEqual([disconnected.status, await disconnected.json()], [200, { ok: true }]);
-  assert.equal(f.allocations.get('purchase').includes(identity.installationId), false);
-  assert.equal(w.store.control('remote-owner').purchaseHash, undefined);
-  await sixth.enroll(sixthIdentity);
-  await assert.rejects(w.enroll({ ...identity, deviceSecret: secret() }, f.lease('other-apple-account')), { status: 401 });
-  const moved = await w.enroll(identity, f.lease('other-apple-account'));
-  assert.deepEqual(f.allocations.get('other-apple-account'), [identity.installationId]);
-  assert.equal(w.owner(moved.deviceToken), identity.installationId);
-  await assert.rejects(w.enroll(identity, f.lease()), { status: 409, code: 'purchase_mismatch' });
-});
-test('A disconnect recorded before slot release existed frees the old slot when that installation enrolls under another purchase', async () => {
-  const f = fixture(), w = f.make(), identity = enrollment(); await w.enroll(identity);
-  w.store.setControl('remote-owner', { ...w.store.control('remote-owner'), disabled: true });
-  await w.enroll(identity, f.lease('other-apple-account'));
-  assert.deepEqual(f.allocations.get('purchase'), []);
-  assert.equal(w.store.control('remote-owner').purchaseHash, 'other-apple-account');
 });

@@ -10,7 +10,7 @@ export const MAX_RESPONSE = 2 * 1024 * 1024;
 export const MAX_MIGRATION = 16 * 1024 * 1024;
 export const GRANT_LIFETIME_MS = 24 * 60 * 60 * 1000;
 const DEADLINE = 12000;
-export const hostedInstructions = instructions.replace("Cloud clients cannot reach a Mac's localhost or private LAN automatically; this local bridge does not create a public endpoint.", 'This is the owner’s hosted HTTPS companion. The Mac does not need to be running. The paired phone must open Honbako with an Internet connection to sync fresh reading state and process approved jobs; otherwise report its last-known state.');
+export const hostedInstructions = instructions.replace("Cloud clients cannot reach a Mac's localhost or private LAN automatically; this local bridge does not create a public endpoint.", 'This is the owner’s hosted HTTPS companion. The Mac does not need to be running. One of the person’s connected devices must open Honbako with an Internet connection to sync fresh reading state and process approved jobs; otherwise report the last-known state.');
 const strongKey = key => typeof key === 'string' && /^[A-Za-z0-9_-]{43,100}$/.test(key);
 const bearer = request => /^Bearer ([A-Za-z0-9_-]{43,100})$/.exec(request.headers.get('authorization') ?? '')?.[1] ?? '';
 const terminal = new Set(['completed', 'failed', 'rejected', 'cancelled']);
@@ -18,10 +18,12 @@ const responseHeaders = { 'content-type': 'application/json; charset=utf-8', 'ca
 export function reply(status, value) { return new Response(JSON.stringify(value), { status, headers: responseHeaders }); }
 export function failure(error) {
   const known = error instanceof BridgeError, validation = error?.name === 'ZodError';
-  return reply(known ? error.status : validation ? 400 : 500, { error: {
+  const response = reply(known ? error.status : validation ? 400 : 500, { error: {
     code: known ? error.code : validation ? 'invalid_request' : 'internal_error',
     message: known ? error.message : validation ? 'Request validation failed' : 'Honbako could not complete this request'
   } });
+  if (known && error.retryAfter) response.headers.set('retry-after', String(error.retryAfter));
+  return response;
 }
 export async function boundedBytes(stream, maximum, timeoutMs = DEADLINE) {
   if (!stream) return new Uint8Array();
@@ -89,11 +91,11 @@ export class HostedBridgeCore {
       if (route.kind === 'coaching' ? !['POST', 'GET'].includes(request.method) : request.method !== route.method) throw new BridgeError(405, 'method_not_allowed', 'Method not allowed');
       const address = request.headers.get('cf-connecting-ip') ?? 'unknown';
       const ip = /^[0-9a-fA-F:.]{3,80}$/.test(address) ? digest(address) : 'unknown';
-      if (!this.store.allowRate([`request:${ip}`], 600, 60000) || !this.store.allowRate(['request:global'], 1800, 60000))
-        throw new BridgeError(429, 'rate_limited', 'Too many requests; retry later');
+      this.store.enforceRate([`request:${ip}`], 600, 60000);
+      this.store.enforceRate(['request:global'], 1800, 60000);
       if (route.kind === 'pair') {
-        if (!this.store.allowRate([`pair:${ip}`], 10, 600000) || !this.store.allowRate(['pair:global'], 30, 600000))
-          throw new BridgeError(429, 'pairing_rate_limited', 'Too many pairing attempts; retry later');
+        this.store.enforceSavedRate([`pair:${ip}`], 10, 600000, 'Too many pairing attempts; retry later', 'pairing_rate_limited');
+        this.store.enforceSavedRate(['pair:global'], 30, 600000, 'Too many pairing attempts; retry later', 'pairing_rate_limited');
         if (this.store.data.devices.length >= 100) throw new BridgeError(429, 'device_limit', 'Remove an unused pairing before connecting another device');
         return reply(200, await this.store.pair(pairRequest.parse(await readJson(request))));
       }

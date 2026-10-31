@@ -65,6 +65,9 @@ enum HonbakoRemoteMCP {
         let deviceId: String
         let deviceToken: String
         let endpoint: URL
+        /// Present once the server shares one workspace across a purchase's devices.
+        var workspaceId: String?
+        var joinedOtherDevices: Bool?
     }
     struct Authorization: Decodable, Identifiable, Sendable {
         let id: String

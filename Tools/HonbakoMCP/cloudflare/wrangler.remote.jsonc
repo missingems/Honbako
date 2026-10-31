@@ -12,10 +12,37 @@
     "PUBLIC_ORIGIN": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
     "REMOTE_MCP_ENABLED": "YES",
     "APP_STORE_ENVIRONMENT": "Sandbox",
+    "WORKSPACE_DAILY_REQUEST_BUDGET": "20000",
     "REMOTE_ORIGIN_ALIASES": [
       "https://test-mcp.honbako.xyz"
     ]
   },
+  "ratelimits": [
+    {
+      "name": "DEVICE_RATE_LIMITER",
+      "namespace_id": "4201",
+      "simple": {
+        "limit": 150,
+        "period": 60
+      }
+    },
+    {
+      "name": "AI_RATE_LIMITER",
+      "namespace_id": "4202",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "SETUP_RATE_LIMITER",
+      "namespace_id": "4203",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
   "durable_objects": {
     "bindings": [
       {

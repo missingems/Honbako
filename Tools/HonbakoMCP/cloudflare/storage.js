@@ -1,4 +1,5 @@
 import { BridgeStore, BridgeError } from '../src/store.js';
+import { MemoryLimiter } from './limits.js';
 
 const copy = value => structuredClone(value);
 const json = value => JSON.stringify(value);
@@ -44,6 +45,7 @@ export class SqliteBridgeStore extends BridgeStore {
   constructor(storage, pairingKey, { clock = Date.now } = {}) {
     super(null, pairingKey, readState(storage), clock);
     this.storage = storage;
+    this.limiter = new MemoryLimiter(clock);
   }
   coachingDeviceIds() { return [...this.storage.sql.exec('SELECT id FROM bridge_coaching')].map(row => row.id); }
   coachingRecord(id) {
@@ -94,6 +96,8 @@ export class SqliteBridgeStore extends BridgeStore {
     this.tail = work.catch(() => {});
     return work;
   }
+  /// Set by a shared remote workspace; one account-wide set of MCP switches for every device.
+  accountPermissions() { return this.control('account-permissions')?.values ?? null; }
   control(key) {
     const row = [...this.storage.sql.exec('SELECT value FROM bridge_control WHERE key = ?', key)][0];
     return row ? JSON.parse(row.value) : null;
@@ -101,15 +105,21 @@ export class SqliteBridgeStore extends BridgeStore {
   setControl(key, value) {
     this.storage.sql.exec('INSERT OR REPLACE INTO bridge_control (key, value) VALUES (?, ?)', key, encode(value));
   }
-  allowRate(keys, limit, windowMs) {
+  /// Rate counters are kept in memory (see MemoryLimiter), never one SQLite row per request.
+  allowRate(keys, limit, windowMs) { return this.limiter.allow(keys, limit, windowMs); }
+  enforceRate(keys, limit, windowMs, message, code) { this.limiter.enforce(keys, limit, windowMs, message, code); }
+  /// Guesses at a six-digit pairing code are rare and must survive restarts, so they keep saved counters.
+  enforceSavedRate(keys, limit, windowMs, message, code) {
     const now = this.clock();
-    return this.storage.transactionSync(() => {
+    const wait = this.storage.transactionSync(() => {
       this.storage.sql.exec('DELETE FROM bridge_limits WHERE expires <= ?', now);
       const rows = keys.map(key => ({ key, row: [...this.storage.sql.exec('SELECT count, expires FROM bridge_limits WHERE key = ?', key)][0] }));
-      if (rows.some(({ row }) => row && row.count >= limit)) return false;
-      if ([...this.storage.sql.exec('SELECT COUNT(*) AS count FROM bridge_limits')][0].count + rows.filter(({ row }) => !row).length > 4096) return false;
+      const full = rows.filter(({ row }) => row && row.count >= limit);
+      if (full.length) return Math.max(1, Math.ceil((Math.min(...full.map(({ row }) => row.expires)) - now) / 1000));
+      if ([...this.storage.sql.exec('SELECT COUNT(*) AS count FROM bridge_limits')][0].count + rows.filter(({ row }) => !row).length > 4096) return Math.ceil(windowMs / 1000);
       for (const { key, row } of rows) this.storage.sql.exec('INSERT OR REPLACE INTO bridge_limits (key, count, expires) VALUES (?, ?, ?)', key, (row?.count ?? 0) + 1, row?.expires ?? now + windowMs);
-      return true;
+      return null;
     });
+    if (wait !== null) throw new BridgeError(429, code, message, { retryAfter: wait });
   }
 }

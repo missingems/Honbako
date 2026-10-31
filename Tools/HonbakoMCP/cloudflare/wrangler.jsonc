@@ -13,10 +13,37 @@
     "OWNER_NAME": "personal-owner-v1",
     "REMOTE_MCP_ENABLED": "YES",
     "APP_STORE_ENVIRONMENT": "Production",
+    "WORKSPACE_DAILY_REQUEST_BUDGET": "20000",
     "REMOTE_ORIGIN_ALIASES": [
       "https://mcp.honbako.xyz"
     ]
   },
+  "ratelimits": [
+    {
+      "name": "DEVICE_RATE_LIMITER",
+      "namespace_id": "4101",
+      "simple": {
+        "limit": 150,
+        "period": 60
+      }
+    },
+    {
+      "name": "AI_RATE_LIMITER",
+      "namespace_id": "4102",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "SETUP_RATE_LIMITER",
+      "namespace_id": "4103",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
   "durable_objects": {
     "bindings": [
       {

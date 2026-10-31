@@ -167,9 +167,14 @@ test('removal needs an updated phone, exact saved IDs, phone approval and a comp
 test('unclaimed work cancels before execution; devices and jobs remain isolated', async t => {
   const f = await fixture(t), a = await f.pair('Phone A'), b = await f.pair('Phone B');
   await f.request('POST', '/api/device/state', a.deviceToken, state('Private A'));
+  f.advance(1000);
   await f.request('POST', '/api/device/state', b.deviceToken, state('Private B', 'other-source'));
   const client = await f.connect();
-  assert.equal((await tool(client, 'honbako_get_reading_context')).isError, true);
+  // Without a deviceId the AI sees the device that last had an open reader.
+  assert.equal(output(await tool(client, 'honbako_get_reading_context')).reading.title, 'Private B');
+  f.advance(1000);
+  await f.request('GET', '/api/device/jobs', a.deviceToken);
+  assert.equal(output(await tool(client, 'honbako_get_reading_context')).reading.title, 'Private B', 'polling does not move the current device');
   const aContext = output(await tool(client, 'honbako_get_reading_context', { deviceId: a.deviceId })); assert.equal(aContext.reading.title, 'Private A');
   const job = output(await tool(client, 'honbako_search_catalog', { deviceId: a.deviceId, query: 'Moon' }));
   const bJobs = await (await f.request('GET', '/api/device/jobs', b.deviceToken)).json(); assert.equal(bJobs.jobs.length, 0);
