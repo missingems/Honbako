@@ -52,6 +52,17 @@ export class SqliteBridgeStore extends BridgeStore {
     const row = [...this.storage.sql.exec('SELECT value FROM bridge_coaching WHERE id = ?', id)][0];
     return row ? JSON.parse(row.value) : null;
   }
+  /// Reads only the small fields, so a jobs poll never parses the shared page's pixels.
+  coachingHeader(id) {
+    const row = [...this.storage.sql.exec(`SELECT json_object('sessionId', json_extract(value, '$.sessionId'), 'accessMode', json_extract(value, '$.accessMode'),
+      'expiresAt', json_extract(value, '$.expiresAt'), 'closed', json_extract(value, '$.closed') IS 1, 'reason', json_extract(value, '$.reason'),
+      'pageGeneration', json_extract(value, '$.pageGeneration'), 'annotationRevision', json_extract(value, '$.annotationRevision'),
+      'pageId', json_extract(value, '$.page.pageId'), 'hasImage', json_type(value, '$.image') IS NOT NULL AND json_type(value, '$.image') != 'null') AS header
+      FROM bridge_coaching WHERE id = ?`, id)][0];
+    if (!row) return null;
+    const header = JSON.parse(row.header);
+    return { ...header, closed: Boolean(header.closed), hasImage: Boolean(header.hasImage) };
+  }
   writeCoachingRecord(id, value) {
     if (value === null) this.storage.sql.exec('DELETE FROM bridge_coaching WHERE id = ?', id);
     else this.storage.sql.exec('INSERT OR REPLACE INTO bridge_coaching (id, expires, value) VALUES (?, ?, ?)',

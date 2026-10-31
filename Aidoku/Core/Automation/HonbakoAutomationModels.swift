@@ -90,6 +90,7 @@ enum HonbakoAutomationModels {
         let jobs: [Job]
         var handled: [HonbakoAutomationWorkspace.Handled]?
         var workspace: HonbakoAutomationWorkspace.Info?
+        var coaching: HonbakoPageCoachingModels.Summary?
     }
     struct Match: Codable, Sendable {
         let sourceId: String

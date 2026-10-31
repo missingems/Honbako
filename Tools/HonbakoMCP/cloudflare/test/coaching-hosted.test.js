@@ -57,3 +57,17 @@ test('hosted connection access survives time and object eviction until device di
   await restarted.store.disconnect(phone.deviceId);
   assert.equal(restarted.store.coachingRecord(phone.deviceId), null);
 });
+test('hosted jobs polls summarise drawings from small SQLite fields, without parsing page pixels', async () => {
+  const f = fixture(), phone = await pair(f.core), page = payload(f.now);
+  const jobs = async () => (await f.core.fetch(request('/api/device/jobs', phone.deviceToken, null, 'GET'))).json();
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: null, reason: 'not_shared' });
+  await f.core.fetch(request('/api/device/coaching', phone.deviceToken, page));
+  const header = f.core.store.coachingHeader(phone.deviceId);
+  assert.equal(header.hasImage, true); assert.equal(header.closed, false); assert.equal(header.pageId, page.page.pageId); assert.equal('image' in header, false);
+  const shared = await jobs();
+  assert.deepEqual(shared.coaching, { active: true, sessionId: page.sessionId, pageGeneration: 1, pageId: page.page.pageId, annotationRevision: 0 });
+  assert.ok(!JSON.stringify(shared).includes(page.image.data));
+  f.advance(600000);
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: page.sessionId, reason: 'expired' });
+  assert.equal(f.core.store.coachingHeader(phone.deviceId).hasImage, false);
+});

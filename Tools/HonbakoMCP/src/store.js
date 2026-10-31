@@ -4,7 +4,7 @@ import { randomBytes, randomInt, randomUUID, createHash, createHmac, timingSafeE
 import { snapshot as snapshotSchema, searchResult, addResult, removeResult } from './schema.js';
 import { BridgeError } from './errors.js';
 import { historyResult, sourceCatalogResult, sourceChangeResult } from './management-schema.js';
-import { CoachingSessions } from './coaching.js';
+import { CoachingSessions, headerOf } from './coaching.js';
 export { BridgeError } from './errors.js';
 
 export const digest = text => createHash('sha256').update(text).digest('hex');
@@ -72,7 +72,7 @@ export class BridgeStore {
   }
   constructor(directory, token, data, clock) {
     this.directory = directory; this.token = token; this.data = data; this.clock = clock; this.tail = Promise.resolve();
-    this.coaching = new CoachingSessions({ clock, read: id => this.coachingRecord(id), write: (id, value) => this.writeCoachingRecord(id, value), list: () => this.coachingDeviceIds() });
+    this.coaching = new CoachingSessions({ clock, read: id => this.coachingRecord(id), write: (id, value) => this.writeCoachingRecord(id, value), list: () => this.coachingDeviceIds(), header: id => this.coachingHeader(id) });
     this.coachingRecords = new Map(); this.coachingTimers = new Map(); this.seen = new Map();
   }
   now() { return new Date(this.clock()).toISOString(); }
@@ -90,6 +90,7 @@ export class BridgeStore {
   }
   coachingDeviceIds() { return [...this.coachingRecords.keys()]; }
   coachingRecord(id) { return this.coachingRecords.get(id) ?? null; }
+  coachingHeader(id) { return headerOf(this.coachingRecord(id)); }
   persistCoachingTombstones() {
     if (!this.directory) return;
     const records = [...this.coachingRecords].map(([id, value]) => [id, { sessionId: value.sessionId, accessMode: value.accessMode, expiresAt: value.expiresAt,
@@ -304,7 +305,7 @@ export class BridgeStore {
       const handled = data.jobs.filter(job => approvalKinds.has(job.kind) && job.handledBy && job.handledBy !== id && visibleTo(job, id)
         && now - Date.parse(job.updatedAt) < HANDLED_MS).slice(-20)
         .map(job => ({ id: job.id, status: job.status, handledBy: data.devices.find(other => other.id === job.handledBy)?.name ?? null }));
-      return { jobs: jobs.map(job => this.publicJob(job)), handled };
+      return { jobs: jobs.map(job => this.publicJob(job)), handled, coaching: this.coaching.summary(id) };
     });
   }
   publicJob(job) {

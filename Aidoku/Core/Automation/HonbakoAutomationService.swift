@@ -56,6 +56,7 @@ final class HonbakoAutomationService: ObservableObject {
     private var libraryTruncated = false
     private var sourcesTruncated = false
     private var lastStateSent = Date.distantPast
+    private var lastJobSeen = Date.distantPast
     private var libraryStore: SumiLibraryStore?
     private var preparedBooks: [String: [SumiBook]] = [:]
     private var outbox: [String: Models.JobUpdate] = [:]
@@ -760,11 +761,16 @@ final class HonbakoAutomationService: ObservableObject {
                     guard !Task.isCancelled, runIdentity == pollIdentity else { break }
                     status = "Companion unavailable — waiting to reconnect"
                 }
-                let wait = max(3, limitedUntil?.timeIntervalSinceNow ?? 0)
+                let wait = max(pollInterval, limitedUntil?.timeIntervalSinceNow ?? 0)
                 do { try await Task.sleep(for: .seconds(wait)) } catch { break }
             }
             if identity == generation, runIdentity == pollIdentity { pollTask = nil }
         }
+    }
+    /// Every 3 s while a book is open (the AI's drawings arrive on this poll), an approval is
+    /// waiting, or AI work arrived in the last two minutes; every 10 s otherwise.
+    private var pollInterval: TimeInterval {
+        readerVisible || !pendingApprovals.isEmpty || Date.now.timeIntervalSince(lastJobSeen) < 120 ? 3 : 10
     }
     private func check(_ identity: UUID) throws {
         guard !Task.isCancelled, identity == generation, canPoll else { throw CancellationError() }
@@ -799,6 +805,8 @@ final class HonbakoAutomationService: ObservableObject {
         let data = try await request(endpoint: connection.endpoint, path: "api/device/jobs", token: connection.deviceToken)
         let decoded = try JSONDecoder().decode(Models.Jobs.self, from: data), jobs = decoded.jobs
         try check(identity)
+        if !jobs.isEmpty { lastJobSeen = .now }
+        HonbakoPageCoachingService.shared.receive(decoded.coaching)
         let live = Set(jobs.map(\.id))
         let answered = HonbakoAutomationWorkspace.handledElsewhere(pending: pendingApprovals.map(\.id).filter { $0 != approvingJobID },
             handled: decoded.handled ?? [], live: live)

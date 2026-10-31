@@ -79,6 +79,15 @@ enum HonbakoPageCoachingModels {
         let reason: String?
         var accessMode: String? = nil
     }
+    /// Sent with every jobs poll so the reader fetches drawings only when they change.
+    struct Summary: Decodable, Equatable, Sendable {
+        let active: Bool
+        let sessionId: String?
+        var pageGeneration: Int?
+        var pageId: String?
+        var annotationRevision: Int?
+        var reason: String?
+    }
     struct Pause: Encodable {
         let sessionId: String
         let pageGeneration: Int

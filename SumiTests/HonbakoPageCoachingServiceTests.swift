@@ -36,6 +36,36 @@ import UIKit
         try await coachingEventually { fixture.probe.getRequests > polls }
     }
 
+    @Test("With jobs-poll summaries, drawings are fetched only when the summary changes")
+    func summariesGateDrawingFetches() async throws {
+        let fixture = CoachingServiceFixture()
+        defer { fixture.close() }
+        try fixture.start()
+        try await coachingEventually { fixture.probe.getRequests >= 1 }
+        let page = try #require(fixture.service.currentPage)
+        let summary = HonbakoPageCoachingModels.Summary(active: true, sessionId: page.sessionId,
+            pageGeneration: page.pageGeneration, pageId: page.page.pageId, annotationRevision: 1)
+        fixture.service.receive(summary)
+        try await Task.sleep(for: .milliseconds(900))
+        let settled = fixture.probe.getRequests
+        for _ in 0..<3 {
+            fixture.service.receive(summary)
+            fixture.service.refreshVisiblePage()
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(fixture.probe.getRequests == settled, "An unchanged summary fetches nothing")
+        var drawn = summary
+        drawn.annotationRevision = 2
+        fixture.service.receive(drawn)
+        fixture.service.refreshVisiblePage()
+        try await coachingEventually { fixture.probe.getRequests == settled + 1 }
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(fixture.probe.getRequests == settled + 1, "A changed summary fetches once")
+        fixture.service.receive(nil)
+        try await coachingEventually { fixture.probe.getRequests >= settled + 3 }
+    }
+
     @Test("A stream the server closed starts a fresh session instead of retrying the dead one")
     func closedStreamStartsFreshSession() async throws {
         let fixture = CoachingServiceFixture()

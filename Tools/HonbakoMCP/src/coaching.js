@@ -24,6 +24,10 @@ function jpegDimensions(bytes) {
   }
   return null;
 }
+/// The fields `summary` needs, without the page's pixels.
+export const headerOf = record => record && { sessionId: record.sessionId, accessMode: record.accessMode, expiresAt: record.expiresAt,
+  closed: Boolean(record.closed), reason: record.reason, pageGeneration: record.pageGeneration, annotationRevision: record.annotationRevision,
+  pageId: record.page?.pageId ?? null, hasImage: Boolean(record.image) };
 const active = (record, now) => Boolean(record && !record.closed && record.image && record.page && (record.accessMode === 'connection' || now < Date.parse(record.expiresAt)));
 function retired(record, reason, now) {
   return { sessionId: record.sessionId, accessMode: record.accessMode, expiresAt: record.expiresAt, pageGeneration: record.pageGeneration ?? 0,
@@ -44,7 +48,10 @@ function metadata(record, now, freshness = {}) {
 
 /// Page pixels and annotations never enter the library/job snapshot or migration checkpoint.
 export class CoachingSessions {
-  constructor({ clock = Date.now, read, write, list = () => [] }) { this.clock = clock; this.read = read; this.write = write; this.list = list; }
+  constructor({ clock = Date.now, read, write, list = () => [], header }) {
+    this.clock = clock; this.read = read; this.write = write; this.list = list;
+    this.header = header ?? (id => headerOf(read(id)));
+  }
   expire(id) {
     const record = this.read(id);
     if (record && !record.closed && record.accessMode !== 'connection' && this.clock() >= Date.parse(record.expiresAt)) {
@@ -97,6 +104,16 @@ export class CoachingSessions {
     this.write(id, record); return { ok: true, ...metadata(record, now, { connected: true }) };
   }
   status(id, freshness) { return metadata(this.expire(id), this.clock(), freshness); }
+  /// What the device needs to decide whether to fetch drawings, carried on every jobs poll.
+  /// Reads the in-memory record without cloning the page or its pixels.
+  summary(id) {
+    const now = this.clock();
+    let head = this.header(id);
+    if (head && !head.closed && head.accessMode !== 'connection' && now >= Date.parse(head.expiresAt)) { this.expire(id); head = this.header(id); }
+    const live = Boolean(head && !head.closed && head.hasImage && head.pageId && (head.accessMode === 'connection' || now < Date.parse(head.expiresAt)));
+    if (!live) return { active: false, sessionId: head?.sessionId ?? null, reason: head ? (head.reason ?? 'expired') : 'not_shared' };
+    return { active: true, sessionId: head.sessionId, pageGeneration: head.pageGeneration ?? 0, pageId: head.pageId, annotationRevision: head.annotationRevision ?? 0 };
+  }
   pause(id, input) {
     const { sessionId, pageGeneration, pageId } = coachingPause.parse(input), record = this.expire(id);
     if (record?.sessionId === sessionId && !record.closed) {

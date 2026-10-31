@@ -47,6 +47,11 @@ final class HonbakoPageCoachingService: ObservableObject {
     private var revision = 0
     private var nextPublishAttempt = Date.distantPast
     private var wasVisible = false
+    /// Jobs polls carry a drawing summary; while they arrive, drawings are fetched only when it
+    /// changes. Without one (an older companion or server), the reader checks every tick.
+    private var lastSummary: Models.Summary?
+    private var summaryChanged = false
+    private var summarySeenAt: Date?
     private var driverTask: Task<Void, Never>?
     private var publishTask: Task<Void, Never>?
     private var annotationTask: Task<Void, Never>?
@@ -164,6 +169,17 @@ final class HonbakoPageCoachingService: ObservableObject {
         }
     }
 
+    /// Called after each jobs poll with the server's drawing summary, or nil when it sent none.
+    func receive(_ summary: Models.Summary?) {
+        guard let summary else { summarySeenAt = nil; return }
+        summarySeenAt = now()
+        if summary != lastSummary { lastSummary = summary; summaryChanged = true }
+    }
+
+    private var summariesArrive: Bool {
+        summarySeenAt.map { now().timeIntervalSince($0) < 15 } ?? false
+    }
+
     private var mayShare: Bool {
         isActive && connected() && boundConnectionIdentity == connectionIdentity()
             && foreground() && !privateReading()
@@ -211,7 +227,8 @@ final class HonbakoPageCoachingService: ObservableObject {
         } else if !published, publishTask == nil, now() >= nextPublishAttempt, let payload = pendingPublish {
             send(payload)
         }
-        if published, annotationTask == nil, let reference = currentPage {
+        if published, annotationTask == nil, let reference = currentPage, summaryChanged || !summariesArrive {
+            summaryChanged = false
             poll(reference)
         }
     }
@@ -341,7 +358,10 @@ final class HonbakoPageCoachingService: ObservableObject {
                     self.revision = state.annotationRevision
                     self.notify()
                 }
-            } catch { /* A failed poll never applies a partial or stale drawing. */ }
+            } catch {
+                // A failed poll never applies a partial or stale drawing; the next summary retries it.
+                self.lastSummary = nil
+            }
         }
     }
 

@@ -165,3 +165,15 @@ test('connection access can republish after a bridge restart without storing dis
   const saved = await fs.readFile(path.join(f.directory, 'coaching-tombstones.json'), 'utf8');
   assert.ok(!saved.includes(page.image.data)); assert.ok(!saved.includes(page.page.title));
 });
+test('each jobs poll carries a small drawing summary, so the phone fetches drawings only when they change', async t => {
+  const f = await fixture(t), jobs = async () => (await f.request('/api/device/jobs', f.phone.deviceToken, null, 'GET')).json();
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: null, reason: 'not_shared' });
+  const payload = f.payload(); await f.request('/api/device/coaching', f.phone.deviceToken, payload);
+  const shared = await jobs();
+  assert.deepEqual(shared.coaching, { active: true, sessionId: payload.sessionId, pageGeneration: 1, pageId: payload.page.pageId, annotationRevision: 0 });
+  assert.ok(!JSON.stringify(shared).includes(payload.image.data));
+  await f.client.callTool({ name: 'honbako_annotate_page', arguments: { ...drawArgs(payload), deviceId: f.phone.deviceId } });
+  assert.equal((await jobs()).coaching.annotationRevision, 1);
+  await f.request('/api/device/coaching/revoke', f.phone.deviceToken, { sessionId: payload.sessionId });
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: payload.sessionId, reason: 'revoked' });
+});
