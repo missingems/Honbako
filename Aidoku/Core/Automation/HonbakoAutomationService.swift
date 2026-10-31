@@ -27,6 +27,11 @@ final class HonbakoAutomationService: ObservableObject {
     @Published private(set) var joinedOtherDevices = false
     @Published private(set) var handledNotices: [HonbakoAutomationWorkspace.HandledNotice] = []
     @Published private(set) var isRemovingDevice = false
+    /// Shown in MCP settings while the hosted server is refusing requests (429).
+    @Published private(set) var limitMessage: String?
+    /// Until then, polling and page sharing send nothing; user actions still go through.
+    private(set) var limitedUntil: Date?
+    private var limitAttempts = 0
     var endpoint: String { connection?.endpoint.absoluteString ?? "" }
 
     private let defaults = UserDefaults.standard
@@ -233,7 +238,7 @@ final class HonbakoAutomationService: ObservableObject {
             errorMessage = "This iPhone’s remote server belongs to a different Pro purchase. Sign in with the Apple Account that bought Pro and tap Restore Purchases, or contact jun@honbako.xyz."
         } catch BridgeError.refused(_, "device_limit") {
             errorMessage = "Your Pro subscription is already using remote MCP on five devices. On one of them, remove a device you no longer use in MCP Server → Devices, then try again."
-        } catch BridgeError.refused(_, "rate_limited") {
+        } catch BridgeError.rateLimited {
             errorMessage = "Too many setup attempts. Wait a few minutes, then try again."
         } catch {
             errorMessage = "Couldn’t enable the remote MCP server. Try again when you’re connected to the internet."
@@ -743,6 +748,9 @@ final class HonbakoAutomationService: ObservableObject {
                     devices = []; joinedOtherDevices = false; defaults.removeObject(forKey: Self.workspaceKey)
                     status = remote ? "This device was removed from MCP Server. Turn on Connect Remotely to connect it again." : "Pair with your companion again"
                     break
+                } catch BridgeError.rateLimited {
+                    guard !Task.isCancelled, runIdentity == pollIdentity else { break }
+                    status = limitMessage ?? status
                 } catch BridgeError.httpStatus(402) {
                     guard !Task.isCancelled, identity == generation else { break }
                     status = "Remote MCP requires Pro"
@@ -752,7 +760,8 @@ final class HonbakoAutomationService: ObservableObject {
                     guard !Task.isCancelled, runIdentity == pollIdentity else { break }
                     status = "Companion unavailable — waiting to reconnect"
                 }
-                do { try await Task.sleep(for: .seconds(3)) } catch { break }
+                let wait = max(3, limitedUntil?.timeIntervalSinceNow ?? 0)
+                do { try await Task.sleep(for: .seconds(wait)) } catch { break }
             }
             if identity == generation, runIdentity == pollIdentity { pollTask = nil }
         }
@@ -769,6 +778,7 @@ final class HonbakoAutomationService: ObservableObject {
 
     private func cycle(_ identity: UUID) async throws {
         try check(identity)
+        try throwIfLimited()
         guard let connection else { throw CancellationError() }
         await flushOutbox()
         try check(identity)
@@ -1016,13 +1026,30 @@ final class HonbakoAutomationService: ObservableObject {
         try Task.checkCancellation()
         guard let response = response as? HTTPURLResponse, data.count <= 1_048_576 else { throw BridgeError.invalidResponse }
         if response.statusCode == 401 { throw BridgeError.unauthorized }
-        if [409, 429].contains(response.statusCode), let code = try? JSONDecoder().decode(ErrorBody.self, from: data).error.code,
-           ["purchase_mismatch", "device_limit", "rate_limited", "already_handled"].contains(code) {
+        let code = try? JSONDecoder().decode(ErrorBody.self, from: data).error.code
+        // Any other 429, ours or Cloudflare's, pauses background requests until Retry-After.
+        if response.statusCode == 429, code != "device_limit" {
+            noteRateLimit(retryAfter: HonbakoAutomationRateLimit.retryAfter(response.value(forHTTPHeaderField: "Retry-After"), now: .now))
+            throw BridgeError.rateLimited
+        }
+        if [409, 429].contains(response.statusCode), let code, ["purchase_mismatch", "device_limit", "already_handled"].contains(code) {
             throw BridgeError.refused(response.statusCode, code)
         }
         if response.statusCode == 409 { throw BridgeError.conflict }
         guard (200...299).contains(response.statusCode) else { throw BridgeError.httpStatus(response.statusCode) }
+        limitAttempts = 0
+        if let limitedUntil, limitedUntil <= .now { self.limitedUntil = nil; limitMessage = nil }
         return data
+    }
+    private func noteRateLimit(retryAfter: TimeInterval?) {
+        limitAttempts += 1
+        let now = Date.now, until = now.addingTimeInterval(HonbakoAutomationRateLimit.delay(retryAfter: retryAfter, attempt: limitAttempts))
+        let resume = max(limitedUntil ?? until, until)
+        limitedUntil = resume
+        limitMessage = HonbakoAutomationRateLimit.message(resumeAt: resume, now: now)
+    }
+    private func throwIfLimited() throws {
+        if let limitedUntil, limitedUntil > .now { throw BridgeError.rateLimited }
     }
     var coachingConnectionIdentity: String? {
         connection.map { "\($0.deviceId)|\($0.endpoint.absoluteString)" }
@@ -1035,6 +1062,7 @@ final class HonbakoAutomationService: ObservableObject {
         guard allowed.contains(path), let current = connection, isEnabled, !isConnecting, !isDisconnecting else {
             throw BridgeError.invalidResponse
         }
+        try throwIfLimited()
         let data: Data
         do {
             data = try await request(endpoint: current.endpoint, path: path, method: method, body: body, token: current.deviceToken)
@@ -1093,6 +1121,8 @@ final class HonbakoAutomationService: ObservableObject {
         case invalidResponse, unauthorized, conflict, unavailableSource, importFailed, httpStatus(Int)
         /// A 409 or 429 whose body names why, such as `purchase_mismatch` or `device_limit`.
         case refused(Int, String)
+        /// A 429 from the hosted server or Cloudflare; `limitedUntil` says how long to wait.
+        case rateLimited
     }
     private struct ErrorBody: Decodable {
         struct Detail: Decodable { let code: String }

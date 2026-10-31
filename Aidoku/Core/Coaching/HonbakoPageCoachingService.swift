@@ -30,6 +30,8 @@ final class HonbakoPageCoachingService: ObservableObject {
     private let privateReading: @MainActor () -> Bool
     private let now: @MainActor () -> Date
     private let connectionIdentity: @MainActor () -> String?
+    /// While the hosted server is refusing requests, the session tick sends nothing.
+    private let limitedUntil: @MainActor () -> Date?
     private var boundConnectionIdentity: String?
     private let loadImage: @MainActor (HonbakoPageCoachingCapture) async -> UIImage?
     private var ownerID: ObjectIdentifier?
@@ -56,7 +58,8 @@ final class HonbakoPageCoachingService: ObservableObject {
         foreground: { UIApplication.shared.applicationState == .active },
         privateReading: { AppSettings.general.incognitoMode.get() }, now: Date.init,
         connectionIdentity: { HonbakoAutomationService.shared.coachingConnectionIdentity },
-        annotationsPermitted: { HonbakoAutomationService.shared.annotationsAllowed })
+        annotationsPermitted: { HonbakoAutomationService.shared.annotationsAllowed },
+        limitedUntil: { HonbakoAutomationService.shared.limitedUntil })
     }
 
     init(transport: @escaping Transport, connected: @escaping @MainActor () -> Bool,
@@ -64,8 +67,10 @@ final class HonbakoPageCoachingService: ObservableObject {
          privateReading: @escaping @MainActor () -> Bool, now: @escaping @MainActor () -> Date,
          connectionIdentity: @escaping @MainActor () -> String?,
          loadImage: (@MainActor (HonbakoPageCoachingCapture) async -> UIImage?)? = nil,
-         annotationsPermitted: @escaping @MainActor () -> Bool = { true }) {
+         annotationsPermitted: @escaping @MainActor () -> Bool = { true },
+         limitedUntil: @escaping @MainActor () -> Date? = { nil }) {
         self.transport = transport
+        self.limitedUntil = limitedUntil
         self.connected = connected
         self.annotationsPermitted = annotationsPermitted
         self.foreground = foreground
@@ -195,6 +200,10 @@ final class HonbakoPageCoachingService: ObservableObject {
             published = false
             nextPublishAttempt = .distantPast
             notify()
+        }
+        if let until = limitedUntil(), until > now() {
+            if localPage != capture.page, !annotations.isEmpty { annotations = []; notify() }
+            return
         }
         if localPage != capture.page || captureChapterID != capture.chapterId
             || (currentPage == nil && publishTask == nil && now() >= nextPublishAttempt) {

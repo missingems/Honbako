@@ -51,6 +51,10 @@ struct HonbakoAutomationSettingsView: View {
                         localConnection
                     }
                     if let error = service.errorMessage { Text(error).foregroundStyle(.secondary) }
+                    if let limit = service.limitMessage {
+                        Label(limit, systemImage: "hourglass").foregroundStyle(.secondary)
+                            .accessibilityIdentifier("Honbako.MCP.Limit")
+                    }
                 } footer: {
                     Text(remote ? "Remote access is included with Pro. Your Mac can stay off."
                         : "Use your Mac’s IP address on the same network. Its one-time pairing code protects access. Disconnect before changing connection type.")
