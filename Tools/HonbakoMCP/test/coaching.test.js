@@ -167,13 +167,42 @@ test('connection access can republish after a bridge restart without storing dis
 });
 test('each jobs poll carries a small drawing summary, so the phone fetches drawings only when they change', async t => {
   const f = await fixture(t), jobs = async () => (await f.request('/api/device/jobs', f.phone.deviceToken, null, 'GET')).json();
-  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: null, reason: 'not_shared' });
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: null, reason: 'not_shared', imagesOnRequest: true });
   const payload = f.payload(); await f.request('/api/device/coaching', f.phone.deviceToken, payload);
   const shared = await jobs();
-  assert.deepEqual(shared.coaching, { active: true, sessionId: payload.sessionId, pageGeneration: 1, pageId: payload.page.pageId, annotationRevision: 0 });
+  assert.deepEqual(shared.coaching, { active: true, sessionId: payload.sessionId, pageGeneration: 1, pageId: payload.page.pageId, annotationRevision: 0, imagesOnRequest: true, imageRequested: false });
   assert.ok(!JSON.stringify(shared).includes(payload.image.data));
   await f.client.callTool({ name: 'honbako_annotate_page', arguments: { ...drawArgs(payload), deviceId: f.phone.deviceId } });
   assert.equal((await jobs()).coaching.annotationRevision, 1);
   await f.request('/api/device/coaching/revoke', f.phone.deviceToken, { sessionId: payload.sessionId });
-  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: payload.sessionId, reason: 'revoked' });
+  assert.deepEqual((await jobs()).coaching, { active: false, sessionId: payload.sessionId, reason: 'revoked', imagesOnRequest: true });
+});
+test('a connected phone shares page details without pixels, and uploads them only when the AI asks', async t => {
+  const f = await fixture(t); f.store.coaching.imageWaitMs = 2000; f.store.coaching.imageStepMs = 20;
+  const jobs = async () => (await (await f.request('/api/device/jobs', f.phone.deviceToken, null, 'GET')).json()).coaching;
+  const { image, expiresAt, ...details } = f.payload(), page = { ...details, accessMode: 'connection' };
+  assert.equal((await f.request('/api/device/coaching', f.phone.deviceToken, page)).status, 200);
+  assert.equal((await jobs()).imageRequested, false);
+  // The AI asks; the phone sees the request on its next jobs poll and attaches the pixels to the same page.
+  const asked = fetchPage(f);
+  await new Promise(resolve => setTimeout(resolve, 60));
+  assert.equal((await jobs()).imageRequested, true);
+  assert.equal((await f.request('/api/device/coaching', f.phone.deviceToken, { ...page, image })).status, 200);
+  const result = await asked;
+  assert.ok(!result.isError); assert.equal(result.content.find(x => x.type === 'image').data, image.data);
+  assert.equal((await jobs()).imageRequested, false);
+  // A later details-only refresh of the same page keeps the pixels.
+  assert.equal((await f.request('/api/device/coaching', f.phone.deviceToken, { ...page, page: { ...page.page, capturedAt: new Date(base + 1000).toISOString() } })).status, 200);
+  assert.equal((await fetchPage(f)).content.find(x => x.type === 'image').data, image.data);
+});
+test('without an upload the page request times out with advice, and a closed book answers at once', async t => {
+  const f = await fixture(t); f.store.coaching.imageWaitMs = 200; f.store.coaching.imageStepMs = 20;
+  const { image, expiresAt, ...details } = f.payload(), page = { ...details, accessMode: 'connection' };
+  await f.request('/api/device/coaching', f.phone.deviceToken, page);
+  const timedOut = await fetchPage(f); assert.equal(timedOut.isError, true); assert.match(JSON.stringify(timedOut.content), /page_not_ready|again in a few seconds/);
+  await f.request('/api/device/coaching/pause', f.phone.deviceToken, { sessionId: page.sessionId, pageGeneration: 1, pageId: page.page.pageId });
+  const started = Date.now(), closed = await fetchPage(f);
+  assert.equal(closed.isError, true); assert.match(JSON.stringify(closed.content), /closed in Honbako/); assert.ok(Date.now() - started < 150);
+  // Legacy page sharing, without connection access, still must include the image.
+  assert.equal((await f.request('/api/device/coaching', f.phone.deviceToken, { ...details, sessionId: randomUUID(), expiresAt })).status, 400);
 });

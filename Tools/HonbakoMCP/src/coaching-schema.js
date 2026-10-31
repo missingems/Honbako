@@ -33,9 +33,11 @@ export const coachingPage = z.object({
 });
 export const coachingPublish = z.object({ sessionId: z.uuid(), pageGeneration: z.number().int().min(1).max(1000000),
   page: coachingPage, image: z.object({ mimeType: z.literal('image/jpeg'), data: z.string().min(4).max(4 * Math.ceil(MAX_COACHING_IMAGE / 3)),
-    width: z.number().int().min(1).max(4096), height: z.number().int().min(1).max(4096) }).strict(), expiresAt: iso.nullable().optional(), accessMode: z.literal('connection').optional() }).strict().superRefine((value, ctx) => {
+    width: z.number().int().min(1).max(4096), height: z.number().int().min(1).max(4096) }).strict().optional(), expiresAt: iso.nullable().optional(), accessMode: z.literal('connection').optional() }).strict().superRefine((value, ctx) => {
   if (value.accessMode === 'connection' ? value.expiresAt != null : typeof value.expiresAt !== 'string')
     ctx.addIssue({ code: 'custom', message: 'Use connection access without an expiry, or an explicit legacy expiry' });
+  // Connected phones share page details on every turn and send pixels only when an AI asks.
+  if (value.accessMode !== 'connection' && !value.image) ctx.addIssue({ code: 'custom', message: 'Legacy page sharing always includes the image' });
 });
 export const coachingPause = z.object({ sessionId: z.uuid(), pageGeneration: z.number().int().min(1).max(1000000), pageId: z.uuid().optional() }).strict();
 export const coachingSession = z.object({ sessionId: z.uuid() }).strict();

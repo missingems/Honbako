@@ -30,6 +30,6 @@ The existing `ITSAppUsesNonExemptEncryption=NO` build setting is not a new expor
 
 ## Remote MCP release preparation — 30 October 2026
 
-The new optional hosted service retains shared library/reading metadata, the latest shared page and annotations, queued work, installation credentials/hashes, and purchase identifiers for subscription checks. The earlier “Data Not Collected” answer must be reassessed and updated before a public build enables hosted enrollment. The policy source and in-app privacy information now describe this flow, provider processing and disconnect deletion. These edits have not been published and the live App Store privacy answer has not been changed.
+The new optional hosted service retains shared library/reading metadata, the latest shared page’s identifiers and annotations, that page’s image only after an AI asked for it, queued work, installation credentials/hashes, and purchase identifiers for subscription checks. The earlier “Data Not Collected” answer must be reassessed and updated before a public build enables hosted enrollment. The policy source and in-app privacy information now describe this flow, provider processing and disconnect deletion. These edits have not been published and the live App Store privacy answer has not been changed.
 
 The per-user remote route remains disabled pending App Store Server API credentials, verification with a real purchase, provider OAuth acceptance and deployment review. Existing local and private pilot connections are preserved. No billing plan or subscription price changed.

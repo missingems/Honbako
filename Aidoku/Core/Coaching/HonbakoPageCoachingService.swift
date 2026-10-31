@@ -52,6 +52,13 @@ final class HonbakoPageCoachingService: ObservableObject {
     private var lastSummary: Models.Summary?
     private var summaryChanged = false
     private var summarySeenAt: Date?
+    /// Whether the server takes page pixels only when an AI asks; nil until the first jobs poll
+    /// answers. A reader waits briefly for that answer, so no image goes up before it is known.
+    private var serverImagesOnRequest: Bool?
+    private let waitsForImagePolicy: Bool
+    private var followedAt: Date?
+    /// The summary whose image request was last answered, so each request uploads pixels once.
+    private var answeredImageRequest: Models.Summary?
     private var driverTask: Task<Void, Never>?
     private var publishTask: Task<Void, Never>?
     private var annotationTask: Task<Void, Never>?
@@ -64,7 +71,7 @@ final class HonbakoPageCoachingService: ObservableObject {
         privateReading: { AppSettings.general.incognitoMode.get() }, now: Date.init,
         connectionIdentity: { HonbakoAutomationService.shared.coachingConnectionIdentity },
         annotationsPermitted: { HonbakoAutomationService.shared.annotationsAllowed },
-        limitedUntil: { HonbakoAutomationService.shared.limitedUntil })
+        limitedUntil: { HonbakoAutomationService.shared.limitedUntil }, waitsForImagePolicy: true)
     }
 
     init(transport: @escaping Transport, connected: @escaping @MainActor () -> Bool,
@@ -73,8 +80,10 @@ final class HonbakoPageCoachingService: ObservableObject {
          connectionIdentity: @escaping @MainActor () -> String?,
          loadImage: (@MainActor (HonbakoPageCoachingCapture) async -> UIImage?)? = nil,
          annotationsPermitted: @escaping @MainActor () -> Bool = { true },
-         limitedUntil: @escaping @MainActor () -> Date? = { nil }) {
+         limitedUntil: @escaping @MainActor () -> Date? = { nil },
+         waitsForImagePolicy: Bool = false) {
         self.transport = transport
+        self.waitsForImagePolicy = waitsForImagePolicy
         self.limitedUntil = limitedUntil
         self.connected = connected
         self.annotationsPermitted = annotationsPermitted
@@ -105,6 +114,7 @@ final class HonbakoPageCoachingService: ObservableObject {
         if ownerID != ObjectIdentifier(owner), wasVisible { pauseVisiblePage() }
         ownerID = ObjectIdentifier(owner)
         captureProvider = capture
+        followedAt = followedAt ?? now()
         if driverTask == nil {
             driverTask = Task { @MainActor [weak self] in
                 while !Task.isCancelled {
@@ -171,8 +181,9 @@ final class HonbakoPageCoachingService: ObservableObject {
 
     /// Called after each jobs poll with the server's drawing summary, or nil when it sent none.
     func receive(_ summary: Models.Summary?) {
-        guard let summary else { summarySeenAt = nil; return }
+        guard let summary else { summarySeenAt = nil; serverImagesOnRequest = false; return }
         summarySeenAt = now()
+        serverImagesOnRequest = summary.imagesOnRequest == true
         if summary != lastSummary { lastSummary = summary; summaryChanged = true }
     }
 
@@ -221,11 +232,19 @@ final class HonbakoPageCoachingService: ObservableObject {
             if localPage != capture.page, !annotations.isEmpty { annotations = []; notify() }
             return
         }
+        if waitsForImagePolicy, serverImagesOnRequest == nil,
+           now().timeIntervalSince(followedAt ?? now()) < 12 { return }
         if localPage != capture.page || captureChapterID != capture.chapterId
             || (currentPage == nil && publishTask == nil && now() >= nextPublishAttempt) {
             beginPage(capture)
         } else if !published, publishTask == nil, now() >= nextPublishAttempt, let payload = pendingPublish {
             send(payload)
+        }
+        if published, publishTask == nil, mayShare, serverImagesOnRequest == true, let payload = pendingPublish,
+           let summary = lastSummary, summary.imageRequested == true, summary.sessionId == payload.sessionId,
+           summary.pageId == payload.page.pageId, answeredImageRequest != summary {
+            answeredImageRequest = summary
+            send(payload, withImage: true)
         }
         if published, annotationTask == nil, let reference = currentPage, summaryChanged || !summariesArrive {
             summaryChanged = false
@@ -286,13 +305,17 @@ final class HonbakoPageCoachingService: ObservableObject {
         }
     }
 
-    private func send(_ payload: Models.Publish) {
+    /// Pixels go up with every page when the server needs them; otherwise only page details do,
+    /// and the image follows once, when an AI asks for this page.
+    private func send(_ payload: Models.Publish, withImage: Bool = false) {
         guard publishTask == nil, mayShare else { return }
         var context = payload.page
         context.capturedAt = HonbakoPageCoachingPolicy.timestamp(now())
         let payload = Models.Publish(sessionId: payload.sessionId, pageGeneration: payload.pageGeneration,
             page: context, image: payload.image, expiresAt: nil, accessMode: "connection")
         pendingPublish = payload
+        var wire = payload
+        if serverImagesOnRequest == true, !withImage { wire.image = nil }
         currentPage = Models.PageReference(sessionId: payload.sessionId, pageGeneration: payload.pageGeneration, page: context)
         let attempt = UUID()
         publishAttempt = attempt
@@ -303,14 +326,14 @@ final class HonbakoPageCoachingService: ObservableObject {
             }
             guard self.mayShare else { return }
             do {
-                let bytes = try await self.transport("api/device/coaching", "POST", JSONEncoder().encode(payload))
+                let bytes = try await self.transport("api/device/coaching", "POST", JSONEncoder().encode(wire))
                 try Task.checkCancellation()
                 let result = try JSONDecoder().decode(Models.Published.self, from: bytes)
                 guard self.isActive, self.sessionID == payload.sessionId, self.pageGeneration == payload.pageGeneration,
                       result.ok, result.sessionId == payload.sessionId, result.pageId == payload.page.pageId,
                       result.accessMode == "connection", result.expiresAt == nil else { return }
                 self.published = true
-                self.statusMessage = "Your assistant can view this page and draw on it."
+                self.statusMessage = wire.image == nil ? "Your assistant can ask for this page." : "Your assistant can view this page and draw on it."
                 self.notify()
             } catch CoachingError.sessionClosed {
                 // The server closed this stream (revoked, or replaced after a
@@ -319,6 +342,7 @@ final class HonbakoPageCoachingService: ObservableObject {
                 guard !Task.isCancelled, self.sessionID == payload.sessionId else { return }
                 self.clearAccess()
             } catch {
+                if wire.image != nil { self.answeredImageRequest = nil }
                 guard !Task.isCancelled, self.sessionID == payload.sessionId,
                       self.pageGeneration == payload.pageGeneration else { return }
                 self.published = false

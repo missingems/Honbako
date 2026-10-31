@@ -55,7 +55,8 @@ enum HonbakoPageCoachingModels {
         let sessionId: String
         let pageGeneration: Int
         let page: PageContext
-        let image: Image
+        /// Omitted when the server takes pixels only on request; sent once the AI asks.
+        var image: Image?
         let expiresAt: String?
         var accessMode: String? = nil
     }
@@ -87,6 +88,9 @@ enum HonbakoPageCoachingModels {
         var pageId: String?
         var annotationRevision: Int?
         var reason: String?
+        /// The server shares page details without pixels and asks for the image when an AI wants it.
+        var imagesOnRequest: Bool?
+        var imageRequested: Bool?
     }
     struct Pause: Encodable {
         let sessionId: String

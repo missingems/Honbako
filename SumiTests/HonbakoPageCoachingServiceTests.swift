@@ -66,6 +66,46 @@ import UIKit
         try await coachingEventually { fixture.probe.getRequests >= settled + 3 }
     }
 
+    @Test("With images on request, pages go up as details only and the image follows once when asked")
+    func imagesGoUpOnlyWhenAsked() async throws {
+        typealias Summary = HonbakoPageCoachingModels.Summary
+        let fixture = CoachingServiceFixture()
+        defer { fixture.close() }
+        fixture.service.receive(Summary(active: false, sessionId: nil, reason: "not_shared", imagesOnRequest: true))
+        try fixture.start()
+        try await coachingEventually { fixture.probe.uploads.count == 1 }
+        #expect(fixture.probe.uploads[0].image == nil, "Turning to a page sends no pixels")
+        let page = try #require(fixture.service.currentPage)
+        let asked = Summary(active: true, sessionId: page.sessionId, pageGeneration: page.pageGeneration,
+            pageId: page.page.pageId, annotationRevision: 0, imagesOnRequest: true, imageRequested: true)
+        try await coachingEventually {
+            fixture.service.receive(asked)
+            fixture.service.refreshVisiblePage()
+            return fixture.probe.uploads.count == 2
+        }
+        #expect(fixture.probe.uploads[1].image != nil)
+        #expect(fixture.probe.uploads[1].pageGeneration == page.pageGeneration)
+        for _ in 0..<3 {
+            fixture.service.receive(asked)
+            fixture.service.refreshVisiblePage()
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(fixture.probe.uploads.count == 2, "One request uploads the image once")
+    }
+
+    @Test("A reader waits for the server's image policy, and an older server still gets images")
+    func readerWaitsForImagePolicy() async throws {
+        let fixture = CoachingServiceFixture(waitsForImagePolicy: true)
+        defer { fixture.close() }
+        try fixture.start()
+        try await Task.sleep(for: .milliseconds(900))
+        #expect(fixture.probe.uploads.isEmpty, "Nothing goes up before the server says how it takes images")
+        fixture.service.receive(nil)
+        try await coachingEventually { fixture.probe.uploads.count == 1 }
+        #expect(fixture.probe.uploads[0].image != nil)
+    }
+
     @Test("A stream the server closed starts a fresh session instead of retrying the dead one")
     func closedStreamStartsFreshSession() async throws {
         let fixture = CoachingServiceFixture()
@@ -319,14 +359,14 @@ private final class CoachingServiceFixture {
     let probe = CoachingWireProbe()
     let service: HonbakoPageCoachingService
 
-    init() {
+    init(waitsForImagePolicy: Bool = false) {
         let probe = probe
         service = HonbakoPageCoachingService(transport: { path, method, body in
             try await probe.request(path, method, body)
         }, connected: { probe.connected }, foreground: { probe.foreground },
         privateReading: { probe.privateReading }, now: { probe.now },
         connectionIdentity: { probe.connectionIdentity }, loadImage: { capture in await probe.load(capture) },
-        limitedUntil: { probe.limitedUntil })
+        limitedUntil: { probe.limitedUntil }, waitsForImagePolicy: waitsForImagePolicy)
         probe.capture = probe.makeCapture()
     }
 
