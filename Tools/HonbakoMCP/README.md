@@ -99,7 +99,7 @@ Open Honbako to sync snapshots and process jobs. If the app is closed or suspend
 
 A source search returns up to 20 exact matches. An add batch contains up to 20 identities, with source IDs from the current snapshot and manga IDs from a completed search (or an already saved title). Recommendations are suggestions; only matching, connected catalog items can be queued. The bridge does not add sources or silently replace a missing recommendation with a different title.
 
-If more than one device is paired, device-specific tools require an explicit `deviceId`. A snapshot older than 30 seconds is reported as **last known**, even if job polling keeps the connection alive. Reading is “current” only when a fresh snapshot says it is active. Recaps must not reveal events after the returned chapter and last visible page; metadata alone is not proof that a model knows the contents.
+With more than one paired device, reading context and the shared page come from the device that last reported an open reader, and library tools use the freshest library; `deviceId` is optional and only targets one device. Jobs created without a `deviceId` belong to every device: searches and reads run on one device at a time, and the first device to approve a library or source change claims it (`already_handled` for the rest). A snapshot older than 30 seconds is reported as **last known**, even if job polling keeps the connection alive. Reading is “current” only when a fresh snapshot says it is active. Recaps must not reveal events after the returned chapter and last visible page; metadata alone is not proof that a model knows the contents.
 
 ## Native HTTP contract
 

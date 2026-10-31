@@ -1,6 +1,14 @@
 # One AI connection for all your devices (plan)
 
-Status: proposal, nothing built. Applies to remote MCP (`mcp.honbako.xyz`, `test-mcp.honbako.xyz`). Local Mac mode is unchanged for now (see the last section).
+Status: built, not deployed. Decisions 1–4 were approved as recommended (A, own workspace, per account, reconnect is fine). Server, app and Help/Privacy text are done; step 7 (deploy and device test) is Jun's. Applies to remote MCP (`mcp.honbako.xyz`, `test-mcp.honbako.xyz`). Local Mac mode keeps its pairing codes but drops the "choose a device" requirement (see the last section).
+
+**Pending:** step 3, the sandbox Family Sharing check. `entitlement.js` follows Apple's documented `inAppOwnershipType` values: only an explicit `PURCHASED` joins the purchaser's workspace, and anything else (`FAMILY_SHARED`, missing, unknown) gets a per-installation workspace (at most five per purchase). Confirm the live values with a sandbox family purchase before production.
+
+As built:
+- `remote/purchases.js`: the broker maps `purchase:<hash>` to `{workspaceId, legacy}`. An old five-ID array becomes the legacy list. The mapping is bound only after the workspace accepts the device; if the mapped workspace has since moved to another purchase, it is unbound and a new one starts.
+- `remote/workspace.js`: `remote-owners` (one per device) plus `remote-workspace` `{id, purchaseHash, familyShared}`. The old single `remote-owner` migrates on load. New device endpoints: `GET /api/device/workspace`, `POST /api/device/permissions`, `POST /api/device/remove`, `POST /api/device/disconnect-all`. Each `GET /api/device/jobs` also returns `workspace` (devices and account permissions) and `handled` (approvals another device answered in the last hour).
+- `src/store.js`: the current device is the last one to report an open reader (polling never moves it). Jobs without a `deviceId` belong to the workspace. Searches and reads go to one device at a time (60-second turn). The first `approvalGranted` claims a change, and any other device's answer gets 409 `already_handled`. Permissions are enforced as account AND device.
+- Disconnect All Devices wipes the workspace in place but keeps the purchase mapping, so a device that hasn't migrated yet still retires its old workspace when it joins.
 
 ## Decisions needed before building
 

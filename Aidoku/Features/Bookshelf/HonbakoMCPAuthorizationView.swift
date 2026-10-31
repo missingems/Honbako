@@ -23,7 +23,7 @@ struct HonbakoMCPAuthorizationView: View {
                             Label("Read your library, reading history and position", systemImage: "books.vertical")
                             Label("Explain and annotate your shared manga page", systemImage: "pencil.tip")
                             Label("Request books and source changes for your approval", systemImage: "checkmark.shield")
-                        } footer: { Text("Private reading and other apps are never shared. Only approve an AI connection you just started. Disconnecting MCP Server removes its access.") }
+                        } footer: { Text("This connection covers your other devices that use the same Pro purchase. Private reading and other apps are never shared. Only approve an AI connection you just started. Disconnect All Devices in MCP Server removes its access.") }
                         Section {
                             Button("Allow Connection") { respond(true) }.disabled(isWorking)
                             Button("Don’t Allow", role: .cancel) { respond(false) }.disabled(isWorking)

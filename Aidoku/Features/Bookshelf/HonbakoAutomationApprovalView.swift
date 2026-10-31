@@ -48,6 +48,9 @@ struct HonbakoAutomationApprovalView: View {
                         .disabled(service.approvingJobID != nil)
                         .accessibilityIdentifier("Honbako.Automation.Reject.\(jobID)")
                     }
+                } else if let handled = service.handledNotice(for: jobID) {
+                    ContentUnavailableView("Handled on \(handled.deviceName)", systemImage: "checkmark.circle",
+                        description: Text("Another of your devices already answered this request."))
                 } else {
                     ContentUnavailableView("Request Finished", systemImage: "checkmark.circle",
                         description: Text("This request is no longer waiting for approval."))
@@ -58,7 +61,7 @@ struct HonbakoAutomationApprovalView: View {
         .honbakoPaperListBackground()
         .navigationTitle(approval?.isSourceChange == true ? "Review Source Change" : approval?.isRemoval == true ? "Review Removal" : "Review Books")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: approval == nil) { if approval == nil { dismiss() } }
+        .onChange(of: approval == nil) { if approval == nil, service.handledNotice(for: jobID) == nil { dismiss() } }
     }
 }
 #endif

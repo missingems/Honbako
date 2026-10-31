@@ -86,7 +86,11 @@ enum HonbakoAutomationModels {
         let status: String
         let createdAt: String
     }
-    struct Jobs: Decodable { let jobs: [Job] }
+    struct Jobs: Decodable {
+        let jobs: [Job]
+        var handled: [HonbakoAutomationWorkspace.Handled]?
+        var workspace: HonbakoAutomationWorkspace.Info?
+    }
     struct Match: Codable, Sendable {
         let sourceId: String
         let mangaId: String
