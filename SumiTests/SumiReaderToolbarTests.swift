@@ -8,7 +8,7 @@ struct SumiReaderToolbarTests {
         (view as? T).map { [$0] } ?? view.subviews.flatMap { descendants($0, type: type) }
     }
 
-    @Test("Close, page previews, and chapters have independent material surfaces")
+    @Test("Close, previews, and chapters have independent material surfaces")
     func separatedHorizontalControls() throws {
         let toolbar = SumiReaderToolbar(frame: CGRect(x: 0, y: 0, width: 420, height: 48))
         let scrubber = SumiPageScrubber()
@@ -22,11 +22,11 @@ struct SumiReaderToolbarTests {
         #expect(surfaces[0].frame.maxX + 6 <= surfaces[1].frame.minX)
         #expect(surfaces[1].frame.maxX + 6 <= surfaces[2].frame.minX)
         #expect(!toolbar.point(inside: CGPoint(x: 51, y: 24), with: nil))
-        #expect(surfaces[0].bounds.height == 48 && surfaces[2].bounds.height == 48)
-        #expect(surfaces[1].bounds.height == 40)
+        #expect([surfaces[0], surfaces[2]].allSatisfy { $0.bounds.size == CGSize(width: 48, height: 48) })
+        #expect(surfaces[1].bounds.size == CGSize(width: 312, height: 40))
         #expect(toolbar.hitTest(CGPoint(x: 200, y: 1), with: nil) is UICollectionView)
         #expect(surfaces[1].layer.cornerRadius == 20)
-        #expect(surfaces[0].layer.cornerRadius == 24 && surfaces[2].layer.cornerRadius == 24)
+        #expect([surfaces[0], surfaces[2]].allSatisfy { $0.layer.cornerRadius == 24 })
         #expect(descendants(surfaces[1], type: SumiPageScrubber.self).first === scrubber)
         #expect(descendants(toolbar, type: UIButton.self).allSatisfy { $0.isPointerInteractionEnabled })
         #expect(scrubber.usesSharedToolbarGlass)
@@ -36,6 +36,10 @@ struct SumiReaderToolbarTests {
         let glass = try #require(descendants(toolbar, type: UIVisualEffectView.self)
             .first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" })
         #expect(glass.effect is UIGlassEffect)
+        #expect((glass.effect as? UIGlassEffect)?.tintColor == HonbakoPalette.glassTintUIColor)
+        let positionBadge = try #require(scrubber.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
+        #expect(!(positionBadge is UIVisualEffectView), "The page badge is a stable dune surface, with no glass refraction")
+        #expect(positionBadge.backgroundColor == HonbakoPalette.scrubberUIColor)
         #expect(descendants(scrubber, type: UIVisualEffectView.self)
             .filter { $0.accessibilityIdentifier != "Sumi.Reader.PagePosition" && !($0 is SumiScrubHoverGlassView) }
             .allSatisfy { $0.effect == nil || $0.isHidden })
@@ -62,7 +66,9 @@ struct SumiReaderToolbarTests {
         #expect(abs(frame.width - 40) < 0.01)
         #expect(abs(frame.height - 272) < 0.01)
         let surfaces = toolbar.subviews.compactMap { $0 as? UIVisualEffectView }
-        #expect(surfaces[0].bounds.width == 48 && surfaces[2].bounds.width == 48)
+        #expect(surfaces.count == 3)
+        #expect([surfaces[0], surfaces[2]].allSatisfy { $0.bounds.width == 48 })
+        #expect(surfaces[1].frame.maxY + 6 <= surfaces[2].frame.minY)
         #expect(surfaces[1].bounds.width == 40)
         #expect(toolbar.hitTest(CGPoint(x: 1, y: 180), with: nil) is UICollectionView)
         #expect(toolbar.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" }?.layer.cornerRadius == 20)
@@ -92,6 +98,38 @@ struct SumiReaderToolbarTests {
         let glass = try #require(descendants(toolbar, type: UIVisualEffectView.self)
             .first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" })
         #expect(glass.effect == nil)
+        #expect(toolbar.subviews.compactMap { $0 as? UIVisualEffectView }.allSatisfy { $0.effect == nil })
+    }
+
+    @Test("The toolbar exposes only close, previews, and the chapters menu")
+    func menuOnlyControlsAndActions() throws {
+        let toolbar = SumiReaderToolbar(frame: CGRect(x: 0, y: 0, width: 420, height: 48))
+        let scrubber = SumiPageScrubber()
+        toolbar.mount(scrubber)
+        toolbar.setVisible(true, animated: false)
+        toolbar.layoutIfNeeded()
+        let buttons = descendants(toolbar, type: UIButton.self)
+        let close = try #require(buttons.first { $0.accessibilityIdentifier == "SumiReader.Close" })
+        let chapters = try #require(buttons.first { $0.accessibilityIdentifier == "Sumi.Reader.ChaptersButton" })
+        #expect(!descendants(toolbar, type: UIView.self).contains {
+            $0.accessibilityIdentifier == "Honbako.Reader.Japanese.Toggle"
+                || $0.accessibilityIdentifier == "Sumi.Reader.Japanese.Glass"
+        }, "Romaji is controlled from the chapters menu, with no duplicate toolbar control")
+        let accessible = try #require(toolbar.accessibilityElements)
+        #expect(accessible.count == 3)
+        #expect(accessible[0] as? UIButton === close)
+        #expect(accessible[1] as? SumiPageScrubber === scrubber)
+        #expect(accessible[2] as? UIButton === chapters)
+        var closeActions = 0
+        var chapterActions = 0
+        toolbar.close = { closeActions += 1 }
+        toolbar.chapters = { chapterActions += 1 }
+        #expect(toolbar.hitTest(close.convert(CGPoint(x: 24, y: 24), to: toolbar), with: nil) === close)
+        #expect(toolbar.hitTest(chapters.convert(CGPoint(x: 24, y: 24), to: toolbar), with: nil) === chapters)
+        chapters.sendActions(for: .touchUpInside)
+        #expect(chapterActions == 1 && closeActions == 0)
+        close.sendActions(for: .touchUpInside)
+        #expect(chapterActions == 1 && closeActions == 1)
     }
 
     @Test("Control group adapts without shrinking the close and chapter touch targets")

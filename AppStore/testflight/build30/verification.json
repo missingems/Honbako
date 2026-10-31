@@ -1,0 +1,117 @@
+{
+  "configurations": [
+    {
+      "mode": "CollectionIsolation",
+      "version": "0.1.0",
+      "build": "29",
+      "external_sources": "NO",
+      "source_package_document_type": false,
+      "personal_features": "NO",
+      "automatic_import": "NO",
+      "reported_test_count": 44,
+      "suite_count": 11,
+      "skipped_tests": [
+        "\u200b\u200b\u279c Test \"Explicit external beta restores native catalog configs without enabling the private Pro override\" skipped.",
+        "\u200b\u200b\u279c Test \"An external list can be deliberately retained and removed without installing any sources\" skipped.",
+        "\u200b\u200b\u279c Test \"An allowlisted native descriptor installs its compiled connector and can be removed\" skipped."
+      ],
+      "test_result": "passed",
+      "executed_tests": 41
+    },
+    {
+      "mode": "ExternalBeta",
+      "version": "0.2.0",
+      "build": "30",
+      "external_sources": "YES",
+      "source_package_document_type": true,
+      "personal_features": "NO",
+      "automatic_import": "NO",
+      "reported_test_count": 51,
+      "suite_count": 12,
+      "skipped_tests": [
+        "\u200b\u279c Test \"Previously installed public catalogs and demo sources cannot load from backups or existing storage\" skipped.",
+        "\u200b\u200b\u279c Test \"Package records cannot gain local-reader privileges through a reserved source identifier\" skipped.",
+        "\u200b\u200b\u279c Test \"Source-list restoration cannot re-enable external lists even when unavailable lists are accepted\" skipped.",
+        "\u200b\u200b\u279c Test \"External package ingestion and catalog creation are rejected before installation\" skipped."
+      ],
+      "test_result": "passed",
+      "executed_tests": 47
+    }
+  ],
+  "archive_uploaded": true,
+  "beta_review_submitted": false,
+  "public_link_enabled": false,
+  "feedback_email_approved_for_testers": true,
+  "feedback_email_saved_in_app_store_connect": true,
+  "feedback_email_readback_redacted": true,
+  "beta_description_saved": true,
+  "beta_review_notes_saved": true,
+  "internal_group": {
+    "name": "Honbako Internal",
+    "testers": 0,
+    "builds": 0,
+    "automatic_distribution": false
+  },
+  "external_group": {
+    "name": "External Sources Beta",
+    "testers": 0,
+    "builds": 0
+  },
+  "testers_invited": 0,
+  "archive": {
+    "CFBundleVersion": "30",
+    "CFBundleShortVersionString": "0.2.0",
+    "CFBundleIdentifier": "com.missingems.honbaku",
+    "DTXcodeBuild": "27A9275",
+    "DTSDKName": "iphoneos27.1",
+    "HonbakoExternalSources": "YES",
+    "HonbakoPersonalFeatures": "NO",
+    "HonbakoImportEnglish50": "NO",
+    "path": "/Users/jun/Documents/Codex/2026-10-24/help-me-clone-x20/work/honbako/Honbako-ExternalTestFlight-Build30.xcarchive",
+    "signature_verified": true,
+    "source_package_document_type": true,
+    "info_sha256": "8bf5c121f954d58069b3f431dddf0bb70b0f3032e128ebb3d0a41c0abe313c52",
+    "archive_succeeded": true
+  },
+  "app_store_build29_archive_unchanged": true,
+  "beta_description_verified_after_reload": true,
+  "beta_review_notes_verified_after_reload": true,
+  "feedback_persisted_after_reload_with_redacted_readback": true,
+  "upload_status": "succeeded",
+  "upload_log_sha256": "0aff379f818ed22de5fb755b8bd8223929102a00585b69f38706b55bd004e624",
+  "apple_processing_status": "ready_to_submit",
+  "feedback_email_persisted_after_reload": true,
+  "group_links": {
+    "internalGroup": "/teams/7fcc516d-bf3f-4188-95c1-a087bd1df80b/apps/6827059668/testflight/groups/62779950-dd24-41b0-b52e-759a2e36187f",
+    "externalGroup": "/teams/7fcc516d-bf3f-4188-95c1-a087bd1df80b/apps/6827059668/testflight/groups/35a4de15-d47e-42b8-9957-16a610dd26bb",
+    "internalAutomaticDistribution": false,
+    "invitedTesters": 0,
+    "publicLinkCreated": false
+  },
+  "source_hashes_unchanged_after_archive": true,
+  "temporary_export_removed": true,
+  "app_store_candidate_preserved": {
+    "selectedBuild": 29,
+    "selectionObserved": "29",
+    "reviewNotesCharacters": 3062,
+    "reviewNotesStillBuild29": true,
+    "saved": true
+  },
+  "what_to_test_saved": true,
+  "what_to_test_verified_after_reload": true,
+  "build_groups": 0,
+  "individual_testers": 0,
+  "group_attachment_status": "not_attached_owner_requested_keep_prepared",
+  "setup_continuation_approval": "owner_requested_keep_prepared",
+  "authorized_provider_review_endpoint": "https://missingems.github.io/Honbako/sources/index.json",
+  "automatic_approval_review": {
+    "rejected_action": "Continue the external-group Test Information wizard",
+    "reason": "May attach build30 and trigger beta review before an authorized provider/source-list URL is confirmed.",
+    "safe_alternative": "Canceled the wizard; saved build notes, empty groups and uploaded build are retained.",
+    "status": "historical_wizard_rejection; provider now supplied, owner requests preparation hold"
+  },
+  "own_source_review_sample": "published_and_live_tested",
+  "original_source_verification_record": "original-source-verification.json",
+  "own_source_what_to_test_verified_after_reload": true,
+  "own_source_review_notes_verified_after_reload": true
+}

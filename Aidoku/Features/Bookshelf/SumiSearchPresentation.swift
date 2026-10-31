@@ -13,11 +13,16 @@ final class SumiSearchPresentation: ObservableObject {
 
     func updatePull(distance: CGFloat) {
         guard !isPresented else { return }
-        pullProgress = min(1, max(0, distance / 52))
+        let progress = SumiSearchPull.progress(distance: distance)
+        guard progress != pullProgress else { return }
+        pullProgress = progress
     }
-    func finishPull() { pullProgress = 0 }
+    func finishPull() {
+        guard pullProgress != 0 else { return }
+        pullProgress = 0
+    }
     func reveal() { requestsKeyboard = true; isPresented = true; pullProgress = 0 }
-    func suspendKeyboard() { requestsKeyboard = false }
+    func suspendKeyboard() { if requestsKeyboard { requestsKeyboard = false } }
     func dismiss() { isPresented = false; pullProgress = 0 }
 }
 #endif

@@ -1,0 +1,250 @@
+{
+  "recorded_on": "2026-10-28",
+  "candidate": {
+    "version": "0.1.0",
+    "build": "28",
+    "bundle_id": "com.missingems.honbaku",
+    "personal_features": "NO",
+    "import_english_50": "NO"
+  },
+  "toolchain": {
+    "name": "Xcode 27.1 Public",
+    "build": "27A9275",
+    "sdk": "iphoneos27.1",
+    "sdk_build": "24A94232"
+  },
+  "archive": {
+    "result": "ARCHIVE SUCCEEDED",
+    "name": "Honbako-AppStore-Build28.xcarchive",
+    "retained": true,
+    "codesign_strict_deep_verified": true,
+    "info_unchanged_after_upload": true,
+    "app_info_sha256": "71712f6aa7263d61de6f763044b05abe7c318a7f75da908024ea979a92ac731e",
+    "log": "/tmp/Honbako-Build28-archive.log"
+  },
+  "upload": {
+    "result": "EXPORT SUCCEEDED; Upload succeeded.",
+    "exit_code": 0,
+    "apple_status": "processed_eligible_for_build_selection",
+    "manage_version_and_build": false,
+    "completed_at": "2026-10-28 18:02:05 +0800",
+    "log": "/tmp/Honbako-Build28-upload.log",
+    "log_sha256": "708db5efae356909184f11d6e150ff9e7b4fa24e0dd34d63c3bb46f14f5278ec",
+    "export_output_leftover": false,
+    "current_apple_status_verified": true,
+    "apple_status_observation": "Build 28 appeared in the eligible build list and was selected and saved; Add for Review validation then checked build 28.",
+    "initial_apple_status": "processing",
+    "initial_apple_status_observed_at": "2026-10-28 18:02:05 +0800"
+  },
+  "ios_tests": {
+    "result": "TEST SUCCEEDED",
+    "passed": 14,
+    "suite_count": 4,
+    "self_hosted": 9,
+    "pro_policy_and_entitlement": 4,
+    "local_storekit": 1,
+    "log": "/tmp/Honbako-Build28-ReviewTests.log",
+    "limits": "Transport fixtures and local StoreKit entitlements; no reader-pagination coverage, native purchase/restore button call or genuine sandbox-account purchase verified.",
+    "reader_pagination_covered": false
+  },
+  "features": {
+    "collection_guide": true,
+    "free_pro_comparison": true,
+    "both_plans_ad_free": true,
+    "locales": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ]
+  },
+  "listing_screenshots": {
+    "design": "dark_build28",
+    "uploaded": 24,
+    "set_counts": {
+      "en-US/iphone": 3,
+      "en-US/ipad": 3,
+      "ja/iphone": 3,
+      "ja/ipad": 3,
+      "zh-Hans/iphone": 3,
+      "zh-Hans/ipad": 3,
+      "zh-Hant/iphone": 3,
+      "zh-Hant/ipad": 3
+    },
+    "raw_capture_build": "28",
+    "pictured_library_reader_ui_unchanged_in_28": true,
+    "official_apple_frames": true,
+    "frame_license_owner_accepted": true,
+    "extra_top_honbako_branding": false,
+    "subtitles_enlarged": true,
+    "additional_image_generation": false,
+    "design_script": "scripts/design_honbako_store_screenshots.py",
+    "uploaded_appearance": "Dark",
+    "dark_replacement": {
+      "raw_capture_build": "28",
+      "status": "all_24_uploaded_eight_sets_verified",
+      "rendered": true,
+      "uploaded": true,
+      "target": 24,
+      "rendered_screenshots": 24,
+      "local_qa": {
+        "native_raw_dimensions_verified": true,
+        "eight_per_device_capture_proofs_verified": true,
+        "public_capture_flags": "NO/NO",
+        "output_rgb_dimensions_and_hashes_verified": true,
+        "raw_hashes_unchanged": true,
+        "all_locale_contact_sheet_visually_reviewed": true,
+        "independent_visual_review_passed": true
+      },
+      "upload_verification": {
+        "recorded_at_utc": "2026-10-28T11:25:55Z",
+        "observed_by": "Root App Store Connect browser verification",
+        "verified_custom_sets": 8,
+        "screenshots_per_custom_set": 3,
+        "set_counts": {
+          "en-US/iphone": 3,
+          "en-US/ipad": 3,
+          "ja/iphone": 3,
+          "ja/ipad": 3,
+          "zh-Hans/iphone": 3,
+          "zh-Hans/ipad": 3,
+          "zh-Hant/iphone": 3,
+          "zh-Hant/ipad": 3
+        },
+        "observed_ui_count_per_set": "3 of 10",
+        "autosaved": true,
+        "save_button_enabled": false,
+        "browser_proof_artifact": "app-store-dark-proof.png"
+      }
+    },
+    "capture_configuration": "Debug simulator",
+    "public_flags": "NO/NO",
+    "upload_verification": {
+      "recorded_at_utc": "2026-10-28T11:25:55Z",
+      "observed_by": "Root App Store Connect browser verification",
+      "verified_custom_sets": 8,
+      "screenshots_per_custom_set": 3,
+      "set_counts": {
+        "en-US/iphone": 3,
+        "en-US/ipad": 3,
+        "ja/iphone": 3,
+        "ja/ipad": 3,
+        "zh-Hans/iphone": 3,
+        "zh-Hans/ipad": 3,
+        "zh-Hant/iphone": 3,
+        "zh-Hant/ipad": 3
+      },
+      "observed_ui_count_per_set": "3 of 10",
+      "autosaved": true,
+      "save_button_enabled": false,
+      "browser_proof_artifact": "app-store-dark-proof.png"
+    },
+    "superseded_light_v3": {
+      "raw_capture_build": "26",
+      "previously_uploaded": true,
+      "current": false
+    }
+  },
+  "native_checks": {
+    "evidence": "review/gui-build28/ui-verification.json",
+    "capture_count": 11,
+    "genuine_komga_api": "passed",
+    "genuine_komga_app_ui": "passed_auth_search_catalog_shelf_first_png_and_three_previews",
+    "guide_local_files_setup_picker_cancel": "passed",
+    "local_cbz_import_completion": "not_verified",
+    "local_tutorial_semantic_page2_and_saved_shelf_position": "passed",
+    "remote_advance_resume_bookmarks": "not_verified",
+    "identified_remote_reader_defect": false,
+    "cua_gesture_limitation": "Compact Device Hub drag/scroll unreliable; full iPad semantic Page 2 works.",
+    "real_apple_product_1_99_and_free_pro_sections": "passed",
+    "product_review_image_27": "historical_superseded_by_build28",
+    "product_review_image_28": "uploaded_saved_reload_verified_default_text3_real_apple1_99",
+    "product_review_image_28_path": "review/Honbako-Pro-Build28.jpg",
+    "genuine_sandbox_purchase": "not_verified",
+    "purchase_restore_ui": "not_verified",
+    "development_server_cleanup": "Graceful stop; 126 MB task-created temporary files and Desktop raw duplicates removed.",
+    "product_review_image_28_appearance": "Light",
+    "product_review_image_28_dark": "attempt_blocked_native_input_routing_no_dark_image_created",
+    "product_review_image_28_sha256": "2182864d91ad871cd73fb9810a2795ba4633cfc31090cecd46d5548c2e1e1b95",
+    "dark_attempt_evidence": "review/Honbako-Pro-Build28-Dark-attempt.json",
+    "capture_cleanup": "own_phone_and_ipad_apps_removed_both_simulators_shutdown_keyboard_off_text3",
+    "capture_cleanup_evidence": "screenshot-captures/build28-dark/capture-cleanup.json"
+  },
+  "app_review": {
+    "build28_selected": true,
+    "build28_validation": "attempted_blocked_only_missing_content_rights",
+    "privacy_published": true,
+    "privacy_urls_saved_locales": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "content_rights_confirmed": false,
+    "engine_licensing_confirmed": false,
+    "export_owner_confirmed": false,
+    "browser_reauthentication_required": false,
+    "current_saved_app_draft_build": "28",
+    "build28_product_review_image_uploaded": true,
+    "new_notes_pasted": true,
+    "iap_staged": true,
+    "pending": [
+      "Accurate owner content-rights declaration and evidence",
+      "Add selected build28 app version to the existing draft after resolving content rights",
+      "Complete remaining owner engine-license/export confirmations accurately before final submission"
+    ],
+    "validation_errors": [
+      "Missing content-rights declaration"
+    ],
+    "resolved_prior_validation_errors": [
+      "Beta Xcode toolchain",
+      "Missing privacy-policy URL"
+    ],
+    "validation_passed": false,
+    "browser_reauthenticated": true,
+    "new_notes_saved": true,
+    "saved_notes_characters": 3114,
+    "iap_review_notes_build28_saved": true,
+    "iap_status": "Ready for Review",
+    "iap_review_notes_build28_reload_verified": true,
+    "iap_review_notes_path": "review/Honbako-Pro-Build28-review-notes.txt",
+    "iap_review_notes_sha256": "e9fa3617f315c029ce03195b0c625e6ba9db345b0641b87f99426f61483b0d34",
+    "app_version_status": "Prepare for Submission",
+    "app_version_staged": false,
+    "subscription_group_staged": true,
+    "build28_product_review_image_reload_verified": true,
+    "group_status": "Ready for Review",
+    "product_add_for_review_succeeded": true,
+    "group_add_for_review_succeeded": true,
+    "final_submit_clicked": false,
+    "submitted_for_review": false,
+    "submission_draft": {
+      "exists": true,
+      "existing_draft_started_local_time": "19:32 Asia/Singapore, 2026-10-28",
+      "platform": "iOS",
+      "items_ready_to_submit": 2,
+      "items": [
+        {
+          "type": "Subscription",
+          "name": "Honbako Pro Monthly",
+          "apple_product_id": "6827839648"
+        },
+        {
+          "type": "Subscription Group",
+          "name": "Honbako Pro",
+          "subscription_group_id": "22521322"
+        }
+      ],
+      "app_version_added": false,
+      "submit_button_enabled": false,
+      "blocker": "To submit your items for review, add an app version for the selected platform.",
+      "final_submit_clicked": false,
+      "submitted_for_review": false,
+      "browser_proof_artifact": "app-store-pro-ready-proof.png",
+      "verification_recorded_at_utc": "2026-10-28T11:35:06Z"
+    },
+    "validation_retried_after_product_image_and_iap_staging": true,
+    "app_version_blocker_proof": "review/AppStore-Build28-Content-Rights-Blocker.png"
+  },
+  "source_proof": "/tmp/Honbako-Build28-proof.json"
+}

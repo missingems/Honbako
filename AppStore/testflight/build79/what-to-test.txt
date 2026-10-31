@@ -1,0 +1,10 @@
+Honbako has a new icon, and much more of the app is now in Japanese and Chinese.
+
+AI connections are now shared across your devices. After updating, open Honbako first on the device whose AI connection you want to keep; AI connections made on your other devices need to be connected again once.
+
+Also check:
+- Notes your AI draws on a page still appear within a few seconds.
+- If the server asks Honbako to slow down, the app pauses and resumes on its own.
+- Devices, approvals and permissions show the same on every device.
+
+Use content you own or are authorized to access.

@@ -1,0 +1,212 @@
+:root {
+  --paper: #F5F0E6;
+  --card: #FFFCF6;
+  --ink: #15140F;
+  --muted: #5C574E;
+  --dune: #806344;
+  --dune-soft: rgba(128, 99, 68, 0.12);
+  --rule: rgba(21, 20, 15, 0.08);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper) url("assets/paper.png") repeat;
+  background-size: 128px 128px;
+  color: var(--ink);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--dune); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Bar */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
+  background: rgba(245, 240, 230, 0.82);
+  -webkit-backdrop-filter: saturate(1.4) blur(16px);
+  backdrop-filter: saturate(1.4) blur(16px);
+  border-bottom: 1px solid var(--rule);
+}
+.mark img { display: block; border-radius: 7px; }
+.bar nav { display: flex; gap: 22px; font-size: 15px; }
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 72px 20px 40px;
+}
+.hero .icon {
+  width: 112px;
+  height: 112px;
+  border-radius: 25px;
+  box-shadow: 0 12px 32px rgba(60, 45, 25, 0.18);
+}
+h1 {
+  margin: 22px 0 6px;
+  font: 600 48px/1.1 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+.lede {
+  margin: 0 auto;
+  max-width: 30em;
+  color: var(--muted);
+  font-size: 19px;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 12px;
+  background: var(--dune-soft);
+  color: var(--dune);
+  font-weight: 600;
+  font-size: 16px;
+}
+.button.primary { background: var(--dune); color: #fff; }
+.button:hover { text-decoration: none; filter: brightness(1.05); }
+
+/* Duo sections */
+.duo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px 24px;
+  text-align: center;
+}
+.duo video {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  object-fit: contain;
+  background: var(--paper);
+  /* the clip's paper is flat; fade its edges into the grain */
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 78%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 78%, transparent 100%);
+}
+.duo-copy { margin-top: -12px; }
+.duo.cover { padding-top: 24px; padding-bottom: 72px; }
+
+h2 {
+  margin: 0 0 6px;
+  font: 600 22px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+section p { margin: 0 auto; max-width: 26em; color: var(--muted); font-size: 16px; }
+
+.pro {
+  display: inline-block;
+  vertical-align: 3px;
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--dune-soft);
+  color: var(--dune);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Features: one row each, the Duo beside its copy, alternating sides */
+.features {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 20px 16px;
+  border-top: 1px solid var(--rule);
+}
+.features article {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  align-items: center;
+  gap: 32px;
+  padding: 32px 0;
+}
+.features article:nth-child(even) { grid-template-columns: 1.6fr 1fr; }
+.features article:nth-child(even) .copy { order: 2; }
+.features .copy p { margin: 0; }
+.features .device { display: block; width: 100%; height: auto; }
+
+.providers {
+  display: flex;
+  gap: 18px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--muted);
+}
+.providers li { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.providers img { width: 48px; height: 48px; border-radius: 11px; box-shadow: 0 0 0 1px var(--rule); }
+
+/* A closer look at the romaji, cropped from a capture of the same page */
+.loupe { position: relative; margin: 0; }
+.loupe .detail {
+  position: absolute;
+  right: 9%;
+  bottom: 13%;
+  width: 42%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--rule);
+  box-shadow: 0 14px 34px rgba(60, 45, 25, 0.26);
+}
+
+/* The recap reads at full size on wide screens; phones get the chat as its own card */
+.loupe.recap .detail { display: none; }
+.loupe figcaption { margin-top: 6px; font-size: 12px; color: var(--muted); text-align: center; }
+
+/* Footer */
+footer {
+  padding: 32px 20px max(40px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer p { margin: 0 auto 8px; max-width: 46em; }
+
+@media (max-width: 760px) {
+  .hero { padding-top: 48px; }
+  h1 { font-size: 40px; }
+  .lede { font-size: 17px; }
+  .features article { grid-template-columns: 1fr; gap: 12px; text-align: center; padding: 24px 0; }
+  .features article:nth-child(even) { grid-template-columns: 1fr; }
+  .features article:nth-child(even) .copy { order: 0; }
+  .features .copy p { margin: 0 auto; }
+  .providers { justify-content: center; }
+  .loupe .detail { width: 56%; right: 2%; bottom: 4%; }
+  .loupe.recap .detail { display: block; position: static; width: 100%; margin-top: 8px; box-shadow: none; }
+  .duo-copy { margin-top: -4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .duo video { display: none; }
+  .duo::before {
+    content: "";
+    display: block;
+    max-width: 800px;
+    aspect-ratio: 4 / 3;
+    margin: 0 auto;
+    background: center / contain no-repeat url("assets/page-turn-poster.jpg");
+  }
+  .duo.cover::before { background-image: url("assets/cover-mode-poster.jpg"); }
+}

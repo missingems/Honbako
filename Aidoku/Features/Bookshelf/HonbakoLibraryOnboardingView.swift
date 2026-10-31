@@ -4,42 +4,83 @@ import SwiftUI
 struct HonbakoLibraryOnboardingView: View {
     let localFilesAdded: Bool
     let importSource: () -> Void
+    @State private var localImportPresented = false
 
     var body: some View {
         List {
-            Section {
-                NavigationLink { LocalSetupView() } label: {
-                    Label("Local Files", systemImage: "folder")
+            Group {
+                Section {
+                    #if HONBAKO_EXTERNAL_SOURCES
+                    Text("Honbako.ExternalBeta.Intro")
+                    #else
+                    Text("Honbako.CollectionGuide.Intro.Body")
+                    #endif
+                } header: {
+                    Text("Honbako.CollectionGuide.Intro.Title")
                 }
-                .disabled(localFilesAdded)
-                NavigationLink { SumiPersonalLibrariesView() } label: {
-                    Label("Personal Server", systemImage: "externaldrive")
+
+                Section {
+                    Text("Honbako.CollectionGuide.Local.Body")
+                    if localFilesAdded {
+                        Label("Honbako.CollectionGuide.Local.Connected", systemImage: "checkmark.circle")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        NavigationLink { LocalSetupView() } label: {
+                            Label("Honbako.CollectionGuide.Local.Setup", systemImage: "folder.badge.plus")
+                        }
+                        .accessibilityIdentifier("Honbako.GettingStarted.LocalSetup")
+                    }
+                    Button("Honbako.CollectionGuide.Local.Import", systemImage: "square.and.arrow.down", action: presentLocalImporter)
+                        .disabled(!localFilesAdded)
+                        .accessibilityIdentifier("Honbako.GettingStarted.ImportComic")
+                } header: {
+                    Text("Honbako.CollectionGuide.Local.Title")
+                } footer: {
+                    Text("Honbako.CollectionGuide.Local.Footer")
                 }
-                NavigationLink { SumiSourceListsView() } label: {
-                    Label("Source Lists", systemImage: "link")
+
+                Section {
+                    Text("Honbako.CollectionGuide.Server.Body")
+                    NavigationLink { SumiPersonalLibrariesView() } label: {
+                        Label("Personal Server", systemImage: "externaldrive")
+                    }
+                    .accessibilityIdentifier("Honbako.GettingStarted.PersonalServer")
+                } header: {
+                    Text("Honbako.CollectionGuide.Server.Title")
                 }
-                Button("Import Source File", systemImage: "square.and.arrow.down", action: importSource)
-            } header: {
-                Text("1. Choose a Connection")
-            } footer: {
-                Text("Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust.")
-            }
-            .listRowBackground(HonbakoSettingsRowBackground())
 
-            Section("2. Find Manga") {
-                Text("Return to your library and pull down to search. Search uses the connections you enable in Settings.")
-            }
-            .listRowBackground(HonbakoSettingsRowBackground())
+                #if HONBAKO_EXTERNAL_SOURCES
+                Section {
+                    Text("Honbako.CollectionGuide.Sources.Body")
+                    NavigationLink { SumiExtensionsView(importExtension: importSource) } label: {
+                        Label("Extensions", systemImage: "puzzlepiece.extension")
+                    }
+                    .accessibilityIdentifier("Honbako.GettingStarted.SourceLists")
+                } header: {
+                    Text("Honbako.CollectionGuide.Sources.Title")
+                } footer: {
+                    Text("Honbako.CollectionGuide.Sources.Footer")
+                }
+                #endif
 
-            Section("3. Build Your Library") {
-                Text("Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading.")
+                Section {
+                    Text("Honbako.CollectionGuide.Search.Body")
+                    Text("Honbako.CollectionGuide.Save.Body")
+                } header: {
+                    Text("Honbako.CollectionGuide.Search.Title")
+                }
             }
-            .listRowBackground(HonbakoSettingsRowBackground())
-
+            .honbakoPaperRows()
         }
+        .honbakoPaperListBackground()
         .navigationTitle("Getting Started")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("Honbako.Settings.GettingStarted")
+        .sheet(isPresented: $localImportPresented) { LocalFileImportView() }
+    }
+
+    private func presentLocalImporter() {
+        localImportPresented = true
     }
 }
 #endif

@@ -4,7 +4,12 @@ APP_ID_PREFIX = com.missingems
 APP_ID_SUFFIX = honbaku
 PRODUCT_BUNDLE_IDENTIFIER = $(APP_ID_PREFIX).$(APP_ID_SUFFIX)
 ICLOUD_CONTAINER_ID = iCloud.$(PRODUCT_BUNDLE_IDENTIFIER)
-OTHER_SWIFT_FLAGS = $(inherited) -DSUMI
+// External connections are a separate, explicit TestFlight build variant.
+HONBAKO_EXTERNAL_SOURCES = NO
+HONBAKO_EXTERNAL_SOURCES_FLAG_YES = -DHONBAKO_EXTERNAL_SOURCES
+HONBAKO_INFO_PLIST_NO = Aidoku/Sumi-Info.plist
+HONBAKO_INFO_PLIST_YES = Aidoku/Sumi-External-Info.plist
+OTHER_SWIFT_FLAGS = $(inherited) -DSUMI $(HONBAKO_EXTERNAL_SOURCES_FLAG_$(HONBAKO_EXTERNAL_SOURCES))
 // Explicitly enabled only when building the owner's personal installation.
 HONBAKO_PERSONAL_FEATURES = NO
 // A separate explicit one-time setup request; regular owner launches need not import.

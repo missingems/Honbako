@@ -34,7 +34,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = TabBarController()
             #endif
             #if SUMI
-            window.tintColor = .systemBlue
+            window.tintColor = HonbakoPalette.accentUIColor
             window.overrideUserInterfaceStyle = .unspecified
             #else
             window.tintColor = .systemPink
@@ -52,6 +52,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
             self.window = window
             window.makeKeyAndVisible()
+            #if SUMI
+            _ = HonbakoAutomationService.shared
+            HonbakoWidgetPublisher.shared.start()
+            #endif
 
             #if !SUMI
             let incognitoBannerView = IncognitoBannerView()

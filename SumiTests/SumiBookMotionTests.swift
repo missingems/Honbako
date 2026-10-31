@@ -17,14 +17,52 @@ struct SumiBookMotionTests {
         #expect(SumiBookMotion.pinchVelocity(0.45) == -1)
     }
 
-    @Test("The leading-edge gesture reserves its first tenth for handoff and predicts completion")
+    @Test("Book closing starts moving immediately and predicts pinch completion")
     func swipeIntent() {
-        #expect(SumiBookMotion.closeProgress(0.08) == 0)
-        #expect(abs(SumiBookMotion.closeProgress(0.55) - 0.5) < 0.001)
+        #expect(SumiBookMotion.closeProgress(0.08) == 0.08)
+        #expect(abs(SumiBookMotion.closeProgress(0.55) - 0.55) < 0.001)
         #expect(SumiBookMotion.closeProgress(2) == 1)
         #expect(!SumiBookMotion.completes(swipe: 0.25, velocity: 0))
         #expect(SumiBookMotion.completes(swipe: 0.25, velocity: 1.5))
         #expect(!SumiBookMotion.completes(swipe: 0.6, velocity: -1))
+    }
+
+    @Test("Compact back swipes remain short while a nudge or reversal cancels")
+    func shortCompactBackSwipe() {
+        for width: CGFloat in [320, 450, 1024] {
+            #expect(SumiBookMotion.completesBackSwipe(travel: 56, velocity: 0, width: width, regularWidth: false))
+            #expect(SumiBookMotion.completesBackSwipe(travel: 24, velocity: 500, width: width, regularWidth: false))
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 8, velocity: 1000, width: width, regularWidth: false))
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 82, velocity: -200, width: width, regularWidth: false))
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 20, velocity: 0, width: width, regularWidth: false))
+        }
+    }
+
+    @Test("Regular-width readers require more deliberate travel, with velocity and reversal still respected")
+    func regularBackSwipe() {
+        for width: CGFloat in [760, 1024, 1366] {
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 60, velocity: 0, width: width, regularWidth: true))
+            #expect(SumiBookMotion.completesBackSwipe(travel: 180, velocity: 0, width: width, regularWidth: true))
+            #expect(SumiBookMotion.completesBackSwipe(travel: 60, velocity: 1000, width: width, regularWidth: true))
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 12, velocity: 3000, width: width, regularWidth: true))
+            #expect(!SumiBookMotion.completesBackSwipe(travel: 180, velocity: -200, width: width, regularWidth: true))
+        }
+    }
+
+    @Test("Size class changes return travel even at the same width")
+    func backSwipeLayoutPolicy() {
+        #expect(SumiBookMotion.backSwipeDistance(width: 1024, regularWidth: false) == 160)
+        #expect(SumiBookMotion.backSwipeDistance(width: 450, regularWidth: true) == 240)
+        #expect(SumiBookMotion.backSwipeDistance(width: 1366, regularWidth: true) == 420)
+        let compact = SumiBookMotion.backSwipeProgress(travel: 56, width: 1024, regularWidth: false)
+        let regular = SumiBookMotion.backSwipeProgress(travel: 56, width: 1024, regularWidth: true)
+        #expect(compact >= 0.35)
+        #expect(regular < 0.16)
+        for regularWidth in [false, true] {
+            let distance = SumiBookMotion.backSwipeDistance(width: 1024, regularWidth: regularWidth)
+            #expect(SumiBookMotion.backSwipeProgress(travel: distance, width: 1024, regularWidth: regularWidth) == 1)
+            #expect(SumiBookMotion.backSwipeProgress(travel: -20, width: 1024, regularWidth: regularWidth) == 0)
+        }
     }
 
     @Test("The same critically damped spring opens, closes, and cancels without overshooting")

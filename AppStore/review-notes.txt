@@ -1,17 +1,8 @@
-DRAFT — verify final functionality and replace required owner details before submission.
+Honbako0.2.0 build77 — Waiting for Review
+Submission95cd35ab-c67b-4890-a865-a7c57be9f404, Oct31,2026 at8:17AM, manualrelease. Replaces withdrawn0.1.0build76 at userrequest.
 
-Honbako is a personal manga reader for iPhone and iPad. It includes an original illustrated reading tutorial so the core reading experience can be reviewed without an external account or third-party content. No source list is added automatically.
+Current source-review route: review/build77/original-source-review-route.txt
+Public test evidence: review/build77/original-source-native-verification.json and submission-verification.json.
+Private reviewer notes and approved reader-only credentials are in the ignored Tools/reviewer-fixtures/runtime/app-review-notes77.private.txt and Apple's private Notes. Never publish credentials in metadata or screenshots.
 
-Review steps:
-1. Launch and open the first book, Your First Chapter.
-2. Swipe pages in portrait. Rotate to landscape to inspect the book presentation.
-3. Tap a page to reveal the title and controls. Drag the page strip to preview a page, then release to navigate.
-4. Open Chapters to inspect latest-first ordering, release dates, language choices, and each chapter's progress.
-5. Pinch inward or use Close to return to the library. The tutorial's position is saved.
-6. Pull down in the library to open Search. Settings explains local files, personal servers, and user-selected sources. These connections may need their own credentials; none are required for the included tutorial.
-
-Honbako Pro is a monthly auto-renewable subscription for offline storage, chapter alerts, and iCloud progress/library sync. Restore and subscription management are available. Offline copies require source permission. Alerts use iOS background refresh and local notifications, so their timing is controlled by iOS and provider availability.
-
-Before sending these notes: configure and verify the real product com.missingems.honbaku.pro, supply any authorized review-server credentials needed to exercise paid network flows, verify notification permission and iCloud behavior on the final build, and provide the required contact information. No credentials, real prices, public policy URL, or rights approvals have been fabricated in this draft.
-
-The source-import engine and all distribution/content licensing questions must be disclosed and resolved as described in AppStore/README.md and docs/RELEASE_AND_RIGHTS.md. Do not omit functionality from review or use the tutorial to hide imported-source behavior.
+Allfour localized descriptions include explicit user-selected compatible extension repositories. No third-party catalog/package is preinstalled. The six-page first-party online story is available for review without an account. Existing threeHTTPS personal-server samples remain available. StoreKit plans/prices/trials and private Sandbox MCP review route are retained.

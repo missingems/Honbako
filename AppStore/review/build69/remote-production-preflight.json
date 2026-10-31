@@ -1,0 +1,130 @@
+{
+  "status": "Prepared; no deployment by audit agent",
+  "production": {
+    "worker": "honbako-mcp",
+    "origin": "https://honbako-mcp.jun-19c.workers.dev",
+    "endpoint": "https://honbako-mcp.jun-19c.workers.dev/remote/mcp",
+    "preparedVars": {
+      "REMOTE_MCP_ENABLED": "YES",
+      "APP_STORE_ENVIRONMENT": "Production"
+    },
+    "previousLiveVersion": "49a77e49-9b5b-4102-8325-1ac1985a3f7b",
+    "preserved": "Same account, worker name, owner/workspace/OAuth class names, existing SQLite migrations and all six secret names. No routing-secret rotation, pairing replacement, grant extension or namespace migration.",
+    "secretsNamesConfirmed": [
+      "ADMIN_KEY",
+      "APP_STORE_ISSUER_ID",
+      "APP_STORE_KEY_ID",
+      "APP_STORE_PRIVATE_KEY",
+      "PAIRING_KEY",
+      "REMOTE_ROUTING_KEY"
+    ],
+    "workersPlan": "Parent freshly verified Workers Free, Current plan $0 in account dashboard on 30 October 2026.",
+    "appleReadOnlyPreflight": {
+      "source": "Existing private key via verify-apple-key.js; local request, no signed token or customer record printed",
+      "productionHTTP": 401,
+      "sandboxHTTP": 200
+    },
+    "blockingLimit": "Production paid enrollment cannot be confirmed until Apple authorizes this app in Production; enabling the route does not bypass Apple verification."
+  },
+  "binary": {
+    "routing": "HonbakoRemotePurchaseProof accepts VerificationResult<Transaction> only and requires Apple-verified active allowlisted auto-renewable subscription. Transaction.environment alone maps Production or Sandbox; Xcode and unknown environments rejected.",
+    "defaultBeforePurchase": "Production URL",
+    "existingConnection": "Retains actual stored endpoint for traffic, capability probe, approval and displayed setup URL; never auto-migrates an existing Sandbox pairing.",
+    "identity": "Production uses remote-installation; Sandbox uses remote-installation.sandbox. No keychain identity rotation.",
+    "testFlight": "Verified Sandbox purchase enrolls only into existing isolated Sandbox Worker. A single Automatic binary can later route Production purchases to Production without mixing tenants."
+  },
+  "checks": {
+    "nodeTests": {
+      "passed": 86,
+      "failed": 0
+    },
+    "syntax": "PASS",
+    "productionEntryWorkerd": "PASS: actual worker.js remote dispatch, Apple library/OCSP transport, invalid proof rejection, S256 OAuth phone consent, rotating refresh, 13 tools, all history, source approval, cross-tenant denial, persistence restart and disconnect revocation",
+    "legacyOwnerWorkerd": "PASS: private admin binding, public-admin 404, pairing, imported pending IDs preserved, search/import approval, original migration jobs, persistence and coaching revocation",
+    "sandboxEntryWorkerd": "PASS before adding production-mode support; same shared OAuth/workspace modules.",
+    "liveBeforeDeployment": {
+      "productionCapabilities": 503,
+      "sandboxCapabilities": 200,
+      "sandboxOAuthDiscovery": 200,
+      "S256": true
+    },
+    "swiftTests": "Parent to run HonbakoRemoteMCPTests and HonbakoStoreKitIntegrationTests. Local Xcode Pro must not produce remote purchase proof."
+  },
+  "commands": {
+    "cwd": "/Users/jun/Documents/Codex/Honbako/Tools/HonbakoMCP",
+    "deploy": "WRANGLER_LOG_PATH=/tmp/honbako69-deploy.log WRANGLER_SEND_METRICS=false node /Users/jun/.npm/_npx/32026684e21afda6/node_modules/wrangler/bin/wrangler.js deploy --config cloudflare/wrangler.jsonc",
+    "rollback": "WRANGLER_LOG_PATH=/tmp/honbako69-rollback.log WRANGLER_SEND_METRICS=false node /Users/jun/.npm/_npx/32026684e21afda6/node_modules/wrangler/bin/wrangler.js rollback 49a77e49-9b5b-4102-8325-1ac1985a3f7b --config cloudflare/wrangler.jsonc --yes",
+    "productionRuntime": "HONBAKO_REMOTE_RUNTIME_CONFIG=wrangler.jsonc HONBAKO_WRANGLER_ROOT=/Users/jun/.npm/_npx/32026684e21afda6/node_modules/wrangler node cloudflare/integration-remote-workerd.js",
+    "postDeploy": "Production capabilities200 available:true; OAuth metadata correct issuer/S256/exact callbacks; unauthenticated POST /remote/mcp401 with resource metadata; unsigned /remote/enroll402 (or503 on actual Apple outage), invalid installation rejected400 before tenant allocation; public /api/admin/status404; private status before/after preserves devices, jobs, migration fingerprint and original grant expiry/revocation. Recheck beta capabilities/OAuth unchanged. Do not create a new live AI grant for smoke tests."
+  },
+  "retainedHostedFields": [
+    {
+      "store": "bridge_devices",
+      "fields": "installation UUID; device name; token hash; created/last-seen/snapshot-received timestamps; latest snapshot",
+      "content": "Up to2000 library entries (source/manga IDs, title, optional author/completed/last-read page); up to100 source names/IDs/search support; current/last reading title/chapter IDs/title/number/volume, visible page range/total/active/update time; permission/capability/truncation flags",
+      "retention": "Latest snapshot replaced by later foreground sync. No age-based deletion. Deleted on successful connected disconnect."
+    },
+    {
+      "store": "bridge_jobs",
+      "fields": "job UUID/device ID/kind; query/source IDs/repository URL/book IDs/pagination/before filter; idempotency key; status/approval/execution claim; created/updated times; result/errors",
+      "content": "Catalog matches; library additions; requested saved reading-history pages (up to100 chapter records per job); installed-source/repository catalog results; approved source changes",
+      "retention": "Up to100 nonterminal jobs; up to2000 recent terminal jobs pruned on subsequent job creation. No age-based TTL. History-access off removes history jobs; library access off removes catalog/source-catalog jobs. Connected disconnect deletes device jobs."
+    },
+    {
+      "store": "bridge_coaching",
+      "fields": "One latest JPEG up to350KiB; manga/chapter/title/page metadata; capture time; image hash and page/session/generation IDs; up to24 annotations including label text/strokes; revision/pause state; closed-session UUIDs",
+      "retention": "Connection-mode page has no time expiry and stays while offline/backgrounded until superseded, revoked, permission removed, or connected disconnect. Legacy timed mode expires via Durable Object alarm. Revocation replaces content with bounded tombstone metadata; disconnect removes the coaching row."
+    },
+    {
+      "store": "bridge_control remote owner and lease",
+      "fields": "installation UUID; identity/token/purchase hashes; disabled flag; active lease original transaction ID, purchase hash, Apple expiry/checked/lease-until times",
+      "retention": "Lease cleared on connected disconnect. Hashed installation/purchase bindings remain without fixed deletion schedule to protect ownership/device limits. Raw signed purchase JWS is verified in-flight, not stored in the lease."
+    },
+    {
+      "store": "bridge_control OAuth workspace grants",
+      "fields": "client/family IDs; hashed access/refresh credentials; access and refresh expiry times; spent refresh hashes",
+      "retention": "15-minute access, 30-day refresh logical validity; spent list bounded128. Expired entries filtered/pruned on subsequent operations, not guaranteed physically deleted at wall-clock expiry. Connected disconnect clears active grants."
+    },
+    {
+      "store": "remote_auth broker plus purchase allocation",
+      "fields": "client ID/name/exact callback URLs/auth method and optional secret hash; pending callback/state/PKCE challenge/browser hash/decision/workspace ID; one-use code hashes; hashed-purchase to up-to-five installation IDs",
+      "retention": "Client records valid30days; pending5minutes; codes1minute; expired OAuth records purged on next OAuth request. Purchase allocation records have no fixed deletion schedule. No raw client secret stored."
+    },
+    {
+      "store": "bridge_limits",
+      "fields": "hashed network addresses/rate bucket keys, request counts, expiry timestamps",
+      "retention": "Short logical windows from1minute to1day depending bucket. Expired rate rows removed on later rate checks. Raw IP addresses are used in-flight, not stored by this application limiter. Platform logging is configured off."
+    }
+  ],
+  "privacyAssessment": {
+    "source": "https://developer.apple.com/app-store/app-privacy-details/",
+    "status": "Engineering mapping for owner review only; no App Store declaration made or published.",
+    "likelyCategories": {
+      "Identifiers": "Device ID / possibly User ID for installation workspace and purchase binding.",
+      "Purchases": "Purchase History for Pro verification.",
+      "Usage Data": "Product Interaction / Other Usage Data for reading history/progress.",
+      "Search History": "Queries retained in catalog-search jobs.",
+      "User Content": "Other User Content for shared libraries, annotations and page content; evaluate Photos or Videos classification for transmitted rendered page imagery.",
+      "IP security data": "Assess category based on actual hashed-IP security use; do not infer location collection."
+    },
+    "purposes": "App Functionality. Data is linked through the same installation/workspace, so hashed IDs do not make it anonymous. No advertising or cross-service tracking found.",
+    "policyUpdatesNeeded": [
+      "Public policy source already describes remote MCP, purchase verification, hosted retention and connected-disconnect deletion. Confirm the deployed site matches this source; audit agent did not publish it.",
+      "Add explicit on-demand all-reading-history and source/repository-management jobs, search-query retention and their limits.",
+      "Avoid calling annotations temporary without explaining that connection-mode page/annotation content has no TTL and may remain while app is offline.",
+      "Explain credential/OAuth logical expiry separately from physical deletion on later requests, and indefinite minimal installation/purchase bindings.",
+      "Provide an actual private deletion/support contact. Current source says contact support privately but links only public GitHub issues.",
+      "Remove stale private-TestFlight blanket-Pro-unlock wording for the purchase-gated release and stale no-developer-payment-server claims from older AppStore audit text.",
+      "Earlier Data Not Collected answer does not match readable retained hosted data; owner must update current answers before public release. Remote opt-in alone does not make continuous primary-functionality collection exempt."
+    ]
+  },
+  "activationByParent": {
+    "productionVersion": "51447077-b759-4a38-81e9-ccf72516ade2",
+    "publicSmokes": "13/13 PASS",
+    "privateOwnerPreserved": true,
+    "productionAppleHTTP": 401,
+    "sandboxAppleHTTP": 200,
+    "facadeStopped": true,
+    "policyPublication": "Parent reports detailed retention/private-contact policy published successfully after the preflight findings."
+  }
+}

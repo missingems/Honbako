@@ -1,0 +1,31 @@
+Verified replacement files — captured from public build 75, all three flags NO
+The release coordinator owns upload, deletion and Save. This document makes no App Store Connect changes.
+
+CORRECT REQUIRED SIZES
+Apple's current Required device sizes paragraph and the live ASC media manager require Medium iPhone and 13-inch iPad. Large iPhone is optional. The earlier Large-only instructions were incorrect and are superseded by this mapping.
+
+Repeat for en-US, ja, zh-Hans and zh-Hant:
+1. Select the REQUIRED medium iPhone/Dynamic Island slot accepting 1206×2622. Replace its old three images with the fresh iphone-medium files below, in numerical order. Do not leave Medium empty or assume it inherits Large.
+2. Replace the REQUIRED 13-inch iPad images with the fresh ipad files, in numerical order.
+3. Optionally replace the large iPhone/Dynamic Island slot with the existing fresh iphone files, 1320×2868. These files are unchanged from the verified initial refresh.
+4. Check other explicitly populated device slots and remove stale overrides only where the correct replacement/scaling behavior is confirmed. Keep all required slots populated.
+5. Save and reopen each locale/device group. Verify order, dimensions and actual server previews rather than relying on a successful file chooser.
+
+REQUIRED — medium iPhone, 1206×2622:
+AppStore/screenshots/LOCALE/iphone-medium/01-library.jpg
+AppStore/screenshots/LOCALE/iphone-medium/02-reader.jpg
+AppStore/screenshots/LOCALE/iphone-medium/03-chapters.jpg
+
+REQUIRED — 13-inch iPad, 2064×2752:
+AppStore/screenshots/LOCALE/ipad/01-library.jpg
+AppStore/screenshots/LOCALE/ipad/02-reader.jpg
+AppStore/screenshots/LOCALE/ipad/03-chapters.jpg
+
+OPTIONAL — large iPhone, 1320×2868:
+AppStore/screenshots/LOCALE/iphone/01-library.jpg
+AppStore/screenshots/LOCALE/iphone/02-reader.jpg
+AppStore/screenshots/LOCALE/iphone/03-chapters.jpg
+
+There are 24 required-size files plus 12 optional Large files: 36 verified outputs. Medium is a marketing canvas containing the unchanged genuine Large native capture in its matching full Pro Max frame; only the whole framed product is uniformly scaled to fit. No independent native UI stretch, crop or redraw is used. Provenance preserves the actual capture build75 and Large resolution. Required-size and all-size contact sheets are under review/build75/screenshot-proofs.
+
+IAP review images are separate. Capture current monthly and annual native plan states with normal StoreKit prices/trials, then replace the old build28/29 images in the matching IAP records. Do not use TestFlight entitlement-bypass UI or credential pages in any listing image.

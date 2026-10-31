@@ -79,6 +79,28 @@ struct SumiPreviewCropperTests {
         #expect(page.image === original)
     }
 
+    @Test("NukeUI file-page previews retain separate strip and hover artwork when revisited")
+    func filePagePreviewCacheTiers() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("HonbakoPreviewFetch-\(UUID())")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("page.png")
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1
+        let original = UIGraphicsImageRenderer(size: CGSize(width: 1200, height: 1800), format: format).image { output in
+            UIColor.black.setFill(); output.fill(CGRect(x: 0, y: 0, width: 1200, height: 1800))
+        }
+        try #require(original.pngData()).write(to: url)
+        let page = Sumi.Page(sourceId: "preview-fetch", chapterId: "chapter", index: 3, imageURL: url.absoluteString)
+        let loader = SumiPageThumbnailLoader(mangaKey: "manga")
+        let strip = try #require(await loader.image(for: page, position: 4, source: nil))
+        let hover = try #require(await loader.image(for: page, position: 4, source: nil, forHover: true))
+        #expect(strip.cgImage?.width == 240 && strip.cgImage?.height == 360)
+        #expect(hover.cgImage?.width == 720 && hover.cgImage?.height == 1080)
+        #expect(await loader.image(for: page, position: 4, source: nil) === strip)
+        #expect(await loader.image(for: page, position: 4, source: nil, forHover: true) === hover)
+        #expect(page.image == nil && page.imageURL == url.absoluteString)
+    }
+
     @Test("A tall page keeps a detailed center crop instead of first shrinking its full height")
     func tallPageCropsBeforeDownsampling() async throws {
         let format = UIGraphicsImageRendererFormat()

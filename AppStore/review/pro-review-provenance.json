@@ -1,0 +1,9 @@
+{
+  "image": "Honbako-Pro-Build27.jpg",
+  "build": 27,
+  "configuration": "Public Pro purchase and restore enabled; personal unlock disabled",
+  "product_id": "com.missingems.honbaku.pro",
+  "display_price": "$1.99 per month",
+  "source": "Native screenshot on clean iPhone 18 Pro Max simulator; live App Store product response, no StoreKit test configuration",
+  "sha256": "199cfe74a23c113b0133605de5159a2e245c7e4eb559aae73da72b9b427782c5"
+}

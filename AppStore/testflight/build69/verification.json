@@ -1,0 +1,73 @@
+{
+  "version": "0.2.0",
+  "build": 69,
+  "TestFlight": {
+    "status": "Testing",
+    "externalGroup": "External Sources Beta",
+    "externalTesterCount": 1,
+    "internalGroup": "Honbako Internal",
+    "internalTesterCount": 0,
+    "publicLink": "https://testflight.apple.com/join/1PwJ2Bja",
+    "buildURL": "https://appstoreconnect.apple.com/teams/7fcc516d-bf3f-4188-95c1-a087bd1df80b/apps/6827059668/testflight/ios/8ec8b599-040d-4443-a58c-61bb47794a34",
+    "uploadCompletedSingapore": "2026-10-30 20:20:16 +08:00",
+    "externalTestingVerified": true,
+    "existingPublicLinkLimit": 100,
+    "newTestersInvited": false
+  },
+  "reader": {
+    "icon": "Right-bound manga book, reverse tilt, native outlined 漫 glyph; light/dark/tinted",
+    "navigation": "Native manga title with chapter subtitle",
+    "chapters": "Current chapter scroll target, dune highlight, checkmark and accessibility selection",
+    "scrubber": "Darker dune rail and stable non-glass page badge"
+  },
+  "screenshots": {
+    "nativeCaptureUITests": 8,
+    "count": 24,
+    "locales": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "devices": [
+      "iphone",
+      "ipad"
+    ],
+    "appearance": "Dark",
+    "sourceBuild": 69,
+    "licensedAppleFrames": true,
+    "uploaded": true,
+    "localizedListingDescriptionsUpdated": 4
+  },
+  "remoteMCP": {
+    "productionDeployment": "51447077-b759-4a38-81e9-ccf72516ade2",
+    "plan": "Workers Free, dashboard verified",
+    "publicSmokeChecksPassed": 13,
+    "nodeTestsPassed": 86,
+    "existingPairingsJobsGrantsPreserved": true,
+    "routing": "Apple-verified environment only; Production and Sandbox isolated; Xcode rejected",
+    "productionApplePreflight": 401,
+    "sandboxApplePreflight": 200,
+    "limitation": "Real production purchase enrollment cannot be verified before Apple enables the app in Production; no fallback bypass added"
+  },
+  "privacy": {
+    "hostedPolicyPublished": true,
+    "publicPolicyCommit": "605316af1066fa9fc051591c77c4fdec2e98451a",
+    "AppStoreCategoriesPublished": 8,
+    "purpose": "App Functionality",
+    "linked": true,
+    "tracking": false
+  },
+  "tests": {
+    "touchUIAndChapterSnapshots": "PASS",
+    "verifiedRoutingStoreKitAndDuneScrubberFinal": "PASS",
+    "resultBundles": {
+      "reader-tests": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_19-48-07-+0800.xcresult",
+      "routing-tests": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_19-54-56-+0800.xcresult"
+    },
+    "earlierReaderRunNote": "Two stale scrubber assertions failed in first run; corrected to requested dune/non-glass behavior and all17 final targeted checks passed. Native title/lifecycle and3 touch UI cases passed in first run."
+  },
+  "archive": "/Users/jun/Library/Developer/Xcode/Archives/2026-10-30/Honbako-0.2.0-69.xcarchive",
+  "publicAppStoreSubmission": false,
+  "publicDraftNote": "Existing0.1.0 draft still selects29; updated screenshots/copy are for the upcoming release. Select the finalmatchingbuild/version before any public AppReview submission."
+}

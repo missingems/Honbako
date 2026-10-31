@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "build": 72,
+  "delivery": "Direct installation on the connected iPhone Duo",
+  "installed": true,
+  "launched": true,
+  "privateProUnlock": false,
+  "appDataPreserved": true,
+  "changesFrom71": "Use the proven workers.dev production and Sandbox defaults until branded domain DNS and HTTPS are ready. Strict branded aliases and existing identities remain recognized. UI features match build71.",
+  "policyValidation": "PASS: working defaults, all four exact managed aliases, rejected unknown identities, production/Sandbox/Xcode isolation",
+  "testFlightUploaded": false
+}

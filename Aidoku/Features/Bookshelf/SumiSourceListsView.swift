@@ -9,53 +9,57 @@ struct SumiSourceListsView: View {
 
     var body: some View {
         List {
-            if urls.isEmpty {
-                ContentUnavailableView {
-                    Label("No Source Lists", systemImage: "link")
-                } description: {
-                    Text("Add the link supplied by your source provider, then choose which sources to connect.")
-                } actions: {
-                    Button("Add Source List") { adding = true }
-                }
-            } else {
-                Section {
-                    ForEach(urls, id: \.self) { url in
-                        Group {
-                            if let list = lists[url] {
-                                NavigationLink { SumiSourceListCatalogView(list: list) } label: {
+            Group {
+                if urls.isEmpty {
+                    ContentUnavailableView {
+                        Label("No extension repositories", systemImage: "puzzlepiece.extension")
+                    } description: {
+                        Text("You haven’t added any extension repositories yet.")
+                    } actions: {
+                        Button("Add repository") { adding = true }
+                    }
+                } else {
+                    Section {
+                        ForEach(urls, id: \.self) { url in
+                            Group {
+                                if let list = lists[url] {
+                                    NavigationLink { SumiSourceListCatalogView(list: list) } label: {
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(list.name)
+                                            Text(url.host ?? url.absoluteString).font(.subheadline).foregroundStyle(.secondary)
+                                        }
+                                    }
+                                } else {
                                     VStack(alignment: .leading, spacing: 3) {
-                                        Text(list.name)
-                                        Text(url.host ?? url.absoluteString).font(.subheadline).foregroundStyle(.secondary)
+                                        Text(url.host ?? url.absoluteString)
+                                        Text(loading ? String(localized: "Loading…") : String(localized: "Couldn’t load this repository"))
+                                            .font(.subheadline).foregroundStyle(.secondary)
                                     }
                                 }
-                            } else {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(url.host ?? url.absoluteString)
-                                    Text(loading ? String(localized: "Loading…") : String(localized: "Couldn’t load this list"))
-                                        .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            .swipeActions {
+                                Button("Remove", role: .destructive) {
+                                    Task {
+                                        await SourceManager.shared.removeSourceList(url: url)
+                                        await reload(fetch: false)
+                                    }
                                 }
                             }
                         }
-                        .swipeActions {
-                            Button("Remove", role: .destructive) {
-                                Task {
-                                    await SourceManager.shared.removeSourceList(url: url)
-                                    await reload(fetch: false)
-                                }
-                            }
-                        }
-                    }
-                } footer: { Text("Open a list to choose sources. Adding a list does not install its sources.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
+                    } footer: { Text("Open a repository to browse extensions. Adding a repository does not install its extensions.") }
+                }
             }
+            .honbakoPaperRows()
         }
-        .navigationTitle("Source Lists")
+        .honbakoPaperListBackground()
+        .navigationTitle("Extension repositories")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 if loading { ProgressView() }
                 else if !urls.isEmpty { Button("Refresh", systemImage: "arrow.clockwise") { Task { await reload(fetch: true) } } }
-                Button("Add Source List", systemImage: "plus") { adding = true }
+                Button("Add repository", systemImage: "plus") { adding = true }
+                    .accessibilityIdentifier("Honbako.Extensions.AddRepository")
             }
         }
         .sheet(isPresented: $adding) {

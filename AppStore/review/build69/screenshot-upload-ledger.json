@@ -1,0 +1,82 @@
+[
+  {
+    "locale": "en-US",
+    "device": "iphone",
+    "count": 3,
+    "newIds": [
+      "56c00019-6eca-89d4-8f05-4a2aa073e425",
+      "8cc00019-6eca-89d4-8f24-194277c0c30f",
+      "a2000019-6eca-89d4-8f2b-8dc6422521a8"
+    ]
+  },
+  {
+    "locale": "en-US",
+    "device": "ipad",
+    "count": 3,
+    "newIds": [
+      "fa800019-6eca-89d4-8f14-81d83d090e76",
+      "83400019-6eca-89d4-8f1b-dfc9d9bae78c",
+      "e0400019-6eca-89d4-8f2b-323f8185f365"
+    ]
+  },
+  {
+    "locale": "ja",
+    "device": "ipad",
+    "count": 3,
+    "newIds": [
+      "e1c00019-6eca-89d4-8f19-8d328a80b0ff",
+      "6c800019-6eca-89d4-8f16-aebd065edb8a",
+      "b3c00019-6eca-89d4-8f11-dfae1318647c"
+    ]
+  },
+  {
+    "locale": "ja",
+    "device": "iphone",
+    "count": 3,
+    "newIds": [
+      "3f800019-6eca-89d4-8f05-2cdd9d4e347c",
+      "bf000019-6eca-89d4-8f04-983acdcbf544",
+      "50000019-6eca-89d4-8f3d-7bdb81cbe464"
+    ]
+  },
+  {
+    "locale": "zh-Hans",
+    "device": "iphone",
+    "count": 3,
+    "newIds": [
+      "88000019-6eca-89d4-8f1d-de3f6528cf35",
+      "0e800019-6eca-89d4-8f2b-8b8d4a04e0d1",
+      "36000019-6eca-89d4-8f2c-21d14448ad4a"
+    ]
+  },
+  {
+    "locale": "zh-Hans",
+    "device": "ipad",
+    "count": 3,
+    "newIds": [
+      "8bc00019-6eca-89d4-8f0f-74d2251716fb",
+      "8ac00019-6eca-89d4-8f25-e3ab3fc4b157",
+      "a9000019-6eca-89d4-8f1a-ed75fa9d3c05"
+    ]
+  },
+  {
+    "locale": "zh-Hant",
+    "device": "ipad",
+    "count": 3,
+    "newIds": [
+      "2c800019-6eca-89d4-8f1a-009c5aedfefa",
+      "b9000019-6eca-89d4-8f35-294de2c1dfa3",
+      "1b400019-6eca-89d4-8f0f-2d9d4beed3b4"
+    ]
+  },
+  {
+    "locale": "zh-Hant",
+    "device": "iphone",
+    "count": 3,
+    "newIds": [
+      "ce000019-6eca-89d4-8f2f-2237906d58b5",
+      "a0c00019-6eca-89d4-8f1e-565ddc340b68",
+      "bdc00019-6eca-89d4-8f10-0cd7d93649c0"
+    ]
+  }
+]

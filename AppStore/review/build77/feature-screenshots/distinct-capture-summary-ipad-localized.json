@@ -1,0 +1,46 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "2894F317-56AD-47E0-965E-62D57B74D995",
+        "deviceName": "Honbako Capture ipad",
+        "modelName": "iPad Pro 13-inch (M5)",
+        "osBuildNumber": "24A434",
+        "osVersion": "27.0",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "passedTests": 2,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "HonbakoStoreKitTests \u00b7 Built with macOS 27.0.1",
+  "expectedFailures": 0,
+  "failedTests": 1,
+  "finishTime": 1793412829.284,
+  "passedTests": 2,
+  "result": "Failed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1793412648.898,
+  "statistics": [],
+  "testFailures": [
+    {
+      "failureText": "XCTAssertTrue failed",
+      "targetName": "SumiUITests",
+      "testIdentifier": 1,
+      "testIdentifierString": "HonbakoLicensedMangaScreenshotTests/testJapanese()",
+      "testIdentifierURL": "test://com.apple.xcode/Aidoku/SumiUITests/HonbakoLicensedMangaScreenshotTests/testJapanese",
+      "testName": "testJapanese()"
+    }
+  ],
+  "title": "Test - HonbakoStoreKitTests",
+  "topInsights": [],
+  "totalTestCount": 3
+}

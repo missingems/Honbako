@@ -25,7 +25,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private var networkObserverId: UUID?
     #if SUMI
-    private var honbakoEntitlementObserver: NSObjectProtocol?
     #endif
 
     private lazy var loadingAlert: UIAlertController = {
@@ -156,17 +155,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         #if SUMI
         SumiDefaults.register()
         _ = SumiReadingProvenance.currentDevice
-        HonbakoProStore.shared.start()
-        HonbakoChapterAlerts.shared.start()
-        honbakoEntitlementObserver = NotificationCenter.default.addObserver(
-            forName: HonbakoProStore.entitlementChangedNotification, object: nil, queue: .main
-        ) { _ in
-            Task { @MainActor in
-                let enabled = HonbakoProStore.shared.hasPro
-                AppSettings.general.icloudSync.set(enabled)
-                NotificationCenter.default.post(name: .init(AppSettings.general.icloudSync.key), object: enabled)
-            }
+        #if DEBUG
+        // Local StoreKit tests create their session before the first StoreKit query.
+        if !ProcessInfo.processInfo.arguments.contains("--honbako-storekit-tests") {
+            HonbakoProStore.shared.start()
         }
+        #else
+        HonbakoProStore.shared.start()
+        #endif
+        HonbakoChapterAlerts.shared.start()
         #endif
 
         // PlayCover fix: eagerly initialize the Core Data stack on the main thread
@@ -218,7 +215,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task {
             #if SUMI
             await SumiCatalogBootstrap.shared.prepare()
-            await HonbakoPersonalEnglishImport.runIfRequested()
             #if DEBUG
             await HonbakoDeviceSourceSetup.runIfRequested()
             #endif
@@ -346,6 +342,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             configuration.delegateClass = HonbakoCoverDisplaySceneDelegate.self
             return configuration
         }
+        if connectingSceneSession.role == .windowApplication {
+            let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+            configuration.sceneClass = UIWindowScene.self
+            configuration.delegateClass = SceneDelegate.self
+            return configuration
+        }
         #endif
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
@@ -358,7 +360,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        InterfaceOrientationCoordinator.shared.supportedOrientations
+        #if SUMI
+        if window?.rootViewController is HonbakoCoverDisplayHostingController { return .portrait }
+        #endif
+        return InterfaceOrientationCoordinator.shared.supportedOrientations
     }
 }
 
@@ -563,6 +568,26 @@ extension AppDelegate {
     func handleUrl(url: URL) {
         #if SUMI
         let appScheme = "honbako"
+        if url.scheme == appScheme, url.host == "widget" {
+            let grid = topViewController?.view.window?.rootViewController as? SumiGridViewController
+                ?? (UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+                    .flatMap(\.windows).first { $0.isKeyWindow }?.rootViewController as? SumiGridViewController)
+            grid?.openWidgetURL(url)
+            return
+        }
+        if url.scheme == appScheme, url.host == "mcp-authorize" {
+            if let requestID = HonbakoRemoteMCP.authorizationID(from: url) {
+                topViewController?.present(UIHostingController(rootView: HonbakoMCPAuthorizationView(requestID: requestID)), animated: true)
+            }
+            return
+        }
+        #if !HONBAKO_EXTERNAL_SOURCES
+        // Source packages and source-list links are outside the personal-collection release.
+        if url.pathExtension.lowercased() == "aix"
+            || (url.scheme?.lowercased() == appScheme && url.host?.lowercased() == "addsourcelist") {
+            return
+        }
+        #endif
         #else
         let appScheme = "aidoku"
         #endif
@@ -579,16 +604,16 @@ extension AppDelegate {
                         let sourceListURLs = await SourceManager.shared.getSourceListURLs()
                         if sourceListURLs.contains(listUrl) {
                             #if SUMI
-                            presentAlert(title: "Source List Ready",
-                                message: "Open Settings → Source Lists, then choose the sources to add.")
+                            presentAlert(title: "Extension Repository Ready",
+                                message: "Open Settings → Extensions → Extension repositories, then choose which extensions to install.")
                             #endif
                             return
                         }
                         let success = await SourceManager.shared.addSourceList(url: listUrl)
                         if success {
                             #if SUMI
-                            presentAlert(title: "Source List Added",
-                                message: "Open Settings → Source Lists, then choose the sources to add.")
+                            presentAlert(title: "Extension Repository Added",
+                                message: "Open Settings → Extensions → Extension repositories, then choose which extensions to install.")
                             #else
                             presentAlert(
                                 title: NSLocalizedString("SOURCE_LIST_ADDED"),
@@ -596,10 +621,15 @@ extension AppDelegate {
                             )
                             #endif
                         } else {
+                            #if SUMI
+                            presentAlert(title: "Couldn’t Add Repository",
+                                message: "Check the extension repository URL and try again.")
+                            #else
                             presentAlert(
                                 title: NSLocalizedString("SOURCE_LIST_ADD_FAIL"),
                                 message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT")
                             )
+                            #endif
                         }
                     }
                 }

@@ -1,0 +1,233 @@
+{
+  "artist": "わたおび / Wataobi",
+  "terms": "https://wataokiba.net/利用規約/",
+  "commercialUse": true,
+  "adaptation": "Original sample-story cover and comic-page compositions incorporating licensed character illustrations; do not claim the character drawings as our own.",
+  "aiGenerated": false,
+  "records": [
+    {
+      "character": "akari",
+      "file": "akari-0.png",
+      "sourcePage": "https://wataokiba.net/2023/05/01/josei20/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/josei_20_a-1.png",
+      "sha256": "fbd43eb4063ad8aab713a869e61093ba72453f8dd9cc9cfd49530c532bb94904"
+    },
+    {
+      "character": "akari",
+      "file": "akari-1.png",
+      "sourcePage": "https://wataokiba.net/2023/05/01/josei20/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/josei_20_b-1.png",
+      "sha256": "7af6e9e886a99c5e77621a24073a9da1d524fc40c397a197bad5d8e65f1b549a"
+    },
+    {
+      "character": "akari",
+      "file": "akari-2.png",
+      "sourcePage": "https://wataokiba.net/2023/05/01/josei20/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/josei_20_c-1.png",
+      "sha256": "64850548cd14776d8a030f5c48934e3edd599c7fad8d8cc808d0ca98d8222499"
+    },
+    {
+      "character": "akari",
+      "file": "akari-3.png",
+      "sourcePage": "https://wataokiba.net/2023/05/01/josei20/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/josei_20_d-1.png",
+      "sha256": "b0cba0e6f3d957c63a592c3f6197c1ad13df8e093607fcf185c9b50e474a278d"
+    },
+    {
+      "character": "ren",
+      "file": "ren-0.png",
+      "sourcePage": "https://wataokiba.net/2023/05/03/dansei16/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/dansei_16_a.png",
+      "sha256": "5749f0424ad73371bcb84eaeebe07d1ecc479eed7559c741121f09fb56ce4635"
+    },
+    {
+      "character": "ren",
+      "file": "ren-1.png",
+      "sourcePage": "https://wataokiba.net/2023/05/03/dansei16/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/dansei_16_b.png",
+      "sha256": "bb4af1516c987efe06f72c47f65e14af1e2c214a2e5e6b03d563718a3a7d9193"
+    },
+    {
+      "character": "ren",
+      "file": "ren-2.png",
+      "sourcePage": "https://wataokiba.net/2023/05/03/dansei16/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/dansei_16_c.png",
+      "sha256": "0be491ae4b43499317501e629eb999122ac3f0620762a60140e74606d2de70c6"
+    },
+    {
+      "character": "ren",
+      "file": "ren-3.png",
+      "sourcePage": "https://wataokiba.net/2023/05/03/dansei16/",
+      "url": "https://wataokiba.net/wp-content/uploads/2023/05/dansei_16_d.png",
+      "sha256": "7cbfb8d489c02ecd945ca271c2599b362c9e82a623a4c622ddab5ed4600dad73"
+    },
+    {
+      "character": "moon",
+      "file": "moon-0.png",
+      "sourcePage": "https://wataokiba.net/2018/02/17/7148522/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_04_a.png",
+      "sha256": "a2ac212b7b77c8479952f36e73cbf13caccc6c725510284bb938ccb735461549"
+    },
+    {
+      "character": "moon",
+      "file": "moon-1.png",
+      "sourcePage": "https://wataokiba.net/2018/02/17/7148522/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_04_b.png",
+      "sha256": "eab95cf259a655074cdcba29c0788b2e5c709d4497aa999fe71892889745e4cb"
+    },
+    {
+      "character": "moon",
+      "file": "moon-2.png",
+      "sourcePage": "https://wataokiba.net/2018/02/17/7148522/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_04_c.png",
+      "sha256": "b24bc318c10e97a1cb2cb734592dee8059d39eeb7ae4b6b048fefcc22cbde792"
+    },
+    {
+      "character": "moon",
+      "file": "moon-3.png",
+      "sourcePage": "https://wataokiba.net/2018/02/17/7148522/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_04_d.png",
+      "sha256": "8dd26a8137d122050e7b10d64ea4f5cbb13b187d5526ae411666d2fb5133bda6"
+    },
+    {
+      "character": "summer",
+      "file": "summer-0.png",
+      "sourcePage": "https://wataokiba.net/2018/02/06/7000244/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/josei_01_a.png",
+      "sha256": "e0ee71a98d1628a787fa4b7063ec262c664ca67d96d8fd15044503395ac9e77f"
+    },
+    {
+      "character": "summer",
+      "file": "summer-1.png",
+      "sourcePage": "https://wataokiba.net/2018/02/06/7000244/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/josei_01_b.png",
+      "sha256": "791ff1e77b7ac2759257988971cc8dd20052387a56b8f1f18e555b51740b0e18"
+    },
+    {
+      "character": "summer",
+      "file": "summer-2.png",
+      "sourcePage": "https://wataokiba.net/2018/02/06/7000244/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/josei_01_c.png",
+      "sha256": "5740ac1ddbdef951a8ae6062e71dbf6e68e974f56f18a0762cbe9de08fe171c0"
+    },
+    {
+      "character": "summer",
+      "file": "summer-3.png",
+      "sourcePage": "https://wataokiba.net/2018/02/06/7000244/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/josei_01_d.png",
+      "sha256": "c2579f005821915bcc3b5831cf8380d7c91c47440511b97bc748e1061f65226f"
+    },
+    {
+      "character": "winter",
+      "file": "winter-0.png",
+      "sourcePage": "https://wataokiba.net/2020/12/04/josei17/",
+      "url": "https://wataokiba.net/wp-content/uploads/2020/12/josei_17_a.png",
+      "sha256": "e3908203a050586a0071bf7b760be17d7ba043f01bc2cb586942ce89a05f04fd"
+    },
+    {
+      "character": "winter",
+      "file": "winter-1.png",
+      "sourcePage": "https://wataokiba.net/2020/12/04/josei17/",
+      "url": "https://wataokiba.net/wp-content/uploads/2020/12/josei_17_b.png",
+      "sha256": "13ee5a5668aa1edf25fe4ca8be341a835b6ee7194fb6c52e4deb178e0d18be23"
+    },
+    {
+      "character": "winter",
+      "file": "winter-2.png",
+      "sourcePage": "https://wataokiba.net/2020/12/04/josei17/",
+      "url": "https://wataokiba.net/wp-content/uploads/2020/12/josei_17_c.png",
+      "sha256": "a1f0e1ad3d4a0a07277d82b4bd80983e763c32628dca4142b34210be479a940b"
+    },
+    {
+      "character": "winter",
+      "file": "winter-3.png",
+      "sourcePage": "https://wataokiba.net/2020/12/04/josei17/",
+      "url": "https://wataokiba.net/wp-content/uploads/2020/12/josei_17_d.png",
+      "sha256": "8e8ef38dbf8348bebea8cbfe41dd77f8f70951f02c6d4bb92a72db72d12ed30c"
+    },
+    {
+      "character": "shade",
+      "file": "shade-0.png",
+      "sourcePage": "https://wataokiba.net/2018/12/09/dansei09/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_09_a.png",
+      "sha256": "5bf11e28a3e64d088a5a13fad544d11db208b78b1c6cbbb71ebf2074dc9f0dda"
+    },
+    {
+      "character": "shade",
+      "file": "shade-1.png",
+      "sourcePage": "https://wataokiba.net/2018/12/09/dansei09/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_09_b.png",
+      "sha256": "4f7fb621e1eab87f7c81425376218f54bf440213191f55ed7627a2243003584f"
+    },
+    {
+      "character": "shade",
+      "file": "shade-2.png",
+      "sourcePage": "https://wataokiba.net/2018/12/09/dansei09/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_09_c.png",
+      "sha256": "1cd082882847cd50ca86afa658ac276bc95b49c95f4298ed510e428f52ed878b"
+    },
+    {
+      "character": "shade",
+      "file": "shade-3.png",
+      "sourcePage": "https://wataokiba.net/2018/12/09/dansei09/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_09_d.png",
+      "sha256": "9d75371d74ed8b2b98a10552f134e3b12c1395e64792734ba10f87b552ff09e2"
+    },
+    {
+      "character": "garden",
+      "file": "garden-0.png",
+      "sourcePage": "https://wataokiba.net/2019/10/08/josei15/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/10/josei_15_01_a.png",
+      "sha256": "e76aed158cb348d7beace6b6f15f22d58d8216e697d51219457ea8abcf4cb596"
+    },
+    {
+      "character": "garden",
+      "file": "garden-1.png",
+      "sourcePage": "https://wataokiba.net/2019/10/08/josei15/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/10/josei_15_01_b.png",
+      "sha256": "7027062cf408fc4c9722569c395e09719c99f2b9cd9c6068b52995f85ff6ed17"
+    },
+    {
+      "character": "garden",
+      "file": "garden-2.png",
+      "sourcePage": "https://wataokiba.net/2019/10/08/josei15/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/10/josei_15_01_c.png",
+      "sha256": "2f7e2c6fef60b755bd86778348ab44ad96adcb2b753bbd67c9224786b836c47d"
+    },
+    {
+      "character": "garden",
+      "file": "garden-3.png",
+      "sourcePage": "https://wataokiba.net/2019/10/08/josei15/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/10/josei_15_01_d.png",
+      "sha256": "b93d83772f557dc96470676bd89dd99aeddcaffa3fdfb28b950e15608dbb07fd"
+    },
+    {
+      "character": "spirit",
+      "file": "spirit-0.png",
+      "sourcePage": "https://wataokiba.net/2018/06/20/dansei07/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_07_b_a.png",
+      "sha256": "e8c907d9121be66b3502054bb7663b41f5a5c264d54b3719efe7b776d4cb653f"
+    },
+    {
+      "character": "spirit",
+      "file": "spirit-1.png",
+      "sourcePage": "https://wataokiba.net/2018/06/20/dansei07/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_07_b_b.png",
+      "sha256": "7819899b4d328bdd958634d15c5f01bb9909f0a59342257478474bd537dce3eb"
+    },
+    {
+      "character": "spirit",
+      "file": "spirit-2.png",
+      "sourcePage": "https://wataokiba.net/2018/06/20/dansei07/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_07_b_c.png",
+      "sha256": "de6224657b2aeb6215311266259c12e934001fa720075e081777c435272b814e"
+    },
+    {
+      "character": "spirit",
+      "file": "spirit-3.png",
+      "sourcePage": "https://wataokiba.net/2018/06/20/dansei07/",
+      "url": "https://wataokiba.net/wp-content/uploads/2019/05/dansei_07_b_d.png",
+      "sha256": "e651f3167565709a1b78768f5a3149857aec9ef2ec72f5fa5cd4fdafc3425501"
+    }
+  ]
+}

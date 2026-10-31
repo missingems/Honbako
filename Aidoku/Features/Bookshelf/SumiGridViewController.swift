@@ -4,7 +4,12 @@ import UIKit
 
 /// Hosts the full-bleed collection and owns direct book presentation.
 final class SumiGridViewController: UIViewController {
-    private let store = SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
+    private let store: SumiLibraryStore = {
+        #if DEBUG
+        if let fixture = SumiLibraryLaunchFixture.makeStoreIfRequested() { return fixture }
+        #endif
+        return SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
+    }()
     private let opening = SumiGridOpeningState()
     private let search = SumiSearchPresentation()
     private let insertion = SumiLibraryInsertionState()
@@ -14,6 +19,7 @@ final class SumiGridViewController: UIViewController {
     private var pendingHistorySave: Task<Void, Never>?
     private var loadingController: SumiReaderLoadingViewController?
     private var stagedReader: SumiDirectReaderController?
+    private var hostController: UIHostingController<SumiMainView>?
     #if DEBUG
     private let fixtures: SumiGridPreviewFixtures?
     #endif
@@ -26,7 +32,6 @@ final class SumiGridViewController: UIViewController {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .all }
 
@@ -48,6 +53,7 @@ final class SumiGridViewController: UIViewController {
                 await self.morphAddedBook(book, source: source)
             }
         ))
+        hostController = host
         host.view.backgroundColor = .systemBackground
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -84,8 +90,58 @@ final class SumiGridViewController: UIViewController {
 
     @objc private func dismissSearch() {
         view.endEditing(true)
+        search.query = ""
         search.dismiss()
         store.cancelSearch()
+    }
+
+    func openWidgetURL(_ url: URL) {
+        guard url.scheme == "honbako", url.host == "widget" else { return }
+        loadViewIfNeeded()
+        if let reader = presentedViewController as? SumiDirectReaderController {
+            if let target = HonbakoWidgetSnapshot.resumeTarget(from: url),
+               let manga = reader.readerViewController?.manga,
+               manga.sourceKey == target.source, manga.key == target.manga { return }
+            Task { @MainActor [weak self, weak reader] in
+                await reader?.readerViewController?.updateReadPosition()
+                self?.dismiss(animated: false) { [weak self] in self?.openWidgetURL(url) }
+            }
+            return
+        }
+        if presentedViewController != nil {
+            dismiss(animated: false) { [weak self] in self?.openWidgetURL(url) }
+            return
+        }
+        if loadingController != nil {
+            cancelOpeningAttempt()
+            removeStagedReader()
+            removeLoading()
+        }
+        if url.path == "/pro" {
+            guard presentedViewController == nil else { return }
+            present(UIHostingController(rootView: HonbakoProView(feature: .widgets)), animated: true)
+            return
+        }
+        guard let target = HonbakoWidgetSnapshot.resumeTarget(from: url) else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard await store.refreshForReturn() else {
+                let alert = UIAlertController(title: String(localized: "Library Unavailable"),
+                    message: String(localized: "Your library couldn’t be loaded. Open Honbako and try again."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                if presentedViewController == nil { present(alert, animated: true) }
+                return
+            }
+            guard let book = store.library.first(where: { $0.id.sourceKey == target.source && $0.id.mangaKey == target.manga }) else {
+                let alert = UIAlertController(title: String(localized: "Manga Unavailable"),
+                    message: String(localized: "This manga is no longer in your library."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                if presentedViewController == nil { present(alert, animated: true) }
+                return
+            }
+            guard presentedViewController == nil, loadingController == nil else { return }
+            openBook(book, source: nil)
+        }
     }
 
     private func openBook(_ book: SumiBook, source: SumiBookTransitionSource?) {
@@ -223,6 +279,9 @@ final class SumiGridViewController: UIViewController {
             let reader = ReaderViewController(source: position.source, manga: position.manga,
                                               chapter: position.chapter, startPage: position.startPage)
             reader.sumiIsPreparingOpening = true
+            #if HONBAKO_EXTERNAL_SOURCES
+            reader.sumiAutomaticOpeningLanguage = selection.automaticLanguage
+            #endif
             // Unread books open on real artwork. Chapters live in the reader sidebar.
             let presentation = SumiDirectReaderController(content: reader)
             stage(presentation)
@@ -248,9 +307,10 @@ final class SumiGridViewController: UIViewController {
             configureOpening(presentation, book: book, source: source, loading: loading)
             loading.view.isUserInteractionEnabled = false
             present(presentation, animated: true) { [weak self, weak presentation, weak reader] in
-                self?.removeLoading()
+                let isPresented = presentation?.presentingViewController != nil
+                self?.removeLoading(preservingSource: isPresented)
                 self?.openingTask = nil
-                guard presentation?.presentingViewController != nil else { return }
+                guard isPresented else { return }
                 reader?.sumiDidOpenPreparedBook()
                 if !AppSettings.general.incognitoMode.get() {
                     Task { await CoreDataManager.shared.setOpened(mangaId: book.id) }
@@ -304,7 +364,7 @@ final class SumiGridViewController: UIViewController {
         }
     }
 
-    private func removeLoading() {
+    private func removeLoading(preservingSource: Bool = false) {
         openingDeadline?.cancel()
         openingDeadline = nil
         if let loadingController {
@@ -314,7 +374,10 @@ final class SumiGridViewController: UIViewController {
             loadingController.removeFromParent()
         }
         loadingController = nil
-        opening.bookID = nil
+        // A successful opening replaces the loading cover with the reader,
+        // not with another copy in its library slot. Keep the SwiftUI source
+        // hidden before UIKit takes any future interactive-return snapshot.
+        if !preservingSource { opening.bookID = nil }
         if presentedViewController == nil { becomeFirstResponder() }
     }
 
@@ -336,8 +399,12 @@ final class SumiGridViewController: UIViewController {
                     return loading.zoomSourceView.convert(loading.zoomSourceView.bounds, to: container)
                 }
                 return source?.frame(in: container)
-            }, gridSourceFrameProvider: { container in
-                source?.frame(in: container)
+            }, gridSourceFrameProvider: { [weak self] container in
+                guard let self else { return nil }
+                if search.isPresented { return source?.frame(in: container) }
+                // Resolve by book identity, never by the cell lifted on opening.
+                guard !opening.isPreparingReturn || opening.returnLayoutComplete else { return nil }
+                return insertion.frame(for: book.presentation.id, in: container)
             }, readerSurface: { [weak reader] in
             reader?.reader?.view
         }, paired: { [weak reader] in
@@ -346,12 +413,40 @@ final class SumiGridViewController: UIViewController {
             if let loading, self?.loadingController === loading { return loading.zoomSourceView }
             return source?.view
         }
+        transition.prepareReturn = { [weak self, weak reader] in
+            guard let self else { return }
+            if !search.isPresented { opening.beginReturnPreparation() }
+            await reader?.updateReadPosition()
+            let refreshed = await store.refreshForReturn()
+            guard refreshed, !Task.isCancelled, !search.isPresented else { return }
+            opening.prepareReturn(to: book.presentation.id)
+            // Await the actual refreshed SwiftUI shelf pass, not the previous
+            // cell whose layout was intentionally frozen while reading.
+            for _ in 0..<30 {
+                if opening.returnLayoutComplete { break }
+                try? await Task.sleep(for: .milliseconds(16))
+                guard !Task.isCancelled else { return }
+                view.layoutIfNeeded()
+            }
+        }
         presentation.bookTransition = transition
+        transition.closingBegan = { [weak reader] in reader?.sumiBookClosingBegan() }
         transition.chromeTransition = { [weak reader] transitioning in reader?.sumiSetBookTransitioning(transitioning) }
+        transition.revealSourceForHandoff = { [weak self] in
+            guard let self else { return }
+            // Keep the receiving shelf snapshot frozen until the compositor
+            // has replaced the closed stage with this live source.
+            opening.bookID = nil
+            hostController?.view.setNeedsLayout()
+            hostController?.view.layoutIfNeeded()
+        }
         transition.sourceVisibility = { [weak self, weak loading] hidden in
             guard let self else { return }
             if let loading, loadingController === loading { loading.zoomSourceView.isHidden = hidden }
-            else { opening.bookID = hidden ? book.presentation.id : nil }
+            else {
+                opening.bookID = hidden ? book.presentation.id : nil
+                if !hidden { opening.finishReturnPreparation() }
+            }
         }
         transition.openingCancellationBegan = { [weak self, weak loading] in
             self?.openingTask?.cancel()

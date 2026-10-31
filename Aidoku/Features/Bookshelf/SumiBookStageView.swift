@@ -10,19 +10,24 @@ final class SumiBookStageView: UIView {
     private let front = CALayer()
     private let back = CALayer()
     private let paired: Bool
+    private let centeredClose: Bool
     private(set) var draws = 0
     private(set) var completedFrames = 0
     private(set) var completedProgress: CGFloat?
     private(set) var completedSourceFrame: CGRect?
     private var visibleBookFrame = CGRect.zero
+    private var lastAccessibilityPercent: Int?
 
-    init(frame: CGRect, cover: UIImage?, spread: UIImage, paired: Bool, closedPose _: SumiGridBookPose? = nil) throws {
+    init(frame: CGRect, cover: UIImage?, spread: UIImage, paired: Bool, closedPose _: SumiGridBookPose? = nil, centeredClose: Bool = false) throws {
         self.paired = paired
+        self.centeredClose = centeredClose
         super.init(frame: frame)
         isOpaque = false
         backgroundColor = .clear
         isUserInteractionEnabled = false
         clipsToBounds = true
+        rightPage.name = "Honbako.Book.StationaryLeaf"
+        hinge.name = "Honbako.Book.CoverHinge"
         rightPage.contents = Self.upright(spread).cgImage
         rightPage.contentsRect = paired ? CGRect(x: 0.5, y: 0, width: 0.5, height: 1) : CGRect(x: 0, y: 0, width: 1, height: 1)
         rightPage.backgroundColor = UIColor.white.cgColor
@@ -55,16 +60,19 @@ final class SumiBookStageView: UIView {
         hinge.addSublayer(back)
         accessibilityIdentifier = "Sumi.Book.OpeningStage"
         isAccessibilityElement = true
-        accessibilityLabel = "Opening book"
+        accessibilityLabel = centeredClose ? String(localized: "Close") : String(localized: "Opening book")
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     func draw(progress: CGFloat, source: CGRect, paperFrame: CGRect? = nil, deltaTime _: TimeInterval) -> Bool {
         guard bounds.width > 1, bounds.height > 1 else { return false }
-        let value = min(1, max(0, progress))
-        let frame = paperFrame ?? SumiBookMotion.paperFrame(source: source, destination: bounds,
-                                                          paired: paired, progress: value)
+        let requested = min(1, max(0, progress))
+        let centered = centeredClose ? SumiBookPinchPose(progress: requested, origin: source, viewport: bounds) : nil
+        let value = centered.map { 1 - $0.fold } ?? requested
+        let frame = centered.map {
+            SumiBookMotion.paperFrame(source: $0.coverFrame, destination: bounds, paired: paired, progress: value)
+        } ?? paperFrame ?? SumiBookMotion.paperFrame(source: source, destination: bounds, paired: paired, progress: value)
         let leaf = CGRect(x: paired ? frame.midX : frame.minX, y: frame.minY,
                           width: frame.width / (paired ? 2 : 1), height: frame.height)
         let projectedWidth = leaf.width * cos(.pi * value)
@@ -84,9 +92,13 @@ final class SumiBookStageView: UIView {
         CATransaction.commit()
         draws += 1
         completedFrames += 1
-        completedProgress = value
+        completedProgress = requested
         completedSourceFrame = source
-        accessibilityValue = "\(Int(value * 100)) percent"
+        let percent = Int(requested * 100)
+        if lastAccessibilityPercent != percent {
+            lastAccessibilityPercent = percent
+            accessibilityValue = "\(percent) percent"
+        }
         return true
     }
 

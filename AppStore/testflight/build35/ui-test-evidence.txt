@@ -1,0 +1,8 @@
+Test Case '-[SumiUITests.SumiBookGestureInteractionTests testPinchCanCancelThenCloseWithoutChangingReadingPosition]' passed (46.179 seconds).
+Test Case '-[SumiUITests.SumiGridInteractionTests testNativeToolbarFollowsScrollDirection]' passed (14.844 seconds).
+Test Case '-[SumiUITests.SumiBookGestureInteractionTests testSearchBookReturnsToItsExactRowWithoutKeyboardRelayout]' passed (20.661 seconds).
+Test Case '-[SumiUITests.SumiGridInteractionTests testNativeToolbarFollowsScrollDirection]' passed (15.150 seconds).
+Test Case '-[SumiUITests.SumiGridInteractionTests testNativeToolbarSearchAndCancellation]' passed (24.446 seconds).
+Test Case '-[SumiUITests.SumiGridInteractionTests testNativeToolbarFollowsScrollDirection]' passed (15.867 seconds).
+Test Case '-[SumiUITests.SumiGridInteractionTests testNativeToolbarSearchAndCancellation]' passed (23.942 seconds).
+Test Case '-[SumiUITests.SumiSearchDetailsInteractionTests testGetAddsWithoutOpeningThenReadOpensTheManga]' passed (22.456 seconds).

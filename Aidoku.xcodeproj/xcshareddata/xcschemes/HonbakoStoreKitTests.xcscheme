@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Scheme LastUpgradeVersion="2700" version="1.3">
+   <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+      <BuildActionEntries>
+         <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="3E365F52C231C670FEA1FCB6" BuildableName="Sumi.app" BlueprintName="Sumi" ReferencedContainer="container:Aidoku.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="NO">
+      <Testables>
+         <TestableReference skipped="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="5D05B450700A594AA238D105" BuildableName="SumiTests.xctest" BlueprintName="SumiTests" ReferencedContainer="container:Aidoku.xcodeproj" />
+         </TestableReference>
+         <TestableReference skipped="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="106F3AAC81417E823141E20C" BuildableName="SumiUITests.xctest" BlueprintName="SumiUITests" ReferencedContainer="container:Aidoku.xcodeproj" />
+         </TestableReference>
+      </Testables>
+      <CommandLineArguments>
+         <CommandLineArgument argument="--honbako-storekit-tests" isEnabled="YES" />
+      </CommandLineArguments>
+   </TestAction>
+   <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES">
+      <BuildableProductRunnable runnableDebuggingMode="0">
+         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="3E365F52C231C670FEA1FCB6" BuildableName="Sumi.app" BlueprintName="Sumi" ReferencedContainer="container:Aidoku.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument argument="-com.apple.CoreData.SQLDebug 1" isEnabled="NO">
+         </CommandLineArgument>
+         <CommandLineArgument argument="com.apple.CoreData.CloudKitDebug 1" isEnabled="NO">
+         </CommandLineArgument>
+         <CommandLineArgument argument="-com.apple.CoreData.Logging.stderr 1" isEnabled="NO">
+         </CommandLineArgument>
+         <CommandLineArgument argument="-com.apple.CoreData.ConcurrencyDebug 1" isEnabled="NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         </EnvironmentVariables>
+      <StoreKitConfigurationFileReference identifier="../../SumiTests/Fixtures/HonbakoPro.storekit" />
+   </LaunchAction>
+   <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES">
+      <BuildableProductRunnable runnableDebuggingMode="0">
+         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="3E365F52C231C670FEA1FCB6" BuildableName="Sumi.app" BlueprintName="Sumi" ReferencedContainer="container:Aidoku.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction buildConfiguration="Debug">
+   </AnalyzeAction>
+   <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES">
+   </ArchiveAction>
+</Scheme>

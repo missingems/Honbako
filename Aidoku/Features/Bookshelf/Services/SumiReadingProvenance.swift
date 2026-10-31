@@ -23,17 +23,8 @@ enum SumiReadingProvenance {
         let device = UIDevice.current
         var name = device.name
         if ["iPhone", "iPad", "iPod touch"].contains(name) {
-            #if targetEnvironment(simulator)
-            let machine = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? ""
-            #else
-            var system = utsname()
-            uname(&system)
-            let capacity = MemoryLayout.size(ofValue: system.machine)
-            let machine = withUnsafePointer(to: &system.machine) {
-                $0.withMemoryRebound(to: CChar.self, capacity: capacity) { String(cString: $0) }
-            }
-            #endif
-            if machine == "iPhone19,4" { name = "iPhone Duo" }
+            let machine = HonbakoDeviceModel.identifier
+            if HonbakoDeviceModel.isPhoneDuo { name = "iPhone Duo" }
             else if ["iPad16,1", "iPad16,2"].contains(machine) { name = "iPad mini" }
         }
         return Device(id: id, name: name)

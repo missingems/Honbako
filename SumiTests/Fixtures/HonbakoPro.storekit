@@ -17,11 +17,17 @@
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "0.99",
+          "displayPrice": "2.99",
           "familyShareable": false,
           "groupNumber": 1,
           "internalID": "F129CBA4",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "displayPrice": "0.00",
+            "internalID": "E3FB9247",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          },
           "localizations": [
             {
               "description": "Local StoreKit testing only. This placeholder price does not set an App Store price.",
@@ -32,6 +38,34 @@
           "productID": "com.missingems.honbaku.pro",
           "recurringSubscriptionPeriod": "P1M",
           "referenceName": "Honbako Pro Monthly \u2014 Local Testing Only",
+          "subscriptionGroupID": "7AFB68E2",
+          "type": "RecurringSubscription",
+          "winBackOffers": []
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "28.49",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "B63A7E12",
+          "introductoryOffer": {
+            "displayPrice": "0.00",
+            "internalID": "B32474F1",
+            "numberOfPeriods": 1,
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1M"
+          },
+          "localizations": [
+            {
+              "description": "Local StoreKit testing only. This placeholder price does not set an App Store price.",
+              "displayName": "Honbako Pro Annual",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.missingems.honbaku.pro.annual",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Honbako Pro Annual",
           "subscriptionGroupID": "7AFB68E2",
           "type": "RecurringSubscription",
           "winBackOffers": []

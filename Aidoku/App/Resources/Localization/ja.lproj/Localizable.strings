@@ -800,7 +800,7 @@
 "CLOSE_READER" = "リーダーを閉じる";
 "TOGGLE_PAGE_OFFSET" = "ページオフセットを切り替え";
 "BACKGROUND_REFRESH_TEXT" = "手動でライブラリの更新を開始した場合、アプリがバックグラウンドになっても更新を完了できるようにします。";
-"LEGACY_SOURCE_LIST_WARNING_INFO" = "現在レガシー形式のソースリストが設定されています。この形式は非推奨であり、将来のバージョンのAidokuでは動作しなくなります。現在は引き続き利用できますが、代替のリストを見つけて「設定 > ソースリスト」で設定することをお勧めします。";
+"LEGACY_SOURCE_LIST_WARNING_INFO" = "現在レガシー形式のソースリストが設定されています。この形式は非推奨であり、将来のバージョンのHonbakoでは動作しなくなります。現在は引き続き利用できますが、代替のリストを見つけて「設定 > ソースリスト」で設定することをお勧めします。";
 "ABOUT_DICTIONARIES_TEXT" = "Yomitan辞書はZIPファイルからインポートできます。辞書の有効/無効の切り替えや、ドラッグによる並べ替えが可能です。";
 "LOOKUP_GESTURE_LONG_PRESS_INFO" = "指を離すとポップアップが表示されます。有効にするとページのクイックアクションが無効になります。";
 "DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO" = "有効にすると、選択した言語としてマークされている章のみがOCR処理されます。インポート済みの辞書がある言語のみを選択することをお勧めします。";
@@ -888,7 +888,7 @@
 "1. Choose a Connection" = "1. 接続先を選ぶ";
 "Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust." = "オリジナルのチュートリアルから始めましょう。自分のファイル、個人用サーバー、信頼するソースリストやソースファイルも追加できます。";
 "2. Find Manga" = "2. マンガを探す";
-"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "本棚に戻り、下に引いて検索します。設定で有効にした接続先が検索対象になります。";
+"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "本棚に戻り、上部ツールバーの検索を使います。設定で有効にした接続先を検索します。";
 "3. Build Your Library" = "3. 本棚を作る";
 "Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading." = "検索結果の「追加」で本棚に保存できます。「読む」や「続きを読む」で読書を始めましょう。";
 "Connect to a server you manage to search your own library." = "自分で管理するサーバーに接続して、本を探せます。";
@@ -1072,7 +1072,7 @@
 "Find Your Place" = "読みたいページへ";
 "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there." = "ページをタップすると操作部が表示されます。ページの一覧をドラッグしてプレビューし、指を離すとそのページに移動します。";
 "A Book to Return To" = "また開きたくなる一冊";
-"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "内側にピンチするか「閉じる」で本棚に戻れます。読んだ場所は保存されます。本棚で下に引くと検索できます。";
+"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "内側につまむか閉じるを使って本棚に戻ります。読書位置は保存されます。検索は上部ツールバーから使えます。";
 
 // Monthly Pro and in-app data information.
 "Monthly Subscription" = "月額サブスクリプション";
@@ -1124,3 +1124,172 @@
 "The system chooses when a connected display can show the cover." = "接続された画面に表紙を表示できるかどうかは、システムが判断します。";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "iPhone Duoの外側に表紙を表示する間は、カメラを使用します。写真や動画の撮影・保存は行いません。";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "ページのあいだの本屋";
+"Tutorial.Story.CoverSubtitle" = "ミナとノリのオリジナルストーリー";
+"Tutorial.Story.Empty.Title" = "まっしろな本";
+"Tutorial.Story.Empty.Body" = "雨の夜、ミナは物語のない本を見つけました。ノリが表紙をちょん。どんな物語にも、入口があるのです。\n\n左にスワイプすると次のページへ。ページをタップすると読書の操作が現れます。";
+"Tutorial.Story.Key.Title" = "新しい物語の鍵";
+"Tutorial.Story.Key.Body" = "本から真鍮の鍵がすべり落ちました。自分の本棚にも、別の図書館への扉にも使える鍵です。\n\n上部ツールバーの設定をタップし、ローカルファイル、パーソナルサーバー、ソースリストを選びます。";
+"Tutorial.Story.Door.Title" = "ほかの本棚への扉";
+"Tutorial.Story.Door.Body" = "鍵を回すと、たくさんの語り手の本棚が現れました。ノリはミナが選ぶのを待っています。\n\n「設定」→「ソースリスト」→「ソースリストを追加」で、信頼できる提供者のHTTPSリストURLを貼り付けます。追加したら、使いたいソースをインストールします。";
+"Tutorial.Story.Read.Title" = "はじまりの物語";
+"Tutorial.Story.Read.Body" = "棚の中で一冊が光りました。ミナが持ち上げると、新しい世界が開きました。\n\n設定で接続先を有効にし、上部ツールバーの検索で探します。追加で本棚に保存し、表紙をタップして読み始めます。";
+"Tutorial.Story.Bookmark.Title" = "明日のためのしおり";
+"Tutorial.Story.Bookmark.Body" = "ノリはページにリボンを置きました。「また戻ってこようね」とミナがささやきます。\n\nページをタップするとページ一覧とチャプターメニューが現れます。一覧を動かすとプレビューできます。「言語」では、その本で読める翻訳を選べます。";
+"Tutorial.Story.Morning.Title" = "新しい朝";
+"Tutorial.Story.Morning.Body" = "朝になるころ、まっしろな本は物語の入口になっていました。窓の向こうにも、次の物語が待っています。\n\n内側にピンチするか「閉じる」でライブラリへ。「続きから」で保存した場所に戻れます。自分のファイルやソースは、自分で選べます。";
+
+"Privacy Policy" = "プライバシーポリシー";
+
+// Free and Pro plan comparison.
+"Honbako.Plan.Free" = "無料";
+"Honbako.Plan.Pro" = "Pro";
+"Honbako.Plan.Collection" = "自分の本を読んで整理";
+"Honbako.Plan.ImportedOffline" = "読み込んだファイルをオフラインで読む";
+"Honbako.Plan.AdFree" = "広告なし";
+"Honbako.Plan.FreeLimitations" = "チャプターのダウンロード、新着通知、iCloudでのライブラリと読書状況の同期にはProが必要です。";
+"Honbako.Plan.EverythingInFree" = "無料プランのすべての機能";
+
+// Bring your own collection: Getting Started and connection help.
+"Honbako.CollectionGuide.Intro.Title" = "自分のコレクションを読む";
+"Honbako.CollectionGuide.Intro.Body" = "同梱のオリジナルチュートリアルを読んだら、自分のコミックファイルを読み込むか、個人の書庫サーバーに接続しましょう。";
+"Honbako.CollectionGuide.Local.Title" = "「ファイル」にあるコミック";
+"Honbako.CollectionGuide.Local.Body" = "「ファイル」アプリから、コミックのページが入ったCBZまたはZIPを読み込めます。最初に「端末のファイル」を設定し、ファイルを選んでシリーズとチャプターの情報を確認してください。";
+"Honbako.CollectionGuide.Local.Setup" = "端末のファイルを設定";
+"Honbako.CollectionGuide.Local.Connected" = "端末のファイルは接続済みです";
+"Honbako.CollectionGuide.Local.Import" = "コミックを読み込む";
+"Honbako.CollectionGuide.Local.Footer" = "「端末のファイル」を設定した後は、「ファイル」アプリのCBZやZIPをHonbakoで開くこともできます。";
+"Honbako.CollectionGuide.Server.Title" = "自分のサーバーにある書庫";
+"Honbako.CollectionGuide.Server.Body" = "お使いのKomga、Kavita、Suwayomiの書庫に接続できます。サーバーのアドレスを入力し、表示される方法でサインインしてください。この端末からサーバーにアクセスできる必要があります。";
+"Honbako.CollectionGuide.Sources.Title" = "配信元への接続";
+"Honbako.CollectionGuide.Sources.Body" = "配信元が提供する対応ソースリストのリンクを追加してください。リストを開き、利用するソースをインストールします。";
+"Honbako.CollectionGuide.Sources.Footer" = "「ソースファイルを読み込む」では、対応する.aix接続ファイルを追加できます。CBZやZIPのコミックには「端末のファイル」を使ってください。";
+"Honbako.CollectionGuide.Search.Title" = "本を探して本棚に追加";
+"Honbako.CollectionGuide.Search.Body" = "設定の検索対象で接続先を有効にします。完了をタップし、上部ツールバーの検索でタイトルを探します。";
+"Honbako.CollectionGuide.Save.Body" = "検索結果の「追加」をタップすると本棚に保存できます。表紙を開いて読み始め、「続きを読む」で保存したページに戻れます。";
+"Honbako.CollectionGuide.Settings.Subtitle" = "ファイルのコミックや、自分の書庫を追加できます。";
+
+"Honbako.ExternalBeta.Footer" = "外部ソース対応ベータ。ソースリストやソースパッケージで配信元に接続できます。接続先が自動追加されることはありません。";
+"Honbako.ExternalBeta.Intro" = "オリジナルチュートリアルから始めて、自分のファイル、個人サーバー、配信元への接続を追加しましょう。";
+
+/* Library empty and hidden-finished states. */
+"Honbako.Library.Empty.Title" = "ライブラリの準備ができました";
+"Honbako.Library.Empty.Detail" = "検索で本を見つけてライブラリに追加し、読書を始めましょう。";
+"Honbako.Library.Hidden.Title" = "読了した本は非表示です";
+"Honbako.Library.Hidden.Detail" = "読了した本を表示して、もう一度読みましょう。";
+"Honbako.Library.ShowFinished" = "読了した本を表示";
+"Honbako.Library.FindBooks" = "本を探す";
+
+"Honbako.Guide.guide-find.Title" = "検索と削除";
+"Honbako.Guide.guide-find.Subtitle" = "物語を見つけ、次の一冊のために整理。";
+"Honbako.Guide.guide-find.1.Title" = "タップして検索";
+"Honbako.Guide.guide-find.1.Body" = "サイドバーの検索アイコン、または検索バーをタップすると、ガラス効果の検索結果リストが開きます。タイトルを入力すると、設定で有効にした接続先から検索します。追加で本棚に保存するか、表紙をタップして読みます。\n\n検索と設定はスクロールしても利用できます。検索を閉じると本棚に戻ります。";
+"Honbako.Guide.guide-find.2.Title" = "本棚を整理";
+"Honbako.Guide.guide-find.2.Body" = "本を開き、ページをタップして操作を表示します。「チャプターと言語」を開き、「ライブラリから削除」を選びます。\n\n削除するのは本棚の登録です。サーバーや「ファイル」アプリ内の元の本は削除しません。";
+"Honbako.Guide.guide-find.3.Title" = "もう一度見つける";
+"Honbako.Guide.guide-find.3.Body" = "同梱ガイドを削除しても、次回起動時に勝手に戻ることはありません。「このデバイス上」の接続先でタイトルを検索し、必要なときに追加できます。\n\n設定の検索対象で、この接続先を有効にしてください。";
+"Honbako.Guide.guide-find.4.Title" = "読了した本もここに";
+"Honbako.Guide.guide-find.4.Body" = "完結した本の全チャプターを読むと「読了」に移動します。設定 → ライブラリ → 読了した本を非表示で棚を隠せます。設定をオフにすると再表示されます。\n\n非表示にしても、本棚から削除されません。";
+"Honbako.Guide.guide-connect.Title" = "自分のコレクション";
+"Honbako.Guide.guide-connect.Subtitle" = "ローカルファイル、自分のサーバー、読書の続き。";
+"Honbako.Guide.guide-connect.1.Title" = "ファイルを読み込む";
+"Honbako.Guide.guide-connect.1.Body" = "上部ツールバーの設定からローカルファイルを開き、読み込み画面でCBZまたはZIP形式のコミックを追加します。ファイルはこのデバイスに保存されます。\n\n別のデバイスでは個別に読み込んでください。iCloudの進捗同期では本のファイルをコピーしません。";
+"Honbako.Guide.guide-connect.2.Title" = "サーバーにつなぐ";
+"Honbako.Guide.guide-connect.2.Body" = "設定 → パーソナルサーバーでKomga、Kavita、Suwayomiを選びます。サーバーのアドレスと必要なログイン情報を入力します。アドレス末尾のパスも含めてください。\n\nローカルネットワーク、VPN、リモートアクセスなどで接続できる必要があります。";
+"Honbako.Guide.guide-connect.3.Title" = "複数の本棚を検索";
+"Honbako.Guide.guide-connect.3.Body" = "複数のサーバーを追加できます。設定の検索対象で、ローカルファイルを含め、検索したい接続先を有効にします。\n\n検索結果には接続先の名前が表示されます。同じ作品でも別のサーバー上の本は別のコピーです。サーバー間でファイルを移動・統合する機能ではありません。";
+"Honbako.Guide.guide-connect.4.Title" = "読書の続きを同期";
+"Honbako.Guide.guide-connect.4.Body" = "Honbako Proでは、ライブラリ、しおり、言語設定、読書進捗を自分のiCloudで同期できます。各デバイスで同じiCloudアカウントを使い、設定 → iCloud同期で確認します。\n\nダウンロードやソースファイルは各デバイスに残ります。サーバーの接続やローカルファイルの読み込みは個別に行ってください。";
+"Honbako.Guide.guide-read.Title" = "自分らしく読む";
+"Honbako.Guide.guide-read.Subtitle" = "ページめくり、続きから読む、オフライン読書。";
+"Honbako.Guide.guide-read.1.Title" = "ページをめくる";
+"Honbako.Guide.guide-read.1.Body" = "右から左へ読む本では、右から左にスワイプすると次へ進みます。ページバーも同じ方向にドラッグすると先のページをプレビューできます。\n\nページをタップして操作を表示し、「チャプターと言語」から章や翻訳を選びます。";
+"Honbako.Guide.guide-read.2.Title" = "両側から本を閉じる";
+"Honbako.Guide.guide-read.2.Body" = "二本の指で内側につまみます。本の両側が中央に向かって閉じ、その後表紙が本棚へ戻ります。\n\n指を離す前なら、指を開くとページに戻せます。「閉じる」ボタンでも戻れます。";
+"Honbako.Guide.guide-read.3.Title" = "明日も続きから";
+"Honbako.Guide.guide-read.3.Body" = "読書位置はこのデバイスに保存されます。本棚から開くか、検索結果の再開を選ぶと、保存した位置から続けられます。\n\n読み終わった本は「読了」にあります。いつでも開いて読み返せます。";
+"Honbako.Guide.guide-read.4.Title" = "本を持ち歩く";
+"Honbako.Guide.guide-read.4.Body" = "同梱ガイドと読み込んだローカルの本はオフラインで読めます。Proでは対応した接続先のチャプターをダウンロードできます。「チャプターと言語」→ オフライン読書から保存します。\n\n無料版もProも広告はありません。オフラインになる前に保存してください。サーバーへの接続だけではページは保存されません。";
+
+"Search Manga" = "漫画を検索";
+
+"Honbako.Search.EmptyHint" = "有効なコレクションを検索したり、同梱ガイドをタイトルで探したりできます。";
+
+// Japanese reading guide and original practice page.
+"Honbako.Guide.guide-japanese.Title" = "日本語で読む";
+"Honbako.Guide.guide-japanese.Subtitle" = "一ページずつ、少しずつ練習。";
+"Honbako.Guide.guide-japanese.1.Title" = "ページでそのまま読む";
+"Honbako.Guide.guide-japanese.1.Body" = "日本語の漫画に、単語ごとのローマ字が直接表示されます。単語をタップして発音や翻訳を確認できます。\n\nページをタップして操作ボタンを表示し、「チャプターと言語」を開きます。「ページにローマ字を表示」で表示を切り替えられます。\n\n次のページは本箱オリジナルの練習ページです。";
+"Honbako.Guide.guide-japanese.2.Title" = "練習のページ";
+"Honbako.Guide.guide-japanese.2.Body" = "次の絵には、本箱が作成した横書きと縦書きの日本語が含まれています。";
+"Honbako.Guide.guide-japanese.3.Title" = "聞いてから読む";
+"Honbako.Guide.guide-japanese.3.Body" = "漫画の単語をタップすると、日本語、かなの読み、ローマ字を確認できます。「聞く」や「ゆっくり聞く」で発音を確認してください。「文全体」を選ぶと、文の発音や翻訳を確認できます。\n\n自分で読んでから、もう一度聞いてみましょう。名前や複数の読み方がある言葉は、文脈によって読みが変わります。";
+"Honbako.Guide.guide-japanese.4.Title" = "必要なときに意味を確認";
+"Honbako.Guide.guide-japanese.4.Body" = "文の「Translate」をタップすると英訳を表示します。最初に日本語と英語の言語データのダウンロードを求められる場合があります。選んだ文だけを翻訳し、先のページは表示しません。\n\n小さいふりがな、装飾文字、縦書きなどを認識できないことがあります。必要に応じて、認識した日本語を修正してから翻訳してください。";
+
+// Japanese reading guide interface.
+"Japanese Guide" = "日本語ガイド";
+"Guide Options" = "ガイドのオプション";
+"Show Markers" = "番号を表示";
+"Show Romaji" = "ローマ字を表示";
+"Scan Again" = "もう一度認識";
+"Enter Japanese Text" = "日本語を入力";
+"Tap a phrase to hear it, see its reading, or reveal the translation." = "文をタップすると、発音、読み方、翻訳を確認できます。";
+"Romaji on Page" = "ページにローマ字を表示";
+"Finding Japanese text…" = "日本語の文字を認識中…";
+"Couldn’t Scan This Page" = "このページを認識できませんでした";
+"No Japanese Text Found" = "日本語の文字が見つかりません";
+"Small lettering and stylized speech bubbles can be difficult to recognize. You can enter a phrase yourself." = "小さな文字や装飾された吹き出しは、正しく認識できないことがあります。日本語を直接入力することもできます。";
+"Phrases on This Page" = "このページの文";
+"How to Learn with This Page" = "このページでの学び方";
+"Try reading the Japanese first, then use the romaji to check your pronunciation. Listen once at normal speed and once slowly. Hide the romaji when you’re ready to try again." = "まず日本語を読んでから、ローマ字で発音を確かめましょう。通常の速さとゆっくりした速さで一度ずつ聞いてみてください。慣れたらローマ字を隠して、もう一度読んでみましょう。";
+"Romaji is a reading aid. Japanese particles and names may sound different from their written form; use Listen to hear the original Japanese." = "ローマ字は読み方の補助です。助詞や名前は表記と発音が異なることがあります。「聞く」で元の日本語の発音を確かめてください。";
+"Check the recognized text before translating. You can correct missed characters in the phrase popup. Automatic readings are estimates, especially for names and words with more than one reading." = "翻訳する前に、認識された文字を確認してください。文のポップアップで誤認識を修正できます。自動生成の読み方は推定で、特に名前や複数の読み方がある言葉では正しくないことがあります。";
+"Translation uses Apple’s system service. The first translation may ask you to download Japanese and English language support." = "翻訳にはAppleのシステムサービスを使用します。初回の翻訳時に、日本語と英語の言語データのダウンロードを求められることがあります。";
+"Only this page is scanned. Text recognition happens on your device." = "認識するのはこのページだけです。文字認識は端末上で行われます。";
+"The page image isn’t available yet. Return to the book, let it finish loading, then open the guide again." = "ページ画像をまだ読み込めません。本に戻り、読み込みが終わってからガイドを開き直してください。";
+"Text recognition couldn’t finish. Try scanning again, or enter a Japanese phrase yourself." = "文字認識を完了できませんでした。もう一度認識するか、日本語を直接入力してください。";
+"Current manga page" = "現在のマンガページ";
+"Phrase %lld: %@" = "文%lld：%@";
+"Hear the pronunciation or reveal a translation" = "発音を聞く、または翻訳を表示します";
+"Enter Japanese text" = "日本語を入力";
+"Japanese" = "日本語";
+"Correct any missed characters before listening or translating." = "聞く、または翻訳する前に、誤認識された文字を修正してください。";
+"Read This Phrase" = "この文を読む";
+"Kana" = "かな";
+"Romaji" = "ローマ字";
+"Japanese Reading" = "日本語の読み方";
+"A reading isn’t available for this text. You can still listen to the Japanese or try a shorter phrase." = "この文の読み方は表示できません。日本語の音声を聞くか、短い文を試してください。";
+"This is a suggested reading. Names, unusual spellings, and words with several readings may sound different in context." = "これは推定の読み方です。名前、特殊な表記、複数の読み方がある言葉は、文脈によって発音が異なることがあります。";
+"Text recognition is uncertain. Check the Japanese against the page." = "文字認識の精度が低い可能性があります。ページの日本語と照らし合わせて確認してください。";
+"Listen" = "聞く";
+"Listen Slowly" = "ゆっくり聞く";
+"Stop Audio" = "音声を停止";
+"Pronunciation" = "発音";
+"A Japanese system voice isn’t available. Add a Japanese voice in iPhone Settings to hear this phrase." = "日本語のシステム音声が見つかりません。この文を聞くには、iPhoneの設定で日本語の音声を追加してください。";
+"Translating…" = "翻訳中…";
+"Translation is available on iPhone and iPad. Apple’s translation service doesn’t run in Simulator." = "翻訳はiPhoneとiPadで使用できます。Appleの翻訳サービスはSimulatorでは動作しません。";
+"Translate to English" = "英語に翻訳";
+"Translate Again" = "もう一度翻訳";
+"Meaning" = "意味";
+"Translate when you’re ready to check your understanding. Apple may ask to download Japanese and English language support. Short phrases can lose context." = "意味を確かめたくなったら翻訳してください。日本語と英語の言語データのダウンロードを求められることがあります。短い文では文脈が伝わらない場合があります。";
+"Translation couldn’t finish. Check language downloads and try again. You can keep using the reading and pronunciation tools." = "翻訳を完了できませんでした。言語データのダウンロードを確認し、もう一度試してください。読み方と発音の機能は引き続き使用できます。";
+"Read Japanese on this page with romaji, pronunciation, and tap-to-translate help." = "このページの日本語を、ローマ字、発音、タップ翻訳で学べます。";
+
+// Word-by-word Japanese reading aids.
+"Reading Unavailable" = "読み方を取得できません";
+"Hear or translate this word" = "この単語を聞く、または翻訳する";
+"Whole Phrase" = "文全体";
+"Selected Word" = "選択中の単語";
+"Tap a word to hear or translate it. Choose Whole Phrase for the full sentence." = "単語をタップして発音や翻訳を確認できます。文全体を確認するには「文全体」を選んでください。";
+"Tap a word or phrase to hear it, see its reading, or reveal the translation." = "単語や文をタップして、発音、読み方、翻訳を確認できます。";
+
+// Japanese reading help stays on the live manga page.
+"Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "漫画に単語ごとのローマ字を表示します。単語をタップして発音や翻訳を確認できます。";
+
+/* Honbako creator credit */
+"Created by @nsjunxiu" = "制作：@nsjunxiu";
+
+"Support Email" = "サポートメール";

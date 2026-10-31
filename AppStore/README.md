@@ -1,33 +1,31 @@
-# Honbako submission preparation
+# Honbako App Store preparation
 
-Prepared on 27 October 2026. This folder contains assets and review material, not a submission receipt. Nothing here uploads a build, accepts agreements, publishes privacy declarations, or clears distribution rights.
+Updated 28 October 2026. Version 0.1.0, **build 29**, is uploaded, processed, selected and saved in App Store Connect. It was archived with public Xcode 27.1 **27A9275**, flags `HONBAKO_PERSONAL_FEATURES=NO` / `HONBAKO_IMPORT_ENGLISH_50=NO`, and a valid strict signature.
 
-## Prepared
+This release is for personal collections: the original tutorial, imported local comic files, and user-configured Komga, Kavita or Suwayomi servers. Settings/onboarding source-list and package-installation routes are removed. Source-list links, package imports, stored external catalog/demo configurations and external catalog metadata enrichment cannot activate those sources. Existing user library records and files are retained. Unavailable sources cannot fetch remote cover fallbacks.
 
-- `assets/AppIcon-1024.png`: unchanged 1024 × 1024 opaque app icon.
-- `metadata/en-US`, `ja`, `zh-Hans`, `zh-Hant`: name, subtitle, promotional text, description, keywords, version copy, TestFlight description/testing copy, and screenshot captions.
-- `screenshots.json`: native capture sizes and a three-image story. Actual captures belong in `screenshots/<locale>/<device>/`.
-- `submission.json`: monthly Pro configuration and owner fields that remain unresolved. `null` and `false` values must not be treated as completed declarations.
-- `ExportOptions-AppStore.plist`: local App Store Connect export configuration. Its destination is **export**, not upload. Registered-device Ad Hoc IPAs cannot be used for TestFlight.
-- `permission-strings`: target-specific localized system prompts. The Sumi-only resource phase also compiles only en/ja/zh-Hans/zh-Hant interface tables and English plurals, preserving the legacy target.
-- `privacy-review.md`, `web-drafts`, and `review-notes.txt`: factual data-flow audit and drafts requiring owner review.
+**38 tests in eight suites passed**, including five collection-scope regressions, self-hosted transport, Pro policy/entitlement, local StoreKit, bootstrap, cover and search preparation. Native viewer input still did not reach Settings, so build-29 Settings GUI verification is not claimed. Earlier build-28 Komga and reader GUI evidence remains historical.
 
-## Screenshots
+All four listing descriptions and the exact **3,062-character app review notes** are saved. The support/privacy scope updates are deployed and verified live. All **24 Dark** marketing screenshots remain uploaded; their native build-28 library/reader UI is unchanged in build 29. The saved private Pro image remains the verified build-28 Light capture of the same $1.99 paywall; the updated product notes disclose that capture version.
 
-Apple currently requires an iPhone Dynamic Island medium set and, for this universal app, an iPad 13-inch set. Suggested native captures are 1206 × 2622 and 2064 × 2752; landscape reversals and the alternatives in the manifest are accepted. Supply 1–10 JPEG/PNG images per size, without alpha. Duo outer 1398 × 2034 and inner 2007 × 2853 sets are optional now; Apple states they become required from April 2027 for iOS 27.1 SDK apps. Use original tutorial artwork or content whose marketing rights are documented. Screenshots must show the actual app, not fabricated interfaces. [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications).
+Pro and its subscription group are both **Ready for Review**, together as two items in the existing draft. The app version is **Prepare for Submission**: adding build 29 to review reports only **missing Content Rights Information**. The declaration remains unresolved. No final Submit was clicked, and nothing is submitted for review.
 
-Run `python3 scripts/validate_honbako_submission.py --allow-pending-screenshots` while preparing. Run it without that option after final captures are present.
+## Evidence
 
-## Monthly Pro
+- `review/build29-verification.json`: archive, tests, upload, selected build, exact saved copy and validation status.
+- `review/build29-source-hashes.json`: app source hashes, checked unchanged after archiving.
+- `review/Honbako-Build29-review-notes.txt` and `review/Honbako-Pro-Build29-review-notes.txt`: exact saved review copy.
+- `review/build29-site-publication.json`: two-file GitHub publication, successful deployment and live HTTP checks.
+- `review/build29-cleanup.json`: owned simulator cleanup; final archive and small test result retained, temporary export removed.
+- `review/AppStore-Build29-Content-Rights-Blocker.png`: account-contact-free app validation proof.
+- `review/build28-before-collection-only/`: predecessor submission notes, checklist and status snapshots.
+- `screenshots/capture-provenance.json`: the verified 24-image Dark upload record.
 
-The user selected a monthly auto-renewable subscription. The product identifier in code is `com.missingems.honbaku.pro`; the owner selected US$1.99 per month for the U.S. base storefront. The real product record, subscription group, and localized storefront prices still require App Store Connect configuration. The app accepts only a one-month auto-renewable product, displays StoreKit's localized price, and has restore/manage controls. The simulator fixture remains US$0.99 and is explicitly test-only; it is not the selected production price. The runtime paywall always displays StoreKit pricing. Confirm the real product's availability, tax/banking agreements, purchase, renewal, cancellation, refund, and restore before distribution. If enabling Billing Grace Period, verify the app preserves access throughout that configured grace period. The owner must publish an accurate privacy policy and supply its URL; the in-app Privacy Information sheet is not proof that this external requirement is complete. [Apple subscription presentation requirements](https://developer.apple.com/app-store/subscriptions/).
+Support: https://missingems.github.io/Honbako/support/
+Privacy: https://missingems.github.io/Honbako/privacy/
 
-## Required owner decisions before submission
+Run `python3 scripts/validate_honbako_submission.py` for local asset/metadata checks. `--require-submission-ready` must remain incomplete while the content-rights, engine-distribution licensing and export owner confirmations remain false. Local validation does not establish App Review approval.
 
-1. Resolve the GPLv3 reader-engine distribution obligations and provider/content rights described in [release and rights notes](../docs/RELEASE_AND_RIGHTS.md). Do not remove notices or present a renamed fork as an independently licensed reader engine.
-2. Review imported executable `.aix`/WASM sources against Apple's downloadable-code/plugin requirements. Renaming the feature or leaving setup to users does not settle this review question. [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/).
-3. Provide a real public support URL/contact, privacy-policy URL, review contact name/email/international phone, feedback email, copyright holder, and the existing App Store Connect app record ID. The user-authorized public feedback/support contact is prefilled as itchymail@icloud.com; legal review-contact identity and other unverified fields remain unset.
-4. Confirm the privacy answers using the final archive and all SDK manifests, export-compliance answers, age-rating questionnaire (including configurable external content), pricing, territories, and accessibility claims. No blanket “Data Not Collected” answer has been submitted. [App privacy](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy/), [export compliance](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance).
-5. Validate the final archive with App Store Connect signing and its production iCloud container. Upload only when authorized, wait for Apple's processing, and complete TestFlight test/review information. External TestFlight testing may require review; it is not a way around review rules. [TestFlight overview](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/), [test information](https://developer.apple.com/help/app-store-connect/test-a-beta-version/provide-test-information/).
+## External-source TestFlight variant
 
-Metadata limits checked by the validator: names/subtitles 30 characters, promotional text 170 characters, descriptions 4000 characters, keywords 100 UTF-8 bytes. Contact and rights fields remain explicit blockers. [Apple platform metadata](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information).
+Version **0.2.0 (30)** is prepared separately, uploaded and processed. It enables external sources explicitly while the default App Store mode remains collection-only. Beta description, review notes, approved feedback address and What to Test are saved. The empty external group is prepared, but the build is not attached, no review was submitted, no testers were invited and no public link is enabled. Authorized provider/source-list details and continuation approval remain pending after automatic approval review rejected the group-wizard handoff. See `testflight/build30/README.md` and `testflight/build30/verification.json`. App Store build29 remains selected with its unchanged3062-character notes.

@@ -1,0 +1,10 @@
+Build 74 — 本箱 app icon
+
+• Reader controls use translucent dune glass. The title and chapter have a solid native background for better contrast.
+• Close, chapters, scrubber, search and settings share the same tint.
+• Existing public covers and built-in guide covers recover after iCloud restoration, without clearing the image cache.
+• iCloud now keeps supported source setup details. In Settings → iCloud Sync, use Reconnect MangaDex when restoring a library from an older build. Server passwords and tokens stay on each device; extension packages require explicit restoration.
+• Corrected the manga-cover app icon to 本箱, with the same 5-degree tilt and dune palette.
+• New AI connections use our branded TestFlight MCP address. Existing connections keep working with their saved addresses.
+
+Please try restoring your library, opening books, returning to the grid, and checking reader controls in light and dark mode.

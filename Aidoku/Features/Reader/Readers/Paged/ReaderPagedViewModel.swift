@@ -142,10 +142,28 @@ class ReaderPagedViewModel {
     }
     #endif
 
+    #if SUMI
+    private func sumiJapaneseEligibility(chapter: AidokuRunner.Chapter, pageIndex: Int) -> Bool {
+        HonbakoJapaneseLanguageEligibility.allowsPage(chapterLanguage: chapter.language,
+            sourceLanguages: source?.languages ?? [], sourceKey: source?.key ?? manga.sourceKey,
+            mangaKey: manga.key, chapterKey: chapter.key, pageIndex: pageIndex)
+    }
+
+    private func sumiJapanesePages(_ pages: [Page], chapter: AidokuRunner.Chapter) -> [Page] {
+        pages.map { original in
+            var page = original
+            page.sumiJapaneseLearningEligible = sumiJapaneseEligibility(chapter: chapter, pageIndex: page.index)
+            return page
+        }
+    }
+    #endif
+
     private func getPages(chapter: AidokuRunner.Chapter, forceRefresh: Bool = false) async -> [Page] {
 #if SUMI && DEBUG
-        if let sumiPageLoaderOverride { return await sumiPageLoaderOverride(chapter) }
-        if let generated = SumiGridPreviewFixtures.generatedPages(manga: manga, chapter: chapter) { return generated }
+        if let sumiPageLoaderOverride { return sumiJapanesePages(await sumiPageLoaderOverride(chapter), chapter: chapter) }
+        if let generated = SumiGridPreviewFixtures.generatedPages(manga: manga, chapter: chapter) {
+            return sumiJapanesePages(generated, chapter: chapter)
+        }
 #endif
         let sourceId = source?.key ?? manga.sourceKey
         let identifier = ChapterIdentifier(
@@ -161,6 +179,7 @@ class ReaderPagedViewModel {
                     var page = downloaded.toOld(sourceId: sourceId, chapterId: chapter.key, language: language)
                     #if SUMI
                     page.index = ordinal
+                    page.sumiJapaneseLearningEligible = sumiJapaneseEligibility(chapter: chapter, pageIndex: ordinal)
                     #endif
                     return page
                 }
@@ -195,6 +214,7 @@ class ReaderPagedViewModel {
                 )
                 #if SUMI
                 page.index = sourcePages.count
+                page.sumiJapaneseLearningEligible = sumiJapaneseEligibility(chapter: chapter, pageIndex: sourcePages.count)
                 #endif
                 if
                     let temporaryPageStore,

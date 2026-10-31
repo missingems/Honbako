@@ -1,0 +1,40 @@
+Offline test log SHA256: 046419c24329dc5ac69b26484b13b54243ccc30b645b00940ea917e7bdf436ef
+Test Suite 'Selected tests' started at 2026-10-28 23:18:53.393.
+Test Suite 'SumiTests.xctest' started at 2026-10-28 23:18:53.393.
+Test Suite 'HonbakoOriginalExternalSourceTests' started at 2026-10-28 23:18:53.393.
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testAIXImportSearchAndRead]' started.
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testAIXImportSearchAndRead]' passed (0.067 seconds).
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testExportOriginalComicAssets]' started.
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testExportOriginalComicAssets]' passed (0.652 seconds).
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testUnknownIdentifiersAndOversizedQueriesFailSafely]' started.
+Test Case '-[SumiTests.HonbakoOriginalExternalSourceTests testUnknownIdentifiersAndOversizedQueriesFailSafely]' passed (0.038 seconds).
+Test Suite 'HonbakoOriginalExternalSourceTests' passed at 2026-10-28 23:18:54.154.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.757 (0.761) seconds
+Test Suite 'SumiTests.xctest' passed at 2026-10-28 23:18:54.154.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.757 (0.761) seconds
+Test Suite 'Selected tests' passed at 2026-10-28 23:18:54.155.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.757 (0.762) seconds
+◇ Suite HonbakoSourceCompatibilityTests started.
+✔ Test "A new product version does not hide compatible reader-engine sources" passed after 0.001 seconds.
+✔ Test "An original reader build keeps using its own version when no override exists" passed after 0.001 seconds.
+✔ Suite HonbakoSourceCompatibilityTests passed after 0.003 seconds.
+◇ Suite HonbakoTutorialMangaTests started.
+✔ Test "Bundled tutorial has one real six-page edition in each supported language" passed after 1.688 seconds.
+✔ Test "Unsupported or forged tutorial chapters cannot expose unrelated files" passed after 0.029 seconds.
+✔ Test "Tutorial language picks Japanese and both Chinese scripts without conflating them" passed after 0.001 seconds.
+✔ Suite HonbakoTutorialMangaTests passed after 1.719 seconds.
+✔ Test run with 5 tests in 2 suites passed after 1.722 seconds.
+** TEST SUCCEEDED **
+Live test log SHA256: cf2539a72f8d7ccdb976cf3d63eff1999510f7d8b7b7677cf5a272fc0e0118bf
+Test Suite 'Selected tests' started at 2026-10-28 23:24:25.493.
+Test Suite 'SumiTests.xctest' started at 2026-10-28 23:24:25.494.
+Test Suite 'HonbakoOriginalHostedSourceTests' started at 2026-10-28 23:24:25.494.
+Test Case '-[SumiTests.HonbakoOriginalHostedSourceTests testHostedListInstallsAndServesOnlyOriginalContent]' started.
+Test Case '-[SumiTests.HonbakoOriginalHostedSourceTests testHostedListInstallsAndServesOnlyOriginalContent]' passed (3.949 seconds).
+Test Suite 'HonbakoOriginalHostedSourceTests' passed at 2026-10-28 23:24:29.447.
+	 Executed 1 test, with 0 failures (0 unexpected) in 3.949 (3.953) seconds
+Test Suite 'SumiTests.xctest' passed at 2026-10-28 23:24:29.447.
+	 Executed 1 test, with 0 failures (0 unexpected) in 3.949 (3.953) seconds
+Test Suite 'Selected tests' passed at 2026-10-28 23:24:29.447.
+	 Executed 1 test, with 0 failures (0 unexpected) in 3.949 (3.954) seconds
+** TEST SUCCEEDED **

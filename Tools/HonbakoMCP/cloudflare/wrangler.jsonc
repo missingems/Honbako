@@ -1,0 +1,91 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "honbako-mcp",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "PUBLIC_ORIGIN": "https://honbako-mcp.jun-19c.workers.dev",
+    "OWNER_NAME": "personal-owner-v1",
+    "REMOTE_MCP_ENABLED": "YES",
+    "APP_STORE_ENVIRONMENT": "Production",
+    "WORKSPACE_DAILY_REQUEST_BUDGET": "20000",
+    "REMOTE_ORIGIN_ALIASES": [
+      "https://mcp.honbako.xyz"
+    ]
+  },
+  "ratelimits": [
+    {
+      "name": "DEVICE_RATE_LIMITER",
+      "namespace_id": "4101",
+      "simple": {
+        "limit": 150,
+        "period": 60
+      }
+    },
+    {
+      "name": "AI_RATE_LIMITER",
+      "namespace_id": "4102",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "SETUP_RATE_LIMITER",
+      "namespace_id": "4103",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "HONBAKO_OWNER",
+        "class_name": "HonbakoOwner"
+      },
+      {
+        "name": "HONBAKO_WORKSPACE",
+        "class_name": "HonbakoWorkspace"
+      },
+      {
+        "name": "HONBAKO_AUTH",
+        "class_name": "HonbakoAuthorization"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "HonbakoOwner"
+      ]
+    },
+    {
+      "tag": "v2-remote-pro",
+      "new_sqlite_classes": [
+        "HonbakoWorkspace",
+        "HonbakoAuthorization"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "19cc8706f23e127305e14dfd41191162",
+  "alias": {
+    "node-fetch": "./remote/native-fetch.js"
+  },
+  "routes": [
+    {
+      "pattern": "mcp.honbako.xyz",
+      "custom_domain": true
+    }
+  ]
+}

@@ -22,7 +22,7 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         "cs", "hu", "ro", "fi", "sv", "no", "da", "el", "he", "hi", "bn", "ms", "fil", "sq",
         "az", "bg", "my", "ca", "hr", "eo", "et", "ka", "kk", "la", "lt", "mn", "ne", "fa",
         "sr", "sk", "sl", "ta", "te"]
-    nonisolated let features = AidokuRunner.SourceFeatures(providesListings: true)
+    nonisolated let features = AidokuRunner.SourceFeatures(providesListings: true, providesImageRequests: true)
 
     typealias Transport = @Sendable (URLRequest) async throws -> (Data, HTTPURLResponse)
     private let transport: Transport
@@ -32,12 +32,18 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
     private var titleCache: [String: (title: HonbakoMangaDexAPI.Title, date: Date)] = [:]
     private var probeCache: [String: (chapter: AidokuRunner.Chapter?, date: Date)] = [:]
     private let metadataLifetime: TimeInterval = 180
+    private let now: @Sendable () -> Date
+    private var pageDeliveries: [String: HonbakoMangaDexPageDelivery] = [:]
+    private var pageDeliveryTasks: [String: Task<HonbakoMangaDexAPI.PageServer, Error>] = [:]
+    private var nextPageServerRequest = ContinuousClock.now
 
     init(defaults: UserDefaults = .standard, requestInterval: Duration = .milliseconds(250),
+         now: @escaping @Sendable () -> Date = { .now },
          transport: @escaping Transport = HonbakoMangaDexRunner.fetch) {
         self.defaults = defaults
         self.requestInterval = requestInterval
         self.transport = transport
+        self.now = now
     }
 
     nonisolated private static func fetch(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -97,6 +103,27 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         return result
     }
 
+    #if HONBAKO_EXTERNAL_SOURCES
+    /// A bounded recovery query after every default-edition candidate is confirmed
+    /// missing. No language preference is changed and no page images are fetched.
+    func readableAlternativeChapters(for manga: AidokuRunner.Manga) async throws -> [AidokuRunner.Chapter] {
+        try validateIdentifier(manga.key)
+        let parameters = contentParameters() + [
+            URLQueryItem(name: "limit", value: "100"), .init(name: "offset", value: "0"),
+            .init(name: "includeEmptyPages", value: "0"), .init(name: "includeExternalUrl", value: "0"),
+            .init(name: "includeUnavailable", value: "0"), .init(name: "includeFutureUpdates", value: "0"),
+            .init(name: "includeFuturePublishAt", value: "0"), .init(name: "includes[]", value: "scanlation_group"),
+            .init(name: "order[volume]", value: "asc"), .init(name: "order[chapter]", value: "asc")]
+        let response: HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> =
+            try await request("/manga/\(manga.key)/feed", parameters)
+        guard response.result == "ok" else { throw HonbakoMangaDexError.invalidResponse }
+        var seen: Set<String> = []
+        return response.data.prefix(100)
+            .filter { UUID(uuidString: $0.id) != nil && $0.isReadable(at: now()) && seen.insert($0.id).inserted }
+            .reversed().map { $0.chapter(at: now()) }
+    }
+    #endif
+
     /// Language is explicit and local to this call; source preferences are never changed.
     func chapters(for manga: AidokuRunner.Manga, language: String) async throws -> [AidokuRunner.Chapter] {
         let language = HonbakoMangaDexAPI.canonicalLanguage(language)
@@ -122,8 +149,8 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         var results: [AidokuRunner.Chapter] = []
         var seen: Set<String> = []
         while true {
-            let response = try await feed(mangaKey: manga.key, languages: languages, limit: 500, offset: offset)
-            results += response.data.filter { $0.isReadable(at: .now) && seen.insert($0.id).inserted }.map { $0.chapter() }
+            let response = try await feed(mangaKey: manga.key, languages: languages, limit: 500, offset: offset, includeUnavailable: true)
+            results += response.data.filter { UUID(uuidString: $0.id) != nil && seen.insert($0.id).inserted }.map { $0.chapter() }
             let next = response.offset + response.data.count
             if next >= response.total { break }
             guard !response.data.isEmpty, next > offset, next < 10_000 else { throw HonbakoMangaDexError.tooManyChapters }
@@ -134,21 +161,81 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
     }
 
     func getPageList(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) async throws -> [AidokuRunner.Page] {
+        try Task.checkCancellation()
         try validateIdentifier(chapter.key)
         guard !chapter.locked else { throw HonbakoMangaDexError.unavailableChapter }
-        let response: HonbakoMangaDexAPI.PageServer = try await request("/at-home/server/\(chapter.key)",
-            [.init(name: "forcePort443", value: "true")])
-        return try response.pages()
+        let delivery = try await pageDelivery(chapterID: chapter.key)
+        try Task.checkCancellation()
+        return try delivery.pages(chapterID: chapter.key)
     }
 
-    private func feed(mangaKey: String, languages: [String], limit: Int, offset: Int)
+    func getImageRequest(url: String, context: PageContext?) async throws -> URLRequest {
+        try Task.checkCancellation()
+        guard let original = URL(string: url) else { throw HonbakoMangaDexError.invalidResponse }
+        guard let identity = HonbakoMangaDexPageDelivery.identity(url: original, context: context) else {
+            return HonbakoMangaDexPageDelivery.imageRequest(url: original, reload: false)
+        }
+        let delivery = try await pageDelivery(chapterID: identity.chapterID)
+        try Task.checkCancellation()
+        guard let resolved = try delivery.url(at: identity.index) else {
+            throw HonbakoMangaDexError.unavailableChapter
+        }
+        return HonbakoMangaDexPageDelivery.imageRequest(url: resolved, reload: false)
+    }
+
+    /// One bounded image-level retry may renew the temporary @Home assignment.
+    /// Simultaneous failed leaves join the same request; a short cooldown also
+    /// coalesces failures that arrive just after that request has completed.
+    func recoveryImageRequest(url: URL, context: PageContext?) async throws -> URLRequest? {
+        guard let identity = HonbakoMangaDexPageDelivery.identity(url: url, context: context) else { return nil }
+        try Task.checkCancellation()
+        let cached = pageDeliveries[identity.chapterID]
+        let recentlyRecovered = cached?.recoveredAt.map {
+            now().timeIntervalSince($0) < HonbakoMangaDexPageDelivery.recoveryCooldown
+        } == true
+        let delivery = try await pageDelivery(chapterID: identity.chapterID, forceRefresh: !recentlyRecovered)
+        try Task.checkCancellation()
+        guard let resolved = try delivery.url(at: identity.index) else {
+            throw HonbakoMangaDexError.unavailableChapter
+        }
+        return HonbakoMangaDexPageDelivery.imageRequest(url: resolved, reload: true)
+    }
+
+    private func pageDelivery(chapterID: String, forceRefresh: Bool = false) async throws -> HonbakoMangaDexPageDelivery {
+        try validateIdentifier(chapterID)
+        if let task = pageDeliveryTasks[chapterID] {
+            let response = try await task.value
+            return .init(response: response, resolvedAt: now(), recoveredAt: now())
+        }
+        if !forceRefresh, let cached = pageDeliveries[chapterID],
+           now().timeIntervalSince(cached.resolvedAt) < HonbakoMangaDexPageDelivery.lifetime { return cached }
+        let task = Task { [self] in
+            let response: HonbakoMangaDexAPI.PageServer = try await request("/at-home/server/\(chapterID)",
+                [.init(name: "forcePort443", value: "true")], cachePolicy: .reloadIgnoringLocalCacheData)
+            _ = try response.pages()
+            return response
+        }
+        pageDeliveryTasks[chapterID] = task
+        defer { pageDeliveryTasks[chapterID] = nil }
+        let response = try await task.value
+        let date = now()
+        let delivery = HonbakoMangaDexPageDelivery(response: response, resolvedAt: date,
+            recoveredAt: forceRefresh ? date : nil)
+        if pageDeliveries.count >= 16, let oldest = pageDeliveries.min(by: { $0.value.resolvedAt < $1.value.resolvedAt })?.key {
+            pageDeliveries.removeValue(forKey: oldest)
+        }
+        pageDeliveries[chapterID] = delivery
+        return delivery
+    }
+
+    private func feed(mangaKey: String, languages: [String], limit: Int, offset: Int, includeUnavailable: Bool = false)
         async throws -> HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> {
         try validateIdentifier(mangaKey)
         var parameters = contentParameters() + [
             URLQueryItem(name: "limit", value: String(limit)), .init(name: "offset", value: String(offset)),
-            .init(name: "includeEmptyPages", value: "0"), .init(name: "includeExternalUrl", value: "0"),
+            .init(name: "includeEmptyPages", value: includeUnavailable ? "1" : "0"), .init(name: "includeExternalUrl", value: includeUnavailable ? "1" : "0"),
             .init(name: "includeFutureUpdates", value: "0"), .init(name: "includeFuturePublishAt", value: "0"),
-            .init(name: "includeUnavailable", value: "0"), .init(name: "includes[]", value: "scanlation_group"),
+            .init(name: "includeUnavailable", value: includeUnavailable ? "1" : "0"), .init(name: "includes[]", value: "scanlation_group"),
             .init(name: "order[volume]", value: "desc"), .init(name: "order[chapter]", value: "desc")]
         parameters += languages.map { .init(name: "translatedLanguage[]", value: HonbakoMangaDexAPI.apiLanguage($0)) }
         let response: HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> =
@@ -171,6 +258,8 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         titleCache[title.id] = (title, .now)
     }
 
+    func selectedChapterLanguages() -> [String] { selectedLanguages() }
+
     private func selectedLanguages() -> [String] {
         let values = defaults.stringArray(forKey: Self.sourceKey + ".languages")
             ?? defaults.string(forKey: Self.sourceKey + ".language").map { [$0] } ?? ["en"]
@@ -191,19 +280,24 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         guard UUID(uuidString: value) != nil else { throw HonbakoMangaDexError.invalidIdentifier }
     }
 
-    private func request<Value: Decodable>(_ path: String, _ parameters: [URLQueryItem]) async throws -> Value {
+    private func request<Value: Decodable>(_ path: String, _ parameters: [URLQueryItem],
+                                           cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy) async throws -> Value {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "api.mangadex.org"
         components.path = path
         components.queryItems = parameters
         guard let url = components.url else { throw HonbakoMangaDexError.invalidResponse }
-        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 20)
+        var request = URLRequest(url: url, cachePolicy: cachePolicy, timeoutInterval: 20)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Honbako/0.1 (https://github.com/missingems/Honbako)", forHTTPHeaderField: "User-Agent")
+        request.setValue("Honbako/0.2 (https://github.com/missingems/Honbako)", forHTTPHeaderField: "User-Agent")
         let now = ContinuousClock.now
-        let slot = max(now, nextRequest)
+        let isPageServer = path.hasPrefix("/at-home/server/")
+        let slot = isPageServer ? max(max(now, nextRequest), nextPageServerRequest) : max(now, nextRequest)
         nextRequest = slot.advanced(by: requestInterval)
+        if isPageServer {
+            nextPageServerRequest = slot.advanced(by: requestInterval == .zero ? .zero : .milliseconds(1_500))
+        }
         if slot > now { try await Task.sleep(until: slot, clock: .continuous) }
         try Task.checkCancellation()
         let (data, response) = try await transport(request)

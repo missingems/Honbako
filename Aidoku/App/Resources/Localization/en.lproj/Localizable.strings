@@ -27,7 +27,7 @@
 "COPY" = "Copy";
 "WARNING" = "Warning";
 "ENABLE_PERMISSION" = "Enable Permission";
-"PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Aidoku access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Honbako access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
 "CONTENT" = "Content";
 "%@_EXPERIMENTAL" = "%@ (Experimental)";
 
@@ -221,7 +221,7 @@
 // Local Source
 "LOCAL_FILES" = "Local Files";
 "LOCAL_FILES_TAGLINE" = "Read from local files";
-"LOCAL_FILES_INFO" = "The local files source allows you to upload and manage your own reading library directly within Aidoku.";
+"LOCAL_FILES_INFO" = "The local files source allows you to upload and manage your own reading library directly within Honbako.";
 "LOCAL_FILES_SETUP" = "Local Files Setup";
 "IMPORT" = "Import";
 "IMPORT_FILE" = "Import File";
@@ -453,7 +453,7 @@
 "ICLOUD_SYNC" = "iCloud Sync";
 "ICLOUD_SYNC_ENABLE" = "Sync Library and Reading Progress";
 "ICLOUD_SYNC_SCOPE" = "Your library, categories, and reading progress sync through your private iCloud library. Downloads stay on this device. Install the same source extensions on your other devices.";
-"ICLOUD_SYNC_RESTART_REQUIRED" = "Restart Aidoku to apply this change. Your local library is kept.";
+"ICLOUD_SYNC_RESTART_REQUIRED" = "Restart Honbako to apply this change. Your local library is kept.";
 "ICLOUD_SYNC_STATUS" = "Status";
 "ICLOUD_SYNC_CHECKING" = "Checking iCloud Account…";
 "ICLOUD_SYNC_ENABLED" = "Sync enabled";
@@ -463,7 +463,7 @@
 "ICLOUD_SYNC_OFF" = "Sync is off for this app session";
 "ICLOUD_SYNC_CHECK_ACCOUNT" = "Check iCloud Account";
 "ICLOUD_SYNC_SCHEDULE_INFO" = "iCloud syncs automatically when the system allows. Changes remain saved on this device while offline. Checking your account does not force a sync.";
-"ICLOUD_SYNC_REQUIREMENTS" = "Use the same Apple Account and this build on your other devices. This build has its own private iCloud library, separate from the official Aidoku app.";
+"ICLOUD_SYNC_REQUIREMENTS" = "Use the same Apple Account on your other devices to keep your library in sync.";
 "ICLOUD_SYNC_CONFIGURATION_ERROR" = "This build cannot access its iCloud library. Check its iCloud signing configuration.";
 "ICLOUD_SYNC_WAITING_NETWORK" = "Waiting for iCloud or an internet connection. Your changes remain saved on this device.";
 "ICLOUD_SYNC_STORAGE_FULL" = "Your iCloud storage is full. Free some space to continue syncing.";
@@ -510,7 +510,7 @@
 "BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
 "NEW_CHAPTER_NOTIFICATIONS" = "New Chapter Notifications";
 "NEW_CHAPTER_NOTIFICATIONS_TEXT" = "Get alerts for new chapters in your saved library after a successful update. Skip, category, and Wi-Fi rules apply. iOS controls background update timing, so alerts may not arrive immediately.";
-"NEW_CHAPTER_NOTIFICATIONS_DENIED_TEXT" = "Allow notifications for Aidoku in iPhone Settings to receive new chapter alerts.";
+"NEW_CHAPTER_NOTIFICATIONS_DENIED_TEXT" = "Allow notifications for Honbako in iPhone Settings to receive new chapter alerts.";
 "1_NEW_CHAPTER_AVAILABLE" = "New chapter available";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d new chapters available";
 "NEW_CHAPTERS_AVAILABLE" = "New Chapters Available";
@@ -564,7 +564,7 @@
 "COPY_URL" = "Copy URL";
 "LEGACY_SOURCE_LIST" = "Legacy Source List";
 "LEGACY_SOURCE_LIST_WARNING" = "Warning: Legacy Source List";
-"LEGACY_SOURCE_LIST_WARNING_INFO" = "You currently have a legacy source list configured. This format is outdated and will stop working in a future version of Aidoku. While it will still work for now, it is recommended that you find a replacement and configure it in Settings > Source Lists.";
+"LEGACY_SOURCE_LIST_WARNING_INFO" = "You currently have a legacy source list configured. This format is outdated and will stop working in a future version of Honbako. While it will still work for now, it is recommended that you find a replacement and configure it in Settings > Source Lists.";
 
 // Upscaling
 "UPSCALING" = "Upscaling";
@@ -974,7 +974,7 @@
 "1. Choose a Connection" = "1. Choose a Connection";
 "Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust." = "Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust.";
 "2. Find Manga" = "2. Find Manga";
-"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "Return to your library and pull down to search. Search uses the connections you enable in Settings.";
+"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "Return to your library and use Search in the top toolbar. Search uses the connections you enable in Settings.";
 "3. Build Your Library" = "3. Build Your Library";
 "Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading." = "Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading.";
 "Connect to a server you manage to search your own library." = "Connect to a server you manage to search your own library.";
@@ -1158,7 +1158,7 @@
 "Find Your Place" = "Find Your Place";
 "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there." = "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there.";
 "A Book to Return To" = "A Book to Return To";
-"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search.";
+"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "Pinch inward or use Close to return to your library. Your place is saved. Use Search in the top toolbar.";
 
 // Monthly Pro and in-app data information.
 "Monthly Subscription" = "Monthly Subscription";
@@ -1210,3 +1210,172 @@
 "The system chooses when a connected display can show the cover." = "The system chooses when a connected display can show the cover.";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved.";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "The Bookshop Between Pages";
+"Tutorial.Story.CoverSubtitle" = "An Original Story With Mina & Nori";
+"Tutorial.Story.Empty.Title" = "An Empty Book";
+"Tutorial.Story.Empty.Body" = "On a rainy evening, Mina found a book with no story inside. Nori tapped its cover. Every story needs a way in.\n\nSwipe left to turn the page. Tap the paper to find the reading controls.";
+"Tutorial.Story.Key.Title" = "A Key to New Stories";
+"Tutorial.Story.Key.Body" = "A brass key slipped from the book. It could open Mina’s own shelves, or a doorway to another library.\n\nTap Settings in the top toolbar, then choose Local Files, Personal Server, or Source Lists.";
+"Tutorial.Story.Door.Title" = "A Door to Other Shelves";
+"Tutorial.Story.Door.Body" = "Mina turned the key. Beyond the door waited shelves belonging to other storytellers. Nori let her choose.\n\nIn Settings → Source Lists → Add Source List, paste a trusted provider’s HTTPS list URL. Add it, then install the source you want.";
+"Tutorial.Story.Read.Title" = "The First Story";
+"Tutorial.Story.Read.Body" = "One book glowed among the shelves. Mina lifted it, and a whole new world unfolded.\n\nEnable your connection in Settings. Tap Search in the top toolbar, then choose Add beside a title. Tap its cover to start reading.";
+"Tutorial.Story.Bookmark.Title" = "A Ribbon for Tomorrow";
+"Tutorial.Story.Bookmark.Body" = "Nori laid a ribbon between the pages. “We can come back,” Mina whispered.\n\nTap a page for the page strip and chapter menu. Preview a page by scrubbing. Choose Language to see the translations available for that book.";
+"Tutorial.Story.Morning.Title" = "A New Morning";
+"Tutorial.Story.Morning.Body" = "By sunrise, the empty book had become a beginning. Mina closed it gently. Outside, every window held another story.\n\nPinch inward or use Close to return to your library. Resume opens your saved place. Your own files and sources stay yours.";
+
+"Privacy Policy" = "Privacy Policy";
+
+// Free and Pro plan comparison.
+"Honbako.Plan.Free" = "Free";
+"Honbako.Plan.Pro" = "Pro";
+"Honbako.Plan.Collection" = "Read and organize your collection";
+"Honbako.Plan.ImportedOffline" = "Read imported files offline";
+"Honbako.Plan.AdFree" = "No ads";
+"Honbako.Plan.FreeLimitations" = "Chapter downloads, new chapter notifications, and iCloud library and reading progress sync require Pro.";
+"Honbako.Plan.EverythingInFree" = "Everything in Free";
+
+// Bring your own collection: Getting Started and connection help.
+"Honbako.CollectionGuide.Intro.Title" = "Bring Your Collection";
+"Honbako.CollectionGuide.Intro.Body" = "Read the included original tutorial, then import your own comic files or connect your personal library server.";
+"Honbako.CollectionGuide.Local.Title" = "Comics in Files";
+"Honbako.CollectionGuide.Local.Body" = "Import CBZ or ZIP archives containing comic pages from the Files app. Set up Local Files once, then choose a file and confirm its series and chapter details.";
+"Honbako.CollectionGuide.Local.Setup" = "Set Up Local Files";
+"Honbako.CollectionGuide.Local.Connected" = "Local Files Is Connected";
+"Honbako.CollectionGuide.Local.Import" = "Import a Comic";
+"Honbako.CollectionGuide.Local.Footer" = "You can also open a CBZ or ZIP from Files in Honbako after setting up Local Files.";
+"Honbako.CollectionGuide.Server.Title" = "Your Personal Server";
+"Honbako.CollectionGuide.Server.Body" = "Connect your existing Komga, Kavita, or Suwayomi library. Enter the server address and use its sign-in options. Your server must be reachable from this device.";
+"Honbako.CollectionGuide.Sources.Title" = "Extensions";
+"Honbako.CollectionGuide.Sources.Body" = "Add a compatible extension repository, then install the extensions for the sources you want to use.";
+"Honbako.CollectionGuide.Sources.Footer" = "Install extension file accepts a compatible .aix file. Use Import from Files for CBZ or ZIP comics.";
+"Honbako.CollectionGuide.Search.Title" = "Find and Save Your Books";
+"Honbako.CollectionGuide.Search.Body" = "In Settings, turn on your connection under Included in Search. Tap Done, then use Search in the top toolbar to find a title.";
+"Honbako.CollectionGuide.Save.Body" = "Tap Add beside a result to keep it on your shelf. Open its cover to read; Resume returns to your saved page.";
+"Honbako.CollectionGuide.Settings.Subtitle" = "Bring comics from Files or connect your own library.";
+
+"Honbako.ExternalBeta.Footer" = "Extensions provide manga sources. Add an extension repository or install a compatible .aix extension. Nothing is installed automatically.";
+"Honbako.ExternalBeta.Intro" = "Start with the original tutorial, then add your own files, a personal server, or a provider connection.";
+
+/* Library empty and hidden-finished states. */
+"Honbako.Library.Empty.Title" = "Your library is ready";
+"Honbako.Library.Empty.Detail" = "Find a book in Search and add it to your library to start reading.";
+"Honbako.Library.Hidden.Title" = "Finished books are hidden";
+"Honbako.Library.Hidden.Detail" = "Show your finished books to read them again.";
+"Honbako.Library.ShowFinished" = "Show Finished Books";
+"Honbako.Library.FindBooks" = "Find Books";
+
+"Honbako.Guide.guide-find.Title" = "Search & Delete";
+"Honbako.Guide.guide-find.Subtitle" = "Find a story. Make room for the next.";
+"Honbako.Guide.guide-find.1.Title" = "Tap to search";
+"Honbako.Guide.guide-find.1.Body" = "Tap Search in the sidebar or tap the search bar to open the glass results list, then enter a title. Results come from the connections enabled in Settings. Tap Add to keep a book, or tap its cover to read.\n\nSearch and Settings stay available while you scroll. Close Search to return to your library.";
+"Honbako.Guide.guide-find.2.Title" = "Make room";
+"Honbako.Guide.guide-find.2.Body" = "Open the book, then tap the page to show the reading controls. Open Chapters and Language and choose Remove from Library.\n\nThis removes the library entry. It does not delete the original book from your server or the Files app.";
+"Honbako.Guide.guide-find.3.Title" = "Find it again";
+"Honbako.Guide.guide-find.3.Body" = "Removing a bundled guide is a lasting choice: it will not return when you reopen Honbako. Search for its title under On This Device and tap Add whenever you want it back.\n\nKeep that connection enabled in Settings → Included in Search.";
+"Honbako.Guide.guide-find.4.Title" = "Finished, not lost";
+"Honbako.Guide.guide-find.4.Body" = "Read every chapter of a completed book and it moves to Finished. Settings → Library → Hide Finished Books hides this shelf. Turn the setting off to bring it back.\n\nHiding a finished book does not remove it from your library.";
+"Honbako.Guide.guide-connect.Title" = "Your Collections";
+"Honbako.Guide.guide-connect.Subtitle" = "Local files, personal servers, and your place in every book.";
+"Honbako.Guide.guide-connect.1.Title" = "Bring your own files";
+"Honbako.Guide.guide-connect.1.Body" = "Open Settings in the top toolbar, then choose Local Files. Add your CBZ or ZIP comic files using the import screen. Local files stay on this device.\n\nImport them on another device separately; iCloud progress sync does not copy the comic files.";
+"Honbako.Guide.guide-connect.2.Title" = "Connect your server";
+"Honbako.Guide.guide-connect.2.Body" = "Choose Settings → Personal Server, then Komga, Kavita, or Suwayomi. Enter your server address and the sign-in details required by that server. Keep any path after the address.\n\nYour device must be able to reach it, using your local network, VPN, or remote access.";
+"Honbako.Guide.guide-connect.3.Title" = "Search across shelves";
+"Honbako.Guide.guide-connect.3.Body" = "You can add more than one server. In Settings → Included in Search, enable each collection you want to search, including Local Files.\n\nResults keep their source name. The same title on two servers is two separate copies; Honbako does not move or merge files between servers.";
+"Honbako.Guide.guide-connect.4.Title" = "Keep your place";
+"Honbako.Guide.guide-connect.4.Body" = "Honbako Pro adds private iCloud sync for your library, bookmarks, language choices, and reading progress. Use the same iCloud account on your devices and check Settings → iCloud Sync.\n\nDownloads and source files stay on each device. Connect the same servers and import local files separately.";
+"Honbako.Guide.guide-read.Title" = "Read Your Way";
+"Honbako.Guide.guide-read.Subtitle" = "Page turns, saved places, and reading without a connection.";
+"Honbako.Guide.guide-read.1.Title" = "Follow the pages";
+"Honbako.Guide.guide-read.1.Body" = "For right-to-left books, swipe from right to left to move forward. Drag the page strip in the same direction to move forward through previews.\n\nTap the page to show the controls. Open Chapters and Language to choose a chapter or an available translation.";
+"Honbako.Guide.guide-read.2.Title" = "Close from both sides";
+"Honbako.Guide.guide-read.2.Body" = "Pinch inward with two fingers. The two sides of the book fold toward the middle, then the closed cover returns to its place.\n\nChange your mind before releasing? Open your fingers to return to the page. The Close button is always another way back.";
+"Honbako.Guide.guide-read.3.Title" = "Return tomorrow";
+"Honbako.Guide.guide-read.3.Body" = "Your reading position is saved on this device. Open a book from the library, or choose Resume from search, to continue from your saved place.\n\nFor a completed book, look in Finished. You can still open it and read it again.";
+"Honbako.Guide.guide-read.4.Title" = "Take a book with you";
+"Honbako.Guide.guide-read.4.Body" = "Bundled guides and imported local books are available offline. Pro adds chapter downloads from compatible connections. Open Chapters and Language → Offline Reading to download.\n\nBoth Free and Pro are ad-free. Download before going offline; a server connection alone does not save its pages locally.";
+
+"Search Manga" = "Search Manga";
+
+"Honbako.Search.EmptyHint" = "Search your enabled collections or find the built-in guides by title.";
+
+// Japanese reading guide and original practice page.
+"Honbako.Guide.guide-japanese.Title" = "Reading Japanese";
+"Honbako.Guide.guide-japanese.Subtitle" = "A little practice on every page.";
+"Honbako.Guide.guide-japanese.1.Title" = "Read on the page";
+"Honbako.Guide.guide-japanese.1.Body" = "Word-by-word romaji appears directly on Japanese manga pages. Tap a word for pronunciation and translation.\n\nTap the page to show the controls, open Chapters and Language, then use Romaji on Page to hide or show the labels.\n\nTurn to the next page for an original practice page.";
+"Honbako.Guide.guide-japanese.2.Title" = "A page to practice";
+"Honbako.Guide.guide-japanese.2.Body" = "The next illustration is original to Honbako and uses horizontal and vertical Japanese text.";
+"Honbako.Guide.guide-japanese.3.Title" = "Listen, then read";
+"Honbako.Guide.guide-japanese.3.Body" = "Tap a word on the manga to see its Japanese text, kana reading, and romaji. Use Listen or Listen Slowly to hear it. Choose Whole Phrase to hear or translate the sentence.\n\nTry reading it yourself before listening again. Names and words with several readings can vary with context.";
+"Honbako.Guide.guide-japanese.4.Title" = "Meaning, on your terms";
+"Honbako.Guide.guide-japanese.4.Body" = "Tap Translate in a phrase popup to request its English meaning. Apple may ask to download the Japanese and English languages first. Only the selected text is translated; later pages stay out of view.\n\nText recognition can miss small furigana, stylized lettering, or vertical text. Correct the recognized Japanese before translating when needed.";
+
+// Japanese reading guide interface.
+"Japanese Guide" = "Japanese Guide";
+"Guide Options" = "Guide Options";
+"Show Markers" = "Show Markers";
+"Show Romaji" = "Show Romaji";
+"Scan Again" = "Scan Again";
+"Enter Japanese Text" = "Enter Japanese Text";
+"Tap a phrase to hear it, see its reading, or reveal the translation." = "Tap a phrase to hear it, see its reading, or reveal the translation.";
+"Romaji on Page" = "Romaji on Page";
+"Finding Japanese text…" = "Finding Japanese text…";
+"Couldn’t Scan This Page" = "Couldn’t Scan This Page";
+"No Japanese Text Found" = "No Japanese Text Found";
+"Small lettering and stylized speech bubbles can be difficult to recognize. You can enter a phrase yourself." = "Small lettering and stylized speech bubbles can be difficult to recognize. You can enter a phrase yourself.";
+"Phrases on This Page" = "Phrases on This Page";
+"How to Learn with This Page" = "How to Learn with This Page";
+"Try reading the Japanese first, then use the romaji to check your pronunciation. Listen once at normal speed and once slowly. Hide the romaji when you’re ready to try again." = "Try reading the Japanese first, then use the romaji to check your pronunciation. Listen once at normal speed and once slowly. Hide the romaji when you’re ready to try again.";
+"Romaji is a reading aid. Japanese particles and names may sound different from their written form; use Listen to hear the original Japanese." = "Romaji is a reading aid. Japanese particles and names may sound different from their written form; use Listen to hear the original Japanese.";
+"Check the recognized text before translating. You can correct missed characters in the phrase popup. Automatic readings are estimates, especially for names and words with more than one reading." = "Check the recognized text before translating. You can correct missed characters in the phrase popup. Automatic readings are estimates, especially for names and words with more than one reading.";
+"Translation uses Apple’s system service. The first translation may ask you to download Japanese and English language support." = "Translation uses Apple’s system service. The first translation may ask you to download Japanese and English language support.";
+"Only this page is scanned. Text recognition happens on your device." = "Only this page is scanned. Text recognition happens on your device.";
+"The page image isn’t available yet. Return to the book, let it finish loading, then open the guide again." = "The page image isn’t available yet. Return to the book, let it finish loading, then open the guide again.";
+"Text recognition couldn’t finish. Try scanning again, or enter a Japanese phrase yourself." = "Text recognition couldn’t finish. Try scanning again, or enter a Japanese phrase yourself.";
+"Current manga page" = "Current manga page";
+"Phrase %lld: %@" = "Phrase %lld: %@";
+"Hear the pronunciation or reveal a translation" = "Hear the pronunciation or reveal a translation";
+"Enter Japanese text" = "Enter Japanese text";
+"Japanese" = "Japanese";
+"Correct any missed characters before listening or translating." = "Correct any missed characters before listening or translating.";
+"Read This Phrase" = "Read This Phrase";
+"Kana" = "Kana";
+"Romaji" = "Romaji";
+"Japanese Reading" = "Japanese Reading";
+"A reading isn’t available for this text. You can still listen to the Japanese or try a shorter phrase." = "A reading isn’t available for this text. You can still listen to the Japanese or try a shorter phrase.";
+"This is a suggested reading. Names, unusual spellings, and words with several readings may sound different in context." = "This is a suggested reading. Names, unusual spellings, and words with several readings may sound different in context.";
+"Text recognition is uncertain. Check the Japanese against the page." = "Text recognition is uncertain. Check the Japanese against the page.";
+"Listen" = "Listen";
+"Listen Slowly" = "Listen Slowly";
+"Stop Audio" = "Stop Audio";
+"Pronunciation" = "Pronunciation";
+"A Japanese system voice isn’t available. Add a Japanese voice in iPhone Settings to hear this phrase." = "A Japanese system voice isn’t available. Add a Japanese voice in iPhone Settings to hear this phrase.";
+"Translating…" = "Translating…";
+"Translation is available on iPhone and iPad. Apple’s translation service doesn’t run in Simulator." = "Translation is available on iPhone and iPad. Apple’s translation service doesn’t run in Simulator.";
+"Translate to English" = "Translate to English";
+"Translate Again" = "Translate Again";
+"Meaning" = "Meaning";
+"Translate when you’re ready to check your understanding. Apple may ask to download Japanese and English language support. Short phrases can lose context." = "Translate when you’re ready to check your understanding. Apple may ask to download Japanese and English language support. Short phrases can lose context.";
+"Translation couldn’t finish. Check language downloads and try again. You can keep using the reading and pronunciation tools." = "Translation couldn’t finish. Check language downloads and try again. You can keep using the reading and pronunciation tools.";
+"Read Japanese on this page with romaji, pronunciation, and tap-to-translate help." = "Read Japanese on this page with romaji, pronunciation, and tap-to-translate help.";
+
+// Word-by-word Japanese reading aids.
+"Reading Unavailable" = "Reading Unavailable";
+"Hear or translate this word" = "Hear or translate this word";
+"Whole Phrase" = "Whole Phrase";
+"Selected Word" = "Selected Word";
+"Tap a word to hear or translate it. Choose Whole Phrase for the full sentence." = "Tap a word to hear or translate it. Choose Whole Phrase for the full sentence.";
+"Tap a word or phrase to hear it, see its reading, or reveal the translation." = "Tap a word or phrase to hear it, see its reading, or reveal the translation.";
+
+// Japanese reading help stays on the live manga page.
+"Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation.";
+
+/* Honbako creator credit */
+"Created by @nsjunxiu" = "Created by @nsjunxiu";
+
+"Support Email" = "Support Email";

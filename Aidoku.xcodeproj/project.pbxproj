@@ -18,6 +18,24 @@
 		FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */ = {isa = PBXBuildFile; productRef = FBBCB31C2E08D6B000ED5CAB /* Gifu */; };
 		FBE53F0C29CC015E00899601 /* AsyncDisplayKit in Frameworks */ = {isa = PBXBuildFile; productRef = FBE53F0B29CC015E00899601 /* AsyncDisplayKit */; };
 		FBFDF5F82DF799180064F603 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FBFDF5F72DF799180064F603 /* AidokuRunner */; };
+		A2C02699AED045ACBB135805 /* HonbakoWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4805BCD73AD64E24A31428D0; };
+		0B5B76142BE24C05AB0D0742 /* HonbakoWidgetProPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95BA5D337CC4BB8872B4545; };
+		7B5B98BFB0124388A2083327 /* HonbakoUpdatesWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A763F7BC32074F1B9B21FAB0; };
+		17E4EA9317FD42B4B0C90998 /* HonbakoWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C1C4AA9FD0458DBCDA384E; };
+		A92C32A3207C4E28A4D4738A /* HonbakoWidgetSnapshot+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4E1FE17887437DB88245AE; };
+		8F5F21D3868946CDABB821EB /* HonbakoWidgetCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852A4D640E614BE0BFA69719; };
+		EBA867A33D8A4EC7A3ACC73D /* HonbakoReadingTimeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3989B4F3DD472383E83926; };
+		BC174C9BDFDA45D19026DFBD /* HonbakoResumeWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30855FCE436B479CBD863DEB; };
+		6A227308BF0F4A589E64804C /* HonbakoWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = E07670AA9690479CAE10D1E3; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E6C239B5282E4FDF944250F3 /* HonbakoWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165936365AE947778CAEFE67; };
+		EB5348406171439AB93315D9 /* HonbakoWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EEA427204A049E49DCA1647; };
+		B304ED6FF23B4B7DB085D404 /* HonbakoResumeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACBA2DC7BE94D1FB88B82DD; };
+		4AA71FF5B94D493BA0D5F6F0 /* HonbakoResumeWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EFA6A814B44EBE8DA7D8A3; };
+		346D96C97D9A4E4D96ED5C67 /* HonbakoReadingTimeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3793F662E87848C19AC0AA46; };
+		4C57A452CFA9406B9624605C /* HonbakoTimeWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DB790DA27B4AEFA7446E57; };
+		0D5AEC6A1B984ED096023BDF /* HonbakoChapterUpdatesWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD240C84E1374B10A23E17E6; };
+		A9A48EACE03B49498F7E0BEC /* HonbakoUpdatesWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BED0FA79C145FC9C6CF0EE; };
+		FBE969B40DB140C0813FDD50 /* HonbakoPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D6E26A47BC43639770364E; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,7 +60,12 @@
 			remoteGlobalIDString = 3E365F52C231C670FEA1FCB6;
 			remoteInfo = Sumi;
 		};
+		8AD717C0F9C54B4CB4FA5BB4 = {isa = PBXContainerItemProxy; containerPortal = FB1B4826277CE18D0056D02C; proxyType = 1; remoteGlobalIDString = 971A6C549396459B8CF306FC; remoteInfo = HonbakoWidgets; };
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8C5133688FF646509223068D /* Embed App Extensions */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (6A227308BF0F4A589E64804C, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		FB1B4835277CE1920056D02C /* Aidoku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aidoku.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +74,26 @@
 		C759BCA53E3BC1A4C908721D /* Sumi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sumi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6F9A2A04BF96FF077135341 /* SumiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SumiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F0EB8B7062FB574DC3077C1 /* SumiUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SumiUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4805BCD73AD64E24A31428D0 /* HonbakoWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoWidgets.swift"; sourceTree = "<group>"; };
+		E95BA5D337CC4BB8872B4545 /* HonbakoWidgetProPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoWidgetProPrompt.swift"; sourceTree = "<group>"; };
+		A763F7BC32074F1B9B21FAB0 /* HonbakoUpdatesWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoUpdatesWidgetView.swift"; sourceTree = "<group>"; };
+		B1C1C4AA9FD0458DBCDA384E /* HonbakoWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoWidgetSnapshot.swift"; sourceTree = "<group>"; };
+		DA4E1FE17887437DB88245AE /* HonbakoWidgetSnapshot+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoWidgetSnapshot+Preview.swift"; sourceTree = "<group>"; };
+		852A4D640E614BE0BFA69719 /* HonbakoWidgetCover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoWidgetCover.swift"; sourceTree = "<group>"; };
+		8F3989B4F3DD472383E83926 /* HonbakoReadingTimeWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoReadingTimeWidgetView.swift"; sourceTree = "<group>"; };
+		30855FCE436B479CBD863DEB /* HonbakoResumeWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HonbakoResumeWidgetView.swift"; sourceTree = "<group>"; };
+		E07670AA9690479CAE10D1E3 /* HonbakoWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HonbakoWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		33F585FA174B4D13AECC5998 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2BF8A3CB61B64D64B3B079C4 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HonbakoWidgets.entitlements; sourceTree = "<group>"; };
+		165936365AE947778CAEFE67 /* HonbakoWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoWidgetEntry.swift; sourceTree = "<group>"; };
+		5EEA427204A049E49DCA1647 /* HonbakoWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoWidgetProvider.swift; sourceTree = "<group>"; };
+		4ACBA2DC7BE94D1FB88B82DD /* HonbakoResumeWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoResumeWidget.swift; sourceTree = "<group>"; };
+		F6EFA6A814B44EBE8DA7D8A3 /* HonbakoResumeWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoResumeWidgetEntryView.swift; sourceTree = "<group>"; };
+		3793F662E87848C19AC0AA46 /* HonbakoReadingTimeWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoReadingTimeWidget.swift; sourceTree = "<group>"; };
+		F1DB790DA27B4AEFA7446E57 /* HonbakoTimeWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoTimeWidgetEntryView.swift; sourceTree = "<group>"; };
+		FD240C84E1374B10A23E17E6 /* HonbakoChapterUpdatesWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoChapterUpdatesWidget.swift; sourceTree = "<group>"; };
+		64BED0FA79C145FC9C6CF0EE /* HonbakoUpdatesWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoUpdatesWidgetEntryView.swift; sourceTree = "<group>"; };
+		A2D6E26A47BC43639770364E /* HonbakoPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HonbakoPalette.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,14 +102,14 @@
 			membershipExceptions = (
 				Aidoku.xcconfig,
 				Sumi.xcconfig,
-				"Sumi-Info.plist",
+				"Sumi-Info.plist", "Sumi-External-Info.plist",
 				Info.plist,
 			);
 			target = FB1B4834277CE1920056D02C /* Aidoku */;
 		};
 		EB2C502497E359E889EB8DAE /* Sumi exceptions */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (Aidoku.xcconfig, Sumi.xcconfig, Info.plist, "Sumi-Info.plist", "App/Resources/Localization/InfoPlist.strings", );
+			membershipExceptions = (Aidoku.xcconfig, Sumi.xcconfig, Info.plist, "Sumi-Info.plist", "Sumi-External-Info.plist", "App/Resources/Localization/InfoPlist.strings", );
 			target = 3E365F52C231C670FEA1FCB6 /* Sumi */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -136,6 +179,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		388EA37EBD7149A89465BBCA = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -143,6 +187,8 @@
 			isa = PBXGroup;
 			children = (
 				FB77CD38303A838B00DF3DA3 /* Aidoku */,
+                1E56DFF56271414BA8CFF8F0 /* HonbakoWidgets */,
+                385F661E5A9842BFA77DF961 /* Widget Shared */,
 				FBB44E732EC635620032EFBB /* AidokuTests */,
 				E2F7C0DEE8D0CD541ECA0CF1 /* SumiTests */,
 				E6DCD19B01942467EB6DA9C7 /* SumiUITests */,
@@ -157,7 +203,8 @@
 		FB1B4836277CE1920056D02C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C759BCA53E3BC1A4C908721D /* Sumi.app */,
+				E07670AA9690479CAE10D1E3 /* HonbakoWidgets.appex */,
+                C759BCA53E3BC1A4C908721D /* Sumi.app */,
 				FB1B4835277CE1920056D02C /* Aidoku.app */,
 				FBB44E722EC635620032EFBB /* AidokuTests.xctest */,
 				0F0EB8B7062FB574DC3077C1 /* SumiUITests.xctest */,
@@ -181,6 +228,8 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
+		1E56DFF56271414BA8CFF8F0 /* HonbakoWidgets */ = {isa = PBXGroup; children = (165936365AE947778CAEFE67, 5EEA427204A049E49DCA1647, 4ACBA2DC7BE94D1FB88B82DD, F6EFA6A814B44EBE8DA7D8A3, 3793F662E87848C19AC0AA46, F1DB790DA27B4AEFA7446E57, FD240C84E1374B10A23E17E6, 64BED0FA79C145FC9C6CF0EE, 4805BCD73AD64E24A31428D0, 33F585FA174B4D13AECC5998, 2BF8A3CB61B64D64B3B079C4, ); path = HonbakoWidgets; sourceTree = "<group>"; };
+		385F661E5A9842BFA77DF961 /* Widget Shared */ = {isa = PBXGroup; children = (A2D6E26A47BC43639770364E, E95BA5D337CC4BB8872B4545, A763F7BC32074F1B9B21FAB0, B1C1C4AA9FD0458DBCDA384E, DA4E1FE17887437DB88245AE, 852A4D640E614BE0BFA69719, 8F3989B4F3DD472383E83926, 30855FCE436B479CBD863DEB, ); name = "Widget Shared"; path = Aidoku/Core/Widgets/Shared; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -245,6 +294,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8B0A4C3E7CD8B41C75D35B4B /* Build configuration list for PBXNativeTarget "Sumi" */;
 			buildPhases = (
+                8C5133688FF646509223068D /* Embed App Extensions */,
 				39183B5C09D91D33E8F3F31B /* Sources */,
 				6E21C85E8635CA5AECA5B2A9 /* Frameworks */,
 				CC6B1982AE3EB6758FFCAAC7 /* Resources */,
@@ -253,6 +303,7 @@
 			buildRules = (
 			);
 			dependencies = (
+                CD91E2C738D04A53A1102F3B /* HonbakoWidgets */,
 			);
 			fileSystemSynchronizedGroups = (
 				FB77CD38303A838B00DF3DA3 /* Aidoku */,
@@ -320,6 +371,7 @@
 			productReference = 0F0EB8B7062FB574DC3077C1 /* SumiUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		971A6C549396459B8CF306FC /* HonbakoWidgets */ = {isa = PBXNativeTarget; buildConfigurationList = 6CE02BD70E2D40609564916F; buildPhases = (505BDFB82DAA4C1289C71036, 388EA37EBD7149A89465BBCA, DBD70EC4A29D4C598098CCFD, ); buildRules = (); dependencies = (); name = HonbakoWidgets; productName = HonbakoWidgets; productReference = E07670AA9690479CAE10D1E3; productType = "com.apple.product-type.app-extension"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -404,6 +456,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+                971A6C549396459B8CF306FC /* HonbakoWidgets */,
 				3E365F52C231C670FEA1FCB6 /* Sumi */,
 				FB1B4834277CE1920056D02C /* Aidoku */,
 				FBB44E712EC635620032EFBB /* AidokuTests */,
@@ -449,6 +502,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DBD70EC4A29D4C598098CCFD = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -564,6 +618,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		505BDFB82DAA4C1289C71036 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (FBE969B40DB140C0813FDD50, E6C239B5282E4FDF944250F3, EB5348406171439AB93315D9, B304ED6FF23B4B7DB085D404, 4AA71FF5B94D493BA0D5F6F0, 346D96C97D9A4E4D96ED5C67, 4C57A452CFA9406B9624605C, 0D5AEC6A1B984ED096023BDF, A9A48EACE03B49498F7E0BEC, A2C02699AED045ACBB135805, 0B5B76142BE24C05AB0D0742, 7B5B98BFB0124388A2083327, 17E4EA9317FD42B4B0C90998, A92C32A3207C4E28A4D4738A, 8F5F21D3868946CDABB821EB, EBA867A33D8A4EC7A3ACC73D, BC174C9BDFDA45D19026DFBD, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -582,6 +637,7 @@
 			target = 3E365F52C231C670FEA1FCB6 /* Sumi */;
 			targetProxy = A1D426E8AA1E9DC5C414C586 /* PBXContainerItemProxy */;
 		};
+		CD91E2C738D04A53A1102F3B = {isa = PBXTargetDependency; target = 971A6C549396459B8CF306FC; targetProxy = 8AD717C0F9C54B4CB4FA5BB4; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -863,21 +919,21 @@
 			baseConfigurationReferenceRelativePath = Sumi.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = SumiIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = HonbakoAccent;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Aidoku/Sumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;
+				INFOPLIST_FILE = "$(HONBAKO_INFO_PLIST_$(HONBAKO_EXTERNAL_SOURCES))";
 				INFOPLIST_KEY_CFBundleDisplayName = Honbako;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Honbako needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako needs permission to connect to local Komga and Kavita servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako connects to your local book servers and paired Mac companion";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Honbako needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -906,21 +962,21 @@
 			baseConfigurationReferenceRelativePath = Sumi.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = SumiIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = HonbakoAccent;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Aidoku/Aidoku.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Aidoku/Sumi.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Aidoku/Sumi-Info.plist;
+				INFOPLIST_FILE = "$(HONBAKO_INFO_PLIST_$(HONBAKO_EXTERNAL_SOURCES))";
 				INFOPLIST_KEY_CFBundleDisplayName = Honbako;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Honbako needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako needs permission to connect to local Komga and Kavita servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Honbako connects to your local book servers and paired Mac companion";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Honbako needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -1059,6 +1115,49 @@
 			};
 			name = Release;
 		};
+		B3F6EC4951E24730A917106D /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGN_ENTITLEMENTS = HonbakoWidgets/HonbakoWidgets.entitlements;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 65;
+                DEVELOPMENT_TEAM = 25WL36ABTN;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = HonbakoWidgets/Info.plist;
+                INFOPLIST_KEY_CFBundleDisplayName = Honbako;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.missingems.honbaku.widgets;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SKIP_INSTALL = YES;
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) HONBAKO_WIDGET_EXTENSION";
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+            }; name = Debug; };
+		9CEB0F21E12C4B6FB7BCA62A /* Release */ = {isa = XCBuildConfiguration; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGN_ENTITLEMENTS = HonbakoWidgets/HonbakoWidgets.entitlements;
+                CODE_SIGN_STYLE = Automatic;
+                CURRENT_PROJECT_VERSION = 65;
+                DEVELOPMENT_TEAM = 25WL36ABTN;
+                GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = HonbakoWidgets/Info.plist;
+                INFOPLIST_KEY_CFBundleDisplayName = Honbako;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks", );
+                MARKETING_VERSION = 0.2.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.missingems.honbaku.widgets;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SKIP_INSTALL = YES;
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) HONBAKO_WIDGET_EXTENSION";
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1116,6 +1215,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		6CE02BD70E2D40609564916F = {isa = XCConfigurationList; buildConfigurations = (B3F6EC4951E24730A917106D, 9CEB0F21E12C4B6FB7BCA62A, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */

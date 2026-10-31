@@ -1,0 +1,10 @@
+Page images now go to your AI only when it asks to see the page you're on. As you read, Honbako shares just the book, chapter and page number.
+
+Please check:
+- Ask your AI about the page you're on. It should see the page within a few seconds.
+- Close the book and ask again. Your AI should say the book is closed rather than wait.
+- Notes your AI draws still appear within a few seconds.
+
+Also in this build: the new icon, more of the app in Japanese and Chinese, and AI connections shared across your devices (open Honbako first on the device whose AI connection you want to keep).
+
+Use content you own or are authorized to access.

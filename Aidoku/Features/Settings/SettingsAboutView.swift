@@ -31,10 +31,12 @@ struct SettingsAboutView: View {
             }
 
             Section {
+                #if !SUMI
                 SettingView(setting: .init(
                     title: NSLocalizedString("GITHUB_REPO"),
                     value: .link(.init(url: "https://github.com/Aidoku/Aidoku"))
                 ))
+                #endif
                 SettingView(setting: .init(
                     title: NSLocalizedString("DISCORD_SERVER"),
                     value: .link(.init(url: "https://discord.gg/9U8cC5Zk3s", external: true))

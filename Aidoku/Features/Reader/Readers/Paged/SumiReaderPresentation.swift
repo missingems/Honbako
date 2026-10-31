@@ -19,10 +19,13 @@ struct SumiReaderPresentation {
                     usesCustomCurl: landscape && horizontal && !reduceMotion)
     }
 
-    /// Paper is full bleed. The independently placed reader controls respect
-    /// safe areas and reserved regions without changing this media viewport.
-    static func contentFrame(in bounds: CGRect, safeAreaInsets: UIEdgeInsets, margin: CGFloat = 12) -> CGRect {
-        bounds
+    /// Fixed phone cutouts cannot obscure the printed page. The background
+    /// still extends edge to edge; home-indicator space does not shrink paper.
+    static func contentFrame(in bounds: CGRect, safeAreaInsets: UIEdgeInsets, margin: CGFloat = 12,
+                             avoidsDisplayCutout: Bool = false) -> CGRect {
+        guard avoidsDisplayCutout else { return bounds }
+        return bounds.inset(by: UIEdgeInsets(top: safeAreaInsets.top, left: safeAreaInsets.left,
+            bottom: 0, right: safeAreaInsets.right))
     }
 }
 #endif

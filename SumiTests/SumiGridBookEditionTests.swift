@@ -5,6 +5,23 @@ import AidokuRunner
 
 @MainActor
 struct SumiGridBookEditionTests {
+    @Test("A new unsized tile defers its placeholder until the actual layout and reuses that print")
+    func unsizedPlaceholderWaitsForLayout() {
+        let book = SumiBook(manga: AidokuRunner.Manga(sourceKey: "cold-placeholder",
+            key: "unsized", title: "Visible cover"))
+        let view = SumiGridBookView(frame: .zero)
+        view.configure(book: book)
+        #expect(view.image == nil && view.coverArtwork == nil,
+            "Do not draw an oversized bitmap before SwiftUI supplies a size")
+        view.frame = CGRect(x: 0, y: 0, width: 150, height: 220)
+        view.setNeedsLayout(); view.layoutIfNeeded()
+        let print = view.image
+        #expect(print != nil && print?.size == view.bounds.size)
+        view.configure(book: book)
+        view.setNeedsLayout(); view.layoutIfNeeded()
+        #expect(view.image === print, "An unchanged layout must not repaint its placeholder")
+    }
+
     @Test("Covers show an unlit placeholder synchronously while source artwork loads")
     func immediateColdPlaceholder() {
         let view = SumiGridBookView(frame: CGRect(x: 0, y: 0, width: 150, height: 200))

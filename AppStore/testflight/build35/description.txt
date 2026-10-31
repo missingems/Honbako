@@ -1,0 +1,5 @@
+Honbako is a manga reader for iPhone and iPad. Start with the original illustrated story and three offline guide books, import your own comic files or connect a personal library server.
+
+Build 35 adds native Search and Settings in a minimizable top toolbar, hides it while scrolling forward and restores it when scrolling back. Pinching inward folds both sides of the book toward the center before returning it to the library.
+
+Version 0.2.0 supports compatible source lists and .aix packages deliberately added in Settings. No external providers or manga are installed automatically. Pro uses normal subscription and restore behavior in Apple’s TestFlight test environment.

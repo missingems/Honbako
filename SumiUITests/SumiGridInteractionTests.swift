@@ -79,72 +79,48 @@ final class SumiGridInteractionTests: XCTestCase {
     }
 
     @MainActor
-    func testProgressiveSearchPullCanRetreatThenCommitAndReopen() throws {
+    func testNativeToolbarSearchAndCancellation() throws {
         XCUIDevice.shared.orientation = .portrait
         let app = launch()
         defer { app.terminate() }
         let grid = element("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        let surface = try activeSurface(app, content: grid)
-        let original = book(1, app).frame
-        let field = element("Sumi.Search.Field", app)
-        XCTAssertFalse(field.isHittable)
-        XCTAssertFalse(app.keyboards.firstMatch.exists)
-        let start = grid.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25))
-        XCTContext.runActivity(named: "Partial Spotlight pull held before release") { _ in
-            start.press(forDuration: 0.08,
-                        thenDragTo: start.withOffset(CGVector(dx: 0, dy: 56)),
-                        withVelocity: XCUIGestureVelocity(rawValue: 32), thenHoldForDuration: 6)
-        }
-        XCTAssertFalse(field.isHittable, "A partial pull must retreat without opening search")
-        XCTAssertFalse(app.keyboards.firstMatch.exists, "Previewing search must not bring up the keyboard")
-        XCTAssertEqual(book(1, app).frame.minY, original.minY, accuracy: 1)
+        XCTAssertTrue(app.buttons["Honbako.Library.Settings"].exists)
+        XCTAssertTrue(app.honbakoSearchEntry.isHittable, "The native search entry stays visible")
         grid.swipeDown()
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        field.typeText("042")
+        XCTAssertFalse(app.keyboards.firstMatch.exists, "Pulling the collection must not activate search")
+        try app.openHonbakoSearch()
+        app.honbakoSearchField.typeText("042")
         XCTAssertTrue(app.buttons["Sumi.Search.Book.sumi-grid-preview:book-042"].waitForExistence(timeout: 5))
-        app.buttons["Sumi.Search.Dismiss"].coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.04)).tap()
-        XCTAssertTrue(wait(NSPredicate { _, _ in !field.isHittable }, field, timeout: 5))
+        XCTAssertTrue(app.buttons["Honbako.Library.Settings"].exists, "Settings remains available while searching")
+        attach(app.screenshot(), "Glass search opened from the native entry")
+        app.closeHonbakoSearch()
+        XCTAssertTrue(grid.waitForExistence(timeout: 5))
         XCTAssertTrue(wait(NSPredicate(format: "exists == false"), app.keyboards.firstMatch, timeout: 5))
-        grid.swipeDown()
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        XCTAssertEqual(field.value as? String, "042")
-        XCTAssertTrue(app.buttons["Sumi.Search.Book.sumi-grid-preview:book-042"].exists)
-        attach(surface.screenshot(), "Reopened Spotlight retains the query and keyboard focus")
+        XCTAssertTrue(app.honbakoSearchEntry.isHittable, "Closing search leaves its entry visible")
+        attach(app.screenshot(), "Library after native search cancellation")
+        book(1, app).coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(element("Sumi.DirectReader", app).waitForExistence(timeout: 15),
+            "The returned library cover must open after native search cancels")
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
     }
 
     @MainActor
-    func testFullScreenLibraryRevealsNativeSearchOnPull() throws {
-        let app = launch()
+    func testNativeToolbarStaysVisibleDuringScroll() throws {
+        let app = launch(["--sumi-pinch-diagnostics"])
         defer { app.terminate() }
         let grid = element("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        let surface = try activeSurface(app, content: grid)
-        XCTAssertFalse(element("Sumi.Search.Field", app).isHittable, "Search stays hidden until a pull")
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
-        XCTAssertEqual(grid.frame.minX, surface.frame.minX, accuracy: 1)
-        XCTAssertEqual(grid.frame.maxX, surface.frame.maxX, accuracy: 1)
-        let original = book(1, app).frame
+        let settings = app.buttons["Honbako.Library.Settings"]
+        XCTAssertTrue(settings.isHittable)
+        grid.swipeUp()
+        XCTAssertTrue(settings.isHittable)
+        XCTAssertTrue(app.honbakoSearchEntry.isHittable)
+        attach(app.screenshot(), "Toolbar stays visible while scrolling forward")
         grid.swipeDown()
-        let field = element("Sumi.Search.Field", app)
-        XCTAssertTrue(field.waitForExistence(timeout: 5), app.debugDescription)
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "Pulling search focuses its field automatically")
-        field.typeText("042")
-        let result = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label CONTAINS %@", "Sumi.Search.Book.", "042")).firstMatch
-        XCTAssertTrue(result.waitForExistence(timeout: 6))
-        XCTAssertTrue(app.buttons["Sumi.Search.Sources"].exists)
-        let underlyingBook = book(1, app)
-        XCTAssertTrue(!underlyingBook.exists || !underlyingBook.isHittable,
-                      "Library stays behind the search overlay and out of accessibility focus")
-        attach(surface.screenshot(), "Spotlight overlay with focused native field and concise book results")
-        app.buttons["Sumi.Search.Dismiss"].coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.04)).tap()
-        XCTAssertTrue(wait(NSPredicate { _, _ in !field.isHittable }, field, timeout: 5))
-        XCTAssertTrue(book(1, app).waitForExistence(timeout: 5))
-        XCTAssertEqual(book(1, app).frame.minX, original.minX, accuracy: 1)
-        XCTAssertEqual(book(1, app).frame.minY, original.minY, accuracy: 1)
-        XCTAssertFalse(app.tabBars.firstMatch.exists)
+        XCTAssertTrue(wait(NSPredicate { _, _ in settings.isHittable }, grid, timeout: 5))
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        attach(app.screenshot(), "Native toolbar returns when scrolling back")
     }
 
     @MainActor
@@ -417,7 +393,8 @@ final class SumiGridInteractionTests: XCTestCase {
         return app
     }
     @MainActor private func element(_ id: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: id).firstMatch
+        if id == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
     @MainActor private func book(_ number: Int, _ app: XCUIApplication) -> XCUIElement {
         app.buttons["Sumi.Grid.Book.sumi-grid-preview:book-" + String(format: "%03d", number)].firstMatch
@@ -517,9 +494,24 @@ final class SumiGridInteractionTests: XCTestCase {
     }
     @MainActor private func close(_ app: XCUIApplication, _ surface: XCUIElement) throws {
         let button = app.buttons["SumiReader.Close"].firstMatch
-        if !button.isHittable { try tapPage(app, surface) }
-        XCTAssertTrue(button.waitForExistence(timeout: 4))
-        button.tap()
+        let reachable = NSPredicate(format: "exists == true AND hittable == true")
+        if !wait(reachable, button, timeout: 2) { try tapPage(app, surface) }
+        guard wait(reachable, button, timeout: 4) else {
+            XCTFail("The reader Close button must exist and be hittable before cleanup")
+            return
+        }
+        let active = try activeSurface(app, content: element("Sumi.DirectReader", app))
+        let frame = button.frame
+        let center = CGPoint(x: frame.midX, y: frame.midY)
+        let activeFrame = active.frame
+        guard !frame.isEmpty, activeFrame.contains(center) else {
+            XCTFail("The hittable Close button must be inside the active reader surface")
+            return
+        }
+        // XCUIElement.tap() may auto-scroll a native side-bar item through the
+        // reader and turn pages. Tap the verified control's captured centre.
+        active.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: center.x - activeFrame.minX, dy: center.y - activeFrame.minY)).tap()
         XCTAssertTrue(wait(NSPredicate(format: "exists == false"), element("Sumi.DirectReader", app), timeout: 8))
     }
     private func attach(_ shot: XCUIScreenshot, _ name: String) {

@@ -5,6 +5,8 @@ import UIKit
 final class HonbakoCoverDisplaySceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var model: HonbakoCoverDisplayModel?
+    private var lastSize: CGSize?
+    private var lastOrientation: UIInterfaceOrientation?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
         guard #available(iOS 27.0, *), let scene = scene as? UIWindowScene,
@@ -15,53 +17,35 @@ final class HonbakoCoverDisplaySceneDelegate: UIResponder, UIWindowSceneDelegate
         window.isUserInteractionEnabled = false
         // This accessory is decorative. It never takes key-window status from
         // the reader, so keyboard input and app navigation stay on the book.
+        updateGeometry(of: scene)
         window.isHidden = false
         self.window = window
-        model.setSceneConnected(true, role: session.role.rawValue, size: scene.coordinateSpace.bounds.size)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         model?.setSceneConnected(false, role: scene.session.role.rawValue)
         window = nil
         model = nil
+        lastSize = nil
+        lastOrientation = nil
     }
 
-    func windowScene(_ windowScene: UIWindowScene, didUpdate previousCoordinateSpace: UICoordinateSpace,
-                     interfaceOrientation previousInterfaceOrientation: UIInterfaceOrientation,
-                     traitCollection previousTraitCollection: UITraitCollection) {
-        model?.setSceneConnected(true, role: windowScene.session.role.rawValue,
-            size: windowScene.coordinateSpace.bounds.size)
+    func windowScene(_ windowScene: UIWindowScene, didUpdateEffectiveGeometry previousEffectiveGeometry: UIWindowScene.Geometry) {
+        updateGeometry(of: windowScene)
     }
-}
 
-private struct HonbakoCoverDisplayView: View {
-    @ObservedObject var model: HonbakoCoverDisplayModel
-
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Color(uiColor: .systemBackground)
-                if let image = model.image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                } else {
-                    Text(model.title)
-                        .font(.body.weight(.medium))
-                        .multilineTextAlignment(.center)
-                        .padding(24)
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-        }
-        .ignoresSafeArea()
-        .accessibilityLabel(model.title)
+    private func updateGeometry(of scene: UIWindowScene) {
+        let geometry = scene.effectiveGeometry
+        let size = geometry.coordinateSpace.bounds.size
+        // Orientation is used for a physical rotation transform, not to infer
+        // available layout space; left and right need opposite corrections.
+        let orientation = geometry.interfaceOrientation
+        guard size != lastSize || orientation != lastOrientation else { return }
+        lastSize = size
+        lastOrientation = orientation
+        model?.setScenePose(orientation: orientation)
+        model?.setSceneConnected(true, role: scene.session.role.rawValue, size: size)
     }
 }
 
-private final class HonbakoCoverDisplayHostingController: UIHostingController<HonbakoCoverDisplayView> {
-    override var prefersStatusBarHidden: Bool { true }
-    override var prefersHomeIndicatorAutoHidden: Bool { true }
-}
 #endif

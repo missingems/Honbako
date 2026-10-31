@@ -7,6 +7,15 @@ struct SumiGridCoverTile: View {
     var registerAnchor: ((SumiBookSourceAnchor) -> Void)?
     @State private var anchor = SumiBookSourceAnchor()
 
+    private var accessibilitySummary: String {
+        var details = [book.chapterLabel, book.pageLabel].compactMap { $0 }
+        if book.unreadChapterCount > 0 {
+            details.append(String(localized: "\(book.unreadChapterCount) unread chapters"))
+        }
+        if book.finishedReadingAt != nil { details.append(String(localized: "Finished")) }
+        return details.joined(separator: ", ")
+    }
+
     var body: some View {
         Button {
             openBook(book, anchor.view.flatMap { SumiBookTransitionSource.capture($0, replacementView: { anchor.view }) })
@@ -20,7 +29,7 @@ struct SumiGridCoverTile: View {
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(book.title)
-        .accessibilityValue([book.chapterLabel, book.pageLabel].compactMap { $0 }.joined(separator: ", "))
+        .accessibilityValue(accessibilitySummary)
         .accessibilityHint(String(localized: "Open manga"))
         .accessibilityIdentifier("Sumi.Grid.Book.\(book.presentation.id)")
         .onAppear { registerAnchor?(anchor) }

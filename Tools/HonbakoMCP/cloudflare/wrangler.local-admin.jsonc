@@ -1,0 +1,23 @@
+{
+  "name": "honbako-local-admin",
+  "main": "local-admin.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "services": [
+    {
+      "binding": "REMOTE_ADMIN",
+      "service": "honbako-mcp-admin",
+      "remote": true
+    }
+  ],
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8789
+  },
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "19cc8706f23e127305e14dfd41191162"
+}

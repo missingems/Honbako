@@ -20,6 +20,7 @@ final class SumiPageEdgeBackgroundView: UIView {
     private var identity: String?
     private var imageFrame = CGRect.zero
     private(set) var colors: SumiPageEdgeColors?
+    var onColorsChanged: (() -> Void)?
     var isReady: Bool { sampling == nil }
 
     override init(frame: CGRect) {
@@ -116,6 +117,7 @@ final class SumiPageEdgeBackgroundView: UIView {
             band.backgroundColor = color?.uiColor.cgColor
         }
         CATransaction.commit()
+        onColorsChanged?()
         setNeedsLayout()
         // A margin is an extension of its bitmap edge, not another paper
         // surface to reveal. Fading black over the white loading surface turns

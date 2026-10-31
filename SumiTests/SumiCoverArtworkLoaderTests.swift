@@ -1,6 +1,7 @@
 @testable import Sumi
 import AidokuRunner
 import Foundation
+import Nuke
 import Testing
 import UIKit
 
@@ -79,6 +80,68 @@ struct SumiCoverArtworkLoaderTests {
         #expect(await runner.count == 1)
         #expect(await loader.loadCover(for: book, source: retainedSource) === loaded)
         #expect(await runner.count == 1)
+    }
+
+    @Test("Decoded covers survive reader-cache eviction without another source request or decode")
+    func coverSurvivesReaderCacheChurn() async throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: "HonbakoCoverRetention-\(UUID())")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let imageURL = directory.appending(path: "cover.png")
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 20, height: 30)).image { context in
+            UIColor.blue.setFill(); context.fill(CGRect(x: 0, y: 0, width: 20, height: 30))
+        }
+        try #require(image.pngData()).write(to: imageURL)
+        let key = "cover-retention-\(UUID())"
+        let runner = CoverRunner(imageURL: imageURL)
+        let source = AidokuRunner.Source(key: key, name: "Fixture", version: 1, contentRating: .safe, runner: runner)
+        let book = SumiBook(manga: .init(sourceKey: key, key: "manga", title: "Manga",
+            cover: "https://example.com/needs-source-header.png"))
+        let loader = SumiCoverArtworkLoader()
+        let loaded = try #require(await loader.loadCover(for: book, source: source))
+        let request = try #require(await loader.coverRequest(for: book, source: source))
+        ImagePipeline.shared.cache.removeCachedImage(for: request, caches: [.memory])
+        #expect(ImagePipeline.shared.cache.cachedImage(for: request, caches: [.memory]) == nil)
+        #expect(loader.cachedCover(for: book) === loaded)
+        #expect(await loader.loadCover(for: book, source: source) === loaded)
+        #expect(await runner.count == 1)
+
+        let originalIdentity = loader.coverIdentity(for: book)
+        NotificationCenter.default.post(name: .sourceUnloaded, object: key)
+        try await wait { loader.coverIdentity(for: book) != originalIdentity }
+        #expect(loader.cachedCover(for: book) == nil, "Removed sources must not keep serving their old decoded covers")
+    }
+
+    @Test("An iCloud-restored book can request public artwork before its source is installed")
+    func publicCoverWithoutInstalledSource() async throws {
+        let key = "restored-public-cover-\(UUID())"
+        let url = try #require(URL(string: "https://uploads.mangadex.org/covers/2d76d2e3-019c-4b63-bb4b-055f36deed18/original.jpg.256.jpg"))
+        let book = SumiBook(manga: .init(sourceKey: key, key: "restored", title: "Restored book", cover: url.absoluteString), isInLibrary: true)
+        let loader = SumiCoverArtworkLoader()
+        #expect(SourceStore.shared.source(for: key) == nil)
+        let request = try #require(await loader.coverRequest(for: book))
+        #expect(request.urlRequest?.url?.absoluteString == "https://uploads.mangadex.org/covers/2d76d2e3-019c-4b63-bb4b-055f36deed18/original.jpg")
+        #expect(request.urlRequest?.value(forHTTPHeaderField: "Authorization") == nil)
+        #expect(request.urlRequest?.value(forHTTPHeaderField: "Cookie") == nil)
+        #expect(!loader.isInFailureCooldown(for: book))
+        let repeatRequest = try #require(await loader.coverRequest(for: book))
+        #expect(ImagePipeline.shared.cache.makeImageCacheKey(for: request) == ImagePipeline.shared.cache.makeImageCacheKey(for: repeatRequest))
+    }
+
+    @Test("Missing-source artwork fallback never bypasses personal-server setup")
+    func personalCoverStillRequiresSource() async throws {
+        let loader = SumiCoverArtworkLoader()
+        for value in ["http://192.168.1.4/cover.jpg", "https://192.168.1.4/cover.jpg", "https://localhost/cover.jpg",
+                      "https://books.local/cover.jpg", "https://books.home.arpa/cover.jpg", "https://[::1]/cover.jpg",
+                      "https://user:password@covers.example.com/cover.jpg", "https://covers.example.com:8443/cover.jpg",
+                      "https://covers.example.com/cover.jpg?token=fixture", "https://covers.example.com/cover.jpg?apiKey=fixture",
+                      "https://covers.example.com/cover.jpg?access_token=fixture"] {
+            let url = try #require(URL(string: value))
+            #expect(!SumiCoverArtworkLoader.permitsUnconfiguredSourceCover(url))
+            let book = SumiBook(manga: .init(sourceKey: "restored-personal-\(UUID())", key: "book", title: "Personal book", cover: value))
+            #expect(await loader.coverRequest(for: book) == nil)
+        }
+        #expect(SumiCoverArtworkLoader.permitsUnconfiguredSourceCover(try #require(URL(string: "https://cdn.example.com/cover.jpg?size=large"))))
     }
 
     private func books(_ count: Int) -> [SumiBook] {

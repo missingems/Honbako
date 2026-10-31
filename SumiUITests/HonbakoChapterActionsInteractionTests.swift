@@ -93,7 +93,7 @@ final class HonbakoChapterActionsInteractionTests: XCTestCase {
         let key = String(format: "book-%03d", number)
         let identifier = "honbako-catalog-fast:\(key)"
         let grid = item("Sumi.Grid", app)
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         let search = item("Sumi.Search.Field", app)
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
@@ -118,7 +118,7 @@ final class HonbakoChapterActionsInteractionTests: XCTestCase {
 
     @MainActor
     private func openChapters(in app: XCUIApplication) throws -> XCUIElement {
-        XCTAssertTrue(item("Sumi.Reader.Title", app).waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Sumi.Reader.Navigation"].waitForExistence(timeout: 10))
         let button = app.buttons["Sumi.Reader.ChaptersButton"]
         XCTAssertTrue(button.waitForExistence(timeout: 10))
         centerTap(button)
@@ -141,7 +141,8 @@ final class HonbakoChapterActionsInteractionTests: XCTestCase {
 
     @MainActor
     private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     @MainActor

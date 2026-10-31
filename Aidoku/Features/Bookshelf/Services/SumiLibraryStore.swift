@@ -166,7 +166,9 @@ struct SumiReaderSelection: Identifiable {
 final class SumiLibraryStore: ObservableObject {
     typealias SearchSourceLoader = @MainActor @Sendable () async -> [AidokuRunner.Source]
     typealias CoverPreparer = @Sendable ([SumiBook]) async -> Void
+    typealias SnapshotLoader = @MainActor @Sendable () async throws -> SumiLibrarySnapshot
     @Published private(set) var library: [SumiBook] = []
+    @Published private(set) var loadState: SumiLibraryLoadState = .loading
     @Published private(set) var recentlyRead: [SumiBook] = []
     @Published private(set) var searchResults: [SumiBook] = []
     @Published private(set) var searchSections: [SumiSearchSourceSection] = []
@@ -183,12 +185,15 @@ final class SumiLibraryStore: ObservableObject {
     private let searchSourceLoader: SearchSourceLoader
     private let searchPreparationService: SumiSearchPreparationService
     private let coverPreparer: CoverPreparer
+    private let snapshotLoader: SnapshotLoader?
     private let tutorialInstaller: (@MainActor @Sendable () async -> Void)?
     private var sourceNames: [String: String] = [:]
     private var searchTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
     private var searchGeneration = 0
     private var refreshGeneration = 0
+    private var publishedRefreshGeneration = 0
+    private enum RefreshOutcome { case applied, superseded, failed }
     private var loadingCount = 0
     private var mutatingBooks: Set<MangaIdentifier> = []
     private var libraryError: String?
@@ -199,10 +204,18 @@ final class SumiLibraryStore: ObservableObject {
     init(searchSourceLoader: SearchSourceLoader? = nil,
          searchPreparationService: SumiSearchPreparationService = .shared,
          coverPreparer: @escaping CoverPreparer = { await SumiCoverArtworkLoader.shared.prepare($0) },
-         tutorialInstaller: (@MainActor @Sendable () async -> Void)? = nil) {
-        self.searchSourceLoader = searchSourceLoader ?? { await SourceManager.shared.getLoadedSources() }
+         tutorialInstaller: (@MainActor @Sendable () async -> Void)? = nil,
+         snapshotLoader: SnapshotLoader? = nil) {
+        self.searchSourceLoader = searchSourceLoader ?? {
+            var sources = await SourceManager.shared.getLoadedSources()
+            if UserDefaults.standard.object(forKey: HonbakoGuideLibrary.searchEnabledKey) as? Bool ?? true {
+                sources.append(HonbakoTutorialManga.source)
+            }
+            return sources
+        }
         self.searchPreparationService = searchPreparationService
         self.coverPreparer = coverPreparer
+        self.snapshotLoader = snapshotLoader
         self.tutorialInstaller = tutorialInstaller
         for name in [
             Notification.Name.updateLibrary,
@@ -231,65 +244,105 @@ final class SumiLibraryStore: ObservableObject {
         refreshTask?.cancel()
     }
 
-    func refresh() async {
+    func refresh() async { _ = await refreshSnapshot() }
+
+    /// Closing requires a snapshot published after its history save. A newer
+    /// notification refresh may supersede ours; that is not a completed read.
+    /// Retry only supersession, with both an attempt bound and cancellation.
+    func refreshForReturn() async -> Bool {
+        refreshTask?.cancel()
+        let deadline = ContinuousClock.now.advanced(by: .milliseconds(1500))
+        for _ in 0..<3 {
+            guard !Task.isCancelled, ContinuousClock.now < deadline else { return false }
+            let requestedGeneration = refreshGeneration + 1
+            switch await refreshSnapshot(forReturn: true) {
+            case .applied: return true
+            case .failed: return false
+            case .superseded:
+                guard !Task.isCancelled else { return false }
+                if publishedRefreshGeneration >= requestedGeneration { return true }
+            }
+        }
+        return false
+    }
+
+    private func refreshSnapshot(forReturn: Bool = false) async -> RefreshOutcome {
         refreshGeneration += 1
         let generation = refreshGeneration
+        // Only the first successful load prepares a cover cohort. Later reads
+        // update metadata; visible tiles resolve new or changed artwork.
+        let preparesInitialArtwork = !forReturn && loadState != .loaded
         beginLoading()
+        if case .failed = loadState { loadState = .loading }
         defer { endLoading() }
+        let outcome: RefreshOutcome
         do {
-            await tutorialInstaller?()
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
-            let books = try await CoreDataManager.shared.container.performBackgroundTask { context in
-                let request = LibraryMangaObject.fetchRequest()
-                request.predicate = NSPredicate(format: "manga != nil")
-                request.sortDescriptors = [NSSortDescriptor(key: "lastOpened", ascending: false)]
-                let objects = try context.fetch(request)
+            if preparesInitialArtwork, snapshotLoader == nil { await tutorialInstaller?() }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
+            var books: SumiLibrarySnapshot
+            if let snapshotLoader {
+                books = try await snapshotLoader()
+            } else {
+                books = try await CoreDataManager.shared.container.performBackgroundTask { context in
+                    let request = LibraryMangaObject.fetchRequest()
+                    request.predicate = NSPredicate(format: "manga != nil")
+                    request.sortDescriptors = [NSSortDescriptor(key: "lastOpened", ascending: false)]
+                    let objects = try context.fetch(request)
 
-                let historyRequest = HistoryObject.fetchRequest()
-                historyRequest.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: false)]
-                let history = try context.fetch(historyRequest)
-                var latestHistory: [MangaIdentifier: HistoryObject] = [:]
-                for entry in history where latestHistory[entry.identifier.mangaIdentifier] == nil {
-                    latestHistory[entry.identifier.mangaIdentifier] = entry
-                }
-
-                let chapterRequest = ChapterObject.fetchRequest()
-                chapterRequest.predicate = NSPredicate(format: "manga.libraryObject != nil")
-                chapterRequest.relationshipKeyPathsForPrefetching = ["history"]
-                let allChapters = try context.fetch(chapterRequest)
-                let chaptersByManga = Dictionary(grouping: allChapters) { $0.identifier.mangaIdentifier }
-
-                var seen: Set<MangaIdentifier> = []
-                let saved = objects.compactMap { object -> SumiBook? in
-                    guard let manga = object.manga, seen.insert(manga.identifier).inserted else { return nil }
-                    let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.identifier, context: context)
-                    let language = filters.language ?? latestHistory[manga.identifier]?.chapter?.lang
-                    let chapters = (chaptersByManga[manga.identifier] ?? []).map {
-                        SumiLibraryShelfSummary.Chapter(key: $0.id, number: $0.chapter?.doubleValue,
-                            volume: $0.volume?.doubleValue, language: $0.lang, scanlator: $0.scanlator,
-                            locked: $0.locked, uploaded: $0.dateUploaded,
-                            completedAt: $0.history?.completed == true ? $0.history?.dateRead : nil)
+                    let historyRequest = HistoryObject.fetchRequest()
+                    historyRequest.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: false)]
+                    let history = try context.fetch(historyRequest)
+                    var latestHistory: [MangaIdentifier: HistoryObject] = [:]
+                    for entry in history where latestHistory[entry.identifier.mangaIdentifier] == nil {
+                        latestHistory[entry.identifier.mangaIdentifier] = entry
                     }
-                    let shelf = SumiLibraryShelfSummary(status: manga.toNewManga().status, chapters: chapters,
-                        language: language, scanlators: filters.scanlators)
-                    return SumiBook.snapshot(manga: manga, history: latestHistory[manga.identifier], isInLibrary: true)
-                        .applying(shelf)
-                }.sorted {
-                    let lhs = $0.lastRead ?? .distantPast
-                    let rhs = $1.lastRead ?? .distantPast
-                    return lhs == rhs ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : lhs > rhs
+
+                    let chapterRequest = ChapterObject.fetchRequest()
+                    chapterRequest.predicate = NSPredicate(format: "manga.libraryObject != nil")
+                    chapterRequest.relationshipKeyPathsForPrefetching = ["history"]
+                    let allChapters = try context.fetch(chapterRequest)
+                    let chaptersByManga = Dictionary(grouping: allChapters) { $0.identifier.mangaIdentifier }
+
+                    var seen: Set<MangaIdentifier> = []
+                    let saved = objects.compactMap { object -> SumiBook? in
+                        guard let manga = object.manga, seen.insert(manga.identifier).inserted else { return nil }
+                        let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.identifier, context: context)
+                        let language = filters.language ?? latestHistory[manga.identifier]?.chapter?.lang
+                        let chapters = (chaptersByManga[manga.identifier] ?? []).map {
+                            SumiLibraryShelfSummary.Chapter(key: $0.id, number: $0.chapter?.doubleValue,
+                                volume: $0.volume?.doubleValue, language: $0.lang, scanlator: $0.scanlator,
+                                locked: $0.locked, uploaded: $0.dateUploaded,
+                                completedAt: $0.history?.completed == true ? $0.history?.dateRead : nil)
+                        }
+                        let shelf = SumiLibraryShelfSummary(status: manga.toNewManga().status, chapters: chapters,
+                            language: language, scanlators: filters.scanlators)
+                        return SumiBook.snapshot(manga: manga, history: latestHistory[manga.identifier], isInLibrary: true)
+                            .applying(shelf)
+                    }.sorted {
+                        let lhs = $0.lastRead ?? .distantPast
+                        let rhs = $1.lastRead ?? .distantPast
+                        return lhs == rhs ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : lhs > rhs
+                    }
+                    let recent = latestHistory.compactMap { identifier, entry -> SumiBook? in
+                        guard let manga = CoreDataManager.shared.getManga(mangaId: identifier, context: context) else { return nil }
+                        return SumiBook.snapshot(manga: manga, history: entry, isInLibrary: seen.contains(identifier))
+                    }.sorted { ($0.lastRead ?? .distantPast) > ($1.lastRead ?? .distantPast) }
+                    return SumiLibrarySnapshot(saved: saved, recent: recent)
                 }
-                let recent = latestHistory.compactMap { identifier, entry -> SumiBook? in
-                    guard let manga = CoreDataManager.shared.getManga(mangaId: identifier, context: context) else { return nil }
-                    return SumiBook.snapshot(manga: manga, history: entry, isInLibrary: seen.contains(identifier))
-                }.sorted { ($0.lastRead ?? .distantPast) > ($1.lastRead ?? .distantPast) }
-                return (saved: saved, recent: recent)
             }
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
-            await coverPreparer(books.saved)
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
-            library = books.saved
-            recentlyRead = books.recent
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
+            func resolveBundledCover(_ book: SumiBook) -> SumiBook {
+                guard let cover = try? HonbakoTutorialManga.restoredCoverURL(for: book.manga) else { return book }
+                var manga = book.manga
+                manga.cover = cover.absoluteString
+                return book.updating(manga: manga)
+            }
+            books = SumiLibrarySnapshot(saved: books.saved.map(resolveBundledCover), recent: books.recent.map(resolveBundledCover))
+            if preparesInitialArtwork { await coverPreparer(books.saved) }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
+            if library != books.saved { library = books.saved }
+            if recentlyRead != books.recent { recentlyRead = books.recent }
+            if loadState != .loaded { loadState = .loaded }
             libraryError = nil
             let snapshots = Dictionary((books.saved + books.recent).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             func enrich(_ book: SumiBook) -> SumiBook {
@@ -299,11 +352,16 @@ final class SumiLibraryStore: ObservableObject {
             searchResults = searchResults.map(enrich)
             searchEditions = searchEditions.mapValues { $0.map(enrich) }
             updateSearchSections()
+            publishedRefreshGeneration = generation
+            outcome = .applied
         } catch {
-            guard generation == refreshGeneration, !Task.isCancelled else { return }
+            guard generation == refreshGeneration, !Task.isCancelled else { return .superseded }
             libraryError = String(localized: "Your reading library could not be loaded: \(error.localizedDescription)")
+            if loadState != .loaded, let libraryError { loadState = .failed(libraryError) }
+            outcome = .failed
         }
         updateErrorMessage()
+        return outcome
     }
 
     func editions(for book: SumiBook) -> [SumiBook] {
@@ -372,6 +430,7 @@ final class SumiLibraryStore: ObservableObject {
                 throw StoreError.mismatchedTitle
             }
             let manga = SumiMangaMetadata.merging(original, with: fetched)
+            HonbakoChapterAvailability.shared.clear(sourceKey: source.key, mangaKey: manga.key)
             try await CoreDataManager.shared.container.performBackgroundTask { context in
                 guard let object = CoreDataManager.shared.getLibraryManga(mangaId: book.id, context: context)?.manga else { return }
                 object.load(from: manga)
@@ -483,21 +542,101 @@ final class SumiLibraryStore: ObservableObject {
             try Task.checkCancellation()
             let firstLanguage = SumiChapterLanguage.normalized(preferredLanguage)
                 ?? SumiChapterLanguage.activeLanguage(chapters: chapters, currentChapter: nil, preferred: nil)
-            let eligibleChapters = latestHistory == nil ? SumiChapterLanguage.filter(chapters, language: firstLanguage) : chapters
-            let choice = SumiReaderOpeningPolicy.choose(history: latestHistory, chaptersNewestFirst: eligibleChapters) { chapter in
+            let eligibleChapters = SumiReaderOpeningPolicy.eligibleChapters(history: latestHistory,
+                chapters: chapters, preferredLanguage: firstLanguage)
+            let openingManga = manga
+            let availability = HonbakoChapterAvailability.shared
+            let choices = SumiReaderOpeningPolicy.candidates(history: latestHistory, chaptersNewestFirst: eligibleChapters) { chapter in
                 let id = ChapterIdentifier(sourceKey: book.sourceKey, mangaKey: book.manga.key, chapterKey: chapter.key)
                 return DownloadManager.shared.getDownloadStatus(for: id) == .finished || (source != nil && !chapter.locked)
             }
+            let choice = try await SumiReadableOpeningResolver.resolve(choices, state: { choice in
+                guard let chapter = eligibleChapters.first(where: { $0.key == choice.chapterKey }) else { return .unavailable }
+                let id = ChapterIdentifier(sourceKey: book.sourceKey, mangaKey: openingManga.key, chapterKey: chapter.key)
+                if DownloadManager.shared.getDownloadStatus(for: id) == .finished
+                    || source?.key == LocalSourceRunner.sourceKey || source?.key == HonbakoTutorialManga.sourceKey
+                    || source == nil { return .available }
+                guard let source else { return .unavailable }
+                return availability.state(for: .init(source: source, manga: openingManga, chapter: chapter))
+            }, probe: { choice in
+                guard let source, let chapter = eligibleChapters.first(where: { $0.key == choice.chapterKey }) else { return false }
+                let pages = try await SumiChapterPageListCache.shared.pages(for: .init(source: source, manga: openingManga, chapter: chapter), source: source) {
+                    try await source.getPageList(manga: openingManga, chapter: chapter)
+                }
+                return !pages.isEmpty
+            })
+            #if HONBAKO_EXTERNAL_SOURCES
+            // Exhaustion means confirmed absence, never a timeout, authentication
+            // error or simply reaching the resolver's request limit. A manual
+            // per-book edition choice is always respected.
+            let candidateStates = choices.map { candidate -> HonbakoChapterAvailability.State in
+                guard let source, let chapter = eligibleChapters.first(where: { $0.key == candidate.chapterKey }) else { return .unknown }
+                return availability.state(for: .init(source: source, manga: openingManga, chapter: chapter))
+            }
+            if choice == nil, SumiAlternativeEditionOpening.mayRecover(explicitLanguage: preferredLanguage,
+                metadataFailed: operationError != nil, candidateStates: candidateStates),
+               let source, let native = source.runner as? HonbakoMangaDexRunner {
+                let alternatives = try await native.readableAlternativeChapters(for: openingManga)
+                try Task.checkCancellation()
+                let configured = await native.selectedChapterLanguages()
+                if let plan = SumiAlternativeEditionOpening.plan(original: chapters, alternativesNewestFirst: alternatives,
+                    history: latestHistory, explicitLanguage: preferredLanguage,
+                    configuredLanguages: configured, deviceLanguages: Locale.preferredLanguages) {
+                    // Fresh authoritative metadata may describe repaired chapters.
+                    for chapter in plan.readableChapters {
+                        availability.clear(.init(source: source, manga: openingManga, chapter: chapter))
+                    }
+                    let recovered = try await SumiReadableOpeningResolver.resolve(plan.choices, state: { candidate in
+                        guard let chapter = plan.readableChapters.first(where: { $0.key == candidate.chapterKey }) else { return .unavailable }
+                        let id = ChapterIdentifier(sourceKey: book.sourceKey, mangaKey: openingManga.key, chapterKey: chapter.key)
+                        if DownloadManager.shared.getDownloadStatus(for: id) == .finished { return .available }
+                        return availability.state(for: .init(source: source, manga: openingManga, chapter: chapter))
+                    }, probe: { candidate in
+                        guard let chapter = plan.readableChapters.first(where: { $0.key == candidate.chapterKey }) else { return false }
+                        let pages = try await SumiChapterPageListCache.shared.pages(
+                            for: .init(source: source, manga: openingManga, chapter: chapter), source: source) {
+                            try await source.getPageList(manga: openingManga, chapter: chapter)
+                        }
+                        return !pages.isEmpty
+                    })
+                    if let recovered, let chapter = plan.readableChapters.first(where: { $0.key == recovered.chapterKey }) {
+                        let language = SumiChapterLanguage.normalized(chapter.language)
+                        var merged = openingManga
+                        merged.chapters = SumiChapterLanguage.merge(chapters,
+                            with: SumiChapterLanguage.filter(plan.readableChapters, language: language))
+                        if !AppSettings.general.incognitoMode.get() {
+                            let prepared = merged
+                            try await CoreDataManager.shared.container.performBackgroundTask { context in
+                                let manager = CoreDataManager.shared
+                                manager.getOrCreateManga(prepared, context: context).load(from: prepared)
+                                manager.setChapters(prepared.chapters ?? [], mangaId: book.id, context: context)
+                                try context.save()
+                            }
+                        }
+                        try Task.checkCancellation()
+                        return SumiReaderOpening(selection: .init(source: source, manga: merged, chapter: chapter,
+                            startPage: recovered.startPage), isFirstRead: recovered.isFirstRead, automaticLanguage: language)
+                    }
+                }
+            }
+            #endif
             guard let choice else {
                 if latestHistory == nil && chapters.isEmpty && operationError != nil {
                     updateErrorMessage()
                     return nil
                 }
-                operationError = source == nil
-                    ? String(localized: "This title’s source is unavailable and this chapter hasn’t been downloaded.")
-                    : latestHistory == nil
-                    ? String(localized: "No readable chapters are available for this title.")
-                    : String(localized: "Your last-read chapter is unavailable. It has not been replaced with another chapter.")
+                if latestHistory == nil, chapters.isEmpty, let native = source?.runner as? HonbakoMangaDexRunner {
+                    let configured = await native.selectedChapterLanguages()
+                    let languages = SumiChapterLanguage.normalized(preferredLanguage).map { [$0] } ?? configured
+                    let names = languages.map { SourceLanguage.displayName(for: $0) }.formatted(.list(type: .and))
+                    operationError = String(localized: "MangaDex has no readable chapters in \(names) for this title. Its title and cover can still be listed.")
+                } else {
+                    operationError = source == nil
+                        ? String(localized: "This title’s source is unavailable and this chapter hasn’t been downloaded.")
+                        : latestHistory == nil
+                        ? String(localized: "No readable chapters are available for this title.")
+                        : String(localized: "No readable chapter could be opened in this language. Refresh the collection and try again.")
+                }
                 updateErrorMessage()
                 return nil
             }
@@ -544,6 +683,7 @@ final class SumiLibraryStore: ObservableObject {
             do {
                 let fetched = try await source.getMangaUpdate(manga: manga, needsDetails: false, needsChapters: true)
                 try Task.checkCancellation()
+                HonbakoChapterAvailability.shared.clear(sourceKey: source.key, mangaKey: manga.key)
                 guard fetched.identifier == book.id else { throw StoreError.mismatchedTitle }
                 manga = SumiMangaMetadata.merging(manga, with: fetched)
                 stored = await MangaManager.shared.getNextChapter(mangaId: book.id, fallbackChapters: manga.chapters)
@@ -665,6 +805,7 @@ final class SumiLibraryStore: ObservableObject {
             do {
                 let fetched = try await source.getMangaUpdate(manga: manga, needsDetails: false, needsChapters: true)
                 try Task.checkCancellation()
+                HonbakoChapterAvailability.shared.clear(sourceKey: source.key, mangaKey: manga.key)
                 guard fetched.identifier == book.id else { throw StoreError.mismatchedTitle }
                 manga = SumiMangaMetadata.merging(manga, with: fetched)
                 stored = await MangaManager.shared.getNextChapter(mangaId: book.id, fallbackChapters: manga.chapters)

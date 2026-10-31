@@ -28,6 +28,7 @@ final class HonbakoCoverDisplayModel: ObservableObject {
 
     @Published private(set) var image: UIImage?
     @Published private(set) var title = ""
+    @Published private(set) var pose = HonbakoCoverDisplayPose(orientation: .portrait)
     private(set) var status = Status()
     private var bookID: MangaIdentifier?
     private var imageTask: Task<Void, Never>?
@@ -47,12 +48,11 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         image = SumiCoverArtworkLoader.shared.cachedCover(for: book)
         status.imageState = image == nil ? "loading" : "ready"
         record("coverRequested")
-        guard image == nil else { return }
         imageTask = Task { [weak self] in
-            let loaded = await SumiCoverArtworkLoader.shared.loadCover(for: book, source: source)
+            let loaded = await SumiCoverArtworkLoader.shared.loadDisplayCover(for: book, source: source)
             guard !Task.isCancelled, let self, bookID == manga.identifier else { return }
-            image = loaded
-            status.imageState = loaded == nil ? "unavailable" : "ready"
+            if let loaded { image = loaded }
+            status.imageState = image == nil ? "unavailable" : "ready"
             record("coverResolved")
         }
     }
@@ -93,6 +93,12 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         status.hingePresent = present
         status.hingeOpen = open
         record("hingeChanged")
+    }
+
+    func setScenePose(orientation: UIInterfaceOrientation) {
+        let pose = HonbakoCoverDisplayPose(orientation: orientation)
+        guard self.pose != pose else { return }
+        self.pose = pose
     }
 
     func setSceneConnected(_ connected: Bool, role: String, size: CGSize? = nil) {

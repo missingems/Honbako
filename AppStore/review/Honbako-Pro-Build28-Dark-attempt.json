@@ -1,0 +1,25 @@
+{
+  "status": "blocked-native-input-routing",
+  "attemptedAt": "2026-10-28T11:32:33.742280+00:00",
+  "requestedDarkImageCreated": false,
+  "device": "Honbako Capture iphone",
+  "udid": "04492D57-7FB3-47FD-8A03-75CE5A4A40FE",
+  "installedBuild": "28",
+  "publicFlags": "NO/NO",
+  "appearance": "native Dark verified",
+  "locale": "en_US",
+  "result": "App library/tutorial accessible, but full/compact viewer search gestures and Command-F did not open app Search or Settings, including the final full-view Capture Keyboard on plus status-bar focus retry. No subscription page was reached during this attempt.",
+  "nativeViewer": "/Applications/Xcode.app/Contents/Applications/DeviceHub.app",
+  "externalFocusInterruption": "One external viewer selection change caused CUA to abort a pending action before dispatch; no action was sent to the unrelated simulator.",
+  "restoredBeforeCleanup": {
+    "textSize": 3,
+    "captureKeyboard": "off"
+  },
+  "purchaseMade": false,
+  "storeKitOverrideUsed": false,
+  "priceOrProductChanged": false,
+  "fallbackReviewImage": "/Users/jun/Documents/Codex/Honbako/AppStore/review/Honbako-Pro-Build28.jpg",
+  "fallbackReviewImageSha256": "2182864d91ad871cd73fb9810a2795ba4633cfc31090cecd46d5548c2e1e1b95",
+  "fallbackImageEvidence": "Previously verified native public build28 normal Apple product Honbako Pro Monthly at $1.99 per month, with new Free/Pro sections. This attempt does not claim a new Dark product screenshot.",
+  "marketingDarkCaptures": "All24 completed and verified separately in build28-dark/capture-manifest.json"
+}

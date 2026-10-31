@@ -1,5 +1,5 @@
 {
-  "status": "prepared_not_submitted",
+  "status": "build29_collection_only_selected_iap_and_group_staged_app_blocked_content_rights_not_submitted",
   "bundle_identifier": "com.missingems.honbaku",
   "app_name": "Honbako",
   "version": "0.1.0",
@@ -12,36 +12,30 @@
   ],
   "suggested_primary_category": "Books",
   "owner_fields_required": {
-    "app_store_connect_app_id": null,
-    "review_contact_first_name": null,
-    "review_contact_last_name": null,
-    "review_contact_email": null,
-    "review_contact_phone_international": null,
-    "feedback_email": "itchymail@icloud.com",
-    "support_url": null,
-    "privacy_policy_url": null,
-    "copyright_holder": null,
-    "pro_product_configured_in_app_store_connect": false,
+    "app_store_connect_app_id": "6827059668",
+    "support_url": "https://missingems.github.io/Honbako/support/",
+    "privacy_policy_url": "https://missingems.github.io/Honbako/privacy/",
+    "copyright_holder": "missingems",
+    "pro_product_configured_in_app_store_connect": true,
     "content_rights_documentation_reviewed": false,
     "engine_distribution_licensing_cleared": false,
-    "privacy_answers_confirmed": false,
+    "privacy_answers_confirmed": true,
     "export_compliance_confirmed": false,
-    "age_rating_completed": false
+    "age_rating_completed": true
   },
   "subscription": {
     "product_id": "com.missingems.honbaku.pro",
     "type": "auto-renewable",
     "period": "P1M",
-    "subscription_group_id": null,
-    "subscription_group_name_proposal": "Honbako Pro",
+    "subscription_group_id": "22521322",
     "price": {
       "amount": "1.99",
       "currency": "USD",
       "period": "P1M",
       "source": "owner-selected",
-      "app_store_connect_configuration_verified": false
+      "app_store_connect_configuration_verified": true
     },
-    "price_note": "Owner selected US$1.99 per month. Configure the U.S. base storefront price in App Store Connect and review other storefront prices. The simulator fixture remains test-only US$0.99; runtime paywall always uses StoreKit displayPrice.",
+    "price_note": "The configured U.S. base storefront price is US$1.99 per month. The public paywall displays StoreKit localized pricing. The US$0.99 local simulator fixture is test-only.",
     "billing_grace_period_enabled": false,
     "terms_of_use_url": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
     "localizations": {
@@ -50,19 +44,509 @@
         "description": "Offline, alerts, and iCloud sync."
       },
       "ja": {
-        "display_name": "Honbako Pro（月額）",
-        "description": "オフライン読書、新着通知、iCloud同期。"
+        "display_name": "Honbako Pro\uff08\u6708\u984d\uff09",
+        "description": "\u30aa\u30d5\u30e9\u30a4\u30f3\u8aad\u66f8\u3001\u65b0\u7740\u901a\u77e5\u3001iCloud\u540c\u671f\u3002"
       },
       "zh-Hans": {
-        "display_name": "Honbako Pro（按月）",
-        "description": "离线阅读、新章节提醒和 iCloud 同步。"
+        "display_name": "Honbako Pro\uff08\u6309\u6708\uff09",
+        "description": "\u79bb\u7ebf\u9605\u8bfb\u3001\u65b0\u7ae0\u8282\u63d0\u9192\u548c iCloud \u540c\u6b65\u3002"
       },
       "zh-Hant": {
-        "display_name": "Honbako Pro（按月）",
-        "description": "離線閱讀、新章節提醒和 iCloud 同步。"
+        "display_name": "Honbako Pro\uff08\u6309\u6708\uff09",
+        "description": "\u96e2\u7dda\u95b1\u8b80\u3001\u65b0\u7ae0\u7bc0\u63d0\u9192\u548c iCloud \u540c\u6b65\u3002"
       }
     },
-    "billing_grace_period_note": "Draft configuration leaves billing grace off; enable only after entitlement handling is implemented and tested."
+    "billing_grace_period_note": "Billing Grace Period is disabled in App Store Connect. Enabling it requires corresponding entitlement handling and testing.",
+    "apple_product_id": "6827839648",
+    "availability": {
+      "current_storefronts": 175,
+      "future_storefronts_automatic": false,
+      "owner_confirmed": true
+    },
+    "record_created": true,
+    "subscription_group_name": "Honbako Pro",
+    "review_screenshot": {
+      "path": "review/Honbako-Pro-Build28.jpg",
+      "capture": "Native public build28 Light paywall at default text size3, displaying the real Apple product at US$1.99 and Free/Pro sections.",
+      "uploaded": true,
+      "saved_in_app_store_connect": true,
+      "persistence_verified_after_reload": true,
+      "build28_replacement_status": "uploaded_saved_reload_verified",
+      "build28_replacement_path": "review/Honbako-Pro-Build28.jpg",
+      "build28_uploaded": true,
+      "build28_default_text_size": 3,
+      "build28_real_apple_price": "$1.99 per month",
+      "build28_replacement_appearance": "Light",
+      "build28_dark_replacement_status": "attempt_blocked_native_input_routing_no_dark_image_created",
+      "appearance": "Light",
+      "sha256": "2182864d91ad871cd73fb9810a2795ba4633cfc31090cecd46d5548c2e1e1b95",
+      "source_persists_after_reload": true,
+      "source_after_reload": "https",
+      "autosaved": true,
+      "save_button_enabled": false,
+      "superseded_build27_image": "review/Honbako-Pro-Build27.jpg",
+      "dark_attempt_evidence": "review/Honbako-Pro-Build28-Dark-attempt.json"
+    },
+    "review_notes": {
+      "candidate_build": "28",
+      "saved_in_app_store_connect": true,
+      "product_status": "Ready for Review",
+      "summary": "Describes both plans as ad-free, Pro chapter downloads/notifications/iCloud, the real US$1.99 Apple product, local policy/StoreKit evidence and no genuine sandbox-account purchase.",
+      "path": "review/Honbako-Pro-Build28-review-notes.txt",
+      "source_copy": "/tmp/Honbako-Pro-Build28-review-notes.txt",
+      "persistence_verified_after_reload": true,
+      "sha256": "e9fa3617f315c029ce03195b0c625e6ba9db345b0641b87f99426f61483b0d34",
+      "build": 29,
+      "exact_saved_copy": "review/Honbako-Pro-Build29-review-notes.txt",
+      "reload_verified_after_restage": true
+    },
+    "product_status": "Ready for Review",
+    "product_add_for_review_succeeded": true,
+    "subscription_group_status": "Ready for Review",
+    "group_add_for_review_succeeded": true,
+    "submission_draft": {
+      "exists": true,
+      "existing_draft_started_local_time": "19:32 Asia/Singapore, 2026-10-28",
+      "platform": "iOS",
+      "items_ready_to_submit": 2,
+      "items": [
+        {
+          "type": "Subscription",
+          "name": "Honbako Pro Monthly",
+          "apple_product_id": "6827839648"
+        },
+        {
+          "type": "Subscription Group",
+          "name": "Honbako Pro",
+          "subscription_group_id": "22521322"
+        }
+      ],
+      "app_version_added": false,
+      "submit_button_enabled": false,
+      "blocker": "To submit your items for review, add an app version for the selected platform.",
+      "final_submit_clicked": false,
+      "submitted_for_review": false,
+      "browser_proof_artifact": "app-store-pro-ready-proof.png",
+      "verification_recorded_at_utc": "2026-10-28T11:35:06Z"
+    }
   },
-  "screenshot_sources": "Actual app captures using only original tutorial artwork or owned/licensed content. No fixture, third-party manga, or fabricated UI screenshots."
+  "screenshot_sources": "All 24 current App Store Connect screenshots use genuine native build-28 Dark captures from the Debug simulator with public flags NO/NO. All eight locale/device sets were uploaded and observed at 3 of 10 images each; the page autosaved with Save disabled. Native raw sizes, all output/raw hashes and eight per-device capture proofs were verified, and primary/independent all-locale visual QA passed. Official licensed silver Apple frames remain complete, subtitles are enlarged and no extra top Honbako brand is added; no additional image generation or UI recoloring. Library artwork comes from original local CBZ portfolios; reader/chapter screens show the original six-page tutorial. Demonstration portfolios are not bundled. These supersede the previously uploaded Light v3/build-26 designs.",
+  "private_review_contact": {
+    "saved_in_app_store_connect": true,
+    "values_omitted_from_public_repository": true
+  },
+  "build26": {
+    "uploaded": true,
+    "testflight_status": "Ready to Submit",
+    "private_beta_pro_unlocked": true,
+    "automatic_manga_import": false,
+    "normal_store_purchase_configuration_verified": false,
+    "retained_for_private_beta": true
+  },
+  "privacy_answer_confirmation": "Owner approved Data Not Collected on 28 October 2026; the App Store Connect privacy declaration is published.",
+  "age_rating": {
+    "override": "18+",
+    "owner_confirmed": true,
+    "source_content_scope": "Unrestricted web and user-added content; questionnaire includes possible source content, with an explicit 18+ override.",
+    "saved_in_app_store_connect": true
+  },
+  "app_price": {
+    "base_storefront": "United States",
+    "currency": "USD",
+    "amount": "0.00"
+  },
+  "app_availability": {
+    "current_storefronts": 175,
+    "future_storefronts_automatic": false
+  },
+  "privacy_published": true,
+  "updated_on": "2026-10-28",
+  "listing_assets": {
+    "locales_uploaded": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "screenshots_uploaded": 24,
+    "screenshots_per_locale": {
+      "iphone": 3,
+      "ipad": 3
+    },
+    "capture_build": "28",
+    "final_design_version": "dark_build28",
+    "uploaded_set_counts": {
+      "en-US/iphone": 3,
+      "en-US/ipad": 3,
+      "ja/iphone": 3,
+      "ja/ipad": 3,
+      "zh-Hans/iphone": 3,
+      "zh-Hans/ipad": 3,
+      "zh-Hant/iphone": 3,
+      "zh-Hant/ipad": 3
+    },
+    "library_reader_ui_unchanged_in_build28": true,
+    "official_apple_device_frames": true,
+    "apple_frame_license_owner_accepted": true,
+    "extra_honbako_top_branding": false,
+    "subtitles_enlarged": true,
+    "additional_image_generation": false,
+    "design_script": "scripts/design_honbako_store_screenshots.py",
+    "uploaded_appearance": "Dark",
+    "dark_replacement": {
+      "capture_build": "28",
+      "configuration": "Debug simulator",
+      "honbako_personal_features": "NO",
+      "honbako_import_english_50": "NO",
+      "raw_capture_root": "screenshot-captures/build28-dark",
+      "status": "all_24_uploaded_eight_sets_verified",
+      "rendered": true,
+      "uploaded": true,
+      "target_screenshots": 24,
+      "rendered_screenshots": 24,
+      "local_qa": {
+        "native_raw_dimensions_verified": true,
+        "eight_per_device_capture_proofs_verified": true,
+        "public_capture_flags": "NO/NO",
+        "output_rgb_dimensions_and_hashes_verified": true,
+        "raw_hashes_unchanged": true,
+        "all_locale_contact_sheet_visually_reviewed": true,
+        "independent_visual_review_passed": true
+      },
+      "upload_verification": {
+        "recorded_at_utc": "2026-10-28T11:25:55Z",
+        "observed_by": "Root App Store Connect browser verification",
+        "verified_custom_sets": 8,
+        "screenshots_per_custom_set": 3,
+        "set_counts": {
+          "en-US/iphone": 3,
+          "en-US/ipad": 3,
+          "ja/iphone": 3,
+          "ja/ipad": 3,
+          "zh-Hans/iphone": 3,
+          "zh-Hans/ipad": 3,
+          "zh-Hant/iphone": 3,
+          "zh-Hant/ipad": 3
+        },
+        "observed_ui_count_per_set": "3 of 10",
+        "autosaved": true,
+        "save_button_enabled": false,
+        "browser_proof_artifact": "app-store-dark-proof.png"
+      }
+    },
+    "capture_configuration": "Debug simulator",
+    "honbako_personal_features": "NO",
+    "honbako_import_english_50": "NO",
+    "upload_verification": {
+      "recorded_at_utc": "2026-10-28T11:25:55Z",
+      "observed_by": "Root App Store Connect browser verification",
+      "verified_custom_sets": 8,
+      "screenshots_per_custom_set": 3,
+      "set_counts": {
+        "en-US/iphone": 3,
+        "en-US/ipad": 3,
+        "ja/iphone": 3,
+        "ja/ipad": 3,
+        "zh-Hans/iphone": 3,
+        "zh-Hans/ipad": 3,
+        "zh-Hant/iphone": 3,
+        "zh-Hant/ipad": 3
+      },
+      "observed_ui_count_per_set": "3 of 10",
+      "autosaved": true,
+      "save_button_enabled": false,
+      "browser_proof_artifact": "app-store-dark-proof.png"
+    },
+    "superseded_light_v3": {
+      "capture_build": "26",
+      "previously_uploaded": true,
+      "current": false
+    },
+    "library_reader_ui_unchanged_in_build29": true,
+    "descriptions_saved_for_build": 29
+  },
+  "build27": {
+    "version": "0.1.0",
+    "archive_succeeded": true,
+    "uploaded": true,
+    "testflight_status": "Ready to Submit",
+    "honbako_personal_features": "NO",
+    "honbako_import_english_50": "NO",
+    "private_beta_pro_unlocked": false,
+    "automatic_manga_import": false,
+    "archive_toolchain": "Xcode 27.1 beta",
+    "app_review_eligible": false,
+    "previously_selected_in_saved_app_draft": true,
+    "superseded_by_build": 29,
+    "current_review_candidate": false,
+    "add_for_review_rejections": [
+      "Beta Xcode 27.1 archive",
+      "Missing content-rights declaration"
+    ],
+    "privacy_policy_url_blocker_resolved": true
+  },
+  "app_review_state": {
+    "current_candidate_build": 29,
+    "apple_processing_status": "ready_to_submit",
+    "build28_selected_in_saved_app_draft": false,
+    "build28_add_for_review_validated": true,
+    "known_unresolved_declaration": "The owner has not confirmed broader external-content rights; the declaration remains missing.",
+    "pending_steps": [
+      "Resolve the accurate content-rights declaration for the personal-collection reader.",
+      "Add app version 0.1.0 with selected build 29 to the existing draft containing the subscription and subscription group.",
+      "Complete owner licensing/export confirmations and review the prepared submission before any final Submit action."
+    ],
+    "privacy_policy_url_blocker_resolved": true,
+    "privacy_policy_url_saved_locales": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "prior_validation_build": "27",
+    "current_apple_processing_status_verified": true,
+    "browser_reauthentication_required": false,
+    "current_saved_app_draft_build": 29,
+    "new_review_notes_pasted": true,
+    "build28_product_review_image_uploaded": true,
+    "iap_staged_for_review": true,
+    "validation_attempted": true,
+    "validation_passed": false,
+    "validation_errors": [
+      "Missing content-rights declaration"
+    ],
+    "resolved_prior_validation_errors": [
+      "Beta Xcode toolchain",
+      "Missing privacy-policy URL"
+    ],
+    "validation_build": 29,
+    "browser_reauthenticated": true,
+    "new_review_notes_saved": true,
+    "saved_review_notes_characters": 3062,
+    "apple_processing_status_observation": "Build 28 appeared in the eligible build list and was selected and saved; Add for Review validation then checked build 28.",
+    "initial_processing_observed_at": "2026-10-28 18:02:05 +0800",
+    "app_version_status": "Prepare for Submission",
+    "app_version_add_for_review_succeeded": false,
+    "app_version_staged": false,
+    "subscription_group_staged_for_review": true,
+    "build28_product_review_image_reload_verified": true,
+    "final_submit_clicked": false,
+    "submitted_for_review": false,
+    "submission_draft": {
+      "exists": true,
+      "existing_draft_started_local_time": "19:32 Asia/Singapore, 2026-10-28",
+      "platform": "iOS",
+      "items_ready_to_submit": 2,
+      "items": [
+        {
+          "type": "Subscription",
+          "name": "Honbako Pro Monthly",
+          "apple_product_id": "6827839648"
+        },
+        {
+          "type": "Subscription Group",
+          "name": "Honbako Pro",
+          "subscription_group_id": "22521322"
+        }
+      ],
+      "app_version_added": false,
+      "submit_button_enabled": false,
+      "blocker": "To submit your items for review, add an app version for the selected platform.",
+      "final_submit_clicked": false,
+      "submitted_for_review": false,
+      "browser_proof_artifact": "app-store-pro-ready-proof.png",
+      "verification_recorded_at_utc": "2026-10-28T11:35:06Z"
+    },
+    "validation_retried_after_product_image_and_iap_staging": true,
+    "app_version_blocker_proof": "review/AppStore-Build29-Content-Rights-Blocker.png",
+    "candidate_processing_status": "ready_to_submit",
+    "saved_review_notes_build": 29,
+    "build29_selected_in_saved_app_draft": true
+  },
+  "pro_test_evidence": {
+    "policy_and_entitlement_tests_passed": 4,
+    "local_storekit_integration_tests_passed": 1,
+    "local_storekit_scheme": "HonbakoStoreKitTests",
+    "local_storekit_verified": [
+      "The one-month local product and fixture subscription group are loaded.",
+      "A verified StoreKit test purchase unlocks Pro and cached access.",
+      "A refund removes Pro and cached access."
+    ],
+    "genuine_sandbox_account_purchase_verified": false,
+    "purchase_restore_buttons_present": true,
+    "purchase_restore_button_calls_tested": false,
+    "integration_result": "TEST SUCCEEDED",
+    "candidate_build": 29,
+    "public_toolchain_build": "27A9275",
+    "test_log": "/tmp/Honbako-Build29-ReviewTests.log"
+  },
+  "privacy_declaration": {
+    "answer": "Data Not Collected",
+    "owner_approved": true,
+    "published": true
+  },
+  "current_candidate_build": 29,
+  "build28": {
+    "version": "0.1.0",
+    "archive_succeeded": true,
+    "uploaded": true,
+    "apple_processing_status": "processed_eligible_for_build_selection",
+    "selected_in_saved_app_draft": false,
+    "honbako_personal_features": "NO",
+    "honbako_import_english_50": "NO",
+    "private_beta_pro_unlocked": false,
+    "automatic_manga_import": false,
+    "archive_toolchain": "Xcode 27.1 Public",
+    "dtxcode_build": "27A9275",
+    "sdk_name": "iphoneos27.1",
+    "codesign_verified": true,
+    "app_review_validation_status": "blocked_missing_content_rights",
+    "verification_record": "review/build28-verification.json",
+    "current_apple_processing_status_verified": true,
+    "eligible_for_build_selection": true,
+    "apple_processing_status_observation": "Build 28 appeared in the eligible build list and was selected and saved; Add for Review validation then checked build 28.",
+    "initial_processing_observed_at": "2026-10-28 18:02:05 +0800",
+    "previously_selected_in_saved_app_draft": true,
+    "superseded_by_build": 29
+  },
+  "product_changes_build28": {
+    "collection_guide": "Existing Getting Started now explains local CBZ/ZIP imports, personal servers and provider connections.",
+    "free_pro_comparison": true,
+    "both_plans_ad_free": true,
+    "free_imported_files_remain_usable_locally": true,
+    "pro_features": [
+      "Chapter downloads",
+      "Chapter notifications",
+      "iCloud library/progress sync"
+    ],
+    "localized_in": [
+      "en-US",
+      "ja",
+      "zh-Hans",
+      "zh-Hant"
+    ]
+  },
+  "automated_review_tests": {
+    "build": 29,
+    "result": "passed",
+    "total_passed": 38,
+    "self_hosted_regression_tests_passed": 9,
+    "pro_policy_entitlement_tests_passed": 4,
+    "local_storekit_integration_tests_passed": 1,
+    "log": "/tmp/Honbako-Build29-ReviewTests.log",
+    "reader_pagination_covered": false,
+    "suite_count": 8,
+    "collection_scope_tests_passed": 5
+  },
+  "native_verification": {
+    "evidence": "review/gui-build28/ui-verification.json",
+    "native_capture_count": 11,
+    "genuine_komga_api": "passed",
+    "genuine_komga_app_ui": "passed_wrong_and_correct_auth_enabled_search_catalog_add_to_shelf_first_png_page_and_three_distinct_previews",
+    "guide_local_files_setup_picker_and_cancel": "passed",
+    "local_comic_import_completion": "not_verified",
+    "local_tutorial_semantic_page2_and_saved_shelf_position": "passed",
+    "remote_page_advance_resume_and_bookmarks": "not_verified",
+    "remote_page_navigation_defect_identified": false,
+    "gesture_limitation": "Compact Device Hub drag/scroll delivery was unreliable, including Settings; full iPad semantic Page 2 navigation succeeded.",
+    "build28_paywall_native_capture": "captured_default_text_size_3_real_apple_product_1_99",
+    "build28_free_pro_sections": "verified_present",
+    "native_purchase_restore_ui": "not_verified",
+    "genuine_sandbox_account_purchase": "not_verified",
+    "development_komga_service": "stopped_gracefully",
+    "development_temporary_files_and_desktop_raw_duplicates": "removed",
+    "build28_product_review_image_appearance": "Light",
+    "build28_product_review_image_uploaded_reload_verified": true,
+    "dark_product_review_image_created": false,
+    "dark_product_review_attempt": "blocked_native_input_routing",
+    "dark_product_review_attempt_evidence": "review/Honbako-Pro-Build28-Dark-attempt.json",
+    "capture_simulator_cleanup": "complete_own_apps_removed_both_shutdown_keyboard_off_text_size3",
+    "capture_cleanup_evidence": "screenshot-captures/build28-dark/capture-cleanup.json"
+  },
+  "personal_collection_release": {
+    "candidate_build": 29,
+    "scope": "Original tutorial, local comic imports and user-configured Komga/Kavita/Suwayomi servers only",
+    "external_source_lists": false,
+    "source_package_import": false,
+    "stored_external_configs_load": false,
+    "external_catalog_metadata_enrichment": false,
+    "archive_uploaded": true,
+    "selected_in_app_store_connect": true,
+    "rights_declaration_resolved": false,
+    "verification_status": "38_tests_passed_signed_archive_uploaded_apple_processed_selected_saved_notes_and_metadata_updated",
+    "historical_build28_record": "review/build28-before-collection-only/submission.json",
+    "verification_record": "review/build29-verification.json",
+    "live_support_privacy_verified": true,
+    "app_version_staged": false
+  },
+  "build29": {
+    "version": "0.1.0",
+    "archive_succeeded": true,
+    "uploaded": true,
+    "apple_processing_status": "ready_to_submit",
+    "selected_in_saved_app_draft": true,
+    "honbako_personal_features": "NO",
+    "honbako_import_english_50": "NO",
+    "private_beta_pro_unlocked": false,
+    "automatic_manga_import": false,
+    "archive_toolchain": "Xcode 27.1 public 27A9275",
+    "sdk_name": "iphoneos27.1",
+    "codesign_verified": true,
+    "source_package_type_registered": false,
+    "verification_record": "review/build29-verification.json",
+    "eligible_for_build_selection": true,
+    "app_review_validation_status": "blocked_missing_content_rights"
+  },
+  "external_testflight_beta": {
+    "version": "0.2.0",
+    "build": 30,
+    "external_sources": true,
+    "honbako_personal_features": "NO",
+    "automatic_manga_import": false,
+    "uploaded": true,
+    "processing_status": "ready_to_submit",
+    "test_results": {
+      "collection_only_executed_passed": 41,
+      "external_executed_passed": 47,
+      "mode_specific_skips_documented": true
+    },
+    "beta_information_saved": true,
+    "feedback_email_approved_and_saved": true,
+    "external_group": "External Sources Beta",
+    "external_group_builds": 0,
+    "testers_invited": 0,
+    "public_link_enabled": false,
+    "beta_review_submitted": false,
+    "authorized_review_source": "https://missingems.github.io/Honbako/sources/index.json",
+    "verification_record": "testflight/build30/verification.json",
+    "what_to_test_saved": true,
+    "setup_continuation_approval": "owner_requested_keep_prepared",
+    "automatic_approval_review_blocked_handoff": false,
+    "own_source_review_sample": "published_and_live_tested",
+    "original_source_verification_record": "testflight/build30/original-source-verification.json"
+  },
+  "local_downloadable_candidate": {
+    "version": "0.2.0",
+    "build": 39,
+    "external_sources": true,
+    "verification_record": "downloads/build39/verification.json",
+    "mac_mcp_tests_passed": 11,
+    "native_model_tests_passed": 10,
+    "native_service_pipeline_passed": true,
+    "grok_build_connected": true,
+    "uploaded": false,
+    "installed_on_duo": true,
+    "launched_on_duo": true,
+    "native_ui_workflow_passed": true,
+    "owner_mcp_paired": true
+  },
+  "latest_testflight_upload": {
+    "version": "0.2.0",
+    "build": 35,
+    "uploaded": true,
+    "apple_processing_complete_verified": false,
+    "beta_review_submitted": false,
+    "tester_distribution_enabled": false,
+    "verification": "testflight/build35/verification.json"
+  }
 }

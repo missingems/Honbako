@@ -86,41 +86,11 @@ struct SuwayomiHelper: Sendable {
     private func refreshCookie() async -> Bool {
         guard
             let serverUrl = try? getConfiguredServer(),
-            let loginUrl = URL(string: "login.html", relativeTo: serverUrl),
             let username = UserDefaults.standard.string(forKey: "\(sourceKey).login.username"),
-            let password = UserDefaults.standard.string(forKey: "\(sourceKey).login.password")
+            let password = UserDefaults.standard.string(forKey: "\(sourceKey).login.password"),
+            let login = await Self.checkSimpleLogin(server: serverUrl, username: username, password: password, session: nil),
+            let cookie = login.cookie
         else {
-            return false
-        }
-
-        var components = URLComponents()
-        components.queryItems = [
-            URLQueryItem(name: "user", value: username),
-            URLQueryItem(name: "pass", value: password)
-        ]
-
-        var request = URLRequest(url: loginUrl)
-        request.httpMethod = "POST"
-        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        guard
-            let (_, response) = try? await URLSession(
-                configuration: .ephemeral,
-                delegate: NoRedirectDelegate(),
-                delegateQueue: nil
-            ).data(for: request),
-            let httpResponse = response as? HTTPURLResponse,
-            (200..<400).contains(httpResponse.statusCode)
-        else {
-            return false
-        }
-
-        let cookies = HTTPCookie.cookies(
-            withResponseHeaderFields: httpResponse.allHeaderFields as? [String: String] ?? [:],
-            for: loginUrl
-        )
-        guard let cookie = HTTPCookie.requestHeaderFields(with: cookies)["Cookie"] else {
             return false
         }
 
@@ -180,12 +150,13 @@ extension SuwayomiHelper {
         return await Self.getLoginType(server: server)
     }
 
-    static func getLoginType(server: URL) async -> LoginType? {
+    static func getLoginType(server: URL, session: URLSession? = nil) async -> LoginType? {
+        guard let server = SelfHostedServerURL(server.absoluteString)?.url else { return nil }
         var request = URLRequest(url: server)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        guard let response = await send(request, followRedirects: false).response else {
+        guard let response = await send(request, followRedirects: false, session: session).response else {
             return nil
         }
 
@@ -222,7 +193,10 @@ extension SuwayomiHelper {
             request.setValue("application/json", forHTTPHeaderField: "Accept")
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-            guard let data = await send(request).data else {
+            let result = await send(request, session: session)
+            guard let data = result.data,
+                  let response = result.response,
+                  (200..<300).contains(response.statusCode) else {
                 return nil
             }
 
@@ -254,8 +228,9 @@ extension SuwayomiHelper {
         let refreshToken: String?
     }
 
-    static func checkLogin(server: URL, username: String, password: String) async -> LoginCheck? {
-        guard let loginType = await SuwayomiHelper.getLoginType(server: server) else {
+    static func checkLogin(server: URL, username: String, password: String, session: URLSession? = nil) async -> LoginCheck? {
+        guard let server = SelfHostedServerURL(server.absoluteString)?.url,
+              let loginType = await SuwayomiHelper.getLoginType(server: server, session: session) else {
             return nil
         }
 
@@ -263,28 +238,28 @@ extension SuwayomiHelper {
             case .none:
                 return .init(cookie: nil, accessToken: nil, refreshToken: nil)
             case .basic:
-                return await checkBasicLogin(server: server, username: username, password: password)
+                return await checkBasicLogin(server: server, username: username, password: password, session: session)
             case .simple:
-                return await checkSimpleLogin(server: server, username: username, password: password)
+                return await checkSimpleLogin(server: server, username: username, password: password, session: session)
             case .ui:
-                return await checkUILogin(server: server, username: username, password: password)
+                return await checkUILogin(server: server, username: username, password: password, session: session)
         }
     }
 
-    private static func checkBasicLogin(server: URL, username: String, password: String) async -> LoginCheck? {
+    private static func checkBasicLogin(server: URL, username: String, password: String, session: URLSession?) async -> LoginCheck? {
         var request = URLRequest(url: server)
         let auth = Data("\(username):\(password)".utf8).base64EncodedString()
         request.setValue("Basic \(auth)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        guard let response = await send(request).response, (200..<300).contains(response.statusCode) else {
+        guard let response = await send(request, session: session).response, (200..<300).contains(response.statusCode) else {
             return nil
         }
 
         return .init(cookie: nil, accessToken: nil, refreshToken: nil)
     }
 
-    private static func checkSimpleLogin(server: URL, username: String, password: String) async -> LoginCheck? {
+    private static func checkSimpleLogin(server: URL, username: String, password: String, session: URLSession?) async -> LoginCheck? {
         guard let loginUrl = URL(string: "login.html", relativeTo: server) else {
             return nil
         }
@@ -292,18 +267,25 @@ extension SuwayomiHelper {
         var components = URLComponents()
         components.queryItems = [
             URLQueryItem(name: "user", value: username),
-            URLQueryItem(name: "password", value: password)
+            URLQueryItem(name: "pass", value: password)
         ]
 
         var request = URLRequest(url: loginUrl)
         request.httpMethod = "POST"
-        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
+        request.httpBody = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B").data(using: .utf8)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
-        let result = await send(request, followRedirects: false)
+        let result = await send(request, followRedirects: false, session: session)
+        // Invalid credentials render a 200 error page and may still set a session cookie.
+        // Only the 303 back to the configured root confirms simple authentication.
         guard
             let response = result.response,
-            (200..<400).contains(response.statusCode),
+            response.statusCode == 303,
+            let location = response.value(forHTTPHeaderField: "Location"),
+            let redirectURL = URL(string: location, relativeTo: server)?.absoluteURL,
+            let redirect = SelfHostedServerURL(redirectURL.absoluteString),
+            let expectedServer = SelfHostedServerURL(server.absoluteString),
+            redirect == expectedServer,
             let cookie = result.cookie
         else {
             return nil
@@ -312,7 +294,7 @@ extension SuwayomiHelper {
         return .init(cookie: cookie, accessToken: nil, refreshToken: nil)
     }
 
-    private static func checkUILogin(server: URL, username: String, password: String) async -> LoginCheck? {
+    private static func checkUILogin(server: URL, username: String, password: String, session: URLSession?) async -> LoginCheck? {
         guard let loginUrl = URL(string: "api/graphql", relativeTo: server) else {
             return nil
         }
@@ -355,8 +337,11 @@ extension SuwayomiHelper {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        let result = await send(request, session: session)
         guard
-            let data = await send(request).data,
+            let data = result.data,
+            let response = result.response,
+            (200..<300).contains(response.statusCode),
             let login = try? JSONDecoder().decode(Response.self, from: data).data?.login,
             let accessToken = login.accessToken,
             let refreshToken = login.refreshToken
@@ -373,8 +358,10 @@ extension SuwayomiHelper {
         var cookie: String?
     }
 
-    private static func send(_ request: URLRequest, followRedirects: Bool = true) async -> SuwayomiResponse {
-        let session = if followRedirects {
+    private static func send(_ request: URLRequest, followRedirects: Bool = true, session: URLSession? = nil) async -> SuwayomiResponse {
+        let session = if let session {
+            session
+        } else if followRedirects {
             URLSession.shared
         } else {
             URLSession(configuration: .ephemeral, delegate: NoRedirectDelegate(), delegateQueue: nil)

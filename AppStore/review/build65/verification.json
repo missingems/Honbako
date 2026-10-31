@@ -1,0 +1,81 @@
+{
+  "build": 65,
+  "version": "0.2.0",
+  "widgetTiers": {
+    "free": [
+      "Continue Reading, small and medium"
+    ],
+    "pro": [
+      "Reading Time, small and medium",
+      "New Chapters, medium and large"
+    ]
+  },
+  "widgets": {
+    "storage": "Dedicated shared app group; display-only snapshots and bounded cached cover copies. No credentials or database in extension.",
+    "updates": "Saved, unseen and unread library chapter updates, respecting source filters. Library refresh schedule is unchanged.",
+    "readingTime": "Saved reading sessions split at local midnight; private reading produces no saved session.",
+    "entitlement": "Expiry scheduled in timelines independently of reload requests.",
+    "images": "Uses existing cover cache only; no image downloads from widget publishing.",
+    "refresh": "Only affected widget kinds reloaded; foreground requests coalesced and background flush."
+  },
+  "onboarding": [
+    "Single navigation stack at every size",
+    "Free/Pro comparison includes extension repositories and free iCloud",
+    "Free, Pro monthly and Pro Annual choices with one Continue",
+    "Restore exits to library after verified restoration",
+    "AI companion wording and real MCP capabilities"
+  ],
+  "coverMode": "Per-manga inherit/on/off overrides existing global default, still a Pro feature.",
+  "tests": {
+    "widgetAndOnboarding": "Passed at17-31-47",
+    "widgetExpiryAndDesign": "Passed at17-35-02",
+    "coverAndSync": "29 focused tests passed at17-29; same run had obsolete onboarding UI assertions, subsequently fixed.",
+    "final": "PASS: Widget data/expiry and design, 7 onboarding layouts and complete onboarding free exit. Test-HonbakoStoreKitTests-2026.10.30_17-40-51-+0800.xcresult"
+  },
+  "signedBuild": "PASS: final build 65, app and embedded WidgetKit extension; signatures verified; matching App Group permissions.",
+  "deviceInstallation": "Pending reconnection; rebuild signed app with latest rows, trials and widget label changes before installing.",
+  "screenshots": [
+    "plans-rows-trials.png",
+    "plans-annual-trial.png",
+    "app-store-monthly-trial.png",
+    "app-store-annual-trial.png",
+    "onboarding-ai.png",
+    "onboarding-wide-ai.png",
+    "widgets-dark.png",
+    "widgets-light.png"
+  ],
+  "widgetPresentation": "Removed visible Pro badge, widget gallery plan suffixes/descriptions, and paid-plan wording in the locked widget. Access rules unchanged.",
+  "widgetLabelBuild": "PASS: WidgetKit extension compiled after removing visible Pro wording.",
+  "screenshotNote": "Current plans use rows and verified local StoreKit trial metadata. Apple screenshots prove the same durations configured for 175 storefronts; customer eligibility still controls whether a trial is shown.",
+  "iapReview": {
+    "date": "2026-10-30",
+    "scope": "Purchase-screen design and local StoreKit behavior; live App Store Connect configuration not rechecked.",
+    "changes": [
+      "Explicit leading alignment for wrapped annual title",
+      "Free choice shows only Free",
+      "Selected paid full renewal price and auto-renewal text stays beside Continue"
+    ],
+    "disclosures": [
+      "Tier benefits",
+      "StoreKit localized full monthly/annual prices and periods",
+      "Restore Purchases",
+      "Terms of Use and Privacy Policy links; both reachable"
+    ],
+    "sources": [
+      "https://developer.apple.com/app-store/subscriptions/",
+      "https://developer.apple.com/design/human-interface-guidelines/apple-in-app-purchase",
+      "https://developer.apple.com/app-store/review/guidelines/#subscriptions"
+    ],
+    "verification": "PASS: eight rendered onboarding/paywall layouts including pinned annual renewal disclosure, complete Free exit, simulated monthly and annual purchases/refunds, savings calculation."
+  },
+  "trials": {
+    "monthly": "1-week free introductory trial",
+    "annual": "1-month free introductory trial",
+    "appStoreConnect": "Both saved and verified in Current Introductory Offers for all 175 current storefronts, Oct 30 2026 to No End Date. No review submission performed.",
+    "eligibility": "Requires actual zero-price StoreKit free-trial offer and customer introductory-offer eligibility. Rechecked before purchase; changed trial eligibility asks the customer to review current pricing.",
+    "groupRule": "One introductory offer across the Pro group. Switching to another billing period does not grant a second trial.",
+    "rows": "Native full-width Free, Pro per month and Pro per year rows; eligible trial plus full renewal price and period. One pinned Continue and Restore Purchases.",
+    "tests": "PASS: native row layout/free exit, real StoreKit trial metadata, model validation, monthly/annual purchase and refund, and consumed group eligibility with no second annual trial. Test-HonbakoStoreKitTests-2026.10.30_18-24-25-+0800.xcresult"
+  },
+  "appStoreDraftNote": "Existing 0.1.0 app-version description/review notes are older than the current implementation and still need updating before any App Store submission; this pass only configured introductory offers."
+}

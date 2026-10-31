@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "build": 34,
+  "findings": [
+    {
+      "priority": "P1",
+      "problem": "Finished books disappear from the active library because only Reading is rendered.",
+      "resolution": "Render separate Reading and Finished shelves, default visible, with a reversible Hide Finished Books setting and empty-state recovery."
+    },
+    {
+      "priority": "P2",
+      "problem": "Ordinary scrolling repeatedly publishes zero search pull progress and recalculates library ordering.",
+      "resolution": "Observe clamped overscroll, guard unchanged publication values, and cache library shelf sorting on collection updates."
+    },
+    {
+      "priority": "P2",
+      "problem": "Zero-sized cold cover views render a fallback bitmap and immediately render again at their final size.",
+      "resolution": "Wait for valid layout bounds before rendering placeholders."
+    },
+    {
+      "priority": "P2",
+      "problem": "Cover status overlays are ignored by the parent accessibility element.",
+      "resolution": "Include unread count and finish date in the cover accessibility value; hide duplicate overlay announcements."
+    }
+  ],
+  "design_checks": [
+    "compact light",
+    "compact dark",
+    "wide dark",
+    "accessibility large text dark",
+    "all finished books hidden recovery"
+  ],
+  "design_evidence": "Native production component captures with text-only first-party fixtures; not marketing screenshots.",
+  "limitations": [
+    "Physical Duo pose screenshots unavailable because its connected screen viewer is black. Compact/wide reader direction is covered by integration tests."
+  ],
+  "distribution_scope": "Upload only; preserve the existing hold on beta review and external-group attachment."
+}

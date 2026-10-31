@@ -1,0 +1,8 @@
+Honbako Pro is a one-month auto-renewable subscription for chapter downloads, chapter alerts and private iCloud library/progress sync. Product: com.missingems.honbaku.pro. U.S. base price: US$1.99; StoreKit displays the localized price. Public build 28 disables the private beta unlock and automatic manga import.
+
+No app sign-in is required for the included original tutorial. In the library, pull down to Search, open Settings, scroll down and select Honbako Pro. Command-F also opens Search. Free and Pro are both ad-free. Free supports reading and organizing your collection, including imported local files. The Pro screen has the plan comparison, Subscribe, Restore Purchases, Manage Subscription, Terms of Use and Privacy Policy. The attached native screenshot shows the real App Store product at $1.99/month without a StoreKit test configuration.
+
+Local StoreKit testing verified a monthly purchase, cached access and refund revocation; access policy and entitlement unit tests also passed. A real sandbox-account purchase was not performed. Alerts depend on notification permission, source availability and iOS scheduling. Pro does not include manga or grant third-party content rights.
+
+Support: https://missingems.github.io/Honbako/support/
+Privacy: https://missingems.github.io/Honbako/privacy/

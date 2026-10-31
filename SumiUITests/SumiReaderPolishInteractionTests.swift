@@ -16,9 +16,10 @@ final class SumiReaderPolishInteractionTests: XCTestCase {
         let reader = item("Sumi.DirectReader", app)
         let close = app.buttons["SumiReader.Close"]
         XCTAssertTrue(close.waitForExistence(timeout: 20))
-        let title = item("Sumi.Reader.Title", app)
+        let title = app.navigationBars["Sumi.Reader.Navigation"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertEqual(title.label, "Fixture Manga 001")
+        XCTAssertTrue(title.staticTexts["Fixture Manga 001"].exists)
+        XCTAssertTrue(title.staticTexts["Chapter 1"].exists)
         let page = app.descendants(matching: .any).matching(NSPredicate(format: "identifier IN %@",
             ["sumi.reader.slide", "sumi.reader.curl"])).firstMatch
         XCTAssertTrue(page.waitForExistence(timeout: 5))

@@ -3,13 +3,15 @@ import AidokuRunner
 import AVFoundation
 import UIKit
 
-/// The owner explicitly allows the camera route on hinged hardware. Other
-/// installations offer ordinary external-display content without camera access.
+/// The optional outer cover uses the camera accessory on hinged hardware.
+/// Camera permission and the visible Show Manga Cover preference gate capture.
 @MainActor
 final class HonbakoCoverDisplaySession {
     private let model = HonbakoCoverDisplayModel()
     private let camera = HonbakoCoverCamera()
     private weak var owner: UIViewController?
+    private var manga: AidokuRunner.Manga?
+    private var source: AidokuRunner.Source?
     private var registration: AnyObject?
     private var interaction: (any UIInteraction)?
     private var observers: [NSObjectProtocol] = []
@@ -23,11 +25,12 @@ final class HonbakoCoverDisplaySession {
 
     func start(on owner: UIViewController, manga: AidokuRunner.Manga, source: AidokuRunner.Source?) {
         guard #available(iOS 27.0, *) else { model.recordUnsupportedSystem(); return }
-        model.prepare(manga: manga, source: source)
+        self.manga = manga
+        self.source = source
         self.owner = owner
         foreground = UIApplication.shared.applicationState == .active
         if observers.isEmpty { observeLifecycle() }
-        if #available(iOS 27.1, *), HonbakoProStore.personalFeaturesEnabled, interaction == nil {
+        if #available(iOS 27.1, *), interaction == nil {
             let hinge = UIHingeInteraction { [weak self] _, update in
                 guard let self else { return }
                 hingePresent = update.hinge != nil
@@ -43,14 +46,26 @@ final class HonbakoCoverDisplaySession {
     }
 
     private var policy: HonbakoCoverCameraPolicy {
-        .init(personalBuild: HonbakoProStore.personalFeaturesEnabled, hingePresent: hingePresent,
+        .init(personalBuild: HonbakoProStore.personalFeaturesEnabled, verifiedPro: HonbakoProStore.cachedHasPro, hingePresent: hingePresent,
             hingeOpen: hingeOpen, readerPresented: owner?.presentingViewController != nil,
-            coverEnabled: HonbakoCoverDisplayPreferences.showCover(), foreground: foreground)
+            // The switches appear only on iPhone Duo, so an older choice can't run where it can't be undone.
+            coverEnabled: HonbakoDeviceModel.isPhoneDuo && HonbakoCoverDisplayPreferences.showCover(for: manga?.identifier),
+            foreground: foreground)
     }
 
     private func reconcile() {
         guard #available(iOS 27.0, *), let owner else { return }
         let policy = policy
+        guard policy.hasAccess, policy.coverEnabled else {
+            if let registration = registration as? UISceneAccessoryRegistration { registration.isEnabled = false }
+            model.setRegistration(registration != nil, enabled: false)
+            if lastShouldRun != false {
+                lastShouldRun = false
+                reconcileCamera(running: false)
+            }
+            return
+        }
+        if let manga { model.prepare(manga: manga, source: source) }
         let kindChanged = registration == nil || usesCameraAccessory != policy.usesCameraAccessory
         if kindChanged {
             if let registration = registration as? UISceneAccessoryRegistration {
@@ -68,7 +83,7 @@ final class HonbakoCoverDisplaySession {
             registration = owner.registerSceneAccessory(accessory)
             model.setAccessoryKind(usesCameraAccessory ? "cameraCapture" : "externalNonInteractive")
         }
-        let enabled = policy.coverEnabled && policy.foreground && (!usesCameraAccessory || policy.hingeOpen)
+        let enabled = policy.shouldEnableAccessory
         (registration as? UISceneAccessoryRegistration)?.isEnabled = enabled
         if kindChanged { model.setRegistration(true, enabled: enabled) }
         updateAvailability()
@@ -114,6 +129,9 @@ final class HonbakoCoverDisplaySession {
 
     private func observeLifecycle() {
         observers.append(NotificationCenter.default.addObserver(
+            forName: HonbakoProStore.entitlementChangedNotification, object: nil, queue: .main
+        ) { [weak self] _ in Task { @MainActor [weak self] in self?.reconcile() } })
+        observers.append(NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification, object: nil, queue: .main
         ) { [weak self] _ in Task { @MainActor [weak self] in self?.reconcile() } })
         observers.append(NotificationCenter.default.addObserver(
@@ -138,6 +156,8 @@ final class HonbakoCoverDisplaySession {
         observers = []
         let owner = owner
         self.owner = nil
+        manga = nil
+        source = nil
         if let interaction { owner?.view.removeInteraction(interaction) }
         interaction = nil
         if #available(iOS 27.0, *), let registration = registration as? UISceneAccessoryRegistration {

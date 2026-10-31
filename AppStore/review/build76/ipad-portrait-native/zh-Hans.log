@@ -1,0 +1,62 @@
+Command line invocation:
+    "/Applications/Xcode 27.1 Public.app/Contents/Developer/usr/bin/xcodebuild" test-without-building -xctestrun /Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Build/Products/HonbakoStoreKitTests_iphonesimulator27.1-arm64.xctestrun -destination "platform=iOS Simulator,id=2894F317-56AD-47E0-965E-62D57B74D995" -parallel-testing-enabled NO "-only-testing:SumiUITests/HonbakoSubmissionScreenshotTests/testIPadPortraitLibrarySimplifiedChinese" -collect-test-diagnostics never -resultBundlePath /Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/zh-Hans.xcresult
+
+Writing result bundle at path:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/zh-Hans.xcresult
+
+2026-10-31 07:32:58.371 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:59.414291+0800 SumiUITests-Runner[78694:314928358] [Default] Running tests...
+2026-10-31 07:32:59.436883+0800 SumiUITests-Runner[78694:314928358] [UIKit App Config] Update the Info.plist: Launch screens will soon be required.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-10-31 07:33:01.981.
+Test Suite 'SumiUITests.xctest' started at 2026-10-31 07:33:01.982.
+Test Suite 'HonbakoSubmissionScreenshotTests' started at 2026-10-31 07:33:01.982.
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testIPadPortraitLibrarySimplifiedChinese]' started.
+    t =     0.00s Start Test at 2026-10-31 07:33:01.985
+    t =     0.02s Set Up
+    t =     0.02s Setting device orientation to Portrait
+    t =     0.03s     Wait for com.apple.springboard to idle
+    t =     0.04s Open com.missingems.honbaku
+    t =     0.04s     Launch com.missingems.honbaku
+2026-10-31 07:33:02.071 xcodebuild[78685:314928206] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-10-31 07:33:02.071 xcodebuild[78685:314928206] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-10-31 07:33:02.084 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+objc[78694]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x1022b8398) and /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x103394310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =     0.50s         Setting up automation session
+    t =     2.63s         Wait for com.missingems.honbaku to idle
+    t =     4.13s Waiting 30.0s for "Sumi.Grid" Any to exist
+    t =     5.16s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Grid" Any`
+    t =     5.16s         Checking existence of `"Sumi.Grid" Any`
+    t =     6.29s Checking `Expect predicate `BLOCKPREDICATE(0x106669710)` for object "Sumi.Grid" Any`
+    t =     6.29s     Find the "Sumi.Grid" Any
+    t =     6.33s Checking existence of `"Honbako.Library.Header.Popular" Any`
+    t =     7.62s Checking `Expect predicate `BLOCKPREDICATE(0x10666aa60)` for object "Sumi.Grid" ScrollView`
+    t =     7.62s     Find the Window (First Match)
+    t =     7.63s     Find the Window (First Match)
+    t =     8.64s Find the Target Application 'com.missingems.honbaku'
+    t =     9.23s Added attachment named 'zh-Hans-01-library'
+    t =     9.23s Terminate com.missingems.honbaku:78713
+2026-10-31 07:33:11.244 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:33:11.244 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:33:11.245 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+    t =    10.32s Tear Down
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testIPadPortraitLibrarySimplifiedChinese]' passed (10.385 seconds).
+Test Suite 'HonbakoSubmissionScreenshotTests' passed at 2026-10-31 07:33:12.370.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.385 (10.388) seconds
+Test Suite 'SumiUITests.xctest' passed at 2026-10-31 07:33:12.371.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.385 (10.389) seconds
+Test Suite 'Selected tests' passed at 2026-10-31 07:33:12.371.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.385 (10.390) seconds
+2026-10-31 07:33:12.402 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:33:12.403 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:33:12.403 xcodebuild[78685:314928206] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:33:12.666 xcodebuild[78685:314928206] [MT] IDETestOperationsObserverDebug: 14.333 elapsed -- Testing started completed.
+2026-10-31 07:33:12.666 xcodebuild[78685:314928206] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-31 07:33:12.666 xcodebuild[78685:314928206] [MT] IDETestOperationsObserverDebug: 14.333 sec, +14.333 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/zh-Hans.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

@@ -1,0 +1,83 @@
+{
+  "verified_at": "2026-10-30",
+  "source_owner": "Amazon Web Services",
+  "scope": "Public Linux On-Demand compute price; not an account estimate or proof of launch eligibility in a selected region",
+  "selected_candidate": {
+    "instance_type": "c7i-flex.large",
+    "vcpu": 2,
+    "memory_gib": 4,
+    "os": "Ubuntu 24.04 LTS AMD64",
+    "root_gb": 30,
+    "root_type": "gp3"
+  },
+  "account_plan": "Free only; no upgrade authorized",
+  "initial_credit_usd": 100,
+  "additional_earned_credit_maximum_usd": 100,
+  "plan_ends": "Six months or credit exhaustion, whichever first",
+  "assumptions": {
+    "hours_per_example_month": 720,
+    "continuous_operation": true,
+    "remaining_credit_example_usd": 100,
+    "other_usage": 0,
+    "excludes": [
+      "EBS",
+      "public IPv4",
+      "data transfer",
+      "tax",
+      "logs",
+      "snapshots",
+      "other services"
+    ],
+    "runway_is_compute_only_upper_bound": true
+  },
+  "regional_examples": [
+    {
+      "region": "US East (N. Virginia)",
+      "official_price_feed": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/ec2/USD/current/ec2-ondemand-without-sec-sel/US%20East%20%28N.%20Virginia%29/Linux/index.json",
+      "instances": [
+        {
+          "instance_type": "c7i-flex.large",
+          "vcpu": 2,
+          "memory_gib": 4,
+          "usd_per_hour": "0.0847900000",
+          "rate_code": "EPG9NBG9GRCHRP3F.JRTCKXETXF.6YS6EN2CT7",
+          "usd_per_720_hours": 61.0488,
+          "days_per_100usd_compute_only": 49.141
+        },
+        {
+          "instance_type": "m7i-flex.large",
+          "vcpu": 2,
+          "memory_gib": 8,
+          "usd_per_hour": "0.0957600000",
+          "rate_code": "SD5Q9AZVZ786UZA2.JRTCKXETXF.6YS6EN2CT7",
+          "usd_per_720_hours": 68.9472,
+          "days_per_100usd_compute_only": 43.512
+        }
+      ]
+    },
+    {
+      "region": "Asia Pacific (Singapore)",
+      "official_price_feed": "https://b0.p.awsstatic.com/pricing/2.0/meteredUnitMaps/ec2/USD/current/ec2-ondemand-without-sec-sel/Asia%20Pacific%20%28Singapore%29/Linux/index.json",
+      "instances": [
+        {
+          "instance_type": "c7i-flex.large",
+          "vcpu": 2,
+          "memory_gib": 4,
+          "usd_per_hour": "0.0977800000",
+          "rate_code": "P2YMEHYUVXWEP4SJ.JRTCKXETXF.6YS6EN2CT7",
+          "usd_per_720_hours": 70.4016,
+          "days_per_100usd_compute_only": 42.613
+        },
+        {
+          "instance_type": "m7i-flex.large",
+          "vcpu": 2,
+          "memory_gib": 8,
+          "usd_per_hour": "0.1197000000",
+          "rate_code": "YT6URNNK7PK3VC3Y.JRTCKXETXF.6YS6EN2CT7",
+          "usd_per_720_hours": 86.184,
+          "days_per_100usd_compute_only": 34.809
+        }
+      ]
+    }
+  ]
+}

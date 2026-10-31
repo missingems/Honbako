@@ -1,9 +1,29 @@
 @testable import Sumi
+import Combine
 import Foundation
 import Testing
 
 @MainActor
 struct SumiSearchPresentationTests {
+    @Test("Ordinary scrolling and repeated clamped pulls do not republish unchanged Search state")
+    func unchangedPullDoesNotPublish() {
+        let search = SumiSearchPresentation()
+        var publications = 0
+        let observation = search.objectWillChange.sink { publications += 1 }
+        for _ in 0..<600 { search.updatePull(distance: 0); search.finishPull() }
+        #expect(publications == 0)
+        search.updatePull(distance: 13)
+        for _ in 0..<60 { search.updatePull(distance: 13) }
+        #expect(publications == 1)
+        search.updatePull(distance: 100)
+        search.updatePull(distance: 1_000)
+        #expect(publications == 2)
+        search.finishPull()
+        search.finishPull()
+        #expect(publications == 3)
+        withExtendedLifetime(observation) {}
+    }
+
     @Test("Opening a book suspends automatic keyboard focus until Search is deliberately revealed again")
     func keyboardStaysResignedAfterReading() {
         let search = SumiSearchPresentation()

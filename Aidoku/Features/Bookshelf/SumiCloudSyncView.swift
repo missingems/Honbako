@@ -4,49 +4,48 @@ import SwiftUI
 
 struct SumiCloudSyncView: View {
     @ObservedObject private var status = CloudSyncStatus.shared
-    @ObservedObject private var pro = HonbakoProStore.shared
-    @State private var proPresented = false
+    @AppStorage("General.icloudSync") private var syncEnabled = true
 
     var body: some View {
         List {
-            Section {
-                Label(message, systemImage: status.activeEvents.isEmpty ? "icloud" : "arrow.triangle.2.circlepath.icloud")
-                if pro.hasPro, let error = status.lastError {
-                    Text(error).foregroundStyle(.secondary)
+            Group {
+                Section {
+                    Label(message, systemImage: status.activeEvents.isEmpty ? "icloud" : "arrow.triangle.2.circlepath.icloud")
+                    Toggle("Sync with iCloud", isOn: $syncEnabled)
+                        .accessibilityIdentifier("Honbako.iCloud.Enabled")
+                    if let error = status.lastError {
+                        Text(error).foregroundStyle(.secondary)
+                    }
+                } footer: {
+                    Text("Library, bookmarks, language choices, reading progress, and safe source connection details sync with your iCloud account. Downloads, extension packages, and sign-in credentials stay on this device.")
                 }
-                if !pro.hasPro {
-                    Button("View Honbako Pro") { proPresented = true }
+                if let upload = status.lastUpload {
+                    LabeledContent("Last Upload") { Text(upload, format: .dateTime.month().day().hour().minute()) }
                 }
-            } footer: {
-                Text("Library, bookmarks, language choices, and reading progress sync with your iCloud account. Downloads and source files stay on this device.")
-            }
-            .listRowBackground(HonbakoSettingsRowBackground())
-            if pro.hasPro, let upload = status.lastUpload {
-                LabeledContent("Last Upload") { Text(upload, format: .dateTime.month().day().hour().minute()) }
-                    .listRowBackground(HonbakoSettingsRowBackground())
-            }
-            if pro.hasPro, let download = status.lastDownload {
-                LabeledContent("Last Download") { Text(download, format: .dateTime.month().day().hour().minute()) }
-                    .listRowBackground(HonbakoSettingsRowBackground())
-            }
-            if pro.hasPro {
+                if let download = status.lastDownload {
+                    LabeledContent("Last Download") { Text(download, format: .dateTime.month().day().hour().minute()) }
+                }
+                HonbakoSourceSetupRecoverySection(syncEnabled: syncEnabled)
                 Button("Check iCloud Account") { Task { await status.refreshAccount() } }
                     .disabled(status.checkingAccount)
-                    .listRowBackground(HonbakoSettingsRowBackground())
             }
+            .honbakoPaperRows()
         }
+        .honbakoPaperListBackground()
         .navigationTitle("iCloud Sync")
         .navigationBarTitleDisplayMode(.inline)
-        .tint(.blue)
-        .sheet(isPresented: $proPresented) { HonbakoProView(feature: .cloudProgress) }
-        .task { if pro.hasPro { status.start(); await status.refreshAccount() } }
-        .onChange(of: pro.hasPro) { _, enabled in
-            if enabled { Task { status.start(); await status.refreshAccount() } }
+        .tint(HonbakoPalette.accent)
+        .task { status.start(); await status.refreshAccount() }
+        .onChange(of: syncEnabled) { _, enabled in
+            NotificationCenter.default.post(name: .init(AppSettings.general.icloudSync.key), object: enabled)
         }
     }
 
     private var message: String {
-        if !pro.hasPro { return String(localized: "iCloud Sync Is Included with Honbako Pro") }
+        if !syncEnabled {
+            return status.enabledAtLaunch ? String(localized: "Reopen Honbako to turn off automatic sync.")
+                : String(localized: "iCloud Sync Off")
+        }
         if !status.configured { return String(localized: "iCloud is unavailable in this build.") }
         if status.checkingAccount { return String(localized: "Checking iCloud…") }
         if !status.enabledAtLaunch { return String(localized: "Reopen Honbako to enable automatic sync.") }

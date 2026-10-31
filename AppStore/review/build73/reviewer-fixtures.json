@@ -1,0 +1,74 @@
+{
+  "original_content_only": true,
+  "renderer": "Aidoku/Features/Bookshelf/Services/HonbakoGuideRenderer.swift",
+  "renderer_sha256": "eca261171f45b243d55e8bd50c45a99afe6f9ad22dc68b29d2ba1a4d7815f2af",
+  "text_sha256": "f58676dcd71afc222a99ca303a2034d8ee475254e1d7e907f9144ac30d273702",
+  "books": [
+    {
+      "provider": "komga",
+      "identifier": "guide-connect",
+      "title": "Your Collections",
+      "chapters": 1,
+      "pages_including_cover": 5,
+      "cbz": "Tools/reviewer-fixtures/generated/libraries/komga/Your Collections/Your Collections v01 c001.cbz",
+      "sha256": "d6993eba14a1d703591ec621879a92fedfbc32ceb22a97e3f4988b10626d7825",
+      "asset_sha256": {
+        "cover.png": "22c6fef4af0f5bc3232428a2108945fca3a39ca715d8438ffde5f48c7dca5dbb",
+        "page-1.png": "7a12f943ddfd42c2df6f537a6174bf585e79e7c2471ae7b92448d3b80fdc900c",
+        "page-2.png": "5866ea9e0c112f409ab229ecb0edca799a0fcf59f49c28fe1227d8c8616c0a1c",
+        "page-3.png": "387c9a1b3e946b0e07c7ba4ba52d773af23406e13a83cf9a3b4ed7f36743f12e",
+        "page-4.png": "2cb4304a7dfa614c336f94de2df59c6d2dee1bb866fdec2e88c079f975ff7365"
+      }
+    },
+    {
+      "provider": "kavita",
+      "identifier": "guide-read",
+      "title": "Read Your Way",
+      "chapters": 1,
+      "pages_including_cover": 5,
+      "cbz": "Tools/reviewer-fixtures/generated/libraries/kavita/Read Your Way/Read Your Way v01 c001.cbz",
+      "sha256": "3fd6223340a5fd92802ef59f58d776f7838bd819c6dffb2a3ac0a9b1ae00eec7",
+      "asset_sha256": {
+        "cover.png": "346d41d5fb1591eed08ba5891b43960966218bc4c354a53f4ae5dc5186eb5678",
+        "page-1.png": "439f15038be0d70a014d7c201c7418d4245a0bbc1e14f3f3fbe5159f3ccbe4df",
+        "page-2.png": "94602257d974934a153c14c40c9a7af7aa8ca25a349056b352d1669d26fa24bb",
+        "page-3.png": "527a630945f062e6fe7ea1ba7793d8c98068c8dd65ae75cd808851ea48023abb",
+        "page-4.png": "bea3350c0ef43e87f907a00431253beb880f333973ccd7df92165856afaedbf6"
+      }
+    },
+    {
+      "provider": "suwayomi",
+      "identifier": "guide-find",
+      "title": "Search & Delete",
+      "chapters": 1,
+      "pages_including_cover": 5,
+      "cbz": "Tools/reviewer-fixtures/generated/libraries/suwayomi/Search & Delete/Search & Delete v01 c001.cbz",
+      "sha256": "848667713b6d125b84f41ac3753a9c36a992a3b08ef417ef501c9930731ab4e3",
+      "asset_sha256": {
+        "cover.png": "a0b48534536aa13f882c3cc5a0bb6c9225eb1f945d6194c230e681f173dada62",
+        "page-1.png": "1bde21b20aecf5d35aa70e6375aa43802d815e9b870b636d77e16ce7fe4b1a9e",
+        "page-2.png": "26c970d59e1d43bac11e2dc47ef3b72101a85f02bd9e0c2c7c231035fdddc20b",
+        "page-3.png": "1808d8cf58b387b582e9004294e1e8a240feb76ba9e3b74a50eed0c61412311e",
+        "page-4.png": "fcc4cd5aa09b1a25e1e8361d0a4a5663fccf51632aab95e21cd02425f1859cc9"
+      }
+    },
+    {
+      "provider": "mcp",
+      "identifier": "bookshop",
+      "title": "The Bookshop Between Pages",
+      "chapters": 1,
+      "pages_including_cover": 7,
+      "cbz": "Tools/reviewer-fixtures/generated/libraries/mcp/The Bookshop Between Pages/The Bookshop Between Pages v01 c001.cbz",
+      "sha256": "8182385d819a7e2abca5962c0b340a06e6b570eebd0639b472453c06c76d48a7",
+      "asset_sha256": {
+        "cover.png": "e8030e88b72c0721367ac76f04824aee5ad35674bfa22a9edba0991949af8b6a",
+        "page-1.png": "aa6dff3be49c8d08a990e90aafdf1391d7823f519a7cb1b29cdecc84caafcb3c",
+        "page-2.png": "010dec8ec6339eaa982b8ab49115faa81132b25e48ab46c39555cc138e759a99",
+        "page-3.png": "b794c497416da31a5c7689671dcddb69c8fd0c023a6e20c64d57f86f08a89823",
+        "page-4.png": "15ffb82d63a6955a283821abb760524c86e88ccd205c10191026256c1b113101",
+        "page-5.png": "bdceb699041bc319db09c36a01a52521898ef1c9e45d47ac8c9ae6408fa84a93",
+        "page-6.png": "1a26ac9f45fcb558de90d7de5f574555ccbb21d06228f14329d83667da5efbc1"
+      }
+    }
+  ]
+}

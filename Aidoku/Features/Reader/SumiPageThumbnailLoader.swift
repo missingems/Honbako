@@ -44,7 +44,8 @@ final class SumiPageThumbnailLoader {
             request.processors = request.processors.filter { !($0 is UpscaleProcessor) && !($0 is DownsampleProcessor) }
             request.processors.append(SumiPreviewCropper.thumbnailProcessor(forHover: forHover))
             request.priority = forHover ? .normal : .low
-            image = try? await ImagePipeline.shared.image(for: request)
+            let fetch = SumiPageImageFetch()
+            image = try? await fetch.response(for: request).image
         }
         guard !Task.isCancelled else { return nil }
         guard let image else { return nil }

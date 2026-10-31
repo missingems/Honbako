@@ -49,6 +49,9 @@ class ReaderPageView: UIView {
     private var renderedImageFrame: CGRect = .zero
     private var schedulesPageSizingUpdate = false
     private var imageTask: ImageTask?
+    #if SUMI
+    private let sumiImageFetch = SumiPageImageFetch()
+    #endif
     private var sourceId: String?
     private var shouldShowLiveTextButton = false
     @available(iOS 16.0, *)
@@ -75,9 +78,59 @@ class ReaderPageView: UIView {
     private var skipsProcessing = false
     private var isRefreshingResolution = false
     #if SUMI
+    private let sumiJapaneseOverlay = HonbakoInlineJapaneseOverlayView()
+    private let sumiPageCoachingOverlay = HonbakoPageCoachingOverlayView()
+    private var sumiJapaneseLearningEnabled = false
+    private var sumiJapaneseSelection: HonbakoJapaneseSelectionHandler?
+
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?) {
+        sumiJapaneseLearningEnabled = enabled
+        sumiJapaneseSelection = onSelect
+        sumiUpdateJapaneseLearning()
+    }
+
+    private func sumiUpdateJapaneseLearning() {
+        sumiJapaneseOverlay.configure(enabled: sumiJapaneseLearningEnabled && currentPage?.sumiJapaneseLearningEligible == true,
+            onSelect: sumiJapaneseSelection)
+        sumiJapaneseOverlay.update(image: gifData == nil ? imageView.image : nil)
+    }
+
+    private func sumiUpdatePageCoaching() {
+        let ready = imageView.image != nil && !sumiLoadingView.isRevealing && sumiLoadingView.isHidden && imageView.alpha > 0.99
+        sumiPageCoachingOverlay.configure(page: ready ? currentPage : nil)
+    }
+
+    func setJapaneseLearningVisible(_ visible: Bool) {
+        sumiJapaneseOverlay.setPageVisible(visible)
+    }
+
     private let sumiLoadingView = SumiPageImageLoadingView()
     private let sumiEdgeBackground = SumiPageEdgeBackgroundView()
     private var sumiLoadGeneration = 0
+    private(set) var sumiImageLoadFailed = false
+    private var sumiImageRequestCanceled = false
+    var sumiRetryPage: (() -> Void)?
+
+    func sumiBeginImageLoad() {
+        sumiImageLoadFailed = false
+        sumiImageRequestCanceled = false
+        progressView.isHidden = true
+        if imageView.image == nil { sumiLoadingView.show() }
+        onReferenceContentChanged?()
+    }
+
+    private func sumiShowImageLoadFailure() {
+        guard imageView.image == nil else { return }
+        sumiImageLoadFailed = true
+        progressView.isHidden = true
+        sumiLoadingView.showFailure { [weak self] in
+            guard let self else { return }
+            if let sumiRetryPage { sumiRetryPage() }
+            else { Task { _ = await self.reloadCurrentImage() } }
+        }
+        bringSubviewToFront(sumiLoadingView)
+        onReferenceContentChanged?()
+    }
     var sumiIsImageReady: Bool {
         imageView.image != nil && !sumiLoadingView.isRevealing && imageView.alpha > 0.99 && sumiEdgeBackground.isReady
     }
@@ -85,6 +138,7 @@ class ReaderPageView: UIView {
     func sumiRevealAfterLoadingPlaceholder() {
         guard imageView.image != nil else { return }
         sumiLoadingView.reveal(imageView, animated: window != nil) { [weak self] in
+            self?.sumiUpdatePageCoaching()
             self?.onReferenceContentChanged?()
         }
         onReferenceContentChanged?()
@@ -157,6 +211,7 @@ class ReaderPageView: UIView {
         #if SUMI
         sumiEdgeBackground.frame = bounds
         sumiEdgeBackground.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        sumiEdgeBackground.onColorsChanged = { [weak self] in self?.onReferenceContentChanged?() }
         sumiLoadingView.frame = bounds
         sumiLoadingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(sumiLoadingView)
@@ -182,6 +237,10 @@ class ReaderPageView: UIView {
         dictionaryOverlayContainerView.isUserInteractionEnabled = true
         imageView.addSubview(dictionaryOverlayContainerView)
         dictionaryOverlayController.containerView = dictionaryOverlayContainerView
+        #if SUMI
+        imageView.addSubview(sumiJapaneseOverlay)
+        imageView.addSubview(sumiPageCoachingOverlay)
+        #endif
 
         imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
         imageWidthConstraint?.isActive = true
@@ -213,12 +272,17 @@ class ReaderPageView: UIView {
             imageLayoutSize = bounds.size
             fixImageSize()
         }
+        #if SUMI
+        sumiUpdatePageCoaching()
+        #endif
         if let image = imageView.image {
             paperTextureView.update(imageSize: image.size, in: imageView.bounds, contentMode: imageView.contentMode)
             let frame = imageView.convert(
                 ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds), to: self
             )
             #if SUMI
+            sumiJapaneseOverlay.updateImageFrame(ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds))
+            sumiPageCoachingOverlay.updateImageFrame(ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds))
             sumiEdgeBackground.frame = bounds
             sumiEdgeBackground.layout(imageFrame: frame)
             #endif
@@ -230,6 +294,7 @@ class ReaderPageView: UIView {
             paperTextureView.update(imageSize: nil, in: imageView.bounds, contentMode: imageView.contentMode)
             #if SUMI
             sumiEdgeBackground.update(image: nil)
+            sumiPageCoachingOverlay.configure(page: nil)
             #endif
         }
         refreshResolutionIfNeeded()
@@ -279,7 +344,28 @@ extension ReaderPageView {
         }
     }
 
-    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) async -> Bool {
+    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false, forceReload: Bool = false) async -> Bool {
+        #if SUMI
+        if forceReload {
+            clearCurrentImageCache()
+            setPageImage(nil)
+        }
+        let generation = sumiLoadGeneration
+        sumiBeginImageLoad()
+        #endif
+        let success = await loadPageContent(page, sourceId: sourceId, skipProcessing: skipProcessing, forceReload: forceReload)
+        #if SUMI
+        guard generation == sumiLoadGeneration, !Task.isCancelled, !sumiImageRequestCanceled else { return false }
+        if !success { sumiShowImageLoadFailure() }
+        #endif
+        return success
+    }
+
+    private func loadPageContent(_ page: Page, sourceId: String?, skipProcessing: Bool, forceReload: Bool) async -> Bool {
+        #if SUMI
+        if currentPage?.key != page.key { sumiJapaneseOverlay.update(image: nil) }
+        sumiPageCoachingOverlay.configure(page: nil)
+        #endif
         // Store current page data for reload functionality
         self.currentPage = page
         skipsProcessing = skipProcessing
@@ -307,9 +393,9 @@ extension ReaderPageView {
             setPageImage(image)
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
-            return await setPageImage(zipURL: url, filePath: filePath)
+            return await setPageImage(zipURL: url, filePath: filePath, forceReload: forceReload)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
-            return await setPageImage(url: url, context: page.context, sourceId: self.sourceId)
+            return await setPageImage(url: url, context: page.context, sourceId: self.sourceId, forceReload: forceReload)
         } else if let base64 = page.base64 {
             return await setPageImage(base64: base64, key: page.hashValue)
         } else if let text = page.text {
@@ -347,9 +433,12 @@ extension ReaderPageView {
         context: PageContext? = nil,
         source: AidokuRunner.Source?,
         downsampleWidth: CGFloat? = nil,
-        displayScale: CGFloat? = nil
+        displayScale: CGFloat? = nil,
+        resolvedRequest: URLRequest? = nil
     ) async -> ImageRequest {
-        let urlRequest = if !url.isFileURL, let source {
+        let urlRequest = if let resolvedRequest {
+            resolvedRequest
+        } else if !url.isFileURL, let source {
             await source.getModifiedImageRequest(url: url, context: context)
         } else {
             URLRequest(url: url)
@@ -388,7 +477,25 @@ extension ReaderPageView {
         )
     }
 
-    func setPageImage(url: URL, context: PageContext? = nil, sourceId: String? = nil) async -> Bool {
+    #if SUMI
+    static func recoveredMangaDexImageRequest(
+        after request: ImageRequest,
+        context: PageContext?,
+        source: AidokuRunner.Source?,
+        downsampleWidth: CGFloat?,
+        displayScale: CGFloat? = nil
+    ) async -> ImageRequest? {
+        guard let runner = source?.runner as? HonbakoMangaDexRunner,
+              let url = request.url,
+              let recovered = try? await runner.recoveryImageRequest(url: url, context: context),
+              let recoveredURL = recovered.url else { return nil }
+        let refreshed = await imageRequest(url: recoveredURL, context: context, source: source,
+            downsampleWidth: downsampleWidth, displayScale: displayScale, resolvedRequest: recovered)
+        return SumiPageImageRetryRequest.make(from: refreshed)
+    }
+    #endif
+
+    func setPageImage(url: URL, context: PageContext? = nil, sourceId: String? = nil, forceReload: Bool = false) async -> Bool {
         #if SUMI
         let generation = sumiLoadGeneration
         #endif
@@ -399,7 +506,7 @@ extension ReaderPageView {
             self.textView = nil
         }
 
-        let request: ImageRequest
+        var request: ImageRequest
 
         if let imageTask {
             switch imageTask.state {
@@ -436,20 +543,28 @@ extension ReaderPageView {
         #if SUMI
         guard generation == sumiLoadGeneration else { return false }
         #endif
+        #if SUMI
+        if forceReload { request = SumiPageImageRetryRequest.make(from: request) }
+        #endif
         self.currentImageRequest = request
 
         if imageView.image == nil {
             progressView.setProgress(value: 0, withAnimation: false)
+            #if SUMI
+            progressView.isHidden = true
+            #else
             progressView.isHidden = false
+            #endif
         }
 
         return await startImageTask(request)
     }
 
-    private func startImageTask(_ request: ImageRequest) async -> Bool {
+    private func startImageTask(_ request: ImageRequest, permitsMangaDexRecovery: Bool = true) async -> Bool {
         #if SUMI
         let generation = sumiLoadGeneration
         #endif
+        #if !SUMI
         imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
@@ -458,6 +573,7 @@ extension ReaderPageView {
             },
             completion: { _ in }
         )
+        #endif
         // hide progress view when task completes
         defer {
             #if SUMI
@@ -471,10 +587,14 @@ extension ReaderPageView {
             #endif
         }
         do {
-            let response = try await imageTask?.response
-            guard let response else {
-                return false
+            #if SUMI
+            let response = try await sumiImageFetch.response(for: request) { [weak self] task in
+                self?.imageTask = task
             }
+            #else
+            let response = try await imageTask?.response
+            guard let response else { return false }
+            #endif
             #if SUMI
             guard generation == sumiLoadGeneration, !Task.isCancelled else { return false }
             #endif
@@ -484,6 +604,11 @@ extension ReaderPageView {
         } catch {
             #if SUMI
             guard generation == sumiLoadGeneration, !Task.isCancelled else { return false }
+            if SumiPageImageLoadCancellation.contains(error) {
+                sumiImageRequestCanceled = true
+                completion?(false)
+                return false
+            }
             #endif
             // we can still send to image processor even if the request failed
             if request.userInfo[.processesKey] as? Bool == true {
@@ -508,6 +633,18 @@ extension ReaderPageView {
                     }
                 }
             }
+            #if SUMI
+            if permitsMangaDexRecovery, let sourceId {
+                let source = await SourceManager.shared.source(for: sourceId)
+                let recovered = await Self.recoveredMangaDexImageRequest(after: request, context: currentPage?.context,
+                    source: source, downsampleWidth: pageWidth, displayScale: pageDisplayScale)
+                guard generation == sumiLoadGeneration, !Task.isCancelled else { return false }
+                if let recovered {
+                    currentImageRequest = recovered
+                    return await startImageTask(recovered, permitsMangaDexRecovery: false)
+                }
+            }
+            #endif
             completion?(false)
             return false
         }
@@ -536,7 +673,11 @@ extension ReaderPageView {
         self.currentImageRequest = request
 
         progressView.setProgress(value: 0, withAnimation: false)
+        #if SUMI
+        progressView.isHidden = true
+        #else
         progressView.isHidden = false
+        #endif
         defer { progressView.isHidden = true }
 
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
@@ -586,7 +727,7 @@ extension ReaderPageView {
         return true
     }
 
-    func setPageImage(zipURL: URL, filePath: String) async -> Bool {
+    func setPageImage(zipURL: URL, filePath: String, forceReload: Bool = false) async -> Bool {
         #if SUMI
         let generation = sumiLoadGeneration
         #endif
@@ -618,7 +759,7 @@ extension ReaderPageView {
             self.textView = nil
         }
 
-        return await setPageImage(url: extractedURL)
+        return await setPageImage(url: extractedURL, forceReload: forceReload)
     }
 
     // match image constraints with image size
@@ -659,7 +800,11 @@ extension ReaderPageView {
         clearDictionaryOverlays()
         imageView.image = nil
         #if SUMI
+        sumiImageLoadFailed = false
+        sumiLoadingView.hide()
         sumiEdgeBackground.update(image: nil)
+        sumiJapaneseOverlay.update(image: nil)
+        sumiPageCoachingOverlay.configure(page: nil)
         #endif
         paperTextureView.update(imageSize: nil, in: imageView.bounds, contentMode: imageView.contentMode)
         onReferenceContentChanged?()
@@ -748,8 +893,11 @@ extension ReaderPageView {
     func setPageImage(_ image: UIImage?, gifData: Data? = nil) {
         #if SUMI
         let firstImage = imageView.image == nil && image != nil
+        sumiImageLoadFailed = false
+        progressView.isHidden = true
         if image == nil {
             sumiLoadGeneration += 1
+            sumiImageFetch.cancel()
             imageTask?.cancel()
             imageTask = nil
             completion?(false)
@@ -765,8 +913,12 @@ extension ReaderPageView {
         imageView.image = image
         #if SUMI
         sumiEdgeBackground.update(image: image)
+        sumiUpdateJapaneseLearning()
+        sumiUpdatePageCoaching()
         if image != nil {
+            insertSubview(sumiLoadingView, belowSubview: imageView)
             sumiLoadingView.reveal(imageView, animated: firstImage && sumiIsVisible) { [weak self] in
+                self?.sumiUpdatePageCoaching()
                 self?.onReferenceContentChanged?()
             }
         }
@@ -922,25 +1074,20 @@ extension ReaderPageView {
 extension ReaderPageView {
     /// Reloads the current image by clearing its cache and re-fetching from the source
     func reloadCurrentImage() async -> Bool {
-        guard let currentPage else {
-            return false
-        }
-
-        // Clear the cache for the current image
-        clearCurrentImageCache()
-
-        // Clear the current image to show loading state
+        guard let currentPage else { return false }
+        #if SUMI && DEBUG
+        SumiGridPreviewFixtures.recoverFailedPageIfNeeded(currentPage)
+        #endif
         #if SUMI
-        setPageImage(nil)
+        return await setPage(currentPage, sourceId: sourceId, forceReload: true)
         #else
+        clearCurrentImageCache()
         resetVerticalContentBounds()
         stopGIFAnimation()
         imageView.image = nil
         onReferenceContentChanged?()
-        #endif
-
-        // Reload the image using the original page data
         return await setPage(currentPage, sourceId: sourceId)
+        #endif
     }
 
     /// Clears the cache entry for the current image

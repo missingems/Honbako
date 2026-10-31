@@ -55,10 +55,21 @@ final class SumiReaderPreviewViewController: UIViewController {
                     pager.debugSettleTurn(completed: true)
                 } else {
                     holdingTurn = pager.debugHoldTurn(progress: 0.35)
+                    Task { @MainActor [weak self, weak pager] in
+                        let deadline = ContinuousClock.now.advanced(by: .seconds(3))
+                        while let self, holdingTurn, ContinuousClock.now < deadline {
+                            if let p = pager?.debugRenderedProgress, abs(p - 0.35) < 0.001 {
+                                navigationItem.rightBarButtonItems?.first { $0.title == "Hold" }?.title = "Paper ready"
+                                break
+                            }
+                            try? await Task.sleep(for: .milliseconds(20))
+                        }
+                    }
                 }
             })
             let cancel = UIBarButtonItem(title: "Cancel", primaryAction: UIAction { [weak self] _ in
                 self?.holdingTurn = false
+                self?.navigationItem.rightBarButtonItems?.first { $0.title == "Paper ready" }?.title = "Hold"
                 self?.reader?.children.compactMap({ $0 as? SumiPageCurlViewController }).first?.debugSettleTurn(completed: false)
             })
             navigationItem.rightBarButtonItems = [next, hold, cancel]

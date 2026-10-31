@@ -18,18 +18,21 @@ struct SumiAddSourceListView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    TextField("https://…", text: $address)
-                        .textContentType(.URL).keyboardType(.URL)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .focused($focused).disabled(adding)
-                        .accessibilityIdentifier("Sumi.Sources.ListURL")
-                } header: { Text("Source List URL") }
-                footer: { Text("Use the link supplied by your provider. You’ll choose the sources to add afterward.") }
-                .listRowBackground(HonbakoSettingsRowBackground())
-                if let errorMessage { Text(errorMessage).foregroundStyle(.secondary) }
+                Group {
+                    Section {
+                        TextField("https://…", text: $address)
+                            .textContentType(.URL).keyboardType(.URL)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                            .focused($focused).disabled(adding)
+                            .accessibilityIdentifier("Sumi.Sources.ListURL")
+                    } header: { Text("Repository URL") }
+                    footer: { Text("Enter a compatible extension repository URL. You’ll choose which extensions to install afterward.") }
+                    if let errorMessage { Text(errorMessage).foregroundStyle(.secondary) }
+                }
+                .honbakoPaperRows()
             }
-            .navigationTitle("Add Source List")
+            .honbakoPaperListBackground()
+            .navigationTitle("Add repository")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.disabled(adding) }
@@ -41,7 +44,7 @@ struct SumiAddSourceListView: View {
                             if await SourceManager.shared.addSourceList(url: url) {
                                 await didAdd()
                                 dismiss()
-                            } else { errorMessage = String(localized: "This list couldn’t be added. Check the link or try again.") }
+                            } else { errorMessage = String(localized: "This repository couldn’t be added. Check the URL or try again.") }
                             adding = false
                         }
                     } label: {
@@ -53,7 +56,7 @@ struct SumiAddSourceListView: View {
             .task { focused = true }
             .interactiveDismissDisabled(adding)
         }
-        .tint(.blue)
+        .tint(HonbakoPalette.accent)
     }
 }
 #endif

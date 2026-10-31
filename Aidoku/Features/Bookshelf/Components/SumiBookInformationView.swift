@@ -11,6 +11,8 @@ struct SumiBookInformationView: View {
     let openReader: () -> Void
     let toggleLibrary: () -> Void
 
+    @State private var showingCoverPro = false
+
     private var hasBookmark: Bool { book.chapterLabel != nil || book.pageLabel != nil }
     private var readingAction: String {
         if hasUnfinishedBookmark { return "Open bookmark" }
@@ -33,6 +35,8 @@ struct SumiBookInformationView: View {
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(HonbakoPalette.action)
+            .foregroundStyle(HonbakoPalette.onAction)
             .controlSize(.large)
             .disabled(isOpening || isUpdatingLibrary)
             .accessibilityIdentifier("SumiReadBook")
@@ -47,6 +51,9 @@ struct SumiBookInformationView: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
             .disabled(isOpening || isUpdatingLibrary)
+            if HonbakoDeviceModel.isPhoneDuo {
+                HonbakoMangaCoverModeControl(mangaID: book.id, requestPro: { showingCoverPro = true })
+            }
             if let error {
                 Text(error)
                     .font(.callout)
@@ -56,6 +63,7 @@ struct SumiBookInformationView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .sheet(isPresented: $showingCoverPro) { HonbakoProView(feature: .coverDisplay) }
     }
 }
 #endif

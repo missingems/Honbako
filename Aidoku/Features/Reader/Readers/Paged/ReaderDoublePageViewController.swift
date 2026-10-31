@@ -249,7 +249,7 @@ class ReaderDoublePageViewController: BaseObservingViewController {
     }
 
     // TODO: fix `SWIFT TASK CONTINUATION MISUSE: setPageImage(url:sourceId:) leaked its continuation!`
-    func setPage(_ page: Page, sourceId: String? = nil, for pos: ReaderPagedViewController.PagePosition) {
+    func setPage(_ page: Page, sourceId: String? = nil, for pos: ReaderPagedViewController.PagePosition, forceReload: Bool = false) {
         let pageView: ReaderPageView?
         let reloadButton: UIButton
         switch pos {
@@ -268,15 +268,22 @@ class ReaderDoublePageViewController: BaseObservingViewController {
             return
         }
         updateDoubleTapZoomSetting()
+        #if SUMI
+        pageView.sumiRetryPage = { [weak self] in self?.reload(reloadButton) }
+        #endif
         Task {
-            let result = await pageView.setPage(page, sourceId: sourceId)
+            let result = await pageView.setPage(page, sourceId: sourceId, forceReload: forceReload)
             if !result {
+                #if SUMI
+                reloadButton.isHidden = true
+                #else
                 if pos == .first {
                     firstPageSet = false
                 } else {
                     secondPageSet = false
                 }
                 reloadButton.isHidden = false
+                #endif
             } else {
                 reloadButton.isHidden = true
                 view.layoutIfNeeded()
@@ -291,17 +298,31 @@ class ReaderDoublePageViewController: BaseObservingViewController {
             guard let firstPageView = firstPageController.pageView else { return }
             firstReloadButton.isHidden = true
             firstPageView.progressView.setProgress(value: 0, withAnimation: false)
+            #if SUMI
+            firstPageView.sumiBeginImageLoad()
+            #else
             firstPageView.progressView.isHidden = false
+            #endif
             if let firstPage = firstPage {
-                setPage(firstPage, for: .first)
+                #if SUMI && DEBUG
+                SumiGridPreviewFixtures.recoverFailedPageIfNeeded(firstPage)
+                #endif
+                setPage(firstPage, for: .first, forceReload: true)
             }
         } else {
             guard let secondPageView = secondPageController.pageView else { return }
             secondReloadButton.isHidden = true
             secondPageView.progressView.setProgress(value: 0, withAnimation: false)
+            #if SUMI
+            secondPageView.sumiBeginImageLoad()
+            #else
             secondPageView.progressView.isHidden = false
+            #endif
             if let secondPage = secondPage {
-                setPage(secondPage, for: .second)
+                #if SUMI && DEBUG
+                SumiGridPreviewFixtures.recoverFailedPageIfNeeded(secondPage)
+                #endif
+                setPage(secondPage, for: .second, forceReload: true)
             }
         }
     }

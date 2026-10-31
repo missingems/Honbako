@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "build": 67,
+  "icon": {
+    "tilt_degrees": 10,
+    "design": "Original manga character cover in onboarding dune-and-ink style",
+    "variants": [
+      "light",
+      "dark",
+      "tinted"
+    ],
+    "size": [
+      1024,
+      1024
+    ],
+    "alpha": false
+  },
+  "experience": {
+    "active_subscriber": "Plan, access date and native Apple subscription management; no plan selection or purchase CTA",
+    "free_member": "Pro benefits, monthly/annual choices and Restore Purchases",
+    "completed_onboarding": "Any previous completed version remains complete; Welcome replay removed from Settings",
+    "subscribed_without_completion_record": "Verified Pro skips onboarding",
+    "repeat_purchase": "Blocked for active Pro entitlement"
+  },
+  "verification": {
+    "release_build": "PASS",
+    "subscriber_free_refund_UI_and_repeat_purchase_guard": "PASS",
+    "onboarding_completion_policy": "PASS",
+    "StoreKit_monthly_annual_purchase_refund_and_trial_eligibility": "PASS",
+    "native_three_page_free_exit": "PASS",
+    "compact_wide_accessible_layouts": "PASS",
+    "member_UI_result": "Test-HonbakoStoreKitTests-2026.10.30_19-03-47-+0800.xcresult",
+    "other_passing_test_cases_result": "Test-HonbakoStoreKitTests-2026.10.30_19-01-40-+0800.xcresult",
+    "earlier_run_note": "Earlier run had two management-test assertion/timing failures; corrected test passed in the focused result. All other selected cases passed in the earlier run."
+  },
+  "device": {
+    "name": "iPhone Duo",
+    "build": 67,
+    "install": "SUCCESS",
+    "launch": "SUCCESS"
+  },
+  "distribution": {
+    "submitted": false,
+    "uploaded_testflight": false
+  }
+}

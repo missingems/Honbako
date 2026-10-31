@@ -1,0 +1,21 @@
+{
+  "captureBuild": 75,
+  "large": [
+    "zh-Hant",
+    "zh-Hans",
+    "ja",
+    "en-US"
+  ],
+  "medium": [
+    "ja",
+    "en-US",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "ipad": [
+    "zh-Hant",
+    "zh-Hans",
+    "ja",
+    "en-US"
+  ]
+}

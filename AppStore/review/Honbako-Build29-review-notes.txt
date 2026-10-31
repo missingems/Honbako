@@ -1,0 +1,22 @@
+Honbako 0.1.0 (build 29) is a reader for your own collection on iPhone and iPad. The included original six-page tutorial, The Bookshop Between Pages, works without an account. Users import their own comic files or connect their personal Komga, Kavita or Suwayomi server. This release has no external catalog, source-list installation or .aix source-package import.
+
+1. Open the tutorial. Swipe portrait pages, rotate to landscape, and tap a page to show controls. Drag the page strip to preview, then release to navigate. Open Chapters and Language, inspect chapter progress, close the book and reopen it to resume the saved position.
+
+2. Pull down in the library, open Settings, then Getting Started. Choose Set Up Local Files and confirm. Back in Getting Started, choose Import a Comic, select a CBZ or ZIP containing comic pages, confirm series/chapter details and import. Enable Local Files under Included in Search, tap Done, search for the imported title and choose Add. Imported files remain readable locally.
+
+3. Settings → Personal Server supports Komga, Kavita and Suwayomi. Enter a reachable server address and use its sign-in options. Personal server testing requires a reachable server and its own sign-in. Honbako has no developer-hosted manga catalog; the tutorial and local import work without an account.
+
+4. Open Settings → Honbako Pro. Free and Pro are both ad-free. Free supports reading and organizing your collection, including imported local files. Pro adds chapter downloads, chapter notifications and iCloud library/progress sync. The paywall shows Apple's localized monthly price (U.S. base US$1.99), Subscribe, Restore Purchases, Manage Subscription, Terms of Use and Privacy Policy.
+
+5. In Apple's permitted test environment, cancel a purchase to confirm Free stays active, or complete an authorized test purchase. Restore Purchases checks for an active subscription. Manage Subscription opens Apple's subscription controls. Canceling renewal does not end an already-paid period immediately.
+
+6. With Pro, add a server book to the library before enabling chapter notifications. Delivery depends on source availability and iOS background refresh. Reopen the app after Pro becomes active to enable automatic iCloud sync. Downloaded pages stay on the device.
+
+Store screenshots show original cover-art portfolios imported as local CBZs. Each portfolio contains one art page, and these sample files are not bundled. The six-page tutorial is the story shown in reader and chapter screenshots.
+
+The interface and Getting Started guide are available in English, Japanese, Simplified Chinese and Traditional Chinese.
+
+Optional iPhone Duo cover display: Settings → Show Manga Cover requests camera permission for Apple's video-only scene accessory. No photos/video are recorded or saved, no microphone is attached, and no camera frames are sent to the developer. The session stops when hidden, closed, folded or backgrounded.
+
+Support: https://missingems.github.io/Honbako/support/
+Privacy Policy: https://missingems.github.io/Honbako/privacy/

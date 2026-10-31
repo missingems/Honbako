@@ -1,0 +1,13 @@
+Honbako 0.2.0 (69)
+
+Reader: tap a page to show the native manga title and chapter subtitle. Turn pages, drag the darker dune page strip, close/reopen a book, and rotate between compact and wide layouts. Open Chapters: the current chapter should be visible and highlighted.
+
+Library: import your own CBZ/ZIP comics or connect your personal Komga, Kavita or Suwayomi server. External-source builds support Extensions and Extension repositories. No third-party manga catalog or provider package is installed automatically. The five original illustrated guides work offline.
+
+AI companion: Settings → MCP Server → Remote connects using an active Apple-verified Pro purchase. Add the displayed MCP URL in an AI provider that supports remote MCP, then approve the connection in Honbako. Test library/history access, current-page explanations or annotations, and approved library/source changes. Access toggles and disconnect must take effect. TestFlight purchases use the isolated Sandbox service; production purchases use the production service. Local MCP remains available free.
+
+Pro: eligible accounts can try the monthly plan for one week or the annual plan for one month, with Apple showing the actual local renewal price. Active members see Manage Subscription instead of another purchase offer. Completed onboarding should not reappear.
+
+Widgets: Free includes a title-free cover and Resume action; Pro adds reading time and chapter updates. iCloud library/progress sync is free. Downloads stay on the device. Japanese reading guidance applies to Japanese source chapters. Cover mode on iPhone Duo uses the camera scene accessory without recording photos/video or using the microphone.
+
+Please report the book/source, chapter/page, device orientation and steps for any loading or page-turn issue. Remove private information from screenshots and never send passwords.

@@ -1,0 +1,36 @@
+{
+  "build": 73,
+  "device_install": "success",
+  "device_launch": "success",
+  "native_server_adapters": {
+    "cases": 3,
+    "providers": [
+      "Komga",
+      "Kavita",
+      "Suwayomi"
+    ],
+    "result": "PASS",
+    "duration_seconds": 1.491
+  },
+  "source_policy_sync_and_endpoint_alias_checks": {
+    "tests": 17,
+    "suites": 3,
+    "result": "PASS"
+  },
+  "cover_cache_and_related_unit_checks": {
+    "tests": 35,
+    "suites": 7,
+    "result": "PASS"
+  },
+  "focused_ui_checks": {
+    "reader_chrome_design_methods": 2,
+    "title_ocr_renders": 6,
+    "reader_polish": "PASS",
+    "library_controls_landscape_rotation": "PASS"
+  },
+  "limitations": [
+    "Old broad UI harness contains stale selector/offscreen assumptions.",
+    "Ubuntu VM installation and public reviewer network tests are pending an Oracle account.",
+    "Fresh branded live AI authorization remains a user-approved device step."
+  ]
+}

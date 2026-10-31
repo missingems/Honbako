@@ -147,181 +147,193 @@ struct SelfHostedSourceSetupView: View {
     var body: some View {
         let isLoading = state == .loading || isLoadingLoginState
         List {
-            Section {
-                SettingHeaderView(
-                    icon: .raw(icon),
-                    title: sourceName,
-                    subtitle: info,
-                    learnMoreUrl: learnMoreUrl
-                )
-            }
-
-            Section {
-                TextField(sourceName, text: $name)
-                    .autocorrectionDisabled()
-                    .submitLabel(.next)
-                    .focused($focusedField, equals: .name)
-                    .onSubmit { self.focusNextField($focusedField) }
-                    .disabled(isLoading)
-            } header: {
-                Text(NSLocalizedString("SOURCE_NAME"))
-            } footer: {
-                if !uniqueName {
-                    Text(NSLocalizedString("SOURCE_NAME_UNIQUE_ERROR"))
-                        .foregroundStyle(.red)
-                } else {
-                    Text(NSLocalizedString("SOURCE_NAME_INFO"))
-                }
-            }
-            Section {
-                TextField(placeholderServer ?? NSLocalizedString("SERVER_URL"), text: $server)
-                    .keyboardType(.URL)
-                    .textContentType(.URL)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .focused($focusedField, equals: .server)
-                    .onSubmit {
-                        if !submitDisabled {
-                            submit()
-                        }
-                    }
-                    .submitLabel(.done)
-                    .disabled(isLoading)
-                    .onChange(of: server) { _ in
-                        if isLogInState {
-                            state = .initial
-                        }
-                    }
-            } header: {
-                Text(NSLocalizedString("SERVER_URL"))
-            } footer: {
-                if !uniqueServer {
-                    Text(NSLocalizedString("SERVER_URL_UNIQUE_ERROR"))
-                        .foregroundStyle(.red)
-                } else {
-                    Text(NSLocalizedString("SERVER_URL_INFO"))
-                }
-            }
-
-            if let check = loginCheck {
-                let hasMultipleLoginMethods = [check.canLoginBasic, check.canLoginApiKey, check.canLoginOIDC].filter({ $0 }).count > 1
-                if hasMultipleLoginMethods {
-                    Section(NSLocalizedString("LOGIN")) {
-                        Picker(NSLocalizedString("LOGIN_METHOD"), selection: $loginMethod) {
-                            if check.canLoginApiKey {
-                                Text(NSLocalizedString("API_KEY")).tag(LoginMethod.apiKey)
-                            }
-                            if check.canLoginBasic {
-                                Text(NSLocalizedString("BASIC")).tag(LoginMethod.basic)
-                            }
-                            if check.canLoginOIDC && check.oidcLoginURL != nil {
-                                Text(NSLocalizedString("OIDC")).tag(LoginMethod.oidc)
-                            }
-                        }
-                    }
-                }
-                if check.canLoginApiKey && (!hasMultipleLoginMethods || loginMethod == .apiKey) {
-                    Section {
-                        TextField(NSLocalizedString("API_KEY"), text: $apiKey)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .submitLabel(.done)
-                            .onSubmit {
-                                if !submitDisabled {
-                                    submit()
-                                }
-                            }
-                            .disabled(isLoading)
-                    } header: {
-                        if !hasMultipleLoginMethods {
-                            Text(NSLocalizedString("LOGIN"))
-                        }
-                    }
-                }
-                if check.canLoginBasic && (!hasMultipleLoginMethods || loginMethod == .basic) {
-                    Section {
-                        Group {
-                            if useEmail {
-                                TextField(NSLocalizedString("EMAIL"), text: $username)
-                                    .textContentType(.emailAddress)
-                            } else {
-                                TextField(NSLocalizedString("USERNAME"), text: $username)
-                                    .textContentType(.username)
-                            }
-                        }
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .submitLabel(.next)
-                        .focused($focusedField, equals: .username)
-                        .onSubmit { self.focusNextField($focusedField) }
-                        .disabled(isLoading)
-
-                        SecureField(NSLocalizedString("PASSWORD"), text: $password)
-                            .textContentType(.password)
-                            .submitLabel(.done)
-                            .focused($focusedField, equals: .password)
-                            .onSubmit {
-                                if !submitDisabled {
-                                    submit()
-                                }
-                            }
-                            .disabled(isLoading)
-                    } header: {
-                        if !hasMultipleLoginMethods {
-                            Text(NSLocalizedString("LOGIN"))
-                        }
-                    }
-                }
-                if check.canLoginOIDC && (!hasMultipleLoginMethods || loginMethod == .oidc), let loginURL = check.oidcLoginURL {
-                    Section {
-                        Button(NSLocalizedString("LOGIN_VIA_OIDC")) {
-                            showLoginSheet = true
-                        }
-                        .sheet(isPresented: $showLoginSheet) {
-                            OIDCLoginView(loginURL: loginURL) { cookies in
-                                Task {
-                                    await logIn(cookies: cookies)
-                                }
-                            }
-                            .interactiveDismissDisabled()
-                        }
-                    }
-                }
-            }
-
-            if
-                isLogInState || isLoadingLoginState,
-                server == demoServer,
-                let demoTitle,
-                let demoInfo
-            {
+            Group {
                 Section {
-                    LocalSetupView.infoView(
-                        title: LocalizedStringKey(demoTitle),
-                        subtitle: LocalizedStringKey(demoInfo)
+                    SettingHeaderView(
+                        icon: .raw(icon),
+                        title: sourceName,
+                        subtitle: info,
+                        learnMoreUrl: learnMoreUrl
                     )
                 }
-            }
 
-            if let error {
                 Section {
-                    switch error {
-                        case .connection:
-                            LocalSetupView.infoView(
-                                title: LocalizedStringKey(NSLocalizedString("SERVER_ERROR")),
-                                subtitle: LocalizedStringKey(NSLocalizedString("SERVER_ERROR_CONNECTION")),
-                                error: true
-                            )
-                        case .authorization:
-                            LocalSetupView.infoView(
-                                title: LocalizedStringKey(NSLocalizedString("SERVER_ERROR")),
-                                subtitle: LocalizedStringKey(NSLocalizedString("SERVER_ERROR_AUTHENTICATION")),
-                                error: true
-                            )
+                    TextField(sourceName, text: $name)
+                        .accessibilityIdentifier("SelfHosted.Name")
+                        .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .focused($focusedField, equals: .name)
+                        .onSubmit { self.focusNextField($focusedField) }
+                        .disabled(isLoading)
+                } header: {
+                    Text(NSLocalizedString("SOURCE_NAME"))
+                } footer: {
+                    if !uniqueName {
+                        Text(NSLocalizedString("SOURCE_NAME_UNIQUE_ERROR"))
+                            .foregroundStyle(.red)
+                    } else {
+                        Text(NSLocalizedString("SOURCE_NAME_INFO"))
+                    }
+                }
+                Section {
+                    TextField(placeholderServer ?? NSLocalizedString("SERVER_URL"), text: $server)
+                        .accessibilityIdentifier("SelfHosted.ServerURL")
+                        .keyboardType(.URL)
+                        .textContentType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($focusedField, equals: .server)
+                        .onSubmit {
+                            if !submitDisabled {
+                                submit()
+                            }
+                        }
+                        .submitLabel(.done)
+                        .disabled(isLoading)
+                        .onChange(of: server) { _ in
+                            if isLogInState {
+                                state = .initial
+                            }
+                        }
+                } header: {
+                    Text(NSLocalizedString("SERVER_URL"))
+                } footer: {
+                    if !uniqueServer {
+                        Text(NSLocalizedString("SERVER_URL_UNIQUE_ERROR"))
+                            .foregroundStyle(.red)
+                    } else {
+                        Text(NSLocalizedString("SERVER_URL_INFO"))
+                    }
+                }
+
+                if let check = loginCheck {
+                    let hasMultipleLoginMethods = [check.canLoginBasic, check.canLoginApiKey, check.canLoginOIDC].filter({ $0 }).count > 1
+                    if hasMultipleLoginMethods {
+                        Section(NSLocalizedString("LOGIN")) {
+                            Picker(NSLocalizedString("LOGIN_METHOD"), selection: $loginMethod) {
+                                if check.canLoginApiKey {
+                                    Text(NSLocalizedString("API_KEY")).tag(LoginMethod.apiKey)
+                                }
+                                if check.canLoginBasic {
+                                    Text(NSLocalizedString("BASIC")).tag(LoginMethod.basic)
+                                }
+                                if check.canLoginOIDC && check.oidcLoginURL != nil {
+                                    Text(NSLocalizedString("OIDC")).tag(LoginMethod.oidc)
+                                }
+                            }
+                        }
+                    }
+                    if check.canLoginApiKey && (!hasMultipleLoginMethods || loginMethod == .apiKey) {
+                        Section {
+                            SecureField(NSLocalizedString("API_KEY"), text: $apiKey)
+                                .accessibilityIdentifier("SelfHosted.APIKey")
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .submitLabel(.done)
+                                .onSubmit {
+                                    if !submitDisabled {
+                                        submit()
+                                    }
+                                }
+                                .disabled(isLoading)
+                        } header: {
+                            if !hasMultipleLoginMethods {
+                                Text(NSLocalizedString("LOGIN"))
+                            }
+                        }
+                    }
+                    if check.canLoginBasic && (!hasMultipleLoginMethods || loginMethod == .basic) {
+                        Section {
+                            Group {
+                                if useEmail {
+                                    TextField(NSLocalizedString("EMAIL"), text: $username)
+                                        .textContentType(.emailAddress)
+                                } else {
+                                    TextField(NSLocalizedString("USERNAME"), text: $username)
+                                        .textContentType(.username)
+                                }
+                            }
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .submitLabel(.next)
+                            .focused($focusedField, equals: .username)
+                            .onSubmit { self.focusNextField($focusedField) }
+                            .disabled(isLoading)
+
+                            SecureField(NSLocalizedString("PASSWORD"), text: $password)
+                                .accessibilityIdentifier("SelfHosted.Password")
+                                .textContentType(.password)
+                                .submitLabel(.done)
+                                .focused($focusedField, equals: .password)
+                                .onSubmit {
+                                    if !submitDisabled {
+                                        submit()
+                                    }
+                                }
+                                .disabled(isLoading)
+                        } header: {
+                            if !hasMultipleLoginMethods {
+                                Text(NSLocalizedString("LOGIN"))
+                            }
+                        }
+                    }
+                    if check.canLoginOIDC && (!hasMultipleLoginMethods || loginMethod == .oidc), let loginURL = check.oidcLoginURL {
+                        Section {
+                            Button(NSLocalizedString("LOGIN_VIA_OIDC")) {
+                                showLoginSheet = true
+                            }
+                            .sheet(isPresented: $showLoginSheet) {
+                                OIDCLoginView(loginURL: loginURL) { cookies in
+                                    Task {
+                                        await logIn(cookies: cookies)
+                                    }
+                                }
+                                .interactiveDismissDisabled()
+                            }
+                        }
+                    }
+                }
+
+                if
+                    isLogInState || isLoadingLoginState,
+                    server == demoServer,
+                    let demoTitle,
+                    let demoInfo
+                {
+                    Section {
+                        LocalSetupView.infoView(
+                            title: LocalizedStringKey(demoTitle),
+                            subtitle: LocalizedStringKey(demoInfo)
+                        )
+                    }
+                }
+
+                if let error {
+                    Section {
+                        switch error {
+                            case .connection:
+                                LocalSetupView.infoView(
+                                    title: LocalizedStringKey(NSLocalizedString("SERVER_ERROR")),
+                                    subtitle: LocalizedStringKey(NSLocalizedString("SERVER_ERROR_CONNECTION")),
+                                    error: true
+                                )
+                            case .authorization:
+                                LocalSetupView.infoView(
+                                    title: LocalizedStringKey(NSLocalizedString("SERVER_ERROR")),
+                                    subtitle: LocalizedStringKey(NSLocalizedString("SERVER_ERROR_AUTHENTICATION")),
+                                    error: true
+                                )
+                        }
                     }
                 }
             }
+            #if SUMI
+            .honbakoPaperRows()
+            #endif
         }
+        #if SUMI
+        .honbakoPaperListBackground()
+        #endif
         .onChange(of: name) { _ in
             ensureUniqueName()
         }
@@ -352,6 +364,7 @@ struct SelfHostedSourceSetupView: View {
                     }
                 }
                 .disabled(submitDisabled)
+                .accessibilityIdentifier("SelfHosted.Continue")
             }
         }
         .navigationTitle(title)
@@ -363,7 +376,7 @@ struct SelfHostedSourceSetupView: View {
     }
 
     var submitDisabled: Bool {
-        server.isEmpty || name.isEmpty
+        server.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || !uniqueName || !uniqueServer
             || state == .loading || isLoadingLoginState
             || (
@@ -390,7 +403,10 @@ struct SelfHostedSourceSetupView: View {
 
         // store existing komga servers to check against for uniqueness
         let relatedSources = sources.filter({ $0.sourceId.hasPrefix(sourceKeyPrefix) })
-        self.existingServers = Set(relatedSources.compactMap { UserDefaults.standard.string(forKey: "\($0.sourceId).server") })
+        self.existingServers = Set(relatedSources.compactMap {
+            UserDefaults.standard.string(forKey: "\($0.sourceId).server")
+                .flatMap { SelfHostedServerURL($0)?.sourceString }
+        })
     }
 
     func submit() {
@@ -414,22 +430,29 @@ struct SelfHostedSourceSetupView: View {
     }
 
     func ensureUniqueServer() {
-        let serverString = (server.last == "/" ? String(server[..<server.index(before: server.endIndex)]) : server)
-            .trimmingCharacters(in: .whitespaces)
-        uniqueServer = !existingServers.contains(serverString)
+        guard let address = SelfHostedServerURL(server) else {
+            uniqueServer = true
+            return
+        }
+        uniqueServer = !existingServers.contains(address.sourceString)
     }
 
     func checkServer() async {
         error = nil
         state = .loading
 
-        // trim whitespace
-        name = name.trimmingCharacters(in: .whitespaces)
-        server = server.trimmingCharacters(in: .whitespaces)
-
-        // remove trailing slash
-        if server.last == "/" {
-            server.removeLast()
+        name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let address = SelfHostedServerURL(server) else {
+            state = .initial
+            error = .connection
+            return
+        }
+        server = address.sourceString
+        ensureUniqueName()
+        ensureUniqueServer()
+        guard uniqueName, uniqueServer, !name.isEmpty else {
+            state = .initial
+            return
         }
 
         let serverCheck = await checkHandler(server)
@@ -466,7 +489,7 @@ struct SelfHostedSourceSetupView: View {
         // trim whitespace (again, in case name was changed)
         name = name.trimmingCharacters(in: .whitespaces)
 
-        guard let serverURL = server.urlWithTrailingSlash() else {
+        guard let serverURL = SelfHostedServerURL(server)?.url else {
             state = .logIn(check)
             error = .connection
             return
@@ -495,7 +518,7 @@ struct SelfHostedSourceSetupView: View {
 
     func noLogIn() async {
         guard
-            let serverURL = server.urlWithTrailingSlash(),
+            let serverURL = SelfHostedServerURL(server)?.url,
             let noLogInHandler
         else {
             state = .initial

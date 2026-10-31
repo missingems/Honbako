@@ -355,7 +355,7 @@
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作无法撤销。除书架外的所有阅读历史都被删除。";
 "CLEAR_EXCLUDING_LIBRARY" = "清除书架外阅读历史";
 "ENABLE_PERMISSION" = "启用权限";
-"PHOTOS_ACCESS_DENIED_TEXT" = "此前访问被拒绝。请授予Aidoku访问照片权限，以便将图片保存到您的照片。您可以在隐私设置中开启此权限。";
+"PHOTOS_ACCESS_DENIED_TEXT" = "此前访问被拒绝。请授予 Honbako 访问照片权限，以便将图片保存到您的照片。您可以在隐私设置中开启此权限。";
 "OPEN_WEBSITE" = "打开网站";
 "READER_ORIENTATION" = "方向";
 "FOLLOW_DEVICE" = "跟随设备";
@@ -482,7 +482,7 @@
 "UNAVAILABLE_SOURCE_LISTS_TEXT" = "获取上述图源列表时发生错误。";
 "SOURCE_BREAKING_CHANGE" = "图源重大变更";
 "SOURCE_BREAKING_CHANGE_TEXT" = "此图源发生了重大变更，需要迁移才能保留您的书库和阅读历史。";
-"LOCAL_FILES_INFO" = "本地图源允许你在Aidoku中直接上传和管理你自己的阅读库。";
+"LOCAL_FILES_INFO" = "本地图源允许你在 Honbako 中直接上传和管理你自己的阅读库。";
 "LOCAL_FILES_TAGLINE" = "读取本地文件";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "从书架删除项目";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "从书架删除 %i 项目";
@@ -666,7 +666,7 @@
 "REFRESH_LOGIN" = "刷新登录";
 "LEGACY_SOURCE_LIST" = "旧版图源列表";
 "LEGACY_SOURCE_LIST_WARNING" = "警告：旧版图源列表";
-"LEGACY_SOURCE_LIST_WARNING_INFO" = "您当前已配置旧版图源列表。此格式已过时，将在 Aidoku 的未来版本中停止支持。虽然目前仍可正常使用，但建议您寻找替代方案，并在「设置」>「图源列表」中进行配置。";
+"LEGACY_SOURCE_LIST_WARNING_INFO" = "您当前已配置旧版图源列表。此格式已过时，将在 Honbako 的未来版本中停止支持。虽然目前仍可正常使用，但建议您寻找替代方案，并在「设置」>「图源列表」中进行配置。";
 "HIDE_BARS_ON_SWIPE" = "滑动时隐藏栏";
 "IMPORT_BACKUP" = "导入备份";
 "SYNC_WITH_TRACKER" = "与追踪器同步";
@@ -897,7 +897,7 @@
 "1. Choose a Connection" = "1. 选择连接";
 "Start with the original tutorial, then add your own files, connect a personal server, or choose a source list or source file you trust." = "先阅读原创入门漫画，再添加自己的文件、连接个人服务器，或选择信任的书源列表或文件。";
 "2. Find Manga" = "2. 查找漫画";
-"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "返回书架并下拉即可搜索。搜索会使用你在设置中启用的连接。";
+"Return to your library and pull down to search. Search uses the connections you enable in Settings." = "返回书架，使用顶部工具栏的搜索。搜索会使用设置中启用的连接。";
 "3. Build Your Library" = "3. 建立书架";
 "Choose Add next to a search result to keep it in your library. Choose Read or Resume to start reading." = "点按搜索结果旁的“添加”即可收藏到书架。点按“阅读”或“继续阅读”即可开始。";
 "Connect to a server you manage to search your own library." = "连接你管理的服务器，搜索自己的书库。";
@@ -1081,7 +1081,7 @@
 "Find Your Place" = "找到阅读位置";
 "Tap a page to show the controls. Drag the page strip to preview a page, then release to go there." = "点按页面以显示控件。拖动页面浏览条进行预览，松手即可跳转。";
 "A Book to Return To" = "随时回来接着读";
-"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "双指向内捏合，或使用“关闭”返回书架。阅读位置会自动保存。在书架中下拉即可搜索。";
+"Pinch inward or use Close to return to your library. Your place is saved. Pull down in the library to search." = "向内捏合或使用关闭返回书架。阅读位置会保存。请使用顶部工具栏的搜索。";
 
 // Monthly Pro and in-app data information.
 "Monthly Subscription" = "按月订阅";
@@ -1133,3 +1133,172 @@
 "The system chooses when a connected display can show the cover." = "系统会决定何时可在连接的屏幕上显示封面。";
 
 "Showing the cover on iPhone Duo uses the camera while you read. No photos or video are recorded or saved." = "在iPhone Duo外屏显示封面时会使用摄像头。不会录制或保存照片和视频。";
+
+// Original story and source-connection tutorial.
+"Tutorial.Story.Title" = "书页之间的书店";
+"Tutorial.Story.CoverSubtitle" = "米娜与小黑猫的原创故事";
+"Tutorial.Story.Empty.Title" = "一本空白的书";
+"Tutorial.Story.Empty.Body" = "雨夜，米娜发现了一本没有故事的书。小黑猫轻轻碰了碰封面。每个故事，都需要一个入口。\n\n向左轻扫，翻开下一页。轻点纸面，阅读工具就会出现。";
+"Tutorial.Story.Key.Title" = "通往故事的钥匙";
+"Tutorial.Story.Key.Body" = "一把黄铜钥匙从书中滑落。它既能打开米娜自己的书架，也能通向另一个书库。\n\n点按顶部工具栏的设置，再选择本地文件、个人服务器或源列表。";
+"Tutorial.Story.Door.Title" = "另一座书架";
+"Tutorial.Story.Door.Body" = "米娜转动钥匙。门后，是不同讲述者的书架。小黑猫安静地等着她挑选。\n\n打开“设置”→“来源列表”→“添加来源列表”，粘贴可信提供者的HTTPS列表链接。添加后，再安装想使用的来源。";
+"Tutorial.Story.Read.Title" = "第一个故事";
+"Tutorial.Story.Read.Body" = "书架间的一本书亮了起来。米娜将它捧起，一个全新的世界就此展开。\n\n在设置中启用连接。点按顶部工具栏的搜索，再点按书名旁的添加。点按封面即可开始阅读。";
+"Tutorial.Story.Bookmark.Title" = "留给明天的书签";
+"Tutorial.Story.Bookmark.Body" = "小黑猫把一条缎带放进书页。“我们还会回来的。”米娜轻声说。\n\n轻点页面，显示缩略图条和章节菜单。拖动缩略图条预览页面；选择“语言”，查看这本书实际提供的译本。";
+"Tutorial.Story.Morning.Title" = "新的一天";
+"Tutorial.Story.Morning.Body" = "天亮时，空白的书已经变成了故事的起点。米娜轻轻合上它。窗外的每一扇窗，都藏着另一段故事。\n\n向内捏合，或轻点“关闭”，回到书库。“继续阅读”会打开已保存的位置。自己的文件与来源，由自己选择。";
+
+"Privacy Policy" = "隐私政策";
+
+// Free and Pro plan comparison.
+"Honbako.Plan.Free" = "免费";
+"Honbako.Plan.Pro" = "Pro";
+"Honbako.Plan.Collection" = "阅读并整理自己的藏书";
+"Honbako.Plan.ImportedOffline" = "离线阅读导入的文件";
+"Honbako.Plan.AdFree" = "无广告";
+"Honbako.Plan.FreeLimitations" = "章节下载、新章节通知，以及通过 iCloud 同步书库和阅读进度，需要 Pro。";
+"Honbako.Plan.EverythingInFree" = "包含免费版的全部功能";
+
+// Bring your own collection: Getting Started and connection help.
+"Honbako.CollectionGuide.Intro.Title" = "带入你的收藏";
+"Honbako.CollectionGuide.Intro.Body" = "先阅读内置的原创教程，再导入自己的漫画文件或连接个人书库服务器。";
+"Honbako.CollectionGuide.Local.Title" = "“文件”中的漫画";
+"Honbako.CollectionGuide.Local.Body" = "从“文件”App导入包含漫画页面的CBZ或ZIP文件。首次使用时先设置“本地文件”，再选择文件并确认系列和章节信息。";
+"Honbako.CollectionGuide.Local.Setup" = "设置本地文件";
+"Honbako.CollectionGuide.Local.Connected" = "本地文件已连接";
+"Honbako.CollectionGuide.Local.Import" = "导入漫画";
+"Honbako.CollectionGuide.Local.Footer" = "设置“本地文件”后，你也可以在“文件”App中用Honbako打开CBZ或ZIP。";
+"Honbako.CollectionGuide.Server.Title" = "你的个人服务器";
+"Honbako.CollectionGuide.Server.Body" = "连接你现有的Komga、Kavita或Suwayomi书库。输入服务器地址，并按其提供的方式登录。此设备需要能够访问该服务器。";
+"Honbako.CollectionGuide.Sources.Title" = "连接内容提供方";
+"Honbako.CollectionGuide.Sources.Body" = "添加提供方给出的兼容书源列表链接。打开列表，再安装你想使用的书源。";
+"Honbako.CollectionGuide.Sources.Footer" = "“导入书源文件”接受兼容的.aix连接文件。CBZ或ZIP漫画请使用“本地文件”。";
+"Honbako.CollectionGuide.Search.Title" = "查找并收藏你的书";
+"Honbako.CollectionGuide.Search.Body" = "在设置的搜索范围中启用连接。点按完成，再使用顶部工具栏的搜索查找书名。";
+"Honbako.CollectionGuide.Save.Body" = "轻点搜索结果旁的“添加”即可收藏到书架。打开封面开始阅读；“继续阅读”会返回已保存的页面。";
+"Honbako.CollectionGuide.Settings.Subtitle" = "从“文件”导入漫画，或连接你自己的书库。";
+
+"Honbako.ExternalBeta.Footer" = "外部书源测试版。添加书源列表或书源包以连接内容提供方。不会自动添加连接。";
+"Honbako.ExternalBeta.Intro" = "先阅读原创教程，再添加自己的文件、个人服务器或内容提供方连接。";
+
+/* Library empty and hidden-finished states. */
+"Honbako.Library.Empty.Title" = "书库已准备就绪";
+"Honbako.Library.Empty.Detail" = "在搜索中找到作品并添加到书库，即可开始阅读。";
+"Honbako.Library.Hidden.Title" = "已隐藏读完的作品";
+"Honbako.Library.Hidden.Detail" = "显示已读完的作品，再次阅读。";
+"Honbako.Library.ShowFinished" = "显示已读完的作品";
+"Honbako.Library.FindBooks" = "查找作品";
+
+"Honbako.Guide.guide-find.Title" = "搜索与删除";
+"Honbako.Guide.guide-find.Subtitle" = "找到故事，为下一本留出空间。";
+"Honbako.Guide.guide-find.1.Title" = "点按即可搜索";
+"Honbako.Guide.guide-find.1.Body" = "点按侧边栏中的搜索图标或搜索栏，打开玻璃效果的结果列表，然后输入书名。搜索会使用设置中启用的连接。点按添加可加入书架，也可以点按封面阅读。\n\n滚动时仍可使用搜索和设置。关闭搜索可返回书架。";
+"Honbako.Guide.guide-find.2.Title" = "整理书架";
+"Honbako.Guide.guide-find.2.Body" = "打开书籍，点按页面显示阅读控制。打开章节与语言，选择从书架移除。\n\n这只移除书架记录，不会删除服务器或文件应用中的原始书籍。";
+"Honbako.Guide.guide-find.3.Title" = "随时找回来";
+"Honbako.Guide.guide-find.3.Body" = "移除内置指南后，它不会在下次启动时自动回来。需要时，在此设备上的连接中搜索标题，再点按添加。\n\n请在设置的搜索范围中启用此连接。";
+"Honbako.Guide.guide-find.4.Title" = "读完也不会丢失";
+"Honbako.Guide.guide-find.4.Body" = "读完已完结书籍的全部章节后，它会移到已读完。设置 → 书架 → 隐藏已读完书籍可隐藏这个分区，关闭后即可恢复。\n\n隐藏书籍不会将它从书架移除。";
+"Honbako.Guide.guide-connect.Title" = "你的收藏";
+"Honbako.Guide.guide-connect.Subtitle" = "本地文件、个人服务器，以及每本书的阅读进度。";
+"Honbako.Guide.guide-connect.1.Title" = "导入自己的文件";
+"Honbako.Guide.guide-connect.1.Body" = "打开顶部工具栏的设置，选择本地文件，通过导入界面添加CBZ或ZIP漫画文件。本地文件保存在当前设备。\n\n请在其他设备上单独导入。iCloud进度同步不会复制漫画文件。";
+"Honbako.Guide.guide-connect.2.Title" = "连接个人服务器";
+"Honbako.Guide.guide-connect.2.Body" = "在设置 → 个人服务器中选择Komga、Kavita或Suwayomi。输入服务器地址及其需要的登录信息，保留地址后的完整路径。\n\n设备需要能够通过本地网络、VPN或远程访问连接服务器。";
+"Honbako.Guide.guide-connect.3.Title" = "同时搜索多个书库";
+"Honbako.Guide.guide-connect.3.Body" = "你可以添加多个服务器。在设置的搜索范围中，启用要搜索的连接，也可以包括本地文件。\n\n结果会标明来源。同一作品在不同服务器上属于不同副本。Honbako不会在服务器之间移动或合并文件。";
+"Honbako.Guide.guide-connect.4.Title" = "保存并同步进度";
+"Honbako.Guide.guide-connect.4.Body" = "Honbako Pro可通过你的私人iCloud同步书架、书签、语言选择和阅读进度。在各设备使用相同的iCloud账户，并在设置 → iCloud同步中检查状态。\n\n下载内容和源文件保留在各设备上。请分别连接相同服务器，并单独导入本地文件。";
+"Honbako.Guide.guide-read.Title" = "按你的方式阅读";
+"Honbako.Guide.guide-read.Subtitle" = "翻页、保存位置，以及离线阅读。";
+"Honbako.Guide.guide-read.1.Title" = "跟随页面前进";
+"Honbako.Guide.guide-read.1.Body" = "从右向左阅读的书籍，向左滑动即可前进。页面条也使用相同方向，向左拖动可预览后面的页面。\n\n点按页面显示控制，在章节与语言中选择章节或可用译本。";
+"Honbako.Guide.guide-read.2.Title" = "从两侧合上书";
+"Honbako.Guide.guide-read.2.Body" = "用两根手指向内捏合。书的两侧会向中间合拢，随后封面回到书架中的位置。\n\n松手前改变主意？张开手指即可回到页面。也可以使用关闭按钮返回。";
+"Honbako.Guide.guide-read.3.Title" = "明天接着读";
+"Honbako.Guide.guide-read.3.Body" = "阅读位置会保存在当前设备。从书架打开书籍，或在搜索中选择继续阅读，即可返回保存的位置。\n\n读完的书在已读完分区中，随时可以再次打开。";
+"Honbako.Guide.guide-read.4.Title" = "带一本书出门";
+"Honbako.Guide.guide-read.4.Body" = "内置指南和已导入的本地书籍可离线阅读。Pro支持从兼容连接下载章节。打开章节与语言 → 离线阅读进行下载。\n\n免费版和Pro均无广告。请在断网前下载；只连接服务器不会把页面保存在本地。";
+
+"Search Manga" = "搜索漫画";
+
+"Honbako.Search.EmptyHint" = "搜索已启用的收藏，或按标题查找内置指南。";
+
+// Japanese reading guide and original practice page.
+"Honbako.Guide.guide-japanese.Title" = "读日语";
+"Honbako.Guide.guide-japanese.Subtitle" = "每一页，学一点。";
+"Honbako.Guide.guide-japanese.1.Title" = "直接在书页上阅读";
+"Honbako.Guide.guide-japanese.1.Body" = "日语漫画页面会直接显示逐词罗马字。轻点词语即可聆听发音或查看翻译。\n\n轻点页面显示阅读控制，打开“章节与语言”，再使用“在页面上显示罗马字”开关显示或隐藏标注。\n\n下一页是本箱原创的练习页面。";
+"Honbako.Guide.guide-japanese.2.Title" = "练习页面";
+"Honbako.Guide.guide-japanese.2.Body" = "下一幅图为本箱原创，包含横排和竖排日语。";
+"Honbako.Guide.guide-japanese.3.Title" = "先听，再读";
+"Honbako.Guide.guide-japanese.3.Body" = "轻点漫画中的词语，查看日语原文、假名和罗马字。使用“听发音”或“慢速听发音”确认发音。选择“整句”可听发音或翻译完整句子。\n\n先试着自己朗读，再听一次。人名或有多种读法的词语可能因语境而异。";
+"Honbako.Guide.guide-japanese.4.Title" = "按需查看含义";
+"Honbako.Guide.guide-japanese.4.Body" = "轻点句子弹窗中的“Translate”查看英语翻译。Apple 可能会先要求下载日语和英语语言数据。只翻译选中的文字，不会显示后面的页面。\n\n小号振假名、艺术字或竖排文字可能识别不准。必要时先更正识别的日语，再进行翻译。";
+
+// Japanese reading guide interface.
+"Japanese Guide" = "日语助手";
+"Guide Options" = "助手选项";
+"Show Markers" = "显示标记";
+"Show Romaji" = "显示罗马字";
+"Scan Again" = "重新识别";
+"Enter Japanese Text" = "输入日语";
+"Tap a phrase to hear it, see its reading, or reveal the translation." = "轻点短句，听发音、查看读音或显示译文。";
+"Romaji on Page" = "在页面上显示罗马字";
+"Finding Japanese text…" = "正在识别日语文字…";
+"Couldn’t Scan This Page" = "无法识别此页";
+"No Japanese Text Found" = "未找到日语文字";
+"Small lettering and stylized speech bubbles can be difficult to recognize. You can enter a phrase yourself." = "小字和特殊样式的对话框可能难以识别。你也可以自行输入短句。";
+"Phrases on This Page" = "本页短句";
+"How to Learn with This Page" = "如何用此页学习";
+"Try reading the Japanese first, then use the romaji to check your pronunciation. Listen once at normal speed and once slowly. Hide the romaji when you’re ready to try again." = "先试着读日语，再用罗马字检查发音。以正常速度听一遍，再慢速听一遍。准备好后隐藏罗马字，再试着读一次。";
+"Romaji is a reading aid. Japanese particles and names may sound different from their written form; use Listen to hear the original Japanese." = "罗马字是辅助读音。日语助词和姓名的发音可能与书写形式不同，请使用“听发音”来听原文。";
+"Check the recognized text before translating. You can correct missed characters in the phrase popup. Automatic readings are estimates, especially for names and words with more than one reading." = "翻译前请检查识别结果。你可以在短句弹窗中修正漏识或误识的文字。自动生成的读音仅供参考，尤其是姓名和多音词。";
+"Translation uses Apple’s system service. The first translation may ask you to download Japanese and English language support." = "翻译使用 Apple 系统服务。首次翻译时，系统可能会提示下载日语和英语语言支持。";
+"Only this page is scanned. Text recognition happens on your device." = "只识别当前页面。文字识别在你的设备上完成。";
+"The page image isn’t available yet. Return to the book, let it finish loading, then open the guide again." = "页面图片尚未就绪。请返回书本，等页面加载完成后再打开助手。";
+"Text recognition couldn’t finish. Try scanning again, or enter a Japanese phrase yourself." = "文字识别未能完成。请重新识别，或自行输入日语短句。";
+"Current manga page" = "当前漫画页";
+"Phrase %lld: %@" = "短句 %lld：%@";
+"Hear the pronunciation or reveal a translation" = "听发音或显示译文";
+"Enter Japanese text" = "输入日语文字";
+"Japanese" = "日语";
+"Correct any missed characters before listening or translating." = "听发音或翻译前，请修正漏识或误识的文字。";
+"Read This Phrase" = "阅读此短句";
+"Kana" = "假名";
+"Romaji" = "罗马字";
+"Japanese Reading" = "日语读音";
+"A reading isn’t available for this text. You can still listen to the Japanese or try a shorter phrase." = "此文字暂时没有读音。你仍可听日语原文，或尝试更短的短句。";
+"This is a suggested reading. Names, unusual spellings, and words with several readings may sound different in context." = "这是建议读音。姓名、特殊写法和多音词的实际发音可能随语境变化。";
+"Text recognition is uncertain. Check the Japanese against the page." = "识别结果不确定，请对照页面检查日语原文。";
+"Listen" = "听发音";
+"Listen Slowly" = "慢速听发音";
+"Stop Audio" = "停止朗读";
+"Pronunciation" = "发音";
+"A Japanese system voice isn’t available. Add a Japanese voice in iPhone Settings to hear this phrase." = "日语系统语音不可用。请在 iPhone 设置中添加日语语音，以听取此短句。";
+"Translating…" = "正在翻译…";
+"Translation is available on iPhone and iPad. Apple’s translation service doesn’t run in Simulator." = "翻译可在 iPhone 和 iPad 上使用。Apple 翻译服务无法在模拟器中运行。";
+"Translate to English" = "翻译成英语";
+"Translate Again" = "重新翻译";
+"Meaning" = "含义";
+"Translate when you’re ready to check your understanding. Apple may ask to download Japanese and English language support. Short phrases can lose context." = "准备好检查理解程度时，再查看翻译。Apple 可能会提示下载日语和英语语言支持。短句翻译可能缺少语境。";
+"Translation couldn’t finish. Check language downloads and try again. You can keep using the reading and pronunciation tools." = "翻译未能完成。请检查语言下载后重试。你仍可继续使用读音和发音功能。";
+"Read Japanese on this page with romaji, pronunciation, and tap-to-translate help." = "借助罗马字、发音和轻点翻译来阅读本页日语。";
+
+// Word-by-word Japanese reading aids.
+"Reading Unavailable" = "暂无读音";
+"Hear or translate this word" = "聆听或翻译这个词";
+"Whole Phrase" = "整句";
+"Selected Word" = "所选词语";
+"Tap a word to hear or translate it. Choose Whole Phrase for the full sentence." = "轻点词语可聆听发音或翻译。选择“整句”查看完整句子。";
+"Tap a word or phrase to hear it, see its reading, or reveal the translation." = "轻点词语或句子，聆听发音、查看读音或显示翻译。";
+
+// Japanese reading help stays on the live manga page.
+"Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "直接在漫画上显示逐词罗马字。轻点词语可聆听发音或查看翻译。";
+
+/* Honbako creator credit */
+"Created by @nsjunxiu" = "由 @nsjunxiu 制作";
+
+"Support Email" = "支持邮箱";

@@ -1,0 +1,9 @@
+Your AI can now ask to remove books from your library. You approve the removal in Honbako first, and your reading history is kept.
+
+Also check:
+- Connecting an AI shows a consent prompt first.
+- The search and settings buttons on the library are white in light and dark mode.
+- Cover mode appears only on iPhone Duo and is off until you turn it on.
+- Setup errors (a different Pro purchase, five devices already connected, too many attempts) explain what to do.
+
+Use content you own or are authorized to access.

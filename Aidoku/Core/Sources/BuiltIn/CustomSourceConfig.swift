@@ -26,6 +26,16 @@ enum CustomSourceConfig {
 }
 
 extension CustomSourceConfig {
+    #if SUMI
+    /// Only first-party local and user-configured server readers are available in Honbako.
+    var isPersonalCollection: Bool {
+        switch self {
+            case .local, .komga, .kavita, .suwayomi: true
+            case .demo, .honbakoMangaDex: false
+        }
+    }
+    #endif
+
     func toSource() -> AidokuRunner.Source {
         switch self {
             case .demo:

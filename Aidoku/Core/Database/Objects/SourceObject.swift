@@ -45,13 +45,22 @@ struct SourceObjectData: Sendable {
 
 extension SourceObjectData {
     func toSource() -> Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         if apiVersion == "0.6", let path {
             return try? Source(from: FileManager.default.applicationSupportDirectory.appendingPathComponent(path))
         }
         return nil
+        #endif
     }
 
     func toNewSource() async -> AidokuRunner.Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard let data = customSource, let config = try? CustomSourceConfig(from: data),
+              config.isPersonalCollection else { return nil }
+        return config.toSource()
+        #else
         if apiVersion == "0.6" {
             let source = toSource()
             return source.flatMap({ .legacy(source: $0) })
@@ -65,9 +74,15 @@ extension SourceObjectData {
             return try? await AidokuRunner.Source(key: id, url: url)
         }
         return nil
+        #endif
     }
 
     func toInfo() -> SourceInfo? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard let data = customSource, let config = try? CustomSourceConfig(from: data),
+              config.isPersonalCollection else { return nil }
+        return config.toSource().toInfo()
+        #else
         if let data = customSource, let config = try? CustomSourceConfig(from: data) {
             return config.toSource().toInfo()
         }
@@ -112,5 +127,6 @@ extension SourceObjectData {
             }
         }
         return nil
+        #endif
     }
 }

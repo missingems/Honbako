@@ -301,7 +301,9 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 let edge: ReaderBookSpineView.BindingEdge = leaves.count == 2 ? (index == 0 ? .right : .left) : .none
                 context.cgContext.addPath(ReaderBookSpineView.pagePath(in: leaf.view.bounds, bindingEdge: edge))
                 context.cgContext.clip()
-                leaf.view.layer.render(in: context.cgContext)
+                HonbakoInlineJapaneseOverlayView.withSnapshotsSuppressed(in: leaf.view) {
+                    leaf.view.layer.render(in: context.cgContext)
+                }
             }
         }
     }
@@ -341,6 +343,10 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
     }
 
 #if DEBUG
+    var debugRenderedProgress: Float? {
+        turnView?.subviews.compactMap { $0 as? SumiPageCurlMetalRenderer }.first?.lastRenderedProgress
+    }
+
     /// Pauses the actual interactive transition for visual inspection. This is
     /// unavailable unless the dedicated, in-memory preview was requested.
     @discardableResult func debugHoldTurn(progress requestedProgress: CGFloat) -> Bool {
@@ -402,9 +408,16 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 lastDragTime = CACurrentMediaTime()
                 delegate?.pageViewController?(self, willTransitionTo: [target])
                 begin(targets: [target], rightToLeft: rendersRightToLeft(navigationForward: forward))
-                if turnView != nil {
+                if let turnView {
+                    let location = recognizer.location(in: content)
+                    let translation = recognizer.translation(in: content)
+                    turnView.beginDragging(at: CGPoint(x: location.x - translation.x, y: location.y - translation.y))
                     hasFingerLift = true
                     paperHaptics.begin(distance: turnDistance, visible: view.window != nil, location: recognizer.location(in: view))
+                    // Recognition already consumed some travel; show it in the
+                    // first frame instead of waiting for another touch sample.
+                    progress = turnView.drag(translation: translation)
+                    turnView.update(progress: progress)
                 }
             case .changed:
                 guard turnView != nil, displayLink == nil else { return }
@@ -413,23 +426,24 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                     lastDragTranslation = rawTranslation
                     lastDragTime = CACurrentMediaTime()
                 }
-                let distance = turnDistance
-                let translation = rawTranslation * (turnsRightToLeft ? -1 : 1)
-                progress = min(1, max(0, translation / distance))
+                progress = turnView?.drag(translation: recognizer.translation(in: content)) ?? 0
                 turnView?.update(progress: progress)
-                paperHaptics.update(progress: progress, velocity: recognizer.velocity(in: view).x, location: recognizer.location(in: view))
+                let motion = recognizer.velocity(in: view)
+                let speed = hypot(motion.x, motion.y) * (motion.x < 0 ? -1 : 1)
+                paperHaptics.update(progress: progress, velocity: speed, location: recognizer.location(in: view))
             case .ended:
                 guard turnView != nil else { return }
                 // UIPanGestureRecognizer may retain its last velocity while a
                 // finger holds still. A paused release is no longer a flick.
                 let velocity = CACurrentMediaTime() - lastDragTime > 0.12 ? 0
                     : recognizer.velocity(in: view).x * (turnsRightToLeft ? -1 : 1)
-                let committed = SumiPageTurnIntent.shouldComplete(progress: progress, velocity: velocity, distance: turnDistance)
+                let travel = recognizer.translation(in: view).x * (turnsRightToLeft ? -1 : 1)
+                let committed = SumiPageTurnIntent.shouldComplete(progress: progress, velocity: velocity, distance: turnDistance, translation: travel)
                 releaseFingerLift(velocity: velocity, cancelled: !committed)
-                animate(to: committed ? 1 : 0, velocity: velocity)
+                animate(to: committed ? 1 : 0, velocity: velocity, released: true)
             case .cancelled, .failed:
                 releaseFingerLift(velocity: 0, cancelled: true)
-                if turnView != nil { animate(to: 0, velocity: 0) }
+                if turnView != nil { animate(to: 0, velocity: 0, released: true) }
             default: break
         }
     }
@@ -461,14 +475,16 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
         otherGestureRecognizer is UIPanGestureRecognizer
     }
 
-    private func animate(to target: CGFloat, velocity: CGFloat) {
+    private func animate(to target: CGFloat, velocity: CGFloat, released: Bool = false) {
         guard turnView != nil else { return }
         displayLink?.invalidate()
         animationStart = CACurrentMediaTime()
         animationFrom = progress
         animationTo = target
         let remaining = abs(target - progress)
-        animationDuration = max(0.16, min(0.52, Double(remaining) * 0.48 - min(abs(Double(velocity)) / 18000, 0.12)))
+        animationDuration = released
+            ? SumiPageTurnIntent.releaseDuration(remaining: remaining, velocity: velocity)
+            : max(0.16, min(0.52, Double(remaining) * 0.48 - min(abs(Double(velocity)) / 18000, 0.12)))
         startDisplayLink()
     }
 
@@ -501,7 +517,7 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
     }
 
     private var turnDistance: CGFloat {
-        max(1, content.bounds.width * (displayedControllers.first is ReaderBookSpreadViewController ? 0.45 : 0.75))
+        turnView?.dragDistance ?? max(1, content.bounds.width * 0.75)
     }
 
     @objc private func tick(_ link: CADisplayLink) {

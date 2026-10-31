@@ -1,0 +1,16 @@
+{
+  "build": 68,
+  "version": "0.2.0",
+  "change": "Removed visible manga titles and repeated heading from both Continue Reading widget sizes; retained cover, Resume action and available chapter/page status. Book name remains accessible to VoiceOver.",
+  "checks": {
+    "widget_light_dark_large_text_rendering": "PASS",
+    "release_build": "PASS",
+    "test_result": "Test-HonbakoStoreKitTests-2026.10.30_19-09-06-+0800.xcresult"
+  },
+  "device": {
+    "name": "iPhone Duo",
+    "install": "SUCCESS",
+    "launch": "SUCCESS"
+  },
+  "testflight_uploaded": false
+}

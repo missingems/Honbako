@@ -17,16 +17,37 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
     var bookBindingEdge: ReaderBookSpineView.BindingEdge = .none {
         didSet { if isViewLoaded { updatePaperShape() } }
     }
+    private let sumiJapaneseOverlay = HonbakoInlineJapaneseOverlayView()
+    private let sumiPageCoachingOverlay = HonbakoPageCoachingOverlayView()
+
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?) {
+        sumiJapaneseOverlay.configure(enabled: enabled, onSelect: onSelect)
+        sumiJapaneseOverlay.update(image: canonicalController.pageView?.gifData == nil ? imageView.image : nil)
+    }
+
+    private func sumiUpdatePageCoaching() {
+        let ready = imageView.image != nil && !sumiLoadingView.isRevealing && sumiLoadingView.isHidden && imageView.alpha > 0.99
+        sumiPageCoachingOverlay.configure(page: ready ? canonicalController.page : nil)
+    }
+
+    func setJapaneseLearningVisible(_ visible: Bool) {
+        sumiJapaneseOverlay.setPageVisible(visible)
+    }
+
     private let paperMask = CAShapeLayer()
     private let sumiLoadingView = SumiPageImageLoadingView()
     private let sumiEdgeBackground = SumiPageEdgeBackgroundView()
+    var sumiImageLoadFailed: Bool { canonicalController.sumiImageLoadFailed }
     var sumiIsImageReady: Bool {
         imageView.image != nil && !sumiLoadingView.isRevealing && imageView.alpha > 0.99 && sumiEdgeBackground.isReady
     }
 
     func sumiRevealAfterLoadingPlaceholder() {
         guard imageView.image != nil else { return }
-        sumiLoadingView.reveal(imageView, animated: view.window != nil)
+        sumiLoadingView.reveal(imageView, animated: view.window != nil) { [weak self] in
+            self?.sumiUpdatePageCoaching()
+            self?.canonicalController.delegate?.sumiPageContentDidChange()
+        }
     }
     #endif
     private var referenceGIFData: Data?
@@ -66,6 +87,9 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         view.backgroundColor = SumiPaperSurface.backgroundColor
         sumiEdgeBackground.frame = view.bounds
         sumiEdgeBackground.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        sumiEdgeBackground.onColorsChanged = { [weak self] in
+            self?.canonicalController.delegate?.sumiPageContentDidChange()
+        }
         view.addSubview(sumiEdgeBackground)
         #endif
         view.clipsToBounds = true
@@ -96,6 +120,10 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         #endif
         imageView.addSubview(texture)
         imageView.addSubview(overlayView)
+        #if SUMI
+        imageView.addSubview(sumiJapaneseOverlay)
+        imageView.addSubview(sumiPageCoachingOverlay)
+        #endif
         overlayView.backgroundColor = .clear
         overlays.containerView = overlayView
         overlays.onLookup = onDictionaryLookup
@@ -194,6 +222,10 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
         if oldSize != imageView.bounds.size { dictionaryOverlaysDirty = true }
         texture.update(imageSize: imageView.image?.size, in: imageView.bounds, contentMode: imageView.contentMode)
         #if SUMI
+        if let image = imageView.image {
+            sumiJapaneseOverlay.updateImageFrame(ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds))
+            sumiPageCoachingOverlay.updateImageFrame(ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds))
+        }
         sumiEdgeBackground.frame = view.bounds
         sumiEdgeBackground.layout(imageFrame: frame)
         let visible = frame.intersection(view.bounds)
@@ -229,19 +261,35 @@ final class ReaderBookWideLeafViewController: BaseObservingViewController {
                     sumiLoadingView.show()
                     imageView.alpha = 1
                 } else {
+                    view.insertSubview(sumiLoadingView, belowSubview: zoomView)
                     var visible = view.window != nil
                     var ancestor: UIView? = view
                     while let candidate = ancestor {
                         if candidate.isHidden || candidate.alpha < 0.01 { visible = false; break }
                         ancestor = candidate.superview
                     }
-                    sumiLoadingView.reveal(imageView, animated: firstImage && visible)
+                    sumiLoadingView.reveal(imageView, animated: firstImage && visible) { [weak self] in
+                        self?.sumiUpdatePageCoaching()
+                        self?.canonicalController.delegate?.sumiPageContentDidChange()
+                    }
                 }
                 #endif
                 view.setNeedsLayout()
             }
         }
         referenceGIFData = data
+        #if SUMI
+        if imageView.image == nil {
+            if canonicalController.sumiImageLoadFailed {
+                sumiLoadingView.showFailure { [weak self] in self?.canonicalController.reload() }
+                view.bringSubviewToFront(sumiLoadingView)
+            } else {
+                sumiLoadingView.show()
+            }
+        }
+        sumiJapaneseOverlay.update(image: data == nil ? imageView.image : nil)
+        sumiUpdatePageCoaching()
+        #endif
         if data != nil {
             imageView.animator = canonicalPage?.imageView.animator
         } else {

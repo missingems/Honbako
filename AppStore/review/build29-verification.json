@@ -1,0 +1,72 @@
+{
+  "CFBundleVersion": "29",
+  "CFBundleShortVersionString": "0.1.0",
+  "CFBundleIdentifier": "com.missingems.honbaku",
+  "HonbakoPersonalFeatures": "NO",
+  "HonbakoImportEnglish50": "NO",
+  "DTXcodeBuild": "27A9275",
+  "DTSDKName": "iphoneos27.1",
+  "archive_path": "/Users/jun/Documents/Codex/2026-10-24/help-me-clone-x20/work/honbako/Honbako-AppStore-Build29.xcarchive",
+  "archive_succeeded": true,
+  "signature_verified": true,
+  "source_package_type_registered": false,
+  "test_count": 38,
+  "test_suite_count": 8,
+  "tests_succeeded": true,
+  "upload_status": "succeeded",
+  "selected_in_app_store_connect": true,
+  "rights_declaration_resolved": false,
+  "submitted": false,
+  "archive_info_sha256": "7d12d211d2116dd0e0d0d6cc08065f5f7a7b8648910226c9697926350b3bf1a6",
+  "upload_log_sha256": "f1f31d9cea09885b7333045ce3065abbc1c74d51032c70fdb007467ba8eae742",
+  "apple_processing_status": "ready_to_submit",
+  "review_notes_characters": 3062,
+  "review_notes_saved": true,
+  "four_listing_descriptions_saved": true,
+  "site_deployment_verified": true,
+  "native_settings_gui_verified": false,
+  "native_settings_gui_limitation": "Device Hub did not route the Search gesture or shortcut; source policy, stored config and installation paths are covered by passing regression tests.",
+  "review_notes_sha256": "7242962918b0b63e6e68d693f1a2abebc787f4b59f2dda9f073f7488a4288ff2",
+  "pro_review_notes_saved": true,
+  "pro_review_notes_characters": 1512,
+  "pro_and_group_staged": true,
+  "source_hashes_verified_unchanged_after_archive": true,
+  "simulator_cleanup": "review/build29-cleanup.json",
+  "validation_status": "blocked_missing_content_rights",
+  "final_submit_clicked": false,
+  "validation_errors": [
+    "Missing Content Rights Information"
+  ],
+  "app_version_staged": false,
+  "app_store_saved_verification": {
+    "selectedBuild": 29,
+    "selectedHeading": "29",
+    "saveEnabled": false,
+    "reviewNotesCharacters": 3062,
+    "notesMatchLocal": true,
+    "englishDescriptionMatchesLocal": true,
+    "validationErrors": [
+      "Missing Content Rights Information"
+    ],
+    "appVersionStaged": false,
+    "proAndGroupStaged": true,
+    "submitted": false
+  },
+  "private_review_image": {
+    "capture_build": 28,
+    "appearance": "Light",
+    "same_paywall_in_build29": true,
+    "retained_saved_image": true,
+    "explained_in_product_notes": true
+  },
+  "marketing_screenshots": {
+    "count": 24,
+    "appearance": "Dark",
+    "capture_build": 28,
+    "library_reader_ui_unchanged_in_build29": true,
+    "retained_in_app_store_connect": true
+  },
+  "site_publication": "review/build29-site-publication.json",
+  "cleanup": "review/build29-cleanup.json",
+  "all_four_saved_descriptions_verified_against_local_copy": true
+}

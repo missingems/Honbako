@@ -162,11 +162,10 @@ actor SumiSearchPreparationService {
         return try await loadLegacy(book, source: source)
     }
 
-    /// Optional publication metadata overlaps the source's chapter request. It
-    /// remains part of the single prepared row and is cancelled if that row has
-    /// no readable chapters, fails, or its search is dismissed.
+    /// Personal collections use metadata supplied by the configured server.
+    /// An injected metadata loader is reserved for isolated tests.
     static func loadLegacy(_ book: SumiBook, source: AidokuRunner.Source?,
-                           metadataLoader: @escaping MetadataLoader = { await SumiSearchMetadataService.shared.metadata(for: $0) })
+                           metadataLoader: @escaping MetadataLoader = { _ in nil })
         async throws -> Details? {
         try Task.checkCancellation()
         var manga = book.manga

@@ -1,0 +1,97 @@
+{
+  "title": "Honbako sample stories",
+  "author": "Honbako · Character art by Wataobi",
+  "books": [
+    {
+      "key": "book-001",
+      "title": "After The Last Train",
+      "japaneseTitle": "星を待つ駅",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-01.jpg",
+      "pages": [
+        "page-01.jpg",
+        "page-02.jpg"
+      ]
+    },
+    {
+      "key": "book-002",
+      "title": "Moonlit Blade",
+      "japaneseTitle": "月影の剣",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-02.jpg",
+      "pages": [
+        "cover-02.jpg"
+      ]
+    },
+    {
+      "key": "book-003",
+      "title": "Winter Garden",
+      "japaneseTitle": "雪の庭",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-03.jpg",
+      "pages": [
+        "cover-03.jpg"
+      ]
+    },
+    {
+      "key": "book-004",
+      "title": "Our Last Summer",
+      "japaneseTitle": "夏の約束",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-04.jpg",
+      "pages": [
+        "cover-04.jpg"
+      ]
+    },
+    {
+      "key": "book-005",
+      "title": "Shadows On Ninth",
+      "japaneseTitle": "九番街の影",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-05.jpg",
+      "pages": [
+        "cover-05.jpg"
+      ]
+    },
+    {
+      "key": "book-006",
+      "title": "The Wandering Garden",
+      "japaneseTitle": "旅する庭師",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-06.jpg",
+      "pages": [
+        "cover-06.jpg"
+      ]
+    },
+    {
+      "key": "book-007",
+      "title": "Beyond The Lanterns",
+      "japaneseTitle": "灯りの向こう",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-07.jpg",
+      "pages": [
+        "cover-07.jpg"
+      ]
+    },
+    {
+      "key": "book-008",
+      "title": "Letters In The Rain",
+      "japaneseTitle": "雨の日の便り",
+      "volume": 1,
+      "author": "Honbako · Character art by Wataobi",
+      "cover": "cover-08.jpg",
+      "pages": [
+        "cover-08.jpg"
+      ]
+    }
+  ],
+  "usage": "Original marketing sample-story compositions with licensed, hand-drawn Wataobi character illustrations. Not a catalog included with the app.",
+  "aiGenerated": false
+}

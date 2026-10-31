@@ -54,6 +54,10 @@ struct SumiSpotlightSearchView: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("Sumi.Search.Sources")
+                        Button("Close Search", systemImage: "xmark", action: dismiss)
+                            .labelStyle(.iconOnly)
+                            .frame(width: 44, height: 44)
+                            .accessibilityIdentifier("Honbako.Library.CloseSearch")
                     }
                     .padding(.horizontal, 12)
                     if !results.isEmpty || !query.isEmpty {
@@ -136,7 +140,7 @@ struct SumiSpotlightSearchView: View {
                         y: top - (reduceMotion ? 0 : 24 * (1 - presentation.revealProgress)))
             }
         }
-        .tint(.primary)
+        .tint(HonbakoPalette.accent)
         .sheet(isPresented: $sourcesPresented) { SumiSourcesView() }
         .onChange(of: presentation.query) { search() }
         .onChange(of: presentation.isPresented) {

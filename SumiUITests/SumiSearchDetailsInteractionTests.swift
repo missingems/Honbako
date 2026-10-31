@@ -13,7 +13,7 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         let field = item("Sumi.Search.Field", app)
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
@@ -51,7 +51,7 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
+        try app.openHonbakoSearch()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         item("Sumi.Search.Field", app).typeText("003")
         let get = app.buttons["Sumi.Search.Add.sumi-grid-preview:book-003"]
@@ -63,18 +63,16 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         _ = try visibleText(in: app, expected: ["ADD", "FINISHED", "GENERATEDFIXTURE"])
         XCTAssertEqual(get.frame.midY, result.frame.midY, accuracy: 1)
         get.tap()
-        let searchField = item("Sumi.Search.Field", app)
-        XCTAssertTrue(wait(NSPredicate { _, _ in !searchField.isHittable }, grid),
-                      "Adding a manga reveals its library destination")
+        XCTAssertTrue(item("Sumi.Grid", app).waitForExistence(timeout: 5),
+                      "Adding a manga returns to the library")
         let savedCover = app.buttons["Sumi.Grid.Book.sumi-grid-preview:book-003"]
         XCTAssertTrue(savedCover.waitForExistence(timeout: 5))
-        XCTAssertTrue(savedCover.isHittable, "The transferred cover lands in its real library slot")
+        XCTAssertFalse(savedCover.frame.intersection(app.frame).isEmpty,
+                       "The transferred cover lands in the visible library")
         XCTAssertFalse(item("Sumi.DirectReader", app).exists, "Add saves the manga without opening it")
         attach(app, "Added search cover lands in the library")
-        for _ in 0..<4 {
-            if item("Sumi.Search.Field", app).isHittable { break }
-            grid.swipeDown()
-        }
+        try app.openHonbakoSearch()
+        app.honbakoSearchField.typeText("003")
         let read = app.buttons["Sumi.Search.Read.sumi-grid-preview:book-003"]
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         XCTAssertTrue(read.label.hasPrefix("Read"))
@@ -96,47 +94,62 @@ final class SumiSearchDetailsInteractionTests: XCTestCase {
         defer { app.terminate() }
         let grid = item("Sumi.Grid", app)
         XCTAssertTrue(grid.waitForExistence(timeout: 15))
-        grid.swipeDown()
-        let connections = app.buttons["Sumi.Search.Sources"]
+        let connections = app.buttons["Honbako.Library.Settings"]
         XCTAssertTrue(connections.waitForExistence(timeout: 5))
         XCTAssertEqual(connections.label, "Settings")
         connections.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         let coverDisplay = app.switches["Honbako.Settings.ShowMangaCover"]
-        XCTAssertTrue(coverDisplay.waitForExistence(timeout: 5))
+        // Cover mode is offered only on iPhone Duo; the runner shares the app's simulator.
+        let isPhoneDuo = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] == "iPhone19,4"
+        XCTAssertTrue(app.switches["Honbako.Settings.SearchGuides"].waitForExistence(timeout: 5))
+        XCTAssertEqual(coverDisplay.exists, isPhoneDuo)
         XCTAssertFalse(app.switches["Honbako.Settings.HideFinishedBooks"].exists)
-        let initial = coverDisplay.value as? String
-        coverDisplay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in coverDisplay.value as? String != initial }, object: coverDisplay)], timeout: 3) == .completed)
-        coverDisplay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(
-            predicate: NSPredicate { _, _ in coverDisplay.value as? String == initial }, object: coverDisplay)], timeout: 3) == .completed)
-        attach(app, "Blue cover-display preference")
-        app.buttons["Getting Started"].tap()
-        XCTAssertTrue(app.navigationBars["Getting Started"].waitForExistence(timeout: 5))
-        attach(app, "Setup guide lives in Settings")
-        item("BackButton", app).tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        attach(app, "Settings shows files, personal servers, and manual source setup")
-        let sourceLists = app.buttons["Source Lists"]
-        for _ in 0..<3 where !sourceLists.exists {
+        if isPhoneDuo {
+            // The grid fixture intentionally pins this preference off in the
+            // argument domain so touch tests never start the camera accessory.
+            // Its persistence and all rotation poses are checked in the unit suite.
+            XCTAssertTrue(coverDisplay.isEnabled)
+            XCTAssertEqual(coverDisplay.value as? String, "0")
+        }
+        attach(app, "System settings with optional cover display")
+        XCTAssertFalse(app.buttons["Getting Started"].exists)
+        let importFiles = app.buttons["Honbako.Settings.ImportFromFiles"]
+        XCTAssertTrue(importFiles.waitForExistence(timeout: 5))
+        XCTAssertEqual(importFiles.label, "Import from Files")
+        attach(app, "Settings offers Files import and personal servers")
+        let extensions = app.buttons["Honbako.Settings.Extensions"]
+        for _ in 0..<3 where !extensions.exists {
             let anchor = app.buttons["Personal Server"]
             if anchor.exists { anchor.swipeUp() } else { app.swipeUp() }
         }
-        XCTAssertTrue(sourceLists.waitForExistence(timeout: 5))
-        sourceLists.tap()
-        XCTAssertTrue(app.navigationBars["Source Lists"].waitForExistence(timeout: 5))
-        let add = app.buttons.matching(NSPredicate(format: "label == %@", "Add Source List")).firstMatch
+        // Extensions exist only in builds with HONBAKO_EXTERNAL_SOURCES; public builds end here.
+        guard extensions.waitForExistence(timeout: 5) else {
+            XCTAssertFalse(app.navigationBars["Extensions"].exists)
+            return
+        }
+        XCTAssertEqual(extensions.label, "Extensions")
+        extensions.tap()
+        XCTAssertTrue(app.navigationBars["Extensions"].waitForExistence(timeout: 5))
+        attach(app, "Extensions settings")
+        let repositories = app.buttons["Honbako.Extensions.Repositories"]
+        XCTAssertTrue(repositories.waitForExistence(timeout: 5))
+        XCTAssertTrue(repositories.label.hasPrefix("Extension repositories"))
+        repositories.tap()
+        XCTAssertTrue(app.navigationBars["Extension repositories"].waitForExistence(timeout: 5))
+        attach(app, "Extension repositories")
+        let add = app.buttons["Honbako.Extensions.AddRepository"]
         XCTAssertTrue(add.waitForExistence(timeout: 5))
         add.tap()
+        XCTAssertTrue(app.navigationBars["Add repository"].waitForExistence(timeout: 5))
         XCTAssertTrue(item("Sumi.Sources.ListURL", app).waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Add"].isEnabled)
-        attach(app, "Manual source list URL entry")
+        attach(app, "Manual extension repository URL entry")
     }
 
     @MainActor private func item(_ identifier: String, _ app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+        if identifier == "Sumi.Search.Field" { return app.honbakoSearchField }
+        return app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
     @MainActor private func assertVisibleReadingDetails(_ app: XCUIApplication) throws {
         let textBounds = try visibleText(in: app,

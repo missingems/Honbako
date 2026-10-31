@@ -1,0 +1,105 @@
+{
+  "build": 77,
+  "shippingReleaseBehaviorChanged": false,
+  "proVerification": "Verified no-charge local SKTestSession purchase",
+  "sample": "Distinct original Honbako sample-story compositions, with hand-illustrated characters commercially licensed from Wataobi",
+  "generatedArtwork": false,
+  "captures": [
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "coaching",
+      "native": "native/zh-Hans/ipad/coaching.png",
+      "sha256": "142c54ed74837b9059bb7b66ee4c42ecffd38b40abac21ae47ccd4bedc64b5ce",
+      "nativeAttachmentSHA256": "d1145c3e8adaa314cdfe7124c29343b3481c93b790a5b9fc27a36e19d1bc34f7"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "japanese",
+      "native": "native/zh-Hans/ipad/japanese.png",
+      "sha256": "c947ed006d98e827a83eeb4fcc1b0eb8f37424fbd9b608ef423b42c6c350a48b",
+      "nativeAttachmentSHA256": "11df4174511541ca496a811dd983ae1e8d75a0353064378eb177f69e1590710e"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "reader",
+      "native": "native/zh-Hans/ipad/reader.png",
+      "sha256": "36697c4d7521309e7bc99e53d8619643db7a64e136d210a151dc9a36f75e5703",
+      "nativeAttachmentSHA256": "ada432bca6b80917a62f4900e0d4c74c0221a36eb2d3b4beeb47e52ed0575cb1"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "ai-permissions",
+      "native": "native/zh-Hans/ipad/ai-permissions.png",
+      "sha256": "0264235efcb61da1762711aa5864ca01970c260ffa90e3276d61d2c832911c11",
+      "nativeAttachmentSHA256": "b9ab63350d4e42cfbef30037266019973a031c57399ed5f4fb64975f2898229e"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "sources",
+      "native": "native/zh-Hans/ipad/sources.png",
+      "sha256": "150db590a14d5a228ce57dcb6eefd896739473db447a31cf4cf36991e03262f6",
+      "nativeAttachmentSHA256": "44dc3402069ca47d40d38e8f200a02323e7b19aa3f21decfaa23dbccdd6c1cc9"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "state": "library",
+      "native": "native/zh-Hans/ipad/library.png",
+      "sha256": "5bcb83693b0ab64197bc2788fc99c02906788e26b03c9445462875e35d8c7470",
+      "nativeAttachmentSHA256": "27b98964011ce755ad26da67083255f521f3206cdb6fcc7a6c281792c8f119d8"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "coaching",
+      "native": "native/zh-Hant/ipad/coaching.png",
+      "sha256": "5fd2c6f9ea2ef7483c2a2e731969266739694cd77f09e2af3f4e1a2aad880c71",
+      "nativeAttachmentSHA256": "ee99abd9121a9caa9ebc2e6e1c56d3c631d6ccf589a604e16fc07ffe3531d82e"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "japanese",
+      "native": "native/zh-Hant/ipad/japanese.png",
+      "sha256": "3192357f20c1f11419d0afc7e62c077a4bf3296551989252a0a525d876245380",
+      "nativeAttachmentSHA256": "94cbc15f37ab89fd95e3cdfc687dc2bdfa1a6da5c2ea2c40922a63ab4dee5a6c"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "reader",
+      "native": "native/zh-Hant/ipad/reader.png",
+      "sha256": "9883d9cf62b12fe36b19d0c7b3494cf07e2d040e39cc18d0867db042b6ab7256",
+      "nativeAttachmentSHA256": "b1d09f5b41cae14164d8d6cc257cf8f04b572f2e69239d28a96e28cbbbf911cb"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "ai-permissions",
+      "native": "native/zh-Hant/ipad/ai-permissions.png",
+      "sha256": "0264235efcb61da1762711aa5864ca01970c260ffa90e3276d61d2c832911c11",
+      "nativeAttachmentSHA256": "b9ab63350d4e42cfbef30037266019973a031c57399ed5f4fb64975f2898229e"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "sources",
+      "native": "native/zh-Hant/ipad/sources.png",
+      "sha256": "f594d11aa40e563921389570ecf2a61ad64b5a282b7b664808edbcf25de7f055",
+      "nativeAttachmentSHA256": "4db94625d8467a902f38050d08c6f8e389270bd12a1385916af2f413448f81d3"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "state": "library",
+      "native": "native/zh-Hant/ipad/library.png",
+      "sha256": "d559a026447eb89d8208ffb9012dd634fa06b641a687748ec6d40247e4de9dcc",
+      "nativeAttachmentSHA256": "f2221f9730db468d7385302c78063f47c63aaf854fe0c6935064dceb3180a359"
+    }
+  ]
+}

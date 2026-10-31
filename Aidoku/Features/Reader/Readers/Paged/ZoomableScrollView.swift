@@ -82,8 +82,15 @@ class ZoomableScrollView: UIScrollView {
         }
 
         if #available(iOS 27.0, *) {
+            #if SUMI
+            topEdgeEffect.isHidden = true
+            bottomEdgeEffect.isHidden = true
+            leftEdgeEffect.isHidden = true
+            rightEdgeEffect.isHidden = true
+            #else
             topEdgeEffect.style = .soft
             bottomEdgeEffect.style = .soft
+            #endif
         }
     }
 

@@ -1,0 +1,15 @@
+External-sources beta — version 0.2.0, build 30
+
+Use our own Honbako Originals sample. No sign-in is required; it contains one original six-page story.
+Source list: https://missingems.github.io/Honbako/sources/index.json
+Instructions and .aix package: https://missingems.github.io/Honbako/sources/
+
+1. Open Settings → Getting Started. Check the local file, personal server and source-list instructions.
+2. Settings → Source Lists: add the URL above. Open Honbako Original Sources and install Honbako Originals version 1. Adding the list must not install the source automatically. Enable it under Included in Search.
+3. Search for Bookshop. Open The Bookshop Between Pages — Online Edition, inspect its one chapter, add it to your library and read all six pages. Close, resume and relaunch. Later search pages and unmatched queries should be empty.
+4. Download the .aix package from the instructions page and use Settings → Import Source File. Check cancellation and rejection of an invalid package. Comic CBZ/ZIP files belong in Local Files.
+5. Check the bundled offline tutorial and local comic import still work. If you have your own reachable Komga, Kavita or Suwayomi server, test its connection separately.
+6. Both plans are ad-free. On Free, chapter downloads/alerts/iCloud sync should open Pro. Check the monthly price, Subscribe and Restore Purchases in Apple's TestFlight test environment. This beta has no private Pro unlock. The original sample is static, so no new-chapter alerts are expected from it.
+7. Test portrait/landscape reading, page previews, chapter/language selection and saved progress. Unavailable connections should leave the app usable.
+
+No providers or manga are installed automatically. Report the build, source name/version, device/OS, reproduction steps and error text. Remove passwords, tokens and personal server addresses before sharing public screenshots.

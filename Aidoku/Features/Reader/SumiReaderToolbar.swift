@@ -1,8 +1,7 @@
 #if SUMI
 import UIKit
 
-/// Three independent controls keep navigation separate from page exploration.
-/// This view positions them as a group without adding a fourth material surface.
+/// Native controls keep closing, page exploration, and chapter navigation distinct.
 final class SumiReaderToolbar: UIView {
     var close: (() -> Void)?
     var chapters: (() -> Void)?
@@ -45,9 +44,10 @@ final class SumiReaderToolbar: UIView {
     private var visibilityIdentity = UUID()
     private var surfaces: [UIVisualEffectView] { [closeGlass, scrubberGlass, chaptersGlass] }
 
-    static func makeGlassEffect() -> UIGlassEffect {
+    static func makeGlassEffect(tintColor: UIColor? = HonbakoPalette.glassTintUIColor) -> UIGlassEffect {
         let effect = UIGlassEffect(style: .regular)
         effect.isInteractive = true
+        effect.tintColor = tintColor
         return effect
     }
 
@@ -107,9 +107,16 @@ final class SumiReaderToolbar: UIView {
         scrubber.isHidden = false
         scrubber.alpha = 1
         scrubberGlass.contentView.addSubview(scrubber)
-        accessibilityElements = [closeButton, scrubber, chaptersButton]
+        updateAccessibilityElements()
         updateOverlayVisibility()
         setNeedsLayout()
+    }
+
+    private func updateAccessibilityElements() {
+        var elements: [Any] = [closeButton]
+        if let scrubber { elements.append(scrubber) }
+        elements.append(chaptersButton)
+        accessibilityElements = elements
     }
 
     override func layoutSubviews() {
@@ -173,7 +180,9 @@ final class SumiReaderToolbar: UIView {
         visibilityAnimator = nil
         if visible { isHidden = false }
         let changes = {
-            for surface in self.surfaces { surface.effect = visible ? Self.makeGlassEffect() : nil }
+            for surface in self.surfaces {
+                surface.effect = visible ? Self.makeGlassEffect(tintColor: HonbakoPalette.glassTintUIColor) : nil
+            }
             self.alpha = visible ? 1 : 0
         }
         guard animated, !UIAccessibility.isReduceMotionEnabled else {

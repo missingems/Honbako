@@ -53,7 +53,11 @@ actor SourceManager {
     var sourceListLoadFinished = false
 
     private init() {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        sourceListURLs = []
+        #else
         sourceListURLs = AppSettings.browse.sourceLists.get()
+        #endif
         disabledSourceKeys = AppSettings.browse.disabledSources.get()
     }
 
@@ -116,6 +120,9 @@ extension SourceManager {
     func waitForSourcesLoad() async {
         startSourcesLoadIfNeeded()
         await loadSourcesTask?.value
+        #if SUMI
+        await MainActor.run { HonbakoSourceSetupSync.shared.start() }
+        #endif
     }
 
     func reloadSources() async {
@@ -470,6 +477,9 @@ extension SourceManager {
     }
 
     func installExternalSources(keys: Set<String>) async -> (AsyncStream<String>, Int)? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         guard !keys.isEmpty else { return nil }
 
         let missingKeys = await missingExternalSourceKeys(in: keys)
@@ -509,11 +519,15 @@ extension SourceManager {
         }
 
         return (stream, sources.count)
+        #endif
     }
 
     /// Native descriptors only select a bundled allowlisted implementation.
     /// Existing executable-package imports retain their established path.
     func installExternalSource(_ info: ExternalSourceInfo) async -> AidokuRunner.Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         await waitForSourcesLoad()
         if info.nativeRunner != nil {
             #if SUMI
@@ -537,14 +551,33 @@ extension SourceManager {
             #endif
         }
         guard let url = info.fileURL else { return nil }
-        return await importSource(from: url)
+        let result = await importSource(from: url, expectedSourceID: info.id, expectedVersion: info.version)
+        #if SUMI
+        if let result {
+            var record = HonbakoSourceSetupRecord(id: result.key, kind: .extensionPackage,
+                name: result.name, version: result.version)
+            record.repositoryURL = info.sourceUrl.flatMap { HonbakoSourceSetupPolicy.safeURL($0.absoluteString)?.absoluteString }
+            record.packageURL = HonbakoSourceSetupPolicy.safeURL(url.absoluteString)?.absoluteString
+            if let data = UserDefaults.standard.data(forKey: "Honbako.SourceSetup.Provenance." + result.key),
+               let saved = try? JSONDecoder().decode(HonbakoSourceSetupRecord.self, from: data), saved.packageURL == record.packageURL {
+                record.packageSHA256 = saved.packageSHA256
+            }
+            rememberSourceProvenance(record)
+        }
+        #endif
+        return result
+        #endif
     }
 
-    func importSource(from url: URL) async -> AidokuRunner.Source? {
+    func importSource(from url: URL, expectedSourceID: String? = nil, expectedVersion: Int? = nil, expectedSHA256: String? = nil) async -> AidokuRunner.Source? {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return nil
+        #else
         await waitForSourcesLoad()
 
         // download and unzip source aix
         guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }
+        defer { try? FileManager.default.removeItem(at: temporaryDirectory) }
         var secured = false
         var fileUrl = url
         if !fileUrl.isFileURL {
@@ -559,10 +592,15 @@ extension SourceManager {
             secured = url.startAccessingSecurityScopedResource()
         }
         defer {
-            if secured {
-                url.stopAccessingSecurityScopedResource()
-            }
+            if secured { url.stopAccessingSecurityScopedResource() }
+            if !url.isFileURL { try? FileManager.default.removeItem(at: fileUrl) }
         }
+        #if SUMI
+        let packageHash = try? HonbakoSourceSetupPolicy.packageDigest(at: fileUrl)
+        if let expectedSHA256, packageHash != expectedSHA256 { return nil }
+        #else
+        guard expectedSHA256 == nil else { return nil }
+        #endif
         do {
             try FileManager.default.unzipItem(at: fileUrl, to: temporaryDirectory)
         } catch {
@@ -601,6 +639,16 @@ extension SourceManager {
             LogManager.logger.error("Invalid source key: \(sourceKey)")
             return nil
         }
+
+        // Validate restored/catalog packages before touching any installed version.
+        let packageVersion = newSource?.version ?? legacySource?.manifest.info.version
+        #if SUMI
+        guard HonbakoSourceSetupPolicy.matchesPackage(id: sourceKey, version: packageVersion, digest: packageHash,
+            expectedID: expectedSourceID, expectedVersion: expectedVersion, expectedDigest: expectedSHA256) else { return nil }
+        #else
+        guard expectedSourceID == nil || sourceKey == expectedSourceID,
+              expectedVersion == nil || packageVersion == expectedVersion else { return nil }
+        #endif
 
         // move to final location
         Self.directory.createDirectory()
@@ -661,10 +709,19 @@ extension SourceManager {
         sourcesByKey[result.key] = result
         sourceLanguageCodes.formUnion(result.languages)
 
+        #if SUMI
+        if url.isFileURL {
+            UserDefaults.standard.removeObject(forKey: "Honbako.SourceSetup.Provenance." + result.key)
+        } else if let packageURL = HonbakoSourceSetupPolicy.safeURL(url.absoluteString)?.absoluteString {
+            rememberSourceProvenance(.init(id: result.key, kind: .extensionPackage,
+                name: result.name, version: result.version, packageURL: packageURL, packageSHA256: packageHash))
+        }
+        #endif
         await publishSourceState()
         notifySourcesLoaded(keys: [result.key])
 
         return result
+        #endif
     }
 
     enum CustomSourceKind {
@@ -749,6 +806,9 @@ extension SourceManager {
                     UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
                 }
         }
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard config.isPersonalCollection else { return nil }
+        #endif
         let source = config.toSource()
 
         // add to coredata
@@ -768,6 +828,9 @@ extension SourceManager {
     }
 
     func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) async {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        guard config.isPersonalCollection else { return }
+        #endif
         let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
             let source = CoreDataManager.shared.getSource(key: key, context: context)
             source?.customSource = config.encode() as NSObject
@@ -796,6 +859,9 @@ extension SourceManager {
 
         for object in objects {
             sourceKeys.append(object.id)
+            #if SUMI
+            NotificationCenter.default.post(name: .init("Honbako.SourceSetup.Removed"), object: nil, userInfo: ["sourceID": object.id])
+            #endif
 
             removeSettings(from: object.id)
             await removeEnhancedTrackerItems(for: object.id)
@@ -827,6 +893,9 @@ extension SourceManager {
             return data
         }
         guard let data else { return }
+        #if SUMI
+        NotificationCenter.default.post(name: .init("Honbako.SourceSetup.Removed"), object: nil, userInfo: ["sourceID": sourceKey])
+        #endif
 
         if let path = data.path {
             let url = FileManager.default.applicationSupportDirectory.appendingPathComponent(path)
@@ -961,6 +1030,9 @@ extension SourceManager {
 // MARK: - Source List Management
 extension SourceManager {
     func addSourceList(url: URL, allowUnavailable: Bool = false) async -> Bool {
+        #if SUMI && !HONBAKO_EXTERNAL_SOURCES
+        return false
+        #else
         guard !sourceListURLs.contains(url) else {
             return false
         }
@@ -989,9 +1061,13 @@ extension SourceManager {
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
 
         return true
+        #endif
     }
 
     func removeSourceList(url: URL) async {
+        #if SUMI
+        NotificationCenter.default.post(name: .init("Honbako.SourceSetup.Removed"), object: nil, userInfo: ["repositoryURL": url.absoluteString])
+        #endif
         sourceListStates.removeValue(forKey: url)
         sourceListURLs.remove(url)
         AppSettings.browse.sourceLists.set(sourceListURLs)
@@ -1000,6 +1076,11 @@ extension SourceManager {
     }
 
     func clearSourceLists() async {
+        #if SUMI
+        for url in sourceListURLs {
+            NotificationCenter.default.post(name: .init("Honbako.SourceSetup.Removed"), object: nil, userInfo: ["repositoryURL": url.absoluteString])
+        }
+        #endif
         sourceListStates = [:]
         sourceListURLs = []
         sourceListLanguageCodes = []
@@ -1007,6 +1088,24 @@ extension SourceManager {
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 }
+
+#if SUMI
+extension SourceManager {
+    /// Restore the user's approved repository reference without downloading a catalog or package.
+    func restoreSourceListReference(url: URL) {
+        #if HONBAKO_EXTERNAL_SOURCES
+        guard HonbakoSourceSetupPolicy.safeURL(url.absoluteString) != nil, sourceListURLs.insert(url).inserted else { return }
+        sourceListStates[url] = .unavailable
+        AppSettings.browse.sourceLists.set(sourceListURLs)
+        NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+        #endif
+    }
+
+    func loadSourceListForSetupRestore(url: URL) async -> SourceList? {
+        await loadSourceList(url: url)
+    }
+}
+#endif
 
 // MARK: Language Loading
 extension SourceManager {

@@ -1,0 +1,153 @@
+{
+  "build": 77,
+  "shippingReleaseBehaviorChanged": false,
+  "proVerification": "Verified no-charge local SKTestSession purchase",
+  "sample": "Distinct original Honbako sample-story compositions, with hand-illustrated characters commercially licensed from Wataobi",
+  "generatedArtwork": false,
+  "captures": [
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "coaching",
+      "native": "native/ja/iphone/coaching.png",
+      "sha256": "39082d224723e4f4e460e09ace8664c7bcc83c72d609944dab2a807607936025",
+      "nativeAttachmentSHA256": "b97c75b5243d761169b5a782a5ca51276bb67383a85d1a1bb22c25d83dbf7b9f"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "japanese",
+      "native": "native/ja/iphone/japanese.png",
+      "sha256": "c218eb0ee6dd50ff9df9306d50f91eb8c6daba3aab1fc85e226e013bcd2880ed",
+      "nativeAttachmentSHA256": "5c0b46fea3d7df13f6a79083226497b4c047e59469f838db3716443b6f04db48"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "reader",
+      "native": "native/ja/iphone/reader.png",
+      "sha256": "159f12e477d739374426c24cb27455bccec481095bc5a58d0bb745f993e8fbe1",
+      "nativeAttachmentSHA256": "5cc54e9f82837a239622a3cc0717bae6ae0c8bcf85a16281832c56367515b4e4"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "native": "native/ja/iphone/ai-permissions.png",
+      "sha256": "8565ce107044f70cb686cf14391e18a257b6b5205a8bc59556f05a7f5fe2cf0e",
+      "nativeAttachmentSHA256": "fa130dc7542952e7fd5550249161c30f39fc4ee332d25830ea9606ac588f4f8e"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "sources",
+      "native": "native/ja/iphone/sources.png",
+      "sha256": "908cd9e7858f47f9a56eabeeb894e07af0b06246da2e259849455b6f7e0c9cca",
+      "nativeAttachmentSHA256": "b879b40e45f0fa7fd1677dbae5fce0a84c462ab76469021c4b44f6073e9e451c"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "library",
+      "native": "native/ja/iphone/library.png",
+      "sha256": "4dff5a45f4df5df1510802cea8d82fb95c6eac90980b6aa6986fc97575ed14f6",
+      "nativeAttachmentSHA256": "d22dd677836622fa1113759f8d30c276e0cd56b93883ecb37534c8591e80fa9e"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "coaching",
+      "native": "native/zh-Hans/iphone/coaching.png",
+      "sha256": "04bcd7fa2a0a9e1056860e73bb7bca936334596c4ac3e3dd955a52df939b90d7",
+      "nativeAttachmentSHA256": "603d116674315651ec21b101243dae3fc10e7b9a5aee69dea1111a8062d47e6d"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "japanese",
+      "native": "native/zh-Hans/iphone/japanese.png",
+      "sha256": "4221ce2122e752c8b6f02aa4e9a70f52782923490ef5d9933f1a97bed382a308",
+      "nativeAttachmentSHA256": "1b4aaf3beb07512c8a46e13fabc7a9e83d3cc05cdb710251270327ebe6d4d247"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "reader",
+      "native": "native/zh-Hans/iphone/reader.png",
+      "sha256": "cc756ce246c7a4963568e50cb781d86aa19abacebf38c9937b4659dcc09d9c49",
+      "nativeAttachmentSHA256": "516f2040ba86e55293fcff73f9e58e209f502d5ab1263f3ddcf6b67fbad64e74"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "native": "native/zh-Hans/iphone/ai-permissions.png",
+      "sha256": "3fd2f9260407b2bf31f82c04813c79b23cf8b1a4d262b27059238dca6c996adc",
+      "nativeAttachmentSHA256": "1efc036edbaaa25ff32753efb7c5d114059267cc12cfd0e359afc0056658f363"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "sources",
+      "native": "native/zh-Hans/iphone/sources.png",
+      "sha256": "5316b8a7030cb3c16f47aaceb3ef5198b311d24454c5a5ae65aa79e0302c2f75",
+      "nativeAttachmentSHA256": "6d42f8b2dff835e27be154d1cda6936809c0c80570547e6ef65d6e80ff8e593a"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "library",
+      "native": "native/zh-Hans/iphone/library.png",
+      "sha256": "4dff5a45f4df5df1510802cea8d82fb95c6eac90980b6aa6986fc97575ed14f6",
+      "nativeAttachmentSHA256": "d22dd677836622fa1113759f8d30c276e0cd56b93883ecb37534c8591e80fa9e"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "coaching",
+      "native": "native/zh-Hant/iphone/coaching.png",
+      "sha256": "74c60b9c13e1d82a57a81f03cdd0fd119bd4c039993da54e41416484836bbcb7",
+      "nativeAttachmentSHA256": "c76f4b721842f62468ad34b89ec0ecb718a359e70a14e692fb331662ed69bfe1"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "japanese",
+      "native": "native/zh-Hant/iphone/japanese.png",
+      "sha256": "cb6eb04f611467f6c6fb1e5117cbb05fe3179fdbb15734163f9586c4105b7cfa",
+      "nativeAttachmentSHA256": "1fd28758e2a462adeb4f4840ea54be17d3ebee3db1008bab71603878198dd6cf"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "reader",
+      "native": "native/zh-Hant/iphone/reader.png",
+      "sha256": "67177017c23245cd48c7feb1b8807fc90798cbe24e85e4cb19f776782c58bb88",
+      "nativeAttachmentSHA256": "86fae1bbe6c30f978913aee0fe36f62ef083b293112b3055210ff1b52f9c5ef5"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "native": "native/zh-Hant/iphone/ai-permissions.png",
+      "sha256": "ccf53f983b104f2cf71071e62229730645028e1b6036cd4972b45bd6b254c404",
+      "nativeAttachmentSHA256": "4e7e35fd0906cc7aa2aa2eed3af1746da9f64bf04d9c79dfe5bb0d2749ac2403"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "sources",
+      "native": "native/zh-Hant/iphone/sources.png",
+      "sha256": "0b0ce90cc2a4054769ed475ad8fc8ed35f84a8f0e8a8d561f9d76b94f23867c3",
+      "nativeAttachmentSHA256": "fcf3b5087ed7af698333da1f809c429c2eb5577733a039d6342318ee547a4b75"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "library",
+      "native": "native/zh-Hant/iphone/library.png",
+      "sha256": "4dff5a45f4df5df1510802cea8d82fb95c6eac90980b6aa6986fc97575ed14f6",
+      "nativeAttachmentSHA256": "d22dd677836622fa1113759f8d30c276e0cd56b93883ecb37534c8591e80fa9e"
+    }
+  ]
+}

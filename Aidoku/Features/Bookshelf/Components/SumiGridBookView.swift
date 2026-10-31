@@ -1,4 +1,7 @@
 #if SUMI
+import Combine
+import Nuke
+import NukeUI
 import SwiftUI
 import UIKit
 
@@ -15,14 +18,25 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
     private var refreshOnNextAttachment = false
     private var pendingArtwork: (cover: UIImage, rendered: UIImage, physical: Bool)?
     private var pendingBook: SumiBook?
-    private var preparedObserver: NSObjectProtocol?
+    private let coverImage = FetchImage()
+    private let artworkLoader: SumiCoverArtworkLoader
+    private var coverRequestTask: Task<Void, Never>?
+    private var sourceLoadedObserver: AnyCancellable?
+    private var coverRequestGeneration = UUID()
+    private var coverCacheIdentity: AnyHashable?
+    private var hasLoadedCover = false
     private var placeholderBook: BookPresentation?
     private var placeholderSize: CGSize = .zero
     private var placeholderScale: CGFloat = 0
     private var placeholderDynamicType: DynamicTypeSize = .large
     private var placeholderColorScheme: ColorScheme = .light
 
-    override init(frame: CGRect) {
+    override convenience init(frame: CGRect) {
+        self.init(frame: frame, artworkLoader: .shared)
+    }
+
+    init(frame: CGRect, artworkLoader: SumiCoverArtworkLoader) {
+        self.artworkLoader = artworkLoader
         super.init(frame: frame)
         contentMode = .scaleAspectFill
         clipsToBounds = true
@@ -32,31 +46,15 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         isAccessibilityElement = false
         accessibilityElementsHidden = true
         accessibilityIdentifier = "Sumi.Grid.Cover"
-        preparedObserver = NotificationCenter.default.addObserver(
-            forName: SumiCoverArtworkLoader.batchPreparedNotification, object: nil, queue: .main
-        ) { [weak self] notification in
-            MainActor.assumeIsolated {
-                guard let self, let book = self.representedBook,
-                      self.window != nil || self.holdsVisibleEdition,
-                      let batch = notification.object as? SumiCoverArtworkLoader.PreparedBatch else { return }
-                if let cover = SumiCoverArtworkLoader.shared.preparedCover(for: book, in: batch) {
-                    // Every matching visible tile installs the staged cohort in
-                    // this notification pass. A lifted edition stays frozen.
-                    self.applyFlatEdition(cover: cover)
-                } else if self.window != nil {
-                    // A bounded cohort can drop unattempted work. Requeue only
-                    // unresolved visible art; real provider failures retain
-                    // their cooldown, and held editions never change here.
-                    self.refreshPreparedCoverIfNeeded()
-                }
+        sourceLoadedObserver = NotificationCenter.default.publisher(for: .sourceLoaded)
+            .sink { [weak self] notification in
+                guard let sourceKey = notification.object as? String else { return }
+                Task { @MainActor [weak self] in self?.retryAfterSourceLoaded(sourceKey) }
             }
-        }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    deinit {
-        if let preparedObserver { NotificationCenter.default.removeObserver(preparedObserver) }
-    }
+    deinit { coverRequestTask?.cancel() }
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
@@ -69,6 +67,7 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
 
     func beginBookTransition() {
         layer.removeAnimation(forKey: "Sumi.CoverLoaded")
+        cancelCoverRequest()
         isBookTransitionActive = true
         holdsVisibleEdition = true
         refreshOnNextAttachment = false
@@ -83,6 +82,7 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window == nil {
+            cancelCoverRequest()
             if !isBookTransitionActive { refreshOnNextAttachment = true }
             return
         }
@@ -142,9 +142,18 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             placeholderSize = .zero
             setNeedsLayout()
         }
-        let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")|\(book.title)"
-        guard identity != requestedIdentity else {
+        let requestedIdentity = "\(book.presentation.id)|\(book.coverURL?.absoluteString ?? "placeholder")"
+        let cacheIdentity = artworkLoader.coverIdentity(for: book)
+        guard identity != requestedIdentity || coverCacheIdentity != cacheIdentity else {
             representedBook = book
+            // Text and reading progress do not change a loaded cover. A
+            // generated placeholder can still reflect a newly edited title.
+            if !hasLoadedCover, let previous = placeholderBook,
+               previous.title != book.title || previous.author != book.presentation.author {
+                placeholderBook = book.presentation
+                placeholderSize = .zero
+                setNeedsLayout()
+            }
             refreshPreparedCoverIfNeeded()
             return
         }
@@ -160,11 +169,15 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
             pendingBook = nil
             holdsVisibleEdition = false
         }
+        cancelCoverRequest()
+        hasLoadedCover = false
         representedBookID = book.presentation.id
         representedBook = book
         identity = requestedIdentity
+        coverCacheIdentity = cacheIdentity
         bookPose = SumiGridBookPose(seed: book.presentation.placementSeed)
-        if let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book) {
+        if let cached = artworkLoader.cachedCover(for: book) {
+            hasLoadedCover = true
             applyFlatEdition(cover: cached)
             return
         }
@@ -174,22 +187,70 @@ final class SumiGridBookView: UIImageView, SumiGridBookArtworkProviding {
         refreshPreparedCoverIfNeeded()
     }
 
+    private func retryAfterSourceLoaded(_ sourceKey: String) {
+        guard representedBook?.sourceKey == sourceKey, !hasLoadedCover,
+              !holdsVisibleEdition, !isBookTransitionActive else { return }
+        // A restored source can now supply private-server headers. Restart only
+        // its unresolved tile; existing covers and unrelated caches stay intact.
+        cancelCoverRequest()
+        refreshPreparedCoverIfNeeded()
+    }
+
     private func refreshPreparedCoverIfNeeded() {
         guard !holdsVisibleEdition, !isBookTransitionActive, let book = representedBook else { return }
-        if let cached = SumiCoverArtworkLoader.shared.cachedCover(for: book) {
+        let loader = artworkLoader
+        if let cached = loader.cachedCover(for: book) {
+            hasLoadedCover = true
             if coverArtwork !== cached { applyFlatEdition(cover: cached) }
-        } else if (placeholderBook != nil || coverArtwork == nil),
-                  !SumiCoverArtworkLoader.shared.usesPreparedPlaceholder(for: book) {
-            // This also recovers a visible tile after a decoded cache eviction.
-            // The loader coalesces disk/network work and publishes one cohort;
-            // the tile never starts an independent per-image repaint task.
-            SumiCoverArtworkLoader.shared.requestVisibleCover(for: book)
+            return
         }
+        // A detached tile keeps its already decoded print, even when the
+        // shared reader cache has moved on. Do not restart a completed load.
+        guard !hasLoadedCover, coverRequestTask == nil, !coverImage.isLoading,
+              book.coverURL != nil, !loader.isInFailureCooldown(for: book) else { return }
+        let generation = UUID()
+        coverRequestGeneration = generation
+        coverRequestTask = Task { @MainActor [weak self] in
+            defer {
+                if self?.coverRequestGeneration == generation { self?.coverRequestTask = nil }
+            }
+            guard let request = await loader.coverRequest(for: book), !Task.isCancelled,
+                  let self, generation == self.coverRequestGeneration else { return }
+            let cacheIdentity = loader.coverIdentity(for: book)
+            self.coverCacheIdentity = cacheIdentity
+            self.coverImage.onCompletion = { [weak self] result in
+                guard let self, generation == self.coverRequestGeneration,
+                      self.representedBook?.id == book.id,
+                      loader.coverIdentity(for: book) == cacheIdentity else { return }
+                switch result {
+                case .success(let response):
+                    loader.retainVisibleCover(response.image, for: book, request: request)
+                    self.hasLoadedCover = true
+                    self.applyFlatEdition(cover: response.image, animated: response.cacheType != .memory)
+                case .failure:
+                    loader.recordVisibleFailure(for: book)
+                }
+            }
+            // NukeUI performs a synchronous memory hit without resetting the
+            // image, and coalesces uncached work through the shared pipeline.
+            self.coverImage.load(request)
+        }
+    }
+
+    private func cancelCoverRequest() {
+        coverRequestGeneration = UUID()
+        coverRequestTask?.cancel()
+        coverRequestTask = nil
+        coverImage.reset()
     }
 
     private func renderPlaceholder() {
         guard let book = placeholderBook, !holdsVisibleEdition, !isBookTransitionActive else { return }
-        let size = bounds.width > 1 && bounds.height > 1 ? bounds.size : CGSize(width: 340, height: 500)
+        // UIViewRepresentable configures a new tile before SwiftUI gives it a
+        // size. Defer that first bitmap instead of drawing a large throwaway
+        // placeholder and immediately rendering it again during layout.
+        guard bounds.width > 1, bounds.height > 1 else { return }
+        let size = bounds.size
         let scale = max(1, traitCollection.displayScale)
         guard placeholderSize != size || placeholderScale != scale else { return }
         // Render at the actual tile's point size. Rendering a 17pt body label

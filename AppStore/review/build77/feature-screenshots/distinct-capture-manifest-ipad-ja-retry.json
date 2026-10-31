@@ -1,0 +1,57 @@
+{
+  "build": 77,
+  "shippingReleaseBehaviorChanged": false,
+  "proVerification": "Verified no-charge local SKTestSession purchase",
+  "sample": "Distinct original Honbako sample-story compositions, with hand-illustrated characters commercially licensed from Wataobi",
+  "generatedArtwork": false,
+  "captures": [
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "coaching",
+      "native": "native/ja/ipad/coaching.png",
+      "sha256": "d911f3a4412c666d6e065114693be70e030f1b2e5216f33e65e3f8c84db7d7c2",
+      "nativeAttachmentSHA256": "200c5f12929618bc3730f61fd6cdd53dc4e9f1f0e59ce510ecbd7c3161c28e18"
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "japanese",
+      "native": "native/ja/ipad/japanese.png",
+      "sha256": "689a4cfcaf2d0a657465402de757b6e4511d72a0be246c6f87a906374e67f026",
+      "nativeAttachmentSHA256": "76f7740a89d1849f90d27a7a9a0255694aea0cf9817a06f44164f8d03422a254"
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "reader",
+      "native": "native/ja/ipad/reader.png",
+      "sha256": "879c1e27fc55ae80a660f4af6b06433de1411737508cda470d923f3fd6fcea38",
+      "nativeAttachmentSHA256": "2ce87e652c3f7e2a873dcaed3034fae0e7091b30a02352a434639ccaec6b814f"
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "ai-permissions",
+      "native": "native/ja/ipad/ai-permissions.png",
+      "sha256": "0264235efcb61da1762711aa5864ca01970c260ffa90e3276d61d2c832911c11",
+      "nativeAttachmentSHA256": "b9ab63350d4e42cfbef30037266019973a031c57399ed5f4fb64975f2898229e"
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "sources",
+      "native": "native/ja/ipad/sources.png",
+      "sha256": "fe4ed59a804ce377217fcff6b2d4ac01246a3a789cafe9d9766e482d794921fe",
+      "nativeAttachmentSHA256": "ce0d66bb4565d4e61abcf4c340ae7883b69ffc44d2827fc839e67d946158f2ea"
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "state": "library",
+      "native": "native/ja/ipad/library.png",
+      "sha256": "d559a026447eb89d8208ffb9012dd634fa06b641a687748ec6d40247e4de9dcc",
+      "nativeAttachmentSHA256": "f2221f9730db468d7385302c78063f47c63aaf854fe0c6935064dceb3180a359"
+    }
+  ]
+}

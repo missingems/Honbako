@@ -1,0 +1,17 @@
+#cloud-config
+# Provider-neutral Ubuntu24.04 preparation; creates no cloud account/resources.
+# It does not deploy a public reader or configure DNS/TLS.
+package_update: true
+packages:
+  - openjdk-21-jre-headless
+  - python3
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - libicu74
+  - libfontconfig1
+  - libfreetype6
+  - fonts-dejavu-core
+runcmd:
+  - [systemctl, disable, --now, nginx]
+final_message: "Ubuntu review prerequisites prepared. Upload the verified Honbako VM bundle and follow vm/README.md. Public activation remains manual."

@@ -10,6 +10,8 @@ import AsyncDisplayKit
 import Nuke
 import UIKit
 
+private typealias ReaderWebtoonChapterTransition = Transition
+
 class ReaderWebtoonViewController: ZoomableCollectionViewController {
     let viewModel: ReaderWebtoonViewModel
     weak var delegate: ReaderHoldingDelegate?
@@ -47,6 +49,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var sumiNextChapterRetryAfter = Date.distantPast
     private let sumiNextImagePrefetcher = ReaderPagePrefetcher(decodedImages: true)
     private var sumiChapterStateView: SumiChapterBoundaryView?
+    private var sumiInitialPage: (chapterID: String, canonicalPage: Int)?
 
     private func sumiPrepareNextChapter(around page: Int) {
         guard let chapter, chapter.id == viewModel.chapter?.id,
@@ -74,6 +77,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        setJapaneseLearningActive(false)
         sumiNextChapterPreloadTask?.cancel()
         sumiNextChapterPreloadTask = nil
         sumiPreparedNextChapterID = nil
@@ -84,6 +88,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        sumiUpdateJapaneseLearningVisibility()
         sumiPrepareNextChapter(around: getCurrentPage())
     }
 
@@ -103,8 +108,26 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         node.accessibilityElements = nil
     }
     private var sumiNavigationID = UUID()
+    private var sumiJapaneseLearningEnabled = true
+    private var sumiJapaneseLearningActive = false
+    private var sumiJapaneseSelectionHandler: HonbakoJapaneseSelectionHandler?
+    private(set) var sumiAutoScrollWasRunningBeforePresentation = false
+    var sumiIsAutoScrollActivelyRunning: Bool { isAutoScrolling && !autoScrollPausedForUserInteraction }
+    func sumiRecordAutoScrollBeforePresentation() {
+        sumiAutoScrollWasRunningBeforePresentation = sumiIsAutoScrollActivelyRunning
+    }
     var sumiOnPageTurnBegan: (() -> Void)?
     var sumiCurrentCanonicalPage: Int { min(max(1, getCurrentPage()), max(1, viewModel.pages.count)) }
+
+    func sumiVisiblePageForCoaching() -> Page? {
+        guard isViewLoaded, view.window != nil, let chapter, sumiChapterStateView == nil else { return nil }
+        let selected = sumiCurrentCanonicalPage
+        return collectionNode.visibleNodes.compactMap { $0 as? ReaderWebtoonPageNode }.first { node in
+            node.page.type == .imagePage && !node.page.isTextPage && node.sumiIsImageReady
+                && (node.page.chapterId == chapter.key || node.page.chapterId == chapter.id)
+                && node.page.index + 1 == selected
+        }?.page
+    }
     var sumiOpeningImageFailed: Bool {
         collectionNode.visibleNodes.contains {
             guard let page = $0 as? ReaderWebtoonPageNode, let chapter,
@@ -112,7 +135,13 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             return page.sumiImageLoadFailed
         }
     }
+    private func sumiReleaseInitialPosition() {
+        sumiInitialPage = nil
+        (collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout)?.clearHeldPosition()
+    }
+
     func sumiAbandonOpening() {
+        sumiReleaseInitialPosition()
         sumiChapterLoadTask?.cancel()
         sumiNextChapterPreloadTask?.cancel()
         sumiNextImagePrefetcher.reset()
@@ -125,6 +154,46 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             guard let page = node as? ReaderWebtoonPageNode,
                   page.page.chapterId == chapter.key || page.page.chapterId == chapter.id else { return false }
             return page.sumiIsImageReady
+        }
+    }
+
+    /// The exact resumed page can open with a retry surface after a terminal
+    /// image failure. A loaded neighbor must never stand in for the bookmark.
+    var sumiCanPresentOpening: Bool { sumiOpeningSurfaceReady(allowsLoading: false) }
+    var sumiCanPresentLoadingOpening: Bool { sumiOpeningSurfaceReady(allowsLoading: true) }
+
+    var sumiCanCompleteVisibleChapter: Bool {
+        guard let chapter, chapter.id == viewModel.chapter?.id, !viewModel.pages.isEmpty else { return false }
+        return collectionNode.visibleNodes.contains { node in
+            guard let page = node as? ReaderWebtoonPageNode,
+                  page.page.chapterId == chapter.key || page.page.chapterId == chapter.id,
+                  page.page.index + 1 == viewModel.pages.count else { return false }
+            return page.sumiIsImageReady
+        }
+    }
+
+    func sumiPageContentDidChange() { delegate?.sumiPageContentDidChange() }
+
+    private func sumiOpeningSurfaceReady(allowsLoading: Bool) -> Bool {
+        guard isViewLoaded, let chapter, chapter.id == viewModel.chapter?.id,
+              !viewModel.pages.isEmpty, sumiChapterStateView == nil else { return false }
+        let selected = sumiInitialPage.flatMap { $0.chapterID == chapter.id ? $0.canonicalPage : nil }
+            ?? sumiCurrentCanonicalPage
+        if sumiInitialPage != nil {
+            guard let path = sumiIndexPath(for: selected), let frame = collectionNode.collectionViewLayout
+                .layoutAttributesForItem(at: path)?.frame else { return false }
+            let minimumY = -scrollView.adjustedContentInset.top
+            let maximumY = max(minimumY,
+                collectionNode.collectionViewLayout.collectionViewContentSize.height - scrollView.bounds.height
+                    + scrollView.adjustedContentInset.bottom)
+            let targetY = min(max(frame.minY, minimumY), maximumY)
+            guard abs(scrollView.contentOffset.y - targetY) <= 0.5 else { return false }
+        }
+        return collectionNode.visibleNodes.contains { node in
+            guard let page = node as? ReaderWebtoonPageNode,
+                  page.page.chapterId == chapter.key || page.page.chapterId == chapter.id,
+                  page.page.index + 1 == selected else { return false }
+            return page.sumiIsImageReady || page.sumiImageLoadFailed || (allowsLoading && page.isNodeLoaded)
         }
     }
 
@@ -157,6 +226,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     }
 
     func sumiMove(toCanonicalPage page: Int) {
+        sumiReleaseInitialPosition()
         sumiStopAnimatedNavigation()
         guard let offset = sumiOffset(for: page) else { return }
         scrollView.setContentOffset(offset, animated: false)
@@ -166,6 +236,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     /// A continuous source keeps its native scroll interaction even when a
     /// destination is selected from the filmstrip.
     func sumiAnimate(toCanonicalPage page: Int) async -> Bool {
+        sumiReleaseInitialPosition()
         sumiStopAnimatedNavigation()
         guard let chapterID = chapter?.id, let offset = sumiOffset(for: page) else { return false }
         let identity = sumiNavigationID
@@ -287,8 +358,17 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         scrollNode.insetsLayoutMarginsFromSafeArea = false
 
         if #available(iOS 27.0, *) {
+            #if SUMI
+            scrollView.topEdgeEffect.isHidden = true
+            scrollView.bottomEdgeEffect.isHidden = true
+            scrollView.leftEdgeEffect.isHidden = true
+            scrollView.rightEdgeEffect.isHidden = true
+            collectionNode.view.leftEdgeEffect.isHidden = true
+            collectionNode.view.rightEdgeEffect.isHidden = true
+            #else
             scrollView.topEdgeEffect.style = .soft
             scrollView.bottomEdgeEffect.style = .soft
+            #endif
             collectionNode.view.topEdgeEffect.isHidden = true
             collectionNode.view.bottomEdgeEffect.isHidden = true
         }
@@ -458,6 +538,9 @@ extension ReaderWebtoonViewController {
 
     private func startAutoScroll() {
         guard !isAutoScrolling else { return }
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
 
         isAutoScrolling = true
         resumeAutoScroll()
@@ -537,6 +620,7 @@ extension ReaderWebtoonViewController {
     override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         super.scrollViewWillBeginDragging(scrollView)
         #if SUMI
+        sumiReleaseInitialPosition()
         sumiNavigationID = UUID()
         sumiOnPageTurnBegan?()
         #endif
@@ -548,6 +632,12 @@ extension ReaderWebtoonViewController {
 
     // Update current page when scrolling
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        #if SUMI
+        sumiUpdateJapaneseLearningVisibility()
+        for case let page as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+            page.sumiUpdateLoadViewport()
+        }
+        #endif
         #if !SUMI
         super.scrollViewDidScroll(scrollView)
         #endif
@@ -608,6 +698,9 @@ extension ReaderWebtoonViewController {
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         #if SUMI
+        let wasJapaneseLearningActive = sumiJapaneseLearningActive
+        setJapaneseLearningActive(false)
+        (delegate as? ReaderViewController)?.sumiDismissJapanesePhrase(resumeAutoScroll: true)
         sumiStopAnimatedNavigation()
         #endif
         // Stop active scroll deceleration before capturing the rotation anchor.
@@ -631,6 +724,10 @@ extension ReaderWebtoonViewController {
             self.zoomView.adjustContentSize()
         } completion: { [weak self] _ in
             guard let self else { return }
+            #if SUMI
+            setJapaneseLearningActive((delegate as? ReaderViewController)?.sumiJapaneseLearningActive
+                ?? wasJapaneseLearningActive)
+            #endif
 
             let offset = collectionNode.contentOffset
             layout?.clearPreservedPosition()
@@ -998,6 +1095,9 @@ extension ReaderWebtoonViewController {
 
     /// Switch current chapter to previous
     func movePreviousChapter() {
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
         guard
             let currChapter = chapter,
             let chapterIndex = chapters.firstIndex(of: currChapter),
@@ -1013,6 +1113,9 @@ extension ReaderWebtoonViewController {
 
     /// Switch current chapter to next
     func moveNextChapter() {
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
         guard
             let currChapter = chapter,
             let chapterIndex = chapters.firstIndex(of: currChapter),
@@ -1052,6 +1155,9 @@ extension ReaderWebtoonViewController {
 // MARK: - Reader Delegate
 extension ReaderWebtoonViewController: ReaderReaderDelegate {
     func moveLeft() {
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
         let offset = CGPoint(
             x: collectionNode.contentOffset.x,
             y: max(
@@ -1066,6 +1172,9 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
     }
 
     func moveRight() {
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
         let offset = CGPoint(
             x: collectionNode.contentOffset.x,
             y: min(
@@ -1080,6 +1189,9 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
     }
 
     func sliderMoved(value: CGFloat) {
+        #if SUMI
+        sumiReleaseInitialPosition()
+        #endif
         isSliding = true
 
         // get slider area
@@ -1126,6 +1238,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
 
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         #if SUMI
+        sumiReleaseInitialPosition()
         sumiStopAnimatedNavigation()
         sumiChapterLoadTask?.cancel()
         sumiNextChapterPreloadTask?.cancel()
@@ -1184,12 +1297,19 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
                 startPage = viewModel.pages.count
             }
 
+            #if SUMI
+            sumiInitialPage = (chapter.id, startPage)
+            #endif
             await collectionNode.reloadData()
             #if SUMI
             guard !Task.isCancelled, self.chapter?.id == chapter.id else { return }
             #endif
             zoomView.adjustContentSize()
 
+            #if SUMI
+            (collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout)?
+                .holdPosition(at: IndexPath(row: startPage, section: 0))
+            #endif
             // scroll to first page
             collectionNode.scrollToItem(
                 at: IndexPath(row: startPage, section: 0),
@@ -1211,8 +1331,34 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
 // MARK: - Collection View Delegate
 extension ReaderWebtoonViewController: ASCollectionDelegate {
 
+    #if SUMI
+    func collectionNode(_ collectionNode: ASCollectionNode, willDisplayItemWith node: ASCellNode) {
+        if let boundary = node as? ReaderWebtoonTransitionNode {
+            let target = boundary.transition.to
+            let originID = boundary.transition.from.id
+            boundary.sumiContinue = { [weak self] in
+                guard let self, let target, chapter?.id == originID else { return }
+                delegate?.setChapter(target)
+                setChapter(target, startPage: 1)
+            }
+            return
+        }
+        guard let page = node as? ReaderWebtoonPageNode else { return }
+        // Texture constructs nodes off-main; reader callbacks bind only after allocation.
+        page.delegate = self
+        page.sumiUpdateLoadViewport()
+        sumiConfigureJapaneseLearning(on: page)
+        // Texture invokes this before visibleNodes necessarily includes the new node.
+        page.setJapaneseLearningVisible(sumiJapaneseLearningEnabled && sumiJapaneseLearningActive
+            && view.window != nil && sumiChapterStateView == nil)
+    }
+    #endif
+
     // Refresh info pages after they move off screen
     func collectionNode(_ collectionNode: ASCollectionNode, didEndDisplayingItemWith node: ASCellNode) {
+        #if SUMI
+        (node as? ReaderWebtoonPageNode)?.setJapaneseLearningVisible(false)
+        #endif
         guard needsInfoRefresh else { return }
         if node is ReaderWebtoonTransitionNode {
             needsInfoRefresh = false
@@ -1239,65 +1385,83 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
         _ collectionNode: ASCollectionNode,
         nodeBlockForItemAt indexPath: IndexPath
     ) -> ASCellNodeBlock {
-        guard let chapter else { return { ASCellNode() } }
-        var page = pages[indexPath.section][indexPath.item]
+        guard let chapter, let chapterPages = pages[safe: indexPath.section],
+              var page = chapterPages[safe: indexPath.item] else { return { ASCellNode() } }
+        // Freeze actor-owned inputs before Texture allocates cells on its worker queue.
+        let source = viewModel.source
+        let temporaryPageStore = viewModel.temporaryPageStore
+        let layoutState = pillarboxLayoutState
         if page.type == .imagePage {
-            // image page
-            return { [weak self] in
-                guard
-                    let self,
-                    let temporaryPageStore = self.viewModel.temporaryPageStore
-                else {
-                    return ASCellNode()
-                }
+            guard let temporaryPageStore else { return { ASCellNode() } }
+            let imagePage = page
+            return { [weak self, imagePage, source, temporaryPageStore, layoutState] in
+                guard let self else { return ASCellNode() }
                 let cell = ReaderWebtoonPageNode(
-                    source: self.viewModel.source,
-                    page: page,
+                    source: source,
+                    page: imagePage,
                     temporaryPageStore: temporaryPageStore,
-                    pillarboxLayoutState: self.pillarboxLayoutState
+                    pillarboxLayoutState: layoutState
                 )
-                cell.delegate = self
                 #if !SUMI
-                if #available(iOS 18.0, *) {
-                    self.bindDictionaryOverlayTap(to: cell)
-                }
+                cell.delegate = self
+                if #available(iOS 18.0, *) { self.bindDictionaryOverlayTap(to: cell) }
                 #endif
                 return cell
             }
         } else {
-            // transition page
             let chapterIndex = chapters.firstIndex(of: chapter) ?? 0
-
-            // determine page type
             if (indexPath.section == chapterIndex && indexPath.item == 0)
                 || (indexPath.section == chapterIndex - 1 && indexPath.item > 0) {
                 page.type = .prevInfoPage
             } else {
                 page.type = .nextInfoPage
             }
-
-            let to = page.type == .prevInfoPage
-                ? self.delegate?.getPreviousChapter()
-                : self.delegate?.getNextChapter()
-            return { [weak self] in
-                guard let self else { return ASCellNode() }
-                let node = ReaderWebtoonTransitionNode(
-                    transition: .init(
-                        type: page.type == .prevInfoPage ? .prev : .next,
-                        from: chapter,
-                        to: to
-                    ),
-                    pillarboxLayoutState: self.pillarboxLayoutState
-                )
-                #if SUMI
-                node.sumiContinue = { [weak self] in
-                    guard let self, let to else { return }
-                    self.delegate?.setChapter(to)
-                    self.setChapter(to, startPage: 1)
-                }
-                #endif
-                return node
+            let destination = page.type == .prevInfoPage
+                ? delegate?.getPreviousChapter() : delegate?.getNextChapter()
+            let transition = ReaderWebtoonChapterTransition(type: page.type == .prevInfoPage ? .prev : .next,
+                from: chapter, to: destination)
+            return { [transition, layoutState] in
+                ReaderWebtoonTransitionNode(transition: transition, pillarboxLayoutState: layoutState)
             }
         }
     }
 }
+
+#if SUMI
+extension ReaderWebtoonViewController: HonbakoJapaneseReader {
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?) {
+        sumiJapaneseLearningEnabled = enabled
+        sumiJapaneseSelectionHandler = onSelect
+        if isViewLoaded {
+            for case let page as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+                sumiConfigureJapaneseLearning(on: page)
+            }
+        }
+        sumiUpdateJapaneseLearningVisibility()
+    }
+
+    func setJapaneseLearningActive(_ active: Bool) {
+        sumiJapaneseLearningActive = active
+        sumiUpdateJapaneseLearningVisibility()
+    }
+
+    private func sumiConfigureJapaneseLearning(on page: ReaderWebtoonPageNode) {
+        let enabled = sumiJapaneseLearningEnabled && page.page.sumiJapaneseLearningEligible
+        page.configureJapaneseLearning(enabled: enabled) { [weak self, weak page] region, wordID, anchor in
+            guard let self, let page, sumiJapaneseLearningEnabled, sumiJapaneseLearningActive,
+                  viewIfLoaded?.window != nil, sumiChapterStateView == nil,
+                  collectionNode.visibleNodes.contains(where: { $0 === page }) else { return }
+            sumiJapaneseSelectionHandler?(region, wordID, anchor)
+        }
+    }
+
+    private func sumiUpdateJapaneseLearningVisibility() {
+        guard isViewLoaded else { return }
+        let canShow = sumiJapaneseLearningEnabled && sumiJapaneseLearningActive
+            && view.window != nil && sumiChapterStateView == nil
+        for case let page as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+            page.setJapaneseLearningVisible(canShow)
+        }
+    }
+}
+#endif

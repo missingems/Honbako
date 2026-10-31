@@ -209,15 +209,18 @@ struct SumiChapterLanguageTests {
         #expect(defaults.stringArray(forKey: "provider.languages") == ["en"])
     }
 
-    @Test("A fresh Honbako store keeps Pro sync disabled without a verified purchase")
+    @Test("Free sync migrates once and preserves later choices")
     func automaticSyncDefault() throws {
         let suite = "Sumi.SyncDefaultsTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(true, forKey: "General.icloudSync")
+        defaults.set(false, forKey: "General.icloudSync")
         SumiDefaults.register(in: defaults)
-        #expect(!defaults.bool(forKey: "General.icloudSync"))
+        #expect(defaults.bool(forKey: "General.icloudSync"), "The old Pro-only setting is migrated to free sync")
         #expect(defaults.string(forKey: "Reader.readingMode") == "auto")
+        defaults.set(false, forKey: "General.icloudSync")
+        SumiDefaults.register(in: defaults)
+        #expect(!defaults.bool(forKey: "General.icloudSync"), "Later launches preserve the reader's explicit choice")
     }
 
     private func chapter(_ key: String, number: Float? = nil, language: String?) -> AidokuRunner.Chapter {

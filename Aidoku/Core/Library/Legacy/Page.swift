@@ -26,6 +26,11 @@ struct Page: Hashable {
     var image: PlatformImage?
     var zipURL: String?
     var language: String?
+    #if SUMI
+    /// Captured from this page's actual chapter before it is cached or split.
+    /// Unknown or non-Japanese translations never enter the Japanese OCR lane.
+    var sumiJapaneseLearningEligible = false
+    #endif
 
     var context: PageContext?
     var hasDescription: Bool = false

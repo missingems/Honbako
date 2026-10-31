@@ -51,8 +51,9 @@ final class SumiPageCurlGestureTests: XCTestCase {
         // Manga advances right to left in both orientations and source orders;
         // portrait uses a native horizontal swipe instead of a paper curl.
         let startX: CGFloat = 0.92
-        let endX: CGFloat = shortTurn ? 0.73 : 0.08
-        let partialX: CGFloat = 0.89
+        // Forty points is a deliberate short pull even on a wide display.
+        let endX: CGFloat = shortTurn ? startX - 40 / renderer.frame.width : 0.08
+        let partialX: CGFloat = startX - 12 / renderer.frame.width
         // Safe margins can move the paper away from the physical display edge.
         // Exercise the actual renderer instead of swiping the camera margin.
         let start = renderer.coordinate(withNormalizedOffset: CGVector(dx: startX, dy: 0.62))
@@ -64,7 +65,7 @@ final class SumiPageCurlGestureTests: XCTestCase {
         first.lifetime = .keepAlways
         add(first)
         let end = renderer.coordinate(withNormalizedOffset: CGVector(dx: endX, dy: 0.62))
-        start.press(forDuration: 0.08, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.05)
+        start.press(forDuration: 0.08, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: shortTurn ? 0.18 : 0.05)
         let nextTitle = paired ? "Pages 3–4" : "Page 2"
         XCTAssertTrue(app.navigationBars[nextTitle].waitForExistence(timeout: 4), "Completed turn did not advance to \(nextTitle): \(app.debugDescription)")
         let next = XCTAttachment(screenshot: surface.screenshot())

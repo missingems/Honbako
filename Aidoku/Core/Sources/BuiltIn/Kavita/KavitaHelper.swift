@@ -43,7 +43,7 @@ struct KavitaHelper: Sendable {
     }
 
     func getMirrors() -> [URL] {
-        UserDefaults.standard.stringArray(forKey: "\(sourceKey).mirrors")?.compactMap(URL.init) ?? []
+        UserDefaults.standard.stringArray(forKey: "\(sourceKey).mirrors")?.compactMap { SelfHostedServerURL($0)?.url } ?? []
     }
 
     func request<T: Decodable>(

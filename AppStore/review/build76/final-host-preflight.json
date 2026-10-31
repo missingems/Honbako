@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-30T23:46:52.329919+00:00",
+  "providers": [
+    {
+      "host": "komga-review.honbako.xyz",
+      "DNS": [
+        "13.239.2.223"
+      ],
+      "strictTLS": true,
+      "unauthenticatedCatalogHTTP": 401,
+      "certificateExpires": "Jan 28 15:41:47 2027 GMT"
+    },
+    {
+      "host": "kavita-review.honbako.xyz",
+      "DNS": [
+        "13.239.2.223"
+      ],
+      "strictTLS": true,
+      "unauthenticatedCatalogHTTP": 401,
+      "certificateExpires": "Jan 28 15:41:47 2027 GMT"
+    },
+    {
+      "host": "suwayomi-review.honbako.xyz",
+      "DNS": [
+        "13.239.2.223"
+      ],
+      "strictTLS": true,
+      "unauthenticatedCatalogHTTP": 401,
+      "certificateExpires": "Jan 28 15:41:47 2027 GMT"
+    }
+  ],
+  "MCP": [
+    {
+      "host": "mcp.honbako.xyz",
+      "available": true,
+      "issuerMatches": true
+    },
+    {
+      "host": "test-mcp.honbako.xyz",
+      "available": true,
+      "issuerMatches": true
+    }
+  ],
+  "client": "Representative Honbako/CFNetwork client identity for public MCP metadata",
+  "diagnostic": "Cloudflare rejects Python urllib default agent with1010. No security setting changed. Public login HTML may return200; protected catalogs correctly deny unauthenticated requests. Earlier actual native authenticated provider checks passed."
+}

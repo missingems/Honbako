@@ -1,0 +1,147 @@
+{
+  "archive": "honbako-review-vm-bundle.tar.gz",
+  "sha256": "6fdcc368afc6369ad46310b23bdef23bc640a182095bf727c907b9a53e9e236e",
+  "bytes": 23204374,
+  "secret_scan_passed": true,
+  "mac_runtime_included": false,
+  "linux_runtime_downloads_verified_at_install": true,
+  "cloud_resource_created": false,
+  "public_access_created": false,
+  "contents": [
+    {
+      "path": "Aidoku/Core/Sources/BuiltIn/Suwayomi/SuwayomiSource.swift",
+      "bytes": 23396,
+      "sha256": "bcb299b1e22e72097dde3ee9c7a38b92b85c4d5c7320d3e06b91daeb75d15bf2"
+    },
+    {
+      "path": "AppStore/review/build73/reviewer-fixtures.json",
+      "bytes": 3873,
+      "sha256": "6c0c54858630f8a773658f1d0c2b202fa499af1451410842d5ab47010844066e"
+    },
+    {
+      "path": "AppStore/review/build73/reviewer-instructions-prepared.txt",
+      "bytes": 4424,
+      "sha256": "59357fa82b3ab3735cc084c1622e2c629fd4b1159b671f14c6a1b416fbd53220"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/README.md",
+      "bytes": 5739,
+      "sha256": "1f6ace895bb1c6108f6d8daa83e1defc1187fcf8c7da7345da9de3d91ee32e29"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/bootstrap.py",
+      "bytes": 5327,
+      "sha256": "edc820ccdf267f91db56ab14833a6e9d20f7b19c2adf15089f80a1386b9c278f"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/generated/libraries/kavita/Read Your Way/Read Your Way v01 c001.cbz",
+      "bytes": 299825,
+      "sha256": "3fd6223340a5fd92802ef59f58d776f7838bd819c6dffb2a3ac0a9b1ae00eec7"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/generated/libraries/komga/Your Collections/Your Collections v01 c001.cbz",
+      "bytes": 309277,
+      "sha256": "d6993eba14a1d703591ec621879a92fedfbc32ceb22a97e3f4988b10626d7825"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/generated/libraries/mcp/The Bookshop Between Pages/The Bookshop Between Pages v01 c001.cbz",
+      "bytes": 22231432,
+      "sha256": "8182385d819a7e2abca5962c0b340a06e6b570eebd0639b472453c06c76d48a7"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/generated/libraries/suwayomi/Search & Delete/Search & Delete v01 c001.cbz",
+      "bytes": 278540,
+      "sha256": "848667713b6d125b84f41ac3753a9c36a992a3b08ef417ef501c9930731ab4e3"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/generated/libraries/suwayomi/Search & Delete/cover.png",
+      "bytes": 71540,
+      "sha256": "a0b48534536aa13f882c3cc5a0bb6c9225eb1f945d6194c230e681f173dada62"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/probe-https.py",
+      "bytes": 4240,
+      "sha256": "887899c357632beebf0364120b46f639bc6bfcac483e750175cf8e700979ac2a"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/probe.py",
+      "bytes": 6158,
+      "sha256": "b8defc0b1c9344d92dd7cf8b5cc507550d1d5a87a80a25e392e7b5d7a02889d6"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/support.py",
+      "bytes": 2886,
+      "sha256": "d8e8b445999d2e704e732c9ed8397621f0f542917309c0c491819a89d4a59102"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/suwayomi_gateway.py",
+      "bytes": 8711,
+      "sha256": "61414b54ebd89efa9ba62c5910bd2d29020ca3e7b3805d571a2ec825ebd400f6"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/AWS-checklist.md",
+      "bytes": 4692,
+      "sha256": "5ac6cc8247f4cf71a46178391625842d12aef71c3698520dcd303ff4f6c6b366"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/AWS-pricing-example.json",
+      "bytes": 2737,
+      "sha256": "2078d284f06518df6eb8b25748fe962d999dd13e05aeb4e4c2f0dbabf6a01f04"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/README.md",
+      "bytes": 6664,
+      "sha256": "158cd8c8314c462e2c230fe7ceebf39e92c3fde8440266c671ef31ffacd1a275"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/SSH-upload.md",
+      "bytes": 5455,
+      "sha256": "ba18f943ea55f91ddb264c0367c89159d6abd564d9f8123ba06305a73cb9b6db"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/activate.sh",
+      "bytes": 2691,
+      "sha256": "ace1deee2ad2ae55c617e625fd047b173e0c93da0aa783d5ffb87f6ae2bd0c01"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/build-bundle.py",
+      "bytes": 2751,
+      "sha256": "7f63a88f3d605ca34c243062482b96986a592dcc19f4fac060fe7d62079014e8"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/cloud-init.yaml",
+      "bytes": 542,
+      "sha256": "47955ac9bc357010b9fab54804153fd2db4df03e5fc36d9946d54482ba0e67af"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/install.py",
+      "bytes": 10377,
+      "sha256": "6293e94c4ed6d2d06aca47df5f28ae6afa6a65dcc433e4c93ee5f0bb2a3d36a8"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/install.sh",
+      "bytes": 905,
+      "sha256": "8f614efeafba181e8895eb24bc1626ba577fdb6691a0efc880576ffb891b1da6"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/nginx-http.conf",
+      "bytes": 326,
+      "sha256": "43e3a5cfb991d1362e9709992acaa59e3fadda7e39f411fcdd3b1ac89170d721"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/nginx-https.conf",
+      "bytes": 3053,
+      "sha256": "acc807a217a1acced62f36b7da81b0d40fd635dc8568e2f57624a03326b01b33"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/releases-linux.json",
+      "bytes": 2895,
+      "sha256": "8225923039c6f0c6a25e12a3ed91c4aa494106076bdab8e3dde1687a5f9204af"
+    },
+    {
+      "path": "Tools/reviewer-fixtures/vm/verify-private.sh",
+      "bytes": 2183,
+      "sha256": "01ce37c63db51f8de840fc66398293e6909dc71a6b6bf5c5342fd146d23c873c"
+    }
+  ]
+}

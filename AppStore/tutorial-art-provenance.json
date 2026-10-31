@@ -1,0 +1,23 @@
+{
+  "build": "26",
+  "method": "Built-in image_gen tool",
+  "reference": "HonbakoTutorialPage1Art \u2014 existing original artwork",
+  "prompt_constraints": "Original ink manga, consistent Mina and Nori characters, three horizontal story panels in upper 76 percent, blank lower 24 percent for native localized narration, no baked text or franchise art.",
+  "assets": [
+    {
+      "asset": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialSourcesArt.imageset/art.png",
+      "sha256": "baed7fbb6d99d4a1ea977ee70d012b087032a0be582410947fa7261b15921c22",
+      "prompt_scene": "Mina finds a brass key; Nori points to a connection; a door to other libraries opens."
+    },
+    {
+      "asset": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialCollectionArt.imageset/art.png",
+      "sha256": "4dbc6b09a5d51e1efbe3610afe30124bb2610b0b9be3c41e846a9eacabfd579c",
+      "prompt_scene": "Mina unlocks shelves, discovers a collection, and chooses a story."
+    },
+    {
+      "asset": "Aidoku/App/Resources/Assets.xcassets/HonbakoTutorialReturnArt.imageset/art.png",
+      "sha256": "ca47b66da96cc94f82c7a367769dd8319e838ce0de22e1b0b72fb43d594b65b2",
+      "prompt_scene": "Mina reads with Nori, marks her place with a ribbon, and looks out at the night."
+    }
+  ]
+}

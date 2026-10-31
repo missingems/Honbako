@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "build": 77,
+  "status": "WAITING_FOR_REVIEW",
+  "submissionID": "95cd35ab-c67b-4890-a865-a7c57be9f404",
+  "submittedAtDisplayed": "Oct31,2026 at8:17AM",
+  "manualReleaseVerifiedAfterSubmission": true,
+  "replacesSubmission": "5e2fbbce-2d57-44fe-8dca-5d5c5a6249d4",
+  "items": [
+    "iOS0.2.0(77)",
+    "Honbako Pro subscription group",
+    "Honbako Pro Monthly",
+    "Honbako Pro Annual"
+  ],
+  "externalSources": true,
+  "privateFeatures": false,
+  "automaticImport": false,
+  "nativeOriginalSourceTests": "4passed0skipped; original repository/package/cover/sixpages verified",
+  "chapterRecoveryTests": "41tests9suites plus2chapter-menu design tests andliveMangaDex first-page decode passed",
+  "listing": "Four descriptions updated to include user-selected extension repositories; no catalogpreinstalled",
+  "screenshots": "Corrected36asset set retained;20raw75+4raw76 captures; actual representedUIunchanged77",
+  "IAPReviewImages": "Actualnative76paywall captures; unchanged77; reviewnotesupdated",
+  "contentRights": "Ownerconfirmationretained",
+  "TestFlight": "Build77 remainsTesting for existing externalgroup andReadyToTest internally"
+}

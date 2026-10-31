@@ -31,6 +31,8 @@ struct SumiReadingView: View {
                         if let findBooks {
                             Button("Find books", systemImage: "magnifyingglass", action: findBooks)
                                 .buttonStyle(.borderedProminent)
+                                .tint(HonbakoPalette.action)
+                                .foregroundStyle(HonbakoPalette.onAction)
                         }
                     }
                 }

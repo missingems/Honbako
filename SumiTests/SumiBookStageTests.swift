@@ -142,6 +142,82 @@ struct SumiBookStageTests {
         }
     }
 
+    @Test("A closed returning cover matches the real grid image crop and rectangle pixel for pixel")
+    func closedCoverMatchesLiveGridCrop() async throws {
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive })
+        let previousKeyWindow = scene.keyWindow
+        let window = UIWindow(windowScene: scene)
+        let host = UIViewController()
+        host.view.backgroundColor = .black
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            previousKeyWindow?.makeKey()
+        }
+        let viewport = CGRect(x: 0, y: 0, width: 400, height: 300)
+        let slot = CGRect(x: 80, y: 50, width: 100, height: 150)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.preferredRange = .standard
+        let print = UIGraphicsImageRenderer(size: CGSize(width: 320, height: 160), format: format).image { output in
+            for column in 0..<32 {
+                UIColor(hue: CGFloat(column) / 32, saturation: 0.8, brightness: 0.8, alpha: 1).setFill()
+                output.fill(CGRect(x: column * 10, y: 0, width: 10, height: 160))
+            }
+            UIColor.white.setFill()
+            output.fill(CGRect(x: 0, y: 60, width: 320, height: 8))
+        }
+        let grid = SumiGridBookView(frame: slot)
+        grid.applyFlatEdition(cover: print)
+        host.view.addSubview(grid)
+        let lifted = try #require(SumiBookTransitionSource.capture(grid))
+        defer { lifted.finish() }
+        #expect(lifted.closedPose == nil, "The current library uses the original flat print, not a rotated render canvas")
+        func raster() -> UIImage {
+            UIGraphicsImageRenderer(size: viewport.size, format: format).image { _ in
+                #expect(host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true))
+            }
+        }
+        grid.isHidden = false
+        host.view.layoutIfNeeded()
+        #expect(await SumiReaderFrameFence.wait())
+        let reference = raster()
+        for paired in [false, true] {
+            let stage = try SumiBookStageView(frame: viewport, cover: lifted.coverArtwork, spread: image(.blue), paired: paired)
+            host.view.addSubview(stage)
+            grid.isHidden = true
+            #expect(stage.draw(progress: 0, source: slot, deltaTime: 1 / 60))
+            #expect(stage.completedSourceFrame == grid.frame)
+            #expect(await SumiReaderFrameFence.wait())
+            let returned = raster()
+            for y: CGFloat in [slot.minY - 1, slot.minY + 2, slot.midY, slot.maxY - 2, slot.maxY + 1] {
+                for x: CGFloat in [slot.minX - 1, slot.minX + 2, slot.midX, slot.maxX - 2, slot.maxX + 1] {
+                    let a = try rgba(reference, point: CGPoint(x: x, y: y))
+                    let b = try rgba(returned, point: CGPoint(x: x, y: y))
+                    #expect(zip(a, b).allSatisfy { pair in abs(Int(pair.0) - Int(pair.1)) <= 4 },
+                        "Grid and returned cover differ at \(x),\(y): \(a) versus \(b)")
+                }
+            }
+            stage.removeFromSuperview()
+        }
+    }
+
+    private func rgba(_ image: UIImage, point: CGPoint) throws -> [UInt8] {
+        let cg = try #require(image.cgImage)
+        let crop = try #require(cg.cropping(to: CGRect(origin: point, size: CGSize(width: 1, height: 1))))
+        var bytes = [UInt8](repeating: 0, count: 4)
+        try bytes.withUnsafeMutableBytes { buffer in
+            let context = try #require(CGContext(data: buffer.baseAddress, width: 1, height: 1,
+                bitsPerComponent: 8, bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(crop, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        return bytes
+    }
+
     private func stagePixel(_ stage: UIView, at point: CGPoint) throws -> [UInt8] {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1

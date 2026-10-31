@@ -22,20 +22,23 @@ struct SumiSourceListCatalogView: View {
 
     var body: some View {
         List {
-            if !loaded { ProgressView() }
-            else if available.isEmpty {
-                if query.isEmpty {
-                    ContentUnavailableView("All Sources Added", systemImage: "checkmark.circle",
-                        description: Text("Your connected sources are available in Search."))
-                } else { ContentUnavailableView.search(text: query) }
-            } else {
-                ForEach(available, id: \.sourceId) { source in
-                    ExternalSourceTableCell(source: source, onInstall: { Task { await reload() } })
-                        .listRowBackground(HonbakoSettingsRowBackground())
+            Group {
+                if !loaded { ProgressView() }
+                else if available.isEmpty {
+                    if query.isEmpty {
+                        ContentUnavailableView("No available extensions", systemImage: "checkmark.circle",
+                            description: Text("There are no compatible extensions to install from this repository. Installed sources are available in Search."))
+                    } else { ContentUnavailableView.search(text: query) }
+                } else {
+                    ForEach(available, id: \.sourceId) { source in
+                        ExternalSourceTableCell(source: source, installTitleKey: "Install", onInstall: { Task { await reload() } })
+                    }
                 }
             }
+            .honbakoPaperRows()
         }
-        .searchable(text: $query, prompt: "Find a source")
+        .honbakoPaperListBackground()
+        .searchable(text: $query, prompt: "Find an extension")
         .navigationTitle(list.name)
         .navigationBarTitleDisplayMode(.inline)
         .task { await reload() }

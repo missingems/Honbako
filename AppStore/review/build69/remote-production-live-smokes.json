@@ -1,0 +1,184 @@
+{
+  "productionVersion": "51447077-b759-4a38-81e9-ccf72516ade2",
+  "strictProduction": true,
+  "productionSandboxFallback": false,
+  "newAccessGrantCreated": false,
+  "newOAuthClientCreated": false,
+  "allPassed": true,
+  "smokes": [
+    {
+      "environment": "production",
+      "path": "/remote/capabilities",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "available": true
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/.well-known/oauth-authorization-server/remote",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "issuer": "https://honbako-mcp.jun-19c.workers.dev/remote",
+        "authorization_endpoint": "https://honbako-mcp.jun-19c.workers.dev/remote/oauth/authorize",
+        "token_endpoint": "https://honbako-mcp.jun-19c.workers.dev/remote/oauth/token",
+        "registration_endpoint": "https://honbako-mcp.jun-19c.workers.dev/remote/oauth/register",
+        "code_challenge_methods_supported": [
+          "S256"
+        ],
+        "token_endpoint_auth_methods_supported": [
+          "none",
+          "client_secret_post",
+          "client_secret_basic"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/.well-known/oauth-protected-resource/remote/mcp",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "resource": "https://honbako-mcp.jun-19c.workers.dev/remote/mcp",
+        "authorization_servers": [
+          "https://honbako-mcp.jun-19c.workers.dev/remote"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/api/admin/status",
+      "method": "GET",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "not_found",
+          "message": "Endpoint not found"
+        }
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/admin",
+      "method": "GET",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "not_found",
+          "message": "Endpoint not found"
+        }
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/remote/mcp",
+      "method": "POST",
+      "status": 401,
+      "response": {
+        "error": "unauthorized"
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/remote/capabilities",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "available": true
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/.well-known/oauth-authorization-server/remote",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "issuer": "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote",
+        "authorization_endpoint": "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote/oauth/authorize",
+        "token_endpoint": "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote/oauth/token",
+        "registration_endpoint": "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote/oauth/register",
+        "code_challenge_methods_supported": [
+          "S256"
+        ],
+        "token_endpoint_auth_methods_supported": [
+          "none",
+          "client_secret_post",
+          "client_secret_basic"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/.well-known/oauth-protected-resource/remote/mcp",
+      "method": "GET",
+      "status": 200,
+      "response": {
+        "resource": "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote/mcp",
+        "authorization_servers": [
+          "https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote"
+        ]
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/api/admin/status",
+      "method": "GET",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "not_found",
+          "message": "Endpoint not found"
+        }
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/admin",
+      "method": "GET",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": "not_found",
+          "message": "Endpoint not found"
+        }
+      },
+      "passed": true
+    },
+    {
+      "environment": "sandbox",
+      "path": "/remote/mcp",
+      "method": "POST",
+      "status": 401,
+      "response": {
+        "error": "unauthorized"
+      },
+      "passed": true
+    },
+    {
+      "environment": "production",
+      "path": "/remote/enroll",
+      "method": "POST",
+      "status": 402,
+      "response": {
+        "error": {
+          "code": "pro_required",
+          "message": "An active Honbako Pro subscription is required for remote MCP"
+        }
+      },
+      "passed": true
+    }
+  ],
+  "unsignedProofAllocation": "Rejected402 before workspace lookup by verified-before-allocation route; no user workspace was created by this check."
+}

@@ -28,12 +28,12 @@ class ReaderViewController: BaseObservingViewController {
     #if SUMI
     private var sumiAllChapters: [AidokuRunner.Chapter] = []
     private var sumiControlsVisible = false
+    private var sumiControlsBeforeClosing: Bool?
     private var sumiLaysOutControls = false
     private var sumiRequestedToolbarEdge: UIRectEdge?
     private var sumiToolbarRelocation: Task<Void, Never>?
     private var sumiNativeToolbarItem: UIBarButtonItem?
     private var sumiUsesNativeToolbar = false
-    private lazy var sumiReaderTitle = SumiReaderTitleView(title: manga.title ?? "Manga")
     private lazy var sumiReaderToolbar: SumiReaderToolbar = {
         let toolbar = SumiReaderToolbar()
         toolbar.mount(sumiScrubber)
@@ -46,11 +46,20 @@ class ReaderViewController: BaseObservingViewController {
         }
         return toolbar
     }()
+    var sumiJapaneseLearningEnabled = false
+    var sumiJapaneseLearningActive = false
+    var sumiJapanesePhraseController: UIViewController?
+    var sumiJapanesePhraseViewport: CGSize?
+    var sumiJapanesePopupOwnsAutoScroll = false
     private var sumiIsClosing = false
     var sumiIsPreparingOpening = false
     var sumiOpeningFailureMessage: String?
+    #if HONBAKO_EXTERNAL_SOURCES
+    var sumiAutomaticOpeningLanguage: String?
+    #endif
     private var sumiDidCommitPreparedOpening = false
     private var sumiLastVisiblePages: ClosedRange<Int>?
+    private var sumiCompletedChapterID: String?
     private lazy var sumiThumbnailLoader = SumiPageThumbnailLoader(mangaKey: manga.key)
     private lazy var sumiScrubber: SumiPageScrubber = {
         let scrubber = SumiPageScrubber()
@@ -106,25 +115,63 @@ class ReaderViewController: BaseObservingViewController {
     var sumiZoomTargetView: UIView? { (reader as? ReaderPagedViewController)?.sumiZoomTargetView }
     var sumiCurrentCanonicalPage: Int { currentPage }
 
+    var sumiCanFollowAssistantPageAccess: Bool {
+        !sumiIsClosing && !sumiIsPreparingOpening && isViewLoaded && view.window != nil
+    }
+
+    func sumiPageCoachingCapture() -> HonbakoPageCoachingCapture? {
+        guard !sumiIsClosing, !sumiIsPreparingOpening, sumiHasPresentedActualPage,
+              sumiMayShareAssistantPage, isViewLoaded, view.window != nil,
+              view.window?.windowScene?.activationState == .foregroundActive,
+              UIApplication.shared.applicationState == .active, presentedViewController == nil else { return nil }
+        let page: Page?
+        if let paged = reader as? ReaderPagedViewController { page = paged.sumiVisiblePageForCoaching() }
+        else if let webtoon = reader as? ReaderWebtoonViewController { page = webtoon.sumiVisiblePageForCoaching() }
+        else { return nil }
+        guard let page, page.type == .imagePage, !page.isTextPage,
+              page.sourceId == manga.sourceKey,
+              page.chapterId == chapter.key || page.chapterId == chapter.id,
+              page.index >= 0 else { return nil }
+        let canonical = page.index + 1
+        let total = toolbarView.totalPages.flatMap { $0 > 0 ? $0 : nil }
+        guard total.map({ canonical <= $0 }) ?? true else { return nil }
+        return HonbakoPageCoachingCapture(page: page, source: source, sourceId: manga.sourceKey,
+            mangaId: manga.key, title: manga.title ?? String(localized: "Manga"), chapterId: chapter.key,
+            chapterTitle: chapter.title ?? "", chapterNumber: chapter.chapterNumber.map(Double.init),
+            canonicalPage: canonical, totalPages: total, lastVisiblePage: canonical)
+    }
+
     private func sumiStopNavigation() {
         (reader as? ReaderPagedViewController)?.sumiStopAnimatedNavigation()
         (reader as? ReaderWebtoonViewController)?.sumiStopAnimatedNavigation()
     }
 
     func sumiBookDidClose() {
+        HonbakoPageCoachingService.shared.detachReader(owner: self)
+        sumiSetJapaneseLearningActive(false)
+        sumiControlsBeforeClosing = nil
         sumiScrubber.suspendImages()
         Task { await temporaryPageStore.removeAll() }
     }
 
+    /// Capture before the transition fades chrome or asynchronous history work.
+    /// A canceled pinch restores the reading state rather than revealing controls.
+    func sumiBookClosingBegan() {
+        sumiSetJapaneseLearningActive(false)
+        if sumiControlsBeforeClosing == nil { sumiControlsBeforeClosing = sumiControlsVisible }
+    }
+
     func sumiSetBookTransitioning(_ transitioning: Bool) {
+        sumiSetJapaneseLearningActive(!transitioning && !sumiIsClosing && !sumiIsPreparingOpening)
         if transitioning {
             sumiScrubber.cancelPreview()
             sumiStopNavigation()
         }
         UIView.animate(withDuration: transitioning ? 0.066 : 0.22, delay: 0,
                        options: [.beginFromCurrentState, .allowUserInteraction]) {
-            self.sumiReaderToolbar.alpha = transitioning ? 0 : 1
-            self.sumiReaderTitle.alpha = transitioning ? 0 : 1
+            let visible = self.sumiControlsBeforeClosing ?? true
+            self.sumiReaderToolbar.alpha = transitioning || !visible ? 0 : 1
+            self.navigationController?.navigationBar.alpha = transitioning || !visible ? 0 : 1
         }
     }
 
@@ -134,6 +181,7 @@ class ReaderViewController: BaseObservingViewController {
         guard !sumiDidCommitPreparedOpening else { return }
         sumiDidCommitPreparedOpening = true
         sumiIsPreparingOpening = false
+        sumiSetJapaneseLearningActive(true)
         becomeFirstResponder()
         sessionStartDate = Date.now
         sessionReadPages = []
@@ -141,6 +189,7 @@ class ReaderViewController: BaseObservingViewController {
         guard (toolbarView.totalPages ?? 0) > 0, currentPage >= 1 else { return }
         setCurrentPages(sumiLastVisiblePages ?? currentPage...currentPage)
         showBars()
+        sumiFollowAssistantPageAccess()
     }
 
     func sumiDidShowIndex() {
@@ -160,7 +209,6 @@ class ReaderViewController: BaseObservingViewController {
         var elements: [Any] = []
         if let reader, reader.isViewLoaded { elements.append(reader.view!) }
         if sumiControlsVisible {
-            elements.append(sumiReaderTitle)
             // A native toolbar is already an accessibility sibling of the
             // content controller. Enumerating it here would expose it twice.
             if !sumiUsesNativeToolbar { elements.append(sumiReaderToolbar) }
@@ -181,6 +229,9 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiGoToChapter(_ selected: AidokuRunner.Chapter, resumingTranslation: Bool = false) {
+        #if HONBAKO_EXTERNAL_SOURCES
+        sumiAutomaticOpeningLanguage = nil
+        #endif
         let startPage: Int
         if resumingTranslation {
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: selected.key)
@@ -191,6 +242,7 @@ class ReaderViewController: BaseObservingViewController {
         }
         if selected.key == chapter.key {
             chapter = selected
+            sumiConfigureJapaneseLearning()
             reader?.setChapter(selected, startPage: startPage)
         } else {
             setChapter(selected)
@@ -214,7 +266,10 @@ class ReaderViewController: BaseObservingViewController {
             sumiScrubber.update(chapterKey: chapter.key, totalPages: 0, currentPage: 1, spreads: [])
             return
         }
+        // Page turns advance with a right-to-left drag regardless of the
+        // source's indexing direction. The filmstrip uses that same gesture.
         sumiScrubber.isReversed = false
+        // Spread leaves already match the reader’s physical page order.
         sumiScrubber.reversesThumbnailPages = false
         let paged = reader as? ReaderPagedViewController
         sumiScrubber.update(chapterKey: chapter.key, totalPages: paged?.sumiScrubberPageCount ?? pages.count,
@@ -225,11 +280,16 @@ class ReaderViewController: BaseObservingViewController {
     private func sumiConfigureNativeControls() {
         if navigationItem.leftBarButtonItems?.isEmpty == false { navigationItem.leftBarButtonItems = [] }
         if navigationItem.rightBarButtonItems?.isEmpty == false { navigationItem.rightBarButtonItems = [] }
-        if navigationItem.titleView != nil { navigationItem.titleView = nil }
-        if navigationItem.title != nil { navigationItem.title = nil }
+        loadNavbarTitle()
         guard let navigationController else { return }
-        if !navigationController.isNavigationBarHidden { navigationController.setNavigationBarHidden(true, animated: false) }
-        let usesNative = traitCollection.userInterfaceIdiom != .pad && sumiSystemToolbarEdge != nil
+        let hidesNavigation = !sumiControlsVisible || sumiIsClosing || sumiIsPreparingOpening
+        navigationController.navigationBar.accessibilityIdentifier = "Sumi.Reader.Navigation"
+        if navigationController.isNavigationBarHidden != hidesNavigation {
+            navigationController.setNavigationBarHidden(hidesNavigation, animated: false)
+        }
+        // Manga direction owns the rail axis. A horizontal manga never moves
+        // into a device-provided vertical toolbar.
+        let usesNative = sumiUsesVerticalScrubber && sumiSystemToolbarEdge != nil
         if #available(iOS 27.1, *), usesNative, let nativeToolbar = navigationController.toolbar {
             if !sumiUsesNativeToolbar {
                 sumiReaderToolbar.removeFromSuperview()
@@ -294,7 +354,9 @@ class ReaderViewController: BaseObservingViewController {
                 guard let self else { return }
                 sumiAllChapters = chapters
                 chapterList = SumiChapterLanguage.filter(chapters, language: language)
-            }, canRead: { [weak self] chapter in
+            }, japaneseLearningEnabled: reader is HonbakoJapaneseReader && sumiJapaneseLearningAvailable ? sumiJapaneseLearningEnabled : nil,
+            setJapaneseLearning: { [weak self] enabled in self?.sumiSetJapaneseLearningEnabled(enabled) },
+            canRead: { [weak self] chapter in
                 guard let self else { return false }
                 #if DEBUG
                 if SumiGridPreviewFixtures.isEnabled && manga.sourceKey == SumiGridPreviewFixtures.sourceKey {
@@ -303,12 +365,14 @@ class ReaderViewController: BaseObservingViewController {
                 #endif
                 let id = ChapterIdentifier(sourceKey: self.manga.sourceKey, mangaKey: self.manga.key, chapterKey: chapter.key)
                 return DownloadManager.shared.getDownloadStatus(for: id) == .finished
-                    || (source != nil && !chapter.locked)
+                    || (source != nil && !chapter.locked && !(source.map {
+                        HonbakoChapterAvailability.shared.isUnavailable(source: $0, manga: self.manga, chapter: chapter)
+                    } ?? false))
             }, select: { [weak self] chapter, resumingTranslation in
                 self?.dismiss(animated: true) { self?.sumiGoToChapter(chapter, resumingTranslation: resumingTranslation) }
             }, close: { [weak self] in self?.dismiss(animated: true) }
         ))
-        panel.view.tintColor = .label
+        panel.view.tintColor = HonbakoPalette.accentUIColor
         panel.view.backgroundColor = .systemGroupedBackground
         panel.modalPresentationStyle = .popover
         panel.preferredContentSize = CGSize(width: 340, height: 520)
@@ -333,8 +397,9 @@ class ReaderViewController: BaseObservingViewController {
         let isTablet = traitCollection.userInterfaceIdiom == .pad
         let bottomSide = SumiReaderControlsLayout.bottomSide(in: view.bounds,
             isTablet: isTablet, requestedSide: sumiRequestedToolbarEdge)
-        let systemSide = isTablet ? nil : sumiSystemToolbarEdge
-        let axis: NSLayoutConstraint.Axis = systemSide == nil ? .horizontal : .vertical
+        let systemSide = sumiUsesVerticalScrubber ? sumiSystemToolbarEdge : nil
+        let axis: NSLayoutConstraint.Axis = sumiUsesVerticalScrubber ? .vertical : .horizontal
+        let placementSide = sumiUsesVerticalScrubber ? (systemSide ?? sumiRequestedToolbarEdge ?? .right) : bottomSide
         if sumiReaderToolbar.axis != axis {
             sumiToolbarRelocation?.cancel()
             sumiToolbarRelocation = nil
@@ -342,17 +407,13 @@ class ReaderViewController: BaseObservingViewController {
         }
         sumiReaderToolbar.axis = axis
         sumiReaderToolbar.expandsHorizontalStrip = isTablet
-        sumiReaderToolbar.sidebarEdge = systemSide ?? bottomSide ?? .right
+        sumiReaderToolbar.sidebarEdge = placementSide ?? .right
         sumiConfigureNativeControls()
         var exclusions: [CGRect] = []
         if #available(iOS 27.1, *) {
             exclusions = (view.reservedRegions(kind: .division) + view.reservedRegions(kind: .occlusion))
                 .filter(\.isActive).map(\.frame)
         }
-        let titleWidth = view.bounds.inset(by: view.safeAreaInsets).width - 16
-        sumiReaderTitle.frame = SumiReaderTitleLayout.frame(in: view.bounds, safeAreaInsets: view.safeAreaInsets,
-            avoiding: exclusions, size: sumiReaderTitle.preferredSize(availableWidth: titleWidth), side: bottomSide)
-        if sumiControlsVisible { view.bringSubviewToFront(sumiReaderTitle) }
         if sumiUsesNativeToolbar, let nativeToolbar = navigationController?.toolbar {
             // UIKit owns the physical column. Only bound our item's length to
             // its public content area; do not infer the column from safe insets.
@@ -374,10 +435,14 @@ class ReaderViewController: BaseObservingViewController {
             : view.bounds.width - toolbarInsets.left - toolbarInsets.right - 16
         let size = sumiReaderToolbar.preferredSize(availableLength: available)
         sumiReaderToolbar.frame = SumiReaderControlsLayout.toolbarFrame(in: view.bounds,
-            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: systemSide ?? bottomSide, size: size,
+            safeAreaInsets: toolbarInsets, avoiding: exclusions, side: placementSide, size: size,
             axis: axis)
         sumiReaderToolbar.layoutIfNeeded()
         sumiUpdateAccessibilityChildren()
+    }
+
+    private var sumiUsesVerticalScrubber: Bool {
+        readingMode == .vertical || readingMode == .webtoon || readingMode == .continuous
     }
 
     private var sumiSystemToolbarEdge: UIRectEdge? {
@@ -390,7 +455,7 @@ class ReaderViewController: BaseObservingViewController {
         case .trailing: systemEdge = .right
         default: systemEdge = nil
         }
-        return SumiReaderControlsLayout.sidebarEdge(systemEdge: systemEdge, hasInnerFold: sumiUsesInnerCanvas)
+        return systemEdge
     }
 
     private var sumiUsesInnerCanvas: Bool {
@@ -401,12 +466,13 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiHideControlsForPageTurn() {
+        sumiDismissJapanesePhrase(resumeAutoScroll: false)
         sumiToolbarRelocation?.cancel()
         sumiToolbarRelocation = nil
         sumiControlsVisible = false
         sumiSetStatusBarHidden(true)
         sumiReaderToolbar.setVisible(false, animated: !UIAccessibility.isReduceMotionEnabled)
-        sumiReaderTitle.setVisible(false, animated: !UIAccessibility.isReduceMotionEnabled)
+        navigationController?.setNavigationBarHidden(true, animated: !UIAccessibility.isReduceMotionEnabled)
         sumiUpdateAccessibilityChildren()
         NotificationCenter.default.post(name: .readerHidingBars, object: nil)
     }
@@ -428,8 +494,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiHandlePageTap(at point: CGPoint) {
-        guard traitCollection.userInterfaceIdiom != .pad,
-              sumiSystemToolbarEdge == nil, view.bounds.width > view.bounds.height else {
+        guard sumiUsesVerticalScrubber || (traitCollection.userInterfaceIdiom != .pad && view.bounds.width > view.bounds.height) else {
             toggleBarVisibility()
             return
         }
@@ -587,6 +652,13 @@ class ReaderViewController: BaseObservingViewController {
     override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
         UIStatusBarAnimation.fade
     }
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        #if SUMI
+        (reader as? ReaderPagedViewController)?.sumiCanvasStatusBarStyle ?? super.preferredStatusBarStyle
+        #else
+        super.preferredStatusBarStyle
+        #endif
+    }
     override var prefersStatusBarHidden: Bool {
         statusBarHidden
     }
@@ -688,6 +760,10 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.navigationBar.standardAppearance = navigationBarAppearance
         navigationController?.navigationBar.compactAppearance = navigationBarAppearance
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
+        navigationController?.navigationBar.compactScrollEdgeAppearance = navigationBarAppearance
+        #if SUMI
+        SumiReaderNavigationAppearance.apply(to: navigationItem)
+        #endif
         navigationController?.toolbar.standardAppearance = toolbarAppearance
         navigationController?.toolbar.compactAppearance = toolbarAppearance
         navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
@@ -731,7 +807,6 @@ class ReaderViewController: BaseObservingViewController {
         view.addSubview(activityIndicator)
         #if SUMI
         view.addSubview(sumiReaderToolbar)
-        view.addSubview(sumiReaderTitle)
         if #available(iOS 27.1, *) {
             registerForTraitChanges(UITraitCollection.systemTraitsAffectingVerticalBarEdge) {
                 (self: ReaderViewController, _: UITraitCollection) in self.view.setNeedsLayout()
@@ -799,6 +874,11 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     override func observe() {
+        #if SUMI
+        addObserver(forName: HonbakoProStore.entitlementChangedNotification) { [weak self] _ in
+            self?.sumiJapaneseProAccessChanged()
+        }
+        #endif
         addObserver(forName: AppSettings.reader.pageSizing.key) { [weak self] _ in
             self?.pageSizingButton.menu = ReaderPageSizingMenu.makeMenu()
         }
@@ -870,9 +950,12 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: ReaderTextTheme.changeNotification) { [weak self] _ in
             self?.updateTextThemeOverride()
         }
-        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
+        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] notification in
             guard let self else { return }
             #if SUMI
+            guard let scene = notification.object as? UIWindowScene,
+                  viewIfLoaded?.window?.windowScene === scene else { return }
+            sumiSetJapaneseLearningActive(false)
             sumiQueueReadPositionSave()
             #else
             Task {
@@ -888,11 +971,17 @@ class ReaderViewController: BaseObservingViewController {
             }
             #endif
         }
-        addObserver(forName: UIScene.didActivateNotification) { [weak self] _ in
+        addObserver(forName: UIScene.didActivateNotification) { [weak self] notification in
             guard let self else { return }
             #if SUMI
-            self.hideBars()
-            guard !self.sumiIsPreparingOpening else { return }
+            guard let activatedScene = notification.object as? UIWindowScene,
+                  self.viewIfLoaded?.window?.windowScene === activatedScene,
+                  !self.sumiIsPreparingOpening else { return }
+            // Scene activation restores presentation, not reading intent. In
+            // particular, activating the cover display must not hide this toolbar.
+            self.sumiSetStatusBarHidden(!self.sumiControlsVisible)
+            self.sumiSetJapaneseLearningActive(!self.sumiIsClosing)
+            self.sumiPublishAutomationReading()
             #endif
             if self.sessionStartDate == nil {
                 #if SUMI
@@ -904,6 +993,7 @@ class ReaderViewController: BaseObservingViewController {
                 self.sessionLastInteraction = nil
             }
         }
+        #if !SUMI
         if #available(iOS 26.0, *) {
             addObserver(forName: UIScene.willEnterForegroundNotification) { [weak self] _ in
                 if self?.navigationController?.toolbar.alpha == 0 {
@@ -911,6 +1001,7 @@ class ReaderViewController: BaseObservingViewController {
                 }
             }
         }
+        #endif
         addObserver(forName: "Reader.autoScroll") { [weak self] _ in
             self?.updateAutoScrollButton()
         }
@@ -924,7 +1015,11 @@ class ReaderViewController: BaseObservingViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         #if SUMI
+        sumiFollowAssistantPageAccess()
+        #endif
+        #if SUMI
         sumiIsClosing = false
+        sumiSetJapaneseLearningActive(!sumiIsPreparingOpening && view.window?.windowScene?.activationState == .foregroundActive)
         #endif
 
         #if SUMI
@@ -937,7 +1032,13 @@ class ReaderViewController: BaseObservingViewController {
         sessionLastInteraction = nil
 
         #if SUMI
-        if sumiIsPreparingOpening || !sumiDidCommitPreparedOpening { hideBars() }
+        if let wasVisible = sumiControlsBeforeClosing {
+            // UIKit reappears the reader after an interactive cancellation.
+            // Keep this snapshot through chromeTransition(false), which runs
+            // before completeTransition(false) delivers this appearance.
+            sumiControlsBeforeClosing = nil
+            if wasVisible { showBars() } else { hideBars() }
+        } else if sumiIsPreparingOpening || !sumiDidCommitPreparedOpening { hideBars() }
         else { showBars() }
         #else
         if navigationController?.toolbar.alpha == 0 {
@@ -952,16 +1053,39 @@ class ReaderViewController: BaseObservingViewController {
         disableSwipeGestures()
         configureNavigationBarDismissTapGesture(enabled: isDictionarySingleTapLookupActiveForCurrentChapter)
 
-        // resume auto scroll if it was paused when presenting a sheet
-        if let reader = reader as? ReaderWebtoonViewController {
+        // The inline phrase presentation restores only the scrolling state it owns.
+        #if SUMI
+        if !sumiJapanesePopupOwnsAutoScroll, sumiJapanesePhraseController == nil,
+           let reader = reader as? ReaderWebtoonViewController, reader.sumiAutoScrollWasRunningBeforePresentation {
             reader.resumeAutoScroll()
         }
+        #else
+        if let reader = reader as? ReaderWebtoonViewController { reader.resumeAutoScroll() }
+        #endif
+        #if SUMI
+        sumiPublishAutomationReading()
+        #endif
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        #if SUMI
+        if !sumiIsPreparingOpening { HonbakoAutomationService.shared.markReadingInactive() }
+        #endif
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
+        #if SUMI
+        if sumiJapanesePhraseController == nil {
+            (reader as? ReaderWebtoonViewController)?.sumiRecordAutoScrollBeforePresentation()
+            sumiSetJapaneseLearningActive(false)
+            (reader as? ReaderWebtoonViewController)?.stopAutoScroll()
+        }
+        #else
         (reader as? ReaderWebtoonViewController)?.stopAutoScroll()
+        #endif
 
         if !chaptersToRemoveDownload.isEmpty {
             Task {
@@ -992,6 +1116,9 @@ class ReaderViewController: BaseObservingViewController {
         #if SUMI
         if let reader, reader.view.frame != view.bounds { reader.view.frame = view.bounds }
         sumiLayoutReaderControls()
+        if let viewport = sumiJapanesePhraseViewport, viewport != view.bounds.size {
+            sumiDismissJapanesePhrase(resumeAutoScroll: true)
+        }
         #endif
         updateReaderToolbarLayout()
         displaceReaderControls()
@@ -1214,8 +1341,28 @@ extension ReaderViewController {
 
     func loadNavbarTitle() {
         #if SUMI
-        navigationItem.titleView = nil
-        navigationItem.title = nil
+        if navigationItem.titleView != nil { navigationItem.titleView = nil }
+        if navigationItem.title != manga.title { navigationItem.title = manga.title }
+        if #available(iOS 26.0, *) {
+            let subtitle: String
+            if let number = chapter.chapterNumber {
+                subtitle = String(format: NSLocalizedString("CHAPTER_X"), number)
+            } else if let title = chapter.title, !title.isEmpty {
+                subtitle = title
+            } else if let number = chapter.volumeNumber {
+                subtitle = String(format: NSLocalizedString("VOLUME_X"), number)
+            } else {
+                subtitle = String(localized: "Chapter")
+            }
+            #if HONBAKO_EXTERNAL_SOURCES
+            if sumiAutomaticOpeningLanguage != nil, let language = SumiChapterLanguage.normalized(chapter.language) {
+                let actualEdition = "\(subtitle) · \(SourceLanguage.displayName(for: language))"
+                if navigationItem.subtitle != actualEdition { navigationItem.subtitle = actualEdition }
+                return
+            }
+            #endif
+            if navigationItem.subtitle != subtitle { navigationItem.subtitle = subtitle }
+        }
         return
         #endif
         let volume: String? =
@@ -1247,6 +1394,9 @@ extension ReaderViewController {
             sumiOpeningFailureMessage = String(localized: "The source returned no readable pages for this chapter.")
             return
         }
+        // These readers already own a chapter-level Retry surface. A second
+        // modal would obscure it and describe one failure in two places.
+        if reader is ReaderPagedViewController || reader is ReaderWebtoonViewController { return }
         #endif
         let alert = UIAlertController(
             title: NSLocalizedString("FAILED_CHAPTER_LOAD"),
@@ -1315,7 +1465,9 @@ extension ReaderViewController {
     @objc func close() {
         #if SUMI
         guard !sumiIsClosing else { return }
+        HonbakoPageCoachingService.shared.detachReader(owner: self)
         sumiIsClosing = true
+        sumiSetJapaneseLearningActive(false)
         sumiScrubber.cancelPreview()
         sumiStopNavigation()
         Task {
@@ -1455,6 +1607,10 @@ extension ReaderViewController {
             if let webtoonReader = reader as? ReaderWebtoonViewController {
                 webtoonReader.stopAutoScroll()
             }
+            #if SUMI
+            sumiDismissJapanesePhrase(resumeAutoScroll: false)
+            (reader as? HonbakoJapaneseReader)?.setJapaneseLearningActive(false)
+            #endif
             reader?.remove()
             pageController.delegate = self
             #if SUMI
@@ -1465,6 +1621,7 @@ extension ReaderViewController {
             #endif
             reader = pageController
             #if SUMI
+            sumiConfigureJapaneseLearning()
             pageController.view.frame = view.bounds
             pageController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             #endif
@@ -1495,8 +1652,18 @@ extension ReaderViewController {
         let backgroundColor = ReaderTextTheme.getCurrentBackground()
         let textColor = ReaderTextTheme.getCurrentText()
         let titleColor = themed ? textColor : nil
+        #if SUMI
+        if isTextReader { SumiReaderNavigationAppearance.clear(from: navigationItem) }
+        else { SumiReaderNavigationAppearance.apply(to: navigationItem) }
+        #endif
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
+                #if SUMI
+                if !isTextReader {
+                    SumiReaderNavigationAppearance.configure(appearance)
+                    return
+                }
+                #endif
                 if themed {
                     if #available(iOS 26.0, *), reader is ReaderTextViewController {
                         // text scrolls under the bar, so keep it transparent
@@ -1524,6 +1691,9 @@ extension ReaderViewController {
                 applyTheme(scrollEdge)
                 navigationBar.scrollEdgeAppearance = scrollEdge
             }
+            let compactEdge = navigationBar.compactScrollEdgeAppearance ?? UINavigationBarAppearance()
+            applyTheme(compactEdge)
+            navigationBar.compactScrollEdgeAppearance = compactEdge
         }
         // the two-line title view (volume + chapter) uses plain labels instead
         if let stackView = navigationItem.titleView as? UIStackView {
@@ -1768,7 +1938,10 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
 
         self.chapter = chapter
         #if SUMI
+        sumiDismissJapanesePhrase(resumeAutoScroll: false)
+        sumiConfigureJapaneseLearning()
         sumiHasPresentedActualPage = false
+        sumiCompletedChapterID = nil
         #endif
         self.chaptersToMark = [chapter]
         configureBarToggleTapGestures()
@@ -1788,6 +1961,32 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         setCurrentPages(pages, position: nil)
     }
 
+    #if SUMI
+    private func sumiPublishAutomationReading() {
+        guard !sumiIsPreparingOpening, !sumiIsClosing, sumiHasPresentedActualPage,
+              viewIfLoaded?.window != nil, currentPage >= 1,
+              let total = toolbarView.totalPages, total > 0 else { return }
+        var canShareReading = !AppSettings.general.incognitoMode.get()
+        #if DEBUG
+        if SumiGridPreviewFixtures.isEnabled,
+           ProcessInfo.processInfo.arguments.contains("--honbako-automation-check") { canShareReading = true }
+        #endif
+        guard canShareReading else {
+            HonbakoAutomationService.shared.markReadingInactive()
+            return
+        }
+        let lastVisible = min(total, max(currentPage, sumiLastVisiblePages?.upperBound ?? currentPage))
+        let chapterTitle = chapter.title.flatMap { $0.isEmpty ? nil : $0 }
+            ?? chapter.chapterNumber.map { "Chapter \(String(format: "%g", Double($0)))" } ?? "Chapter"
+        HonbakoAutomationService.shared.updateReading(
+            sourceId: manga.sourceKey, mangaId: manga.key, title: manga.title,
+            chapterId: chapter.key, chapterTitle: chapterTitle,
+            chapterNumber: chapter.chapterNumber, volumeNumber: chapter.volumeNumber,
+            page: currentPage, totalPages: total, lastVisiblePage: lastVisible, active: true
+        )
+    }
+    #endif
+
     private func setCurrentPages(_ pages: ClosedRange<Int>, position: Double? = nil) {
         guard let totalPages = toolbarView.totalPages else { return }
 
@@ -1795,6 +1994,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         updateAutoScrollButton()
 
         #if SUMI
+        if sumiLastVisiblePages != pages { sumiDismissJapanesePhrase(resumeAutoScroll: false) }
         sumiLastVisiblePages = pages
         let recordVisiblePages = !sumiIsPreparingOpening
         #else
@@ -1812,6 +2012,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         currentPage = page
         #if SUMI
         sumiHasPresentedActualPage = !sumiIsPreparingOpening
+        sumiPublishAutomationReading()
         let chapterLabel = chapter.chapterNumber.map { "Chapter \(String(format: "%g", Double($0)))" } ?? chapter.title ?? "Chapter"
         view.accessibilityValue = "\(chapterLabel), page \(page)"
         #if DEBUG
@@ -1931,11 +2132,32 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         toolbarView.sliderView.currentValue = offset
     }
 
+    #if SUMI
+    var sumiCanCompleteVisibleChapter: Bool {
+        guard !sumiIsPreparingOpening, !sumiIsClosing else { return false }
+        if let paged = reader as? ReaderPagedViewController { return paged.sumiCanCompleteVisibleChapter }
+        if let vertical = reader as? ReaderWebtoonViewController { return vertical.sumiCanCompleteVisibleChapter }
+        return true
+    }
+
+    /// Recheck content, not position: a late final image must not reset the
+    /// bookmark or count an offscreen prefetched page as a completed chapter.
+    func sumiPageContentDidChange() {
+        guard let total = toolbarView.totalPages, total > 0,
+              (sumiLastVisiblePages?.upperBound ?? currentPage) >= total,
+              sumiCanCompleteVisibleChapter else { return }
+        setCompleted()
+    }
+    #endif
+
     func setCompleted() {
         #if SUMI
-        guard !sumiIsPreparingOpening else { return }
+        guard sumiCanCompleteVisibleChapter, sumiCompletedChapterID != chapter.id else { return }
         #endif
         guard !AppSettings.general.incognitoMode.get() else { return }
+        #if SUMI
+        sumiCompletedChapterID = chapter.id
+        #endif
 
         Task { [chaptersToMark] in
             await HistoryManager.shared.addHistory(
@@ -2353,9 +2575,8 @@ extension ReaderViewController {
         sumiLayoutReaderControls()
         sumiUpdateAccessibilityChildren()
         if sumiReaderToolbar.superview === view { view.bringSubviewToFront(sumiReaderToolbar) }
-        view.bringSubviewToFront(sumiReaderTitle)
         sumiReaderToolbar.setVisible(true, animated: appearing && !UIAccessibility.isReduceMotionEnabled)
-        sumiReaderTitle.setVisible(true, animated: appearing && !UIAccessibility.isReduceMotionEnabled)
+        navigationController?.navigationBar.alpha = 1
         NotificationCenter.default.post(name: .readerShowingBars, object: nil)
         return
         #else
@@ -2475,6 +2696,9 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
             return true
         }
 
+        #if SUMI
+        if HonbakoInlineJapaneseOverlayView.isInteractiveTarget(touch.view) { return false }
+        #endif
         var view: UIView? = touch.view
         while let currentView = view {
             #if SUMI

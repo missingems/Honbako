@@ -1,0 +1,126 @@
+{
+  "owner": "AppStore/film (Claude session). The website session reads this file and doesn’t edit it.",
+  "date": "2026-10-31",
+  "what": "A silent, seamless 8.6-second loop of Apple’s iPhone Duo model held part-folded like a book. It opens on the outer display’s manga cover and holds there, turns round to the reading spread, holds briefly, and turns back to the cover. No text labels; flat app paper (#F5F0E6) behind.",
+  "files": {
+    "video": [
+      {
+        "file": "exports/website/honbako-duo-cover-mode.mp4",
+        "bytes": 2045431,
+        "size": [
+          1600,
+          1200
+        ],
+        "fps": "60/1",
+        "frames": 516,
+        "duration_s": 8.6,
+        "video": "h264",
+        "audio": null
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode.webm",
+        "bytes": 2075207,
+        "size": [
+          1600,
+          1200
+        ],
+        "fps": "60/1",
+        "frames": 516,
+        "duration_s": 8.6,
+        "video": "vp9",
+        "audio": null
+      }
+    ],
+    "stills": [
+      {
+        "file": "exports/website/honbako-duo-cover-mode-poster.png",
+        "bytes": 523137
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode-poster.jpg",
+        "bytes": 98029
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode-still-cover.png",
+        "bytes": 508988
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode-still-cover.jpg",
+        "bytes": 97412
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode-still-reading.png",
+        "bytes": 610208
+      },
+      {
+        "file": "exports/website/honbako-duo-cover-mode-still-reading.jpg",
+        "bytes": 181991
+      }
+    ],
+    "poster_is": "the loop’s first frame: the cover side, yaw 245°",
+    "still_cover_is": "yaw 232°, outer display towards the camera (still from the earlier cut; the loop now turns to 245°)",
+    "still_reading_is": "yaw 40°, both inner pages in view",
+    "display": "1600 × 1200 (4:3); use object-fit: contain. The device never touches the frame edge."
+  },
+  "loop": {
+    "seamless": true,
+    "seam_psnr_db_first_vs_last_frame": 43.8,
+    "timeline_s": {
+      "cover_hold": [
+        0,
+        2.8
+      ],
+      "turn_to_reading": [
+        2.8,
+        5.2
+      ],
+      "reading_hold": [
+        5.2,
+        6.2
+      ],
+      "turn_back_to_cover": [
+        6.2,
+        8.6
+      ]
+    },
+    "easing": "cubic in-out on each turn",
+    "why_cover_first": "The section is about cover mode, so the loop opens and lingers on the cover; the reading spread is the brief middle."
+  },
+  "pose": {
+    "model": "Apple’s iPhone Duo model V68.usdz from Xcode 27.1’s DeviceHub plugin, rendered with RealityKit (tools/duo-render), Dark finish",
+    "hinge_deg": 118,
+    "yaw_deg": [
+      40,
+      245
+    ],
+    "pitch_deg": 8,
+    "scale": "1060 px for the device’s 164.6 mm open width (6.44 px/mm), uniform: true model proportions, never scaled per axis",
+    "shadow": "soft warm shadow (rgb 60,45,25 at 28%, 30 px blur, 24 px drop) that moves with the device"
+  },
+  "inner_display": {
+    "kind": "genuine app capture",
+    "source": "assets/source/recordings/sample-curl.mov at 14.0 s: a screen recording of Honbako’s reader in the Honbako Capture duo simulator (E10C41ED-6783-467C-BB45-754B539F5E7F), the same recording as honbako-duo-page-turn",
+    "processing": "tools/clean-fold.py removes the simulator’s fold shading only",
+    "story": "星を待つ駅 / After The Last Train (book-001), Honbako’s original sample story, character art by Wataobi"
+  },
+  "outer_display": {
+    "kind": "reconstruction, not a screen capture",
+    "file": "assets/source/cover-showcase/outer-cover-display.png (1398 × 2034, the outer display’s portrait pixels)",
+    "cover_source": {
+      "file": "the sample’s own cover, Documents/HonbakoLicensedSample/cover-01.jpg in the capture simulator’s app container (book-001’s cover in its manifest) (copied to assets/source/cover-showcase/sample-cover-01.jpg)",
+      "sha256": "1e29b369a691862e1416dc55a7cb25fac86e954c6d20a2e8d022fe861d510617",
+      "size": [
+        1000,
+        1500
+      ]
+    },
+    "treatment": "HonbakoCoverDisplayView’s drawing, reproduced: #1A1A1A ground (Color(white: 0.10)), cover scaled to fit (1356 × 2034 at x 21), colorMultiply 0.78, SumiPaperSurface.inkTile grain (the paper.js port, 3× tile) over it",
+    "why": "Relaunching the capture simulator with -Honbako.Reader.ShowCoverDisplay YES (and the per-book key) logged the cover display’s camera-session start, but the outer-display screenshot stayed black: the grid-check sample fixture forces the cover setting off. The app and fixture weren’t changed to get round it.",
+    "upgrade": "A genuine outer-display capture can replace this file (same 1398 × 2034 size); rerun the command below."
+  },
+  "claims": "Duo cover display is a Honbako Pro feature. The loop carries no text; say so in the site copy where it is shown.",
+  "not_black_jack": "Only the original sample story appears. No film frames are reused.",
+  "rebuild": "node tools/cover-demo.mjs (needs npm run duo first); --probe 40,245 writes single stills to review/cover-probe/",
+  "film_untouched": "renders/ and the 45-second film outputs were not changed by this asset.",
+  "simulator": "Restored afterwards: hinge back to 180°, app relaunched with its original launch arguments (cover off)."
+}

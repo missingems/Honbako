@@ -30,4 +30,4 @@ The app has no recommendation feed or scheduled metadata poll. The installer-onl
 
 ## Duo cover display
 
-Apple’s documented outer-display scene accessory requires an active camera session. Honbako does not start a camera solely to display cover art and does not expose a nonfunctional cover-display switch. [Apple’s multi-display explanation](https://developer.apple.com/videos/play/tech-talks/111464/).
+The optional Show Manga Cover feature uses Apple’s camera-capture scene accessory while a book is open on hinged hardware. It starts a video-only camera session to make the outer accessory available; no microphone, photo output, recording output or video-data sink is attached. Permission is requested explicitly, Settings explains the camera use, and hiding the cover, closing/folding the device or backgrounding stops capture. This behavior is disclosed in the review notes and must be evaluated in review; using the public accessory API does not establish review approval. [Apple’s multi-display explanation](https://developer.apple.com/videos/play/tech-talks/111464/).

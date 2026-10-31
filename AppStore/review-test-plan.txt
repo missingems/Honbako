@@ -1,0 +1,33 @@
+Honbako 0.1.0 (75) — public App Review verification plan
+Prepared 31 October 2026. No results or submission are implied by this checklist.
+
+BUILD AND LISTING
+- Public version0.1.0/build75, external sourcesNO, personal unlockNO, bulk importNO. Do not select external-source TestFlight74 or old draft29.
+- Normal StoreKit entitlement verification, monthly US$2.99 base and localized annual price/trial eligibility. Active members see Manage Subscription; iCloud is free.
+- All four public descriptions exclude extension repositories/package installation. Private TestFlight text remains separate.
+- Capture all24 native dark states from public75: four locales, iPhone Pro Max1320x2868 and iPad2064x2752; render36 marketing files including REQUIRED Medium1206x2622 and iPad, plus optional Large. Use the exact workflow in review/build75/screenshot-recapture.md. Verify current controls, complete licensed device frames, hashes and both contact sheets. No new AI generation/UI fabrication.
+- Replace every stale explicitly supplied screenshot override in App Store Connect's Device Media Manager. Capture current public75 IAP review imagery separately; build28/29 price imagery is obsolete.
+
+QUICK FUNCTIONAL ROUTE
+1. Fresh install: onboardingHonbako → AI companion → Plans. Free/Continue enters library. Repeat launch does not reopen completed onboarding. Restored Pro enters library and shows subscription management.
+2. Read the bundled original tutorial without an account. Native title/chapter controls, page turn, page scrub, chapter highlight, closing and rotation all work. No third-party catalog is required.
+3. Settings → Import from Files imports authorizedCBZ/ZIP from Files. Search finds it; read and reopen. Imported files and downloaded pages stay local.
+4. Settings → Personal Server: test Komga, Kavita and Suwayomi independently against the reachable reviewer servers, each with a different original sample book. Wrong credentials fail clearly; correct sign-in/search/add/read/reopen succeeds. Local loopback protocol tests are preparation, not proof that Apple's device can reach hosted reviewer servers.
+5. Settings → iCloud Sync: free library/progress/safe-connection setup. Reinstall/account restore never overwrites a remote setup with empty local state. Passwords/tokens are not synced; personal server settings provide local sign-in. The collection-only public build exposes no third-party extension installation.
+6. Subscription: inspect actual Apple prices/trials/renewal disclosure, cancel purchase, permitted review-environment purchase, Restore Purchases and Manage Subscription. Do not count local StoreKit tests as a completed Apple-account purchase.
+7. With Pro and authorized content, test offline downloads, chapter alerts/permissions, Japanese source-language guidance and per-book Cover Mode. iOS/source scheduling controls alert timing. Outer cover camera accessory uses no recordings/microphone.
+8. Widgets: free title-free last-coverResume; Pro reading-time/update widgets. No unnecessary plan labels in widget UI.
+
+REMOTE MCP AND REVIEW SERVERS — FINAL GATE
+- Strict public DNS and certificate-verifiedHTTPS must work for mcp.honbako.xyz and test-mcp.honbako.xyz before claiming branded connections ready. No insecureTLS bypass.
+- Existing workers.dev pairings and OAuth grants continue unchanged. New branded connection completes discovery/registration/PKCE, explicit phone approval, token exchange, tools/library reading, source/history access according to allowed capabilities, and disconnect revocation.
+- An Apple-verified Sandbox review purchase uses only the isolated Sandbox service; Production stays Production. No fallback around purchase verification.
+- Reviewer Komga/Kavita/Suwayomi hostnames must each resolve and pass strict publicHTTPS plus actual connector authentication/catalog/page probes. Supply private credentials only through review fields. Do not expose the Mac through a tunnel, publish local ports, or upload credential files with screenshots.
+- Hosted credentials, original sample licensing, privacy-policy URL and exact review instructions must be complete. If any public route remains unverified, keep the concrete draft prepared and record the blocker instead of claiming submission complete.
+
+FINAL APP STORE CONNECT CHECK
+- Select processed public75, not29/74. Review all four descriptions, the latest icon, current required Medium/iPad screenshots and optional Large set, refreshed IAP imagery, review notes/contact, privacy labels,18+ rating, content-rights and export answers.
+- Published privacy labels cover hosted retention; do not restore the historical Data Not Collected answer.
+- Owner's overnight instruction authorizes final public submission once the hostname and sanity gates pass. Record actual resulting App Store state after Submit; a prepared draft is not a submitted review.
+
+Historical build29 notes and verification remain under review/Honbako-Build29-review-notes.txt and archived review files.

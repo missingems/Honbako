@@ -1,0 +1,21 @@
+{
+  "status": "Published and verified in App Store Connect; all8 categories App Functionality, linked, no tracking",
+  "categories": [
+    "Photos or Videos (rendered shared manga-page images)",
+    "Other User Content (library/source metadata and annotations)",
+    "Search History",
+    "User ID (workspace identity)",
+    "Device ID (installation identity)",
+    "Purchase History",
+    "Product Interaction (reading progress/history)",
+    "Other Data Types (hashed security/rate-limit data)"
+  ],
+  "purposes": [
+    "App Functionality"
+  ],
+  "linked_to_user": true,
+  "tracking": false,
+  "policy_url": "https://missingems.github.io/Honbako/privacy/",
+  "source": "https://developer.apple.com/app-store/app-privacy-details/",
+  "proof": "app-privacy-published.png"
+}

@@ -25,7 +25,11 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var image: UIImage? {
         didSet {
             #if SUMI
-            Task { @MainActor [weak self] in self?.sumiUpdateEdgeBackground() }
+            Task { @MainActor [weak self] in
+                self?.sumiUpdateEdgeBackground()
+                self?.sumiUpdateJapaneseOverlay()
+                self?.sumiUpdatePageCoachingOverlay()
+            }
             #endif
             guard let image, image.size.width > 0 else { return }
             ratio = image.size.height / image.size.width
@@ -35,7 +39,11 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var ratio: CGFloat?
 
     private var pageLoadTask: Task<Void, Never>?
+    private var pageLoadGeneration = 0
     private var imageTask: ImageTask?
+    #if SUMI
+    @MainActor private var sumiImageFetch: SumiPageImageFetch?
+    #endif
     private var imageProcessingTask: Task<UIImage?, Never>?
 
     private var shouldShowLiveTextButton = false
@@ -59,8 +67,97 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 
     private var currentImageRequest: ImageRequest?
     #if SUMI
+    private var sumiJapaneseOverlay: HonbakoInlineJapaneseOverlayView?
+    private var sumiPageCoachingOverlay: HonbakoPageCoachingOverlayView?
+    private var sumiJapaneseEnabled = false
+    private var sumiJapaneseAnimatedImage = false
+    private var sumiJapaneseVisible = false
+    private var sumiJapaneseSelection: HonbakoJapaneseSelectionHandler?
+
+    @MainActor
+    func configureJapaneseLearning(enabled: Bool, onSelect: HonbakoJapaneseSelectionHandler?) {
+        sumiJapaneseEnabled = enabled
+        sumiJapaneseSelection = onSelect
+        sumiUpdateJapaneseOverlay()
+    }
+
+    @MainActor
+    func setJapaneseLearningVisible(_ visible: Bool) {
+        sumiJapaneseVisible = visible
+        sumiJapaneseOverlay?.setPageVisible(visible)
+        if visible { sumiUpdateJapaneseOverlay() }
+    }
+
+    @MainActor
+    private func sumiUpdateJapaneseOverlay() {
+        guard isNodeLoaded, imageNode.isNodeLoaded, let imageView = imageNode.imageView else { return }
+        if sumiJapaneseOverlay == nil, sumiJapaneseEnabled {
+            sumiJapaneseOverlay = HonbakoInlineJapaneseOverlayView()
+        }
+        guard let overlay = sumiJapaneseOverlay else { return }
+        if overlay.superview !== imageView { imageView.addSubview(overlay) }
+        imageNode.isUserInteractionEnabled = true
+        overlay.configure(enabled: sumiJapaneseEnabled, onSelect: sumiJapaneseSelection)
+        overlay.update(image: sumiJapaneseAnimatedImage ? nil : imageNode.image)
+        overlay.setPageVisible(sumiJapaneseVisible)
+        overlay.updateImageFrame(imageView.bounds)
+        // Texture's node accessibility container otherwise omits native word controls.
+        imageNode.isAccessibilityElement = false
+        imageNode.view.accessibilityElements = [overlay]
+    }
+
+    @MainActor
+    private func sumiUpdatePageCoachingOverlay() {
+        guard isNodeLoaded, imageNode.isNodeLoaded, let imageView = imageNode.imageView else { return }
+        if sumiPageCoachingOverlay == nil, imageNode.image != nil {
+            sumiPageCoachingOverlay = HonbakoPageCoachingOverlayView()
+        }
+        guard let overlay = sumiPageCoachingOverlay else { return }
+        if overlay.superview !== imageView { imageView.addSubview(overlay) }
+        let ready = imageNode.image != nil && imageNode.alpha > 0.99 && !sumiIsRevealing
+        overlay.configure(page: ready ? page : nil)
+        if let image = imageNode.image {
+            overlay.updateImageFrame(ReaderPageSizingGeometry.aspectFitFrame(imageSize: image.size, in: imageView.bounds))
+        }
+        var elements: [Any] = []
+        if let japanese = sumiJapaneseOverlay { elements.append(japanese) }
+        elements.append(overlay)
+        imageNode.isAccessibilityElement = false
+        imageNode.view.accessibilityElements = elements
+    }
+
     private var sumiRevealGeneration = 0
     private(set) var sumiImageLoadFailed = false
+    private var sumiImageRequestCanceled = false
+    private lazy var sumiStatusNode = ASCellNode(viewBlock: { SumiPageImageLoadingView() })
+
+    @MainActor
+    private func sumiUpdateLoadPresentation() {
+        guard let status = sumiStatusNode.view as? SumiPageImageLoadingView else { return }
+        if image != nil || text != nil {
+            status.hide()
+        } else if sumiImageLoadFailed {
+            status.showFailure { [weak self] in
+                guard let self else { return }
+                Task { @MainActor in _ = await self.reloadCurrentImage() }
+            }
+        } else {
+            status.show()
+        }
+        sumiUpdateLoadViewport()
+    }
+
+    @MainActor
+    func sumiUpdateLoadViewport() {
+        // Loaded pages need no status layout work during scrolling.
+        guard image == nil, text == nil, isNodeLoaded, sumiStatusNode.isNodeLoaded,
+              let delegate, delegate.isViewLoaded, delegate.collectionNode.isNodeLoaded,
+              let status = sumiStatusNode.view as? SumiPageImageLoadingView else { return }
+        let collection = delegate.collectionNode.view
+        let safeViewport = collection.bounds.inset(by: collection.safeAreaInsets)
+        let viewport = safeViewport.isEmpty ? collection.bounds : safeViewport
+        status.updateContentViewport(status.convert(viewport, from: collection))
+    }
 
     func sumiStopLoading() { cancelPageLoad() }
     private var sumiEdgeBackground: SumiPageEdgeBackgroundView?
@@ -140,7 +237,12 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     override func layout() {
         super.layout()
         #if SUMI
-        MainActor.assumeIsolated { sumiUpdateEdgeBackground() }
+        MainActor.assumeIsolated {
+            sumiUpdateEdgeBackground()
+            sumiUpdateJapaneseOverlay()
+            sumiUpdatePageCoachingOverlay()
+            sumiUpdateLoadViewport()
+        }
         #endif
 
         if needsDictionaryOverlayRender {
@@ -156,6 +258,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             // Texture may initialize a cell off-main; create UIKit only after
             // its view is loaded and this main-actor update runs.
             sumiEdgeBackground = SumiPageEdgeBackgroundView()
+            sumiEdgeBackground?.onColorsChanged = { [weak self] in self?.delegate?.sumiPageContentDidChange() }
         }
         guard let background = sumiEdgeBackground else { return }
         if background.superview !== view { view.insertSubview(background, at: 0) }
@@ -238,6 +341,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             guard let self = self else { return }
             #if SUMI
             if sumiRevealGeneration == revealGeneration { sumiIsRevealing = false }
+            Task { @MainActor [weak self] in self?.sumiUpdatePageCoachingOverlay() }
             #endif
             self.imageNode.frame = context.finalFrame(for: self.imageNode)
             self.textNode.frame = context.finalFrame(for: self.textNode)
@@ -245,6 +349,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
                 Task { @MainActor in
                     delegate.scrollView.contentOffset = delegate.collectionNode.contentOffset
                     delegate.zoomView.adjustContentSize()
+                    #if SUMI
+                    delegate.sumiPageContentDidChange()
+                    #endif
                 }
             }
             context.completeTransition(true)
@@ -315,18 +422,23 @@ extension ReaderWebtoonPageNode {
                 )
             }
         } else {
+            #if SUMI
+            let statusNode = sumiStatusNode
+            #else
+            let statusNode = progressNode
+            #endif
             if pillarbox && isPillarboxOrientation() {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
                 return ASRatioLayoutSpec(
                     ratio: ratio,
-                    child: progressNode
+                    child: statusNode
                 )
             } else {
                 return ASRatioLayoutSpec(
                     ratio: ratio ?? Self.defaultRatio,
-                    child: progressNode
+                    child: statusNode
                 )
             }
         }
@@ -336,36 +448,60 @@ extension ReaderWebtoonPageNode {
 extension ReaderWebtoonPageNode {
     private func startPageLoad() {
         guard pageLoadTask == nil, image == nil, text == nil else { return }
-
+        #if SUMI
+        guard !sumiImageLoadFailed else { return }
+        #endif
+        pageLoadGeneration += 1
+        let generation = pageLoadGeneration
         pageLoadTask = Task { [weak self] in
             guard let self else { return }
             await self.loadPage()
-            self.pageLoadTask = nil
+            if pageLoadGeneration == generation { self.pageLoadTask = nil }
         }
     }
 
     private func cancelPageLoad() {
+        pageLoadGeneration += 1
         pageLoadTask?.cancel()
         pageLoadTask = nil
 
+        #if SUMI
+        let cancelledTask = imageTask
+        #endif
         imageTask?.cancel()
         imageTask = nil
+        #if SUMI
+        if let cancelledTask {
+            Task { @MainActor [weak self] in self?.sumiImageFetch?.cancel(task: cancelledTask) }
+        }
+        #endif
 
         imageProcessingTask?.cancel()
         imageProcessingTask = nil
     }
 
-    func loadPage() async {
+    @MainActor
+    func loadPage(forceReload: Bool = false) async {
         guard image == nil, text == nil, !Task.isCancelled else { return }
         #if SUMI
+        let generation = pageLoadGeneration
         sumiImageLoadFailed = false
-        defer { if !Task.isCancelled { sumiImageLoadFailed = image == nil && text == nil } }
+        sumiImageRequestCanceled = false
+        sumiUpdateLoadPresentation()
+        defer {
+            if generation == pageLoadGeneration, !Task.isCancelled, !sumiImageRequestCanceled {
+                sumiImageLoadFailed = image == nil && text == nil
+                sumiUpdateLoadPresentation()
+            }
+        }
         #endif
 
         imageNode.alpha = 0
         textNode.alpha = 0
+        #if !SUMI
         progressNode.isHidden = false
         progressNode.isUserInteractionEnabled = false
+        #endif
 
         if let image = page.image {
             self.image = image
@@ -373,9 +509,9 @@ extension ReaderWebtoonPageNode {
                 displayPage()
             }
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
-            await loadImage(zipURL: url, filePath: filePath)
+            await loadImage(zipURL: url, filePath: filePath, forceReload: forceReload)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
-            await loadImage(url: url, context: page.context)
+            await loadImage(url: url, context: page.context, forceReload: forceReload)
         } else if let base64 = page.base64 {
             await loadImage(base64: base64)
         } else if let text = page.text {
@@ -385,13 +521,16 @@ extension ReaderWebtoonPageNode {
         }
     }
 
-    private func loadImage(url: URL, context: PageContext?) async {
+    @MainActor
+    private func loadImage(url: URL, context: PageContext?, forceReload: Bool = false) async {
+        let generation = pageLoadGeneration
         let urlRequest = if !url.isFileURL, let source {
             await source.getModifiedImageRequest(url: url, context: context)
         } else {
             URLRequest(url: url)
         }
 
+        guard generation == pageLoadGeneration, !Task.isCancelled else { return }
         let width = pageWidth
         let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && width > 0
         let shouldUpscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
@@ -422,24 +561,52 @@ extension ReaderWebtoonPageNode {
             userInfo: [.processesKey: usePageProcessor]
         )
 
-        // Store current image request for reload functionality
+        #if SUMI
+        await loadImage(request: forceReload ? SumiPageImageRetryRequest.make(from: request) : request)
+        #else
+        await loadImage(request: request)
+        #endif
+    }
+
+    @MainActor
+    private func loadImage(request: ImageRequest, permitsMangaDexRecovery: Bool = true) async {
+        guard !Task.isCancelled else { return }
+        let generation = pageLoadGeneration
+        // Store the exact request, including a refreshed MangaDex page host.
         self.currentImageRequest = request
 
+        #if SUMI
+        let fetch = sumiImageFetch ?? SumiPageImageFetch()
+        sumiImageFetch = fetch
+        #else
         let imageTask = ImagePipeline.shared.loadImage(
             with: request,
-            progress: { [weak progressView] _, completed, total in
-                guard let progressView else { return }
+            progress: { [weak self] _, completed, total in
+                #if !SUMI
+                guard let self, total > 0 else { return }
                 Task { @MainActor in
-                    progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
                 }
+                #endif
             },
             completion: { _ in }
         )
         self.imageTask = imageTask
+        #endif
+        defer { if pageLoadGeneration == generation { self.imageTask = nil } }
 
         do {
+            #if SUMI
+            let response = try await fetch.response(for: request) { [weak self] task in
+                self?.imageTask = task
+            }
+            #else
             let response = try await imageTask.response
-            guard !Task.isCancelled else { return }
+            #endif
+            guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+            #if SUMI
+            sumiJapaneseAnimatedImage = response.container.type == .gif
+            #endif
             image = response.image
             if response.container.type == .gif, let data = response.container.data {
                 imageNode.animate(withGIFData: data)
@@ -448,7 +615,13 @@ extension ReaderWebtoonPageNode {
                 displayPage()
             }
         } catch {
-            guard !Task.isCancelled else { return }
+            guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+            #if SUMI
+            if SumiPageImageLoadCancellation.contains(error) {
+                sumiImageRequestCanceled = true
+                return
+            }
+            #endif
 
             switch error {
                 case .dataLoadingFailed, .dataIsEmpty:
@@ -460,9 +633,12 @@ extension ReaderWebtoonPageNode {
                                 try? processor.processWithoutImage(request: request)
                             }.value
 
-                            guard !Task.isCancelled else { return }
+                            guard generation == pageLoadGeneration, !Task.isCancelled else { return }
 
                             if let result {
+                                #if SUMI
+                                self.sumiJapaneseAnimatedImage = result.type == .gif
+                                #endif
                                 self.image = result.image
                                 if result.type == .gif, let data = result.data {
                                     self.imageNode.animate(withGIFData: data)
@@ -478,12 +654,22 @@ extension ReaderWebtoonPageNode {
                     break
             }
 
-            // TODO: handle failure
+            #if SUMI
+            if permitsMangaDexRecovery {
+                let recovered = await ReaderPageView.recoveredMangaDexImageRequest(after: request, context: page.context,
+                    source: source, downsampleWidth: pageWidth)
+                guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+                if let recovered { await loadImage(request: recovered, permitsMangaDexRecovery: false) }
+            }
+            #else
             await self.progressView.setProgress(value: 0, withAnimation: true)
+            #endif
         }
     }
 
+    @MainActor
     private func loadImage(base64: String) async {
+        let generation = pageLoadGeneration
         let fullKey = "\(page.key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(
             id: fullKey,
@@ -494,7 +680,9 @@ extension ReaderWebtoonPageNode {
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
+        #if !SUMI
         progressNode.isHidden = false
+        #endif
 
         // check cache
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
@@ -539,6 +727,7 @@ extension ReaderWebtoonPageNode {
         }
         self.imageProcessingTask = processingTask
         let image = await processingTask.value
+        guard generation == pageLoadGeneration else { return }
         self.imageProcessingTask = nil
         guard !Task.isCancelled, let image else { return }
 
@@ -549,16 +738,20 @@ extension ReaderWebtoonPageNode {
         }
     }
 
-    private func loadImage(zipURL: URL, filePath: String) async {
+    @MainActor
+    private func loadImage(zipURL: URL, filePath: String, forceReload: Bool = false) async {
+        let generation = pageLoadGeneration
         guard let extractedURL = await self.temporaryPageStore.storeArchiveEntry(
             from: zipURL,
             path: filePath
         ) else {
             return
         }
-        await loadImage(url: extractedURL, context: nil)
+        guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+        await loadImage(url: extractedURL, context: nil, forceReload: forceReload)
     }
 
+    @MainActor
     private func loadText(_ text: String) {
         self.text = text
         if isNodeLoaded {
@@ -617,8 +810,15 @@ extension ReaderWebtoonPageNode {
         #if SUMI
         sumiRevealGeneration += 1
         sumiIsRevealing = false
+        sumiJapaneseAnimatedImage = false
         #endif
         imageNode.reset()
+        #if SUMI
+        Task { @MainActor [weak self] in
+            self?.sumiJapaneseOverlay?.update(image: nil)
+            self?.sumiPageCoachingOverlay?.configure(page: nil)
+        }
+        #endif
         image = nil
     }
 
@@ -781,6 +981,10 @@ extension ReaderWebtoonPageNode {
     /// Reloads the current image by clearing its cache and re-fetching from the source
     @MainActor
     func reloadCurrentImage() async -> Bool {
+        #if SUMI && DEBUG
+        SumiGridPreviewFixtures.recoverFailedPageIfNeeded(page)
+        #endif
+        cancelPageLoad()
         // Clear the cache for the current image
         clearCurrentImageCache()
 
@@ -788,8 +992,8 @@ extension ReaderWebtoonPageNode {
         clearDisplayedImage()
         text = nil
 
-        // Reload the image using the original page data
-        await loadPage()
+        // Retry must bypass Nuke's independent original-data disk cache too.
+        await loadPage(forceReload: true)
         return image != nil || text != nil
     }
 

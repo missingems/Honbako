@@ -1,0 +1,15 @@
+{
+  "build": 78,
+  "version": "0.2.0",
+  "variant": "external-source beta (HONBAKO_EXTERNAL_SOURCES=YES), same as build 77",
+  "commit": "70dfbbe",
+  "archive": "~/Library/Developer/Xcode/Archives/2026-10-31/Honbako-0.2.0-78.xcarchive",
+  "upload": "EXPORT_SUCCEEDED (processing at Apple)",
+  "uploadedAt": "2026-10-31T19:20:51+08:00",
+  "TestFlightGroups": "not changed; external group needs beta review, which is on hold",
+  "tests": {
+    "HonbakoCoverDisplayTests": "9 passed",
+    "settings UI test": "passed on iPhone Duo simulator",
+    "MCP server": "40 local + 58 Cloudflare passed; workerd integration passed for test and production entries (14 tools)"
+  }
+}

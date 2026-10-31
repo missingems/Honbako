@@ -1,0 +1,137 @@
+#if SUMI
+import Foundation
+
+enum HonbakoAutomationModels {
+    struct Connection: Codable, Sendable {
+        let endpoint: URL
+        let deviceId: String
+        let deviceToken: String
+    }
+    struct PairRequest: Encodable { let code: String; let name: String }
+    struct PairResponse: Decodable { let deviceId: String; let deviceToken: String }
+    struct Item: Codable, Hashable, Sendable {
+        let sourceId: String
+        let mangaId: String
+    }
+    struct LibraryItem: Codable, Sendable {
+        let sourceId: String
+        let mangaId: String
+        let title: String
+        var author: String?
+        var lastReadPage: Int?
+    }
+    struct SourceItem: Codable, Sendable {
+        let id: String
+        let name: String
+        let supportsSearch: Bool
+    }
+    struct Reading: Codable, Equatable, Sendable {
+        let sourceId: String
+        let mangaId: String
+        let title: String
+        let chapterId: String
+        let chapterTitle: String
+        let chapterNumber: Float?
+        let volumeNumber: Float?
+        let page: Int
+        let totalPages: Int?
+        let lastVisiblePage: Int?
+        var updatedAt: String
+        var active: Bool
+    }
+    struct State: Codable, Sendable {
+        var schemaVersion = 1
+        let generatedAt: String
+        let library: [LibraryItem]
+        let sources: [SourceItem]
+        let reading: Reading?
+        var libraryTruncated = false
+        var sourcesTruncated = false
+        var readingHistoryAccess: Bool?
+        var automationCapabilities: [String]?
+        var permissions: [String: Bool]?
+
+        private enum CodingKeys: String, CodingKey {
+            case schemaVersion, generatedAt, library, sources, reading, libraryTruncated, sourcesTruncated, readingHistoryAccess, automationCapabilities, permissions
+        }
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(schemaVersion, forKey: .schemaVersion)
+            try container.encode(generatedAt, forKey: .generatedAt)
+            try container.encode(library, forKey: .library)
+            try container.encode(sources, forKey: .sources)
+            if let reading { try container.encode(reading, forKey: .reading) }
+            else { try container.encodeNil(forKey: .reading) }
+            try container.encode(libraryTruncated, forKey: .libraryTruncated)
+            try container.encode(sourcesTruncated, forKey: .sourcesTruncated)
+            try container.encodeIfPresent(readingHistoryAccess, forKey: .readingHistoryAccess)
+            try container.encodeIfPresent(automationCapabilities, forKey: .automationCapabilities)
+            try container.encodeIfPresent(permissions, forKey: .permissions)
+        }
+    }
+    struct Payload: Codable, Equatable, Sendable {
+        var query: String?
+        var sourceIds: [String]?
+        var limit: Int?
+        var items: [Item]?
+        var idempotencyKey: String?
+        var offset: Int?
+        var before: String?
+        var change: HonbakoAutomationManagement.Change?
+    }
+    struct Job: Codable, Identifiable, Equatable, Sendable {
+        let id: String
+        let kind: String
+        let payload: Payload
+        let status: String
+        let createdAt: String
+    }
+    struct Jobs: Decodable {
+        let jobs: [Job]
+        var handled: [HonbakoAutomationWorkspace.Handled]?
+        var workspace: HonbakoAutomationWorkspace.Info?
+        var coaching: HonbakoPageCoachingModels.Summary?
+    }
+    struct Match: Codable, Sendable {
+        let sourceId: String
+        let mangaId: String
+        let title: String
+        var author: String?
+    }
+    struct SearchResult: Codable, Sendable {
+        let matches: [Match]
+        var errors: [String]?
+    }
+    struct AddResult: Codable, Sendable {
+        let added: [Match]
+        let alreadyPresent: [Match]
+    }
+    struct RemoveResult: Codable, Sendable {
+        let removed: [Match]
+        let notPresent: [Match]
+    }
+    struct Approval: Identifiable {
+        let job: Job
+        let items: [Match]
+        var id: String { job.id }
+        var title: String { job.payload.change?.title ?? (isRemoval ? "Remove \(items.count) Books" : "Add \(items.count) Books") }
+        var isSourceChange: Bool { job.kind == "sources.change" }
+        var isRemoval: Bool { job.kind == "library.remove" }
+        var detail: String? { job.payload.change.flatMap { $0.sourceId ?? $0.repositoryURL } }
+    }
+    struct JobUpdate: Codable, Sendable {
+        let status: String
+        var result: HonbakoAutomationJSON?
+        var error: String?
+        var approvalGranted: Bool?
+        var isHistoryResult: Bool {
+            if case .object(let fields) = result, case .string("saved_chapter_history") = fields["coverage"] { return true }
+            return false
+        }
+    }
+    struct ImportReceipt: Codable {
+        let requested: [Item]
+        let result: AddResult
+    }
+}
+#endif

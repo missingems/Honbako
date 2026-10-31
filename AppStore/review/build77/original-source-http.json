@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "repository": {
+    "id": "en.honbako-originals",
+    "name": "Honbako Originals",
+    "version": 1,
+    "iconURL": "icons/en.honbako-originals.png",
+    "downloadURL": "packages/en.honbako-originals-v1.aix",
+    "languages": [
+      "en"
+    ],
+    "contentRating": 0,
+    "baseURL": "https://missingems.github.io/Honbako/originals/",
+    "minAppVersion": "0.9.0"
+  },
+  "responses": [
+    {
+      "url": "https://missingems.github.io/Honbako/sources/index.json",
+      "HTTP": 200,
+      "finalURL": "https://missingems.github.io/Honbako/sources/index.json",
+      "bytes": 509,
+      "sha256": "e8c231a8748d06cdba8b0c84be743de544185fdc8b3ddc158508f081d98ce6b2"
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/sources/packages/en.honbako-originals-v1.aix",
+      "HTTP": 200,
+      "finalURL": "https://missingems.github.io/Honbako/sources/packages/en.honbako-originals-v1.aix",
+      "bytes": 6672,
+      "sha256": "441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec"
+    }
+  ],
+  "localPackageSHA256": "441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec"
+}
