@@ -1,17 +1,14 @@
 import { rpcResult, unwrapRPC } from './rpc.js';
 import { DurableObject } from 'cloudflare:workers';
 import { SqliteBridgeStore } from '../storage.js';
-import { failure, reply, readJson } from '../core.js';
+import { reply } from '../core.js';
 import { BridgeError, digest } from '../../src/store.js';
 import { AppleProVerifier } from './entitlement.js';
-import { OAuthBroker, UUID, discovery, secret, tokenFrom, tokenParts, validRouteToken } from './oauth.js';
-import { remoteBases, remoteRequestBase } from './origins.js';
-import { RemoteWorkspace } from './workspace.js';
-import { PurchaseRegistry, routeEnrollment } from './purchases.js';
-
-const baseFor = env => `${env.PUBLIC_ORIGIN}/remote`;
-const workspace = (env, id) => env.HONBAKO_WORKSPACE.get(env.HONBAKO_WORKSPACE.idFromName(id));
-const broker = env => env.HONBAKO_AUTH.get(env.HONBAKO_AUTH.idFromName('oauth-v1'));
+import { OAuthBroker } from './oauth.js';
+import { DAILY_REQUEST_BUDGET, RemoteWorkspace } from './workspace.js';
+import { PurchaseRegistry } from './purchases.js';
+import { baseFor, broker, workspace } from './router.js';
+export { enrollRemote, remoteFetch } from './router.js';
 
 // The broker holds client registrations and short-lived authorization challenges,
 // never library/page data. Normal MCP requests route directly to the private workspace.
@@ -44,17 +41,21 @@ export class HonbakoAuthorization extends DurableObject {
       return await this.oauth.fetch(request);
     } catch (e) {
       // OAuth endpoints use RFC 6749 error fields, not application error envelopes.
-      return reply(e instanceof BridgeError ? e.status : 500, { error: e instanceof BridgeError ? e.code : 'server_error', error_description: e instanceof BridgeError ? e.message : 'Authorization unavailable' });
+      const response = reply(e instanceof BridgeError ? e.status : 500, { error: e instanceof BridgeError ? e.code : 'server_error', error_description: e instanceof BridgeError ? e.message : 'Authorization unavailable' });
+      if (e?.retryAfter) response.headers.set('retry-after', String(e.retryAfter));
+      return response;
     }
   }
+  // In-memory counters (see MemoryLimiter): an attempt never writes a row.
   limit(request) {
     const ip = digest(request.headers.get('cf-connecting-ip') ?? 'unknown');
-    if (!this.store.allowRate([`oauth:${ip}`], 120, 60000) || !this.store.allowRate(['oauth:global'], 3000, 60000))
-      throw new BridgeError(429, 'rate_limited', 'Too many authorization requests');
+    this.store.enforceRate([`oauth:${ip}`], 120, 60000, 'Too many authorization requests');
+    this.store.enforceRate(['oauth:global'], 3000, 60000, 'Too many authorization requests');
   }
   enrollmentLimit(ip) { return rpcResult(() => this.checkEnrollmentLimit(ip)); }
   checkEnrollmentLimit(ip) {
-    if (!this.store.allowRate([`enroll:${digest(ip)}`], 10, 600000) || !this.store.allowRate(['enroll:global'], 1000, 600000)) throw new BridgeError(429, 'rate_limited', 'Too many setup attempts');
+    this.store.enforceRate([`enroll:${digest(ip)}`], 10, 600000, 'Too many setup attempts');
+    this.store.enforceRate(['enroll:global'], 1000, 600000, 'Too many setup attempts');
   }
   workspaceFor(purchaseHash, id) { return rpcResult(() => this.purchases.find(purchaseHash, id)); }
   bind(purchaseHash, id) { return rpcResult(() => this.purchases.bind(purchaseHash, id)); }
@@ -72,7 +73,8 @@ export class HonbakoWorkspace extends DurableObject {
     this.core = new RemoteWorkspace(this.store, { base: baseFor(env), aliases: env.REMOTE_ORIGIN_ALIASES, routeKey: env.REMOTE_ROUTING_KEY,
       // Construct the verifier lazily: missing Apple credentials still allow disconnect/revocation.
       verifier: { current: id => new AppleProVerifier(env).current(id) },
-      release: async (hash, id) => unwrapRPC(await broker(env).release(hash, id)) });
+      release: async (hash, id) => unwrapRPC(await broker(env).release(hash, id)),
+      dailyBudget: Number(env.WORKSPACE_DAILY_REQUEST_BUDGET ?? DAILY_REQUEST_BUDGET) });
   }
   async fetch(request) { const response = await this.core.fetch(request); await this.store.flushCoachingAlarm(); return response; }
   enroll(body, lease, base, workspaceId) { return rpcResult(() => this.core.enroll(body, lease, base, workspaceId)); }
@@ -88,48 +90,4 @@ export class HonbakoWorkspace extends DurableObject {
     return unwrapRPC(await broker(this.env).approve(id, workspaceId, approved));
   }
   alarm() { return this.store.expireCoaching(); }
-}
-export function enrollRemote(env, body, lease, base) {
-  const auth = broker(env), rpc = name => async (...args) => unwrapRPC(await auth[name](...args));
-  return routeEnrollment({ purchases: { find: rpc('workspaceFor'), bind: rpc('bind'), unbind: rpc('unbind'), forget: rpc('forget'), allocateFamily: rpc('allocate') },
-    workspace: id => ({ enroll: async (...args) => unwrapRPC(await workspace(env, id).enroll(...args)), retire: async b => unwrapRPC(await workspace(env, id).retire(b)) }) }, body, lease, base);
-}
-export async function remoteFetch(request, env) {
-  try {
-    if (env.REMOTE_MCP_ENABLED !== 'YES' || !env.HONBAKO_WORKSPACE || !env.HONBAKO_AUTH || !/^[A-Za-z0-9_-]{43,100}$/.test(env.REMOTE_ROUTING_KEY ?? ''))
-      return reply(503, { error: { code: 'remote_not_available', message: 'Automatic remote setup is not available yet' } });
-    const base = remoteRequestBase(request, remoteBases(env.PUBLIC_ORIGIN, env.REMOTE_ORIGIN_ALIASES));
-    const u = new URL(request.url), path = u.pathname;
-    if (path === '/remote/capabilities' && request.method === 'GET') return reply(200, { available: Boolean(env.APP_STORE_PRIVATE_KEY && env.APP_STORE_KEY_ID && env.APP_STORE_ISSUER_ID) });
-    if (path === '/.well-known/oauth-protected-resource/remote/mcp' && request.method === 'GET')
-      return reply(200, { resource: `${base}/mcp`, authorization_servers: [base], scopes_supported: ['honbako'], bearer_methods_supported: ['header'] });
-    if (['/.well-known/oauth-authorization-server/remote', '/remote/.well-known/oauth-authorization-server'].includes(path) && request.method === 'GET') return reply(200, discovery(base));
-    if (path.startsWith('/remote/oauth/')) {
-      const origin = request.headers.get('origin');
-      if (origin && origin !== u.origin) throw new BridgeError(403, 'origin_rejected', 'Cross-origin browser requests are not supported');
-      return broker(env).fetch(request);
-    }
-    if (request.headers.has('origin') || u.search) throw new BridgeError(403, 'origin_rejected', 'This route is for Honbako and authorized AI clients');
-    if (path === '/remote/enroll' && request.method === 'POST') {
-      unwrapRPC(await broker(env).enrollmentLimit(request.headers.get('cf-connecting-ip') ?? 'unknown'));
-      const body = await readJson(request, 32768);
-      if (!UUID.test(body.installationId ?? '') || !/^[A-Za-z0-9_-]{43}$/.test(body.deviceSecret ?? '')) throw new BridgeError(400, 'invalid_request', 'Private installation identity required');
-      // Verify before allocating any per-user object. Invalid receipts cannot spawn tenants.
-      const lease = await new AppleProVerifier(env).enroll(body.signedTransaction);
-      return reply(200, await enrollRemote(env, body, lease, base));
-    }
-    const token = tokenFrom(request), parts = tokenParts(token);
-    if (!validRouteToken(token, env.REMOTE_ROUTING_KEY)) {
-      const r = reply(401, { error: 'unauthorized' });
-      if (path === '/remote/mcp') r.headers.set('www-authenticate', `Bearer resource_metadata="${u.origin}/.well-known/oauth-protected-resource/remote/mcp", scope="honbako"`);
-      return r;
-    }
-    if (path === '/remote/api/device/authorization' && request.method === 'POST') {
-      const body = await readJson(request, 4096);
-      if (!UUID.test(body.requestId ?? '') || (body.approved !== undefined && typeof body.approved !== 'boolean')) throw new BridgeError(400, 'invalid_request', 'Valid connection request required');
-      return reply(200, unwrapRPC(await workspace(env, parts[2]).authorize(token, body.requestId, body.approved)));
-    }
-    if (!(path === '/remote/mcp' && parts[1] === 'a') && !(path.startsWith('/remote/api/device/') && parts[1] === 'd')) return reply(401, { error: 'unauthorized' });
-    return workspace(env, parts[2]).fetch(request);
-  } catch (error) { return failure(error); }
 }

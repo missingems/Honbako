@@ -2,18 +2,28 @@ import { BridgeError, digest, secureEqual } from '../../src/store.js';
 import { HostedBridgeCore, hostedInstructions, readJson, reply, failure } from '../core.js';
 import { remoteBases, remoteRequestBase, requireRemoteBase } from './origins.js';
 import { UUID, secret, tokenParts, tokenFrom, routedToken } from './oauth.js';
+import { secondsUntilMidnightUTC, utcDay } from '../limits.js';
 
 export const DEVICE_LIMIT = 5;
+/// Requests per workspace per UTC day (WORKSPACE_DAILY_REQUEST_BUDGET), so one account's surge or
+/// looping client cannot spend the allowance every account shares. AI calls have their own cap.
+export const DAILY_REQUEST_BUDGET = 20000, DAILY_MCP_BUDGET = 2000;
+/// Per minute, matching the Worker's Rate Limiting bindings for when those are missing.
+export const DEVICE_RATE = 150, MCP_RATE = 120;
+const BUDGET_SAVE_MS = 30000, BUDGET_SAVE_REQUESTS = 100;
+const removal = new Set(['/api/device/disconnect', '/api/device/disconnect-all', '/api/device/remove']);
 const PERMISSIONS = ['libraryRead', 'readingRead', 'pageRead', 'libraryWrite', 'sourcesWrite', 'annotationsWrite'];
 const unauthorized = () => new BridgeError(401, 'unauthorized', 'Your paired Honbako device is required');
 
 /// One workspace per Pro purchase, shared by up to five of the person's devices.
 /// Each device keeps its own owner record and token; AI connections belong to the workspace.
 export class RemoteWorkspace {
-  constructor(store, { base, aliases = [], verifier, release = async () => {}, routeKey, clock = Date.now }) {
+  constructor(store, { base, aliases = [], verifier, release = async () => {}, routeKey, clock = Date.now, dailyBudget = DAILY_REQUEST_BUDGET }) {
     this.bases = remoteBases(new URL(base).origin, aliases);
     requireRemoteBase(base, this.bases);
     this.store = store; this.base = base; this.verifier = verifier; this.release = release; this.clock = clock; this.routeKey = routeKey;
+    this.dailyBudget = Number.isSafeInteger(dailyBudget) && dailyBudget > 0 ? dailyBudget : DAILY_REQUEST_BUDGET;
+    this.budget = store.control('remote-budget'); this.budgetSaved = { at: clock(), requests: this.budget?.requests ?? 0 };
     let admin = store.control('remote-admin');
     if (!admin) { admin = secret(); store.setControl('remote-admin', admin); }
     this.bridge = new HostedBridgeCore(store, { publicOrigin: new URL(base).origin, adminKey: admin, clock });
@@ -120,7 +130,7 @@ export class RemoteWorkspace {
     const active = new Set(this.active().map(owner => owner.id)), permissions = this.store.control('account-permissions');
     return { workspaceId: this.meta().id, deviceId, currentDeviceId: current?.id ?? null, deviceLimit: DEVICE_LIMIT,
       devices: data.devices.filter(device => active.has(device.id)).map(device => ({ deviceId: device.id, name: device.name,
-        lastActive: device.lastSeen ?? null, thisDevice: device.id === deviceId, current: device.id === current?.id })),
+        lastActive: this.store.lastSeen(device), thisDevice: device.id === deviceId, current: device.id === current?.id })),
       permissions: permissions ? { values: permissions.values, revision: permissions.revision } : null };
   }
   /// One set of MCP permissions for the account: every device shows and enforces the same switches.
@@ -134,6 +144,20 @@ export class RemoteWorkspace {
     this.store.setControl('account-permissions', next);
     await this.store.restrictToAccountPermissions();
     return { permissions: { values: next.values, revision: next.revision } };
+  }
+  /// Counts one request against today's budget, in memory; the saved count trails by at most
+  /// 30 s or 100 requests, and Disconnect All keeps it so starting over does not reset it.
+  spend(kind) {
+    const now = this.clock(), day = utcDay(now);
+    if (this.budget?.day !== day) { this.budget = { day, requests: 0, mcp: 0 }; this.budgetSaved = { at: 0, requests: 0 }; }
+    if (this.budget.requests >= this.dailyBudget || (kind === 'mcp' && this.budget.mcp >= DAILY_MCP_BUDGET))
+      throw new BridgeError(429, 'rate_limited', 'Your AI connection has reached today’s limit and resumes at 00:00 UTC', { retryAfter: secondsUntilMidnightUTC(now) });
+    this.budget.requests++;
+    if (kind === 'mcp') this.budget.mcp++;
+    if (now - this.budgetSaved.at >= BUDGET_SAVE_MS || this.budget.requests - this.budgetSaved.requests >= BUDGET_SAVE_REQUESTS) {
+      this.store.setControl('remote-budget', this.budget);
+      this.budgetSaved = { at: now, requests: this.budget.requests };
+    }
   }
   async requirePro() {
     let lease = this.store.control('remote-lease');
@@ -200,12 +224,17 @@ export class RemoteWorkspace {
           response.headers.set('www-authenticate', `Bearer resource_metadata="${new URL(base).origin}/.well-known/oauth-protected-resource${new URL(base).pathname}/mcp", scope="honbako"`);
           return response;
         }
-        await this.requirePro();
         if (request.method !== 'POST') return reply(405, { error: 'method_not_allowed' });
-        if (!this.store.allowRate(['remote:mcp:day'], 2000, 86400000) || !this.store.allowRate(['remote:mcp:minute'], 120, 60000)) throw new BridgeError(429, 'rate_limited', 'Remote MCP is busy; retry later');
+        this.store.enforceRate(['remote:mcp:minute'], MCP_RATE, 60000, 'Remote MCP is busy; retry later');
+        this.spend('mcp');
+        await this.requirePro();
         return this.bridge.mcp(request, await readJson(request));
       }
       const { deviceId } = this.owner(token);
+      if (!removal.has(path)) {
+        this.store.enforceRate([`remote:device:${deviceId}`], DEVICE_RATE, 60000);
+        this.spend('device');
+      }
       // Removing devices is always available, even after Pro lapses.
       if (path === '/api/device/disconnect' && request.method === 'POST') return reply(200, await this.removeDevice(deviceId));
       if (path === '/api/device/disconnect-all' && request.method === 'POST') return reply(200, await this.clear());

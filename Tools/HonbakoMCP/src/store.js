@@ -31,7 +31,7 @@ const deviceHistoryDisabled = (data, id) => data.devices.find(d => d.id === id)?
 const visibleTo = (job, id) => (job.deviceId ?? id) === id;
 const claimant = job => job.claimedBy ?? job.deviceId ?? null;
 const latest = (devices, field) => devices.reduce((best, device) => device[field] && (!best || device[field] > best[field]) ? device : best, null);
-const RUNNER_MS = 60000, HANDLED_MS = 3600000, LIBRARY_FRESH_SECONDS = 600;
+const RUNNER_MS = 60000, HANDLED_MS = 3600000, LIBRARY_FRESH_SECONDS = 600, SEEN_SAVE_MS = 30000;
 const handledElsewhere = () => new BridgeError(409, 'already_handled', 'Another of your devices already handled this request');
 export class BridgeStore {
   static async open(directory, { clock = Date.now } = {}) {
@@ -73,9 +73,21 @@ export class BridgeStore {
   constructor(directory, token, data, clock) {
     this.directory = directory; this.token = token; this.data = data; this.clock = clock; this.tail = Promise.resolve();
     this.coaching = new CoachingSessions({ clock, read: id => this.coachingRecord(id), write: (id, value) => this.writeCoachingRecord(id, value), list: () => this.coachingDeviceIds() });
-    this.coachingRecords = new Map(); this.coachingTimers = new Map();
+    this.coachingRecords = new Map(); this.coachingTimers = new Map(); this.seen = new Map();
   }
   now() { return new Date(this.clock()).toISOString(); }
+  /// Every request refreshes when a device was last seen in memory. The saved copy moves at most
+  /// every 30 s, so a device that is only polling does not rewrite its record on each request.
+  touch(device, save = false) {
+    const now = this.clock();
+    this.seen.set(device.id, now);
+    if (save || !device.lastSeen || now - Date.parse(device.lastSeen) >= SEEN_SAVE_MS) device.lastSeen = new Date(now).toISOString();
+  }
+  lastSeen(device) {
+    const saved = device.lastSeen ? Date.parse(device.lastSeen) : null, seen = this.seen.get(device.id) ?? null;
+    const latest = saved === null ? seen : seen === null ? saved : Math.max(saved, seen);
+    return latest === null ? null : new Date(latest).toISOString();
+  }
   coachingDeviceIds() { return [...this.coachingRecords.keys()]; }
   coachingRecord(id) { return this.coachingRecords.get(id) ?? null; }
   persistCoachingTombstones() {
@@ -101,7 +113,7 @@ export class BridgeStore {
     }
   }
   async publishCoaching(id, payload) {
-    await this.mutate(data => { this.device(data, id).lastSeen = this.now(); });
+    await this.mutate(data => { this.touch(this.device(data, id)); });
     this.permission(this.device(this.data, id), 'pageRead'); const result = this.coaching.publish(id, payload); await this.coachingPersistence; return result;
   }
   deviceCoaching(id) { const device = this.device(this.data, id); return this.coaching.status(id, this.freshness(device)); }
@@ -164,9 +176,9 @@ export class BridgeStore {
   /// Snapshots of every device a workspace-level request may run on; one targeted device otherwise.
   reachable(data, device, pinned) { return pinned ? [device] : data.devices; }
   freshness(device) {
-    const age = device.lastSeen ? Math.max(0, this.clock() - Date.parse(device.lastSeen)) : Infinity;
+    const lastSeen = this.lastSeen(device), age = lastSeen ? Math.max(0, this.clock() - Date.parse(lastSeen)) : Infinity;
     const stateAge = device.snapshotReceivedAt ? Math.max(0, this.clock() - Date.parse(device.snapshotReceivedAt)) : Infinity;
-    return { connected: age <= 30000, snapshotFresh: stateAge <= 30000, lastSeen: device.lastSeen,
+    return { connected: age <= 30000, snapshotFresh: stateAge <= 30000, lastSeen,
       snapshotReceivedAt: device.snapshotReceivedAt ?? null, snapshotAgeSeconds: Number.isFinite(stateAge) ? Math.floor(stateAge / 1000) : null };
   }
   status() {
@@ -225,7 +237,7 @@ export class BridgeStore {
       if (device.snapshot && Date.parse(snapshot.generatedAt) < Date.parse(device.snapshot.generatedAt))
         return { ok: true, accepted: false, reason: 'older_snapshot', receivedAt: device.snapshotReceivedAt };
       this.restrictCoaching(id, snapshot.permissions);
-      device.snapshot = snapshot; device.snapshotReceivedAt = this.now(); device.lastSeen = this.now();
+      device.snapshot = snapshot; device.snapshotReceivedAt = this.now(); this.touch(device, true);
       if (snapshot.reading?.active) device.readingActiveAt = this.now();
       this.prune(data);
       return { ok: true, accepted: true, receivedAt: device.snapshotReceivedAt };
@@ -283,7 +295,7 @@ export class BridgeStore {
   async deviceJobs(id) {
     return this.mutate(data => {
       const device = this.device(data, id), now = this.clock();
-      device.lastSeen = this.now();
+      this.touch(device);
       const jobs = data.jobs.filter(job => this.offered(data, job, device, now));
       // Searches and reads run on one device at a time; a device that goes quiet loses its turn.
       for (const job of jobs) if (job.deviceId == null && !approvalKinds.has(job.kind) && (job.runner !== id || job.runnerUntil - now < RUNNER_MS / 2)) {
@@ -413,7 +425,7 @@ export class BridgeStore {
   }
   async updateJob(deviceId, jobId, payload) {
     return this.mutate(data => {
-      this.device(data, deviceId).lastSeen = this.now();
+      this.touch(this.device(data, deviceId), true);
       const job = data.jobs.find(job => job.id === jobId && visibleTo(job, deviceId));
       if (!job) throw new BridgeError(404, 'job_not_found', 'Job not found for this device');
       // The first device to approve a change claims it; every other device's
