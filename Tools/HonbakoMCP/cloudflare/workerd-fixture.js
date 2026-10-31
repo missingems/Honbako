@@ -58,7 +58,7 @@ export async function remoteFixture({ configName = process.env.HONBAKO_REMOTE_RU
         durableObjects: { ...(productionEntry ? { HONBAKO_OWNER: { className: 'HonbakoOwner', useSQLite: true } } : {}), HONBAKO_AUTH: { className: 'HonbakoAuthorization', useSQLite: true }, HONBAKO_WORKSPACE: { className: 'HonbakoWorkspace', useSQLite: true } } }] });
       options.resourcePersistencePath = path.join(directory, 'durable'); options.enableDevRegistry = false; options.telemetry = { enabled: false }; return new Miniflare(options);
     };
-    const fixture = { origin, base: `${origin}/remote`, brandedOrigin, brandedBase: `${brandedOrigin}/remote`, routingKey, productionEntry, config, mf: null,
+    const fixture = { origin, base: `${origin}/remote`, brandedOrigin, brandedBase: `${brandedOrigin}/remote`, routingKey, productionEntry, config, directory, mf: null,
       get appleOutboundRequests() { return appleOutboundRequests; },
       /// Starts the runtime, or restarts it on the same storage.
       async start() { await fixture.mf?.dispose(); fixture.mf = makeRuntime(); await fixture.mf.ready; return fixture.mf; },
