@@ -94,6 +94,8 @@ export class SqliteBridgeStore extends BridgeStore {
     this.tail = work.catch(() => {});
     return work;
   }
+  /// Set by a shared remote workspace; one account-wide set of MCP switches for every device.
+  accountPermissions() { return this.control('account-permissions')?.values ?? null; }
   control(key) {
     const row = [...this.storage.sql.exec('SELECT value FROM bridge_control WHERE key = ?', key)][0];
     return row ? JSON.parse(row.value) : null;

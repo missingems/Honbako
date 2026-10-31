@@ -10,7 +10,7 @@ export const MAX_RESPONSE = 2 * 1024 * 1024;
 export const MAX_MIGRATION = 16 * 1024 * 1024;
 export const GRANT_LIFETIME_MS = 24 * 60 * 60 * 1000;
 const DEADLINE = 12000;
-export const hostedInstructions = instructions.replace("Cloud clients cannot reach a Mac's localhost or private LAN automatically; this local bridge does not create a public endpoint.", 'This is the owner’s hosted HTTPS companion. The Mac does not need to be running. The paired phone must open Honbako with an Internet connection to sync fresh reading state and process approved jobs; otherwise report its last-known state.');
+export const hostedInstructions = instructions.replace("Cloud clients cannot reach a Mac's localhost or private LAN automatically; this local bridge does not create a public endpoint.", 'This is the owner’s hosted HTTPS companion. The Mac does not need to be running. One of the person’s connected devices must open Honbako with an Internet connection to sync fresh reading state and process approved jobs; otherwise report the last-known state.');
 const strongKey = key => typeof key === 'string' && /^[A-Za-z0-9_-]{43,100}$/.test(key);
 const bearer = request => /^Bearer ([A-Za-z0-9_-]{43,100})$/.exec(request.headers.get('authorization') ?? '')?.[1] ?? '';
 const terminal = new Set(['completed', 'failed', 'rejected', 'cancelled']);

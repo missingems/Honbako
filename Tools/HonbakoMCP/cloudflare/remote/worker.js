@@ -7,6 +7,7 @@ import { AppleProVerifier } from './entitlement.js';
 import { OAuthBroker, UUID, discovery, secret, tokenFrom, tokenParts, validRouteToken } from './oauth.js';
 import { remoteBases, remoteRequestBase } from './origins.js';
 import { RemoteWorkspace } from './workspace.js';
+import { PurchaseRegistry, routeEnrollment } from './purchases.js';
 
 const baseFor = env => `${env.PUBLIC_ORIGIN}/remote`;
 const workspace = (env, id) => env.HONBAKO_WORKSPACE.get(env.HONBAKO_WORKSPACE.idFromName(id));
@@ -18,6 +19,7 @@ export class HonbakoAuthorization extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env); this.env = env;
     this.store = new SqliteBridgeStore(ctx.storage, 'B'.repeat(43));
+    this.purchases = new PurchaseRegistry(this.store);
     const sql = ctx.storage.sql;
     sql.exec('CREATE TABLE IF NOT EXISTS remote_auth (key TEXT PRIMARY KEY, value TEXT NOT NULL, expires INTEGER NOT NULL)');
     sql.exec('CREATE INDEX IF NOT EXISTS remote_auth_expiry ON remote_auth(expires)');
@@ -54,21 +56,12 @@ export class HonbakoAuthorization extends DurableObject {
   checkEnrollmentLimit(ip) {
     if (!this.store.allowRate([`enroll:${digest(ip)}`], 10, 600000) || !this.store.allowRate(['enroll:global'], 1000, 600000)) throw new BridgeError(429, 'rate_limited', 'Too many setup attempts');
   }
-  allocate(purchaseHash, id) { return rpcResult(() => this.allocatePurchase(purchaseHash, id)); }
-  allocatePurchase(purchaseHash, id) {
-    // Apple proof can restore multiple personal devices, but cannot spawn unlimited hosted workspaces.
-    const key = `purchase:${purchaseHash}`, current = this.store.control(key) ?? [];
-    if (!current.includes(id)) {
-      if (current.length >= 5) throw new BridgeError(429, 'device_limit', 'This subscription already has five remote workspaces');
-      this.store.setControl(key, [...current, id]);
-    }
-  }
-  release(purchaseHash, id) { return rpcResult(() => this.releasePurchase(purchaseHash, id)); }
-  releasePurchase(purchaseHash, id) {
-    // A disconnected installation no longer counts toward its purchase's five workspaces.
-    const key = `purchase:${purchaseHash}`, current = this.store.control(key) ?? [];
-    if (current.includes(id)) this.store.setControl(key, current.filter(x => x !== id));
-  }
+  workspaceFor(purchaseHash, id) { return rpcResult(() => this.purchases.find(purchaseHash, id)); }
+  bind(purchaseHash, id) { return rpcResult(() => this.purchases.bind(purchaseHash, id)); }
+  unbind(purchaseHash, id) { return rpcResult(() => this.purchases.unbind(purchaseHash, id)); }
+  forget(purchaseHash, id) { return rpcResult(() => this.purchases.forget(purchaseHash, id)); }
+  allocate(purchaseHash, id) { return rpcResult(() => this.purchases.allocateFamily(purchaseHash, id)); }
+  release(purchaseHash, id) { return rpcResult(() => this.purchases.releaseFamily(purchaseHash, id)); }
   pending(id) { return rpcResult(() => this.oauth.pending(id)); }
   approve(id, workspaceId, approved) { return rpcResult(() => this.oauth.approve(id, workspaceId, approved)); }
 }
@@ -79,22 +72,27 @@ export class HonbakoWorkspace extends DurableObject {
     this.core = new RemoteWorkspace(this.store, { base: baseFor(env), aliases: env.REMOTE_ORIGIN_ALIASES, routeKey: env.REMOTE_ROUTING_KEY,
       // Construct the verifier lazily: missing Apple credentials still allow disconnect/revocation.
       verifier: { current: id => new AppleProVerifier(env).current(id) },
-      allocate: async (hash, id) => unwrapRPC(await broker(env).allocate(hash, id)),
       release: async (hash, id) => unwrapRPC(await broker(env).release(hash, id)) });
   }
   async fetch(request) { const response = await this.core.fetch(request); await this.store.flushCoachingAlarm(); return response; }
-  enroll(body, lease, base) { return rpcResult(() => this.core.enroll(body, lease, base)); }
+  enroll(body, lease, base, workspaceId) { return rpcResult(() => this.core.enroll(body, lease, base, workspaceId)); }
+  retire(body) { return rpcResult(() => this.core.retire(body)); }
   issue(clientId, issuer) { return rpcResult(() => this.core.issue(clientId, issuer)); }
   refresh(token, clientId, issuer) { return rpcResult(() => this.core.refresh(token, clientId, issuer)); }
   revoke(token, clientId, issuer) { return rpcResult(() => this.core.revoke(token, clientId, issuer)); }
   authorize(token, id, approved) { return rpcResult(() => this.authorizeDevice(token, id, approved)); }
   async authorizeDevice(token, id, approved) {
-    const workspaceId = this.core.owner(token);
+    const { workspaceId } = this.core.owner(token);
     await this.core.requirePro();
     if (approved === undefined) return unwrapRPC(await broker(this.env).pending(id));
     return unwrapRPC(await broker(this.env).approve(id, workspaceId, approved));
   }
   alarm() { return this.store.expireCoaching(); }
+}
+export function enrollRemote(env, body, lease, base) {
+  const auth = broker(env), rpc = name => async (...args) => unwrapRPC(await auth[name](...args));
+  return routeEnrollment({ purchases: { find: rpc('workspaceFor'), bind: rpc('bind'), unbind: rpc('unbind'), forget: rpc('forget'), allocateFamily: rpc('allocate') },
+    workspace: id => ({ enroll: async (...args) => unwrapRPC(await workspace(env, id).enroll(...args)), retire: async b => unwrapRPC(await workspace(env, id).retire(b)) }) }, body, lease, base);
 }
 export async function remoteFetch(request, env) {
   try {
@@ -118,7 +116,7 @@ export async function remoteFetch(request, env) {
       if (!UUID.test(body.installationId ?? '') || !/^[A-Za-z0-9_-]{43}$/.test(body.deviceSecret ?? '')) throw new BridgeError(400, 'invalid_request', 'Private installation identity required');
       // Verify before allocating any per-user object. Invalid receipts cannot spawn tenants.
       const lease = await new AppleProVerifier(env).enroll(body.signedTransaction);
-      return reply(200, unwrapRPC(await workspace(env, body.installationId).enroll(body, lease, base)));
+      return reply(200, await enrollRemote(env, body, lease, base));
     }
     const token = tokenFrom(request), parts = tokenParts(token);
     if (!validRouteToken(token, env.REMOTE_ROUTING_KEY)) {
