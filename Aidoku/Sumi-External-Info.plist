@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>HonbakoRemoteMCPEnvironment</key>
+	<string>$(HONBAKO_REMOTE_MCP_ENVIRONMENT)</string>
 	<key>HonbakoPersonalFeatures</key>
 	<string>$(HONBAKO_PERSONAL_FEATURES)</string>
 	<key>HonbakoImportEnglish50</key>

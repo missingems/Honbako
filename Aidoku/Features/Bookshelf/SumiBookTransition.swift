@@ -243,10 +243,12 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
     @objc private func backSwipe(_ gesture: UIScreenEdgePanGestureRecognizer) {
         guard let owner else { return }
         let sign: CGFloat = gesture.edges == .right ? -1 : 1
-        guard let space = owner.view.window ?? owner.view else { return }
-        let width = max(1, space.bounds.width)
-        let fraction = min(1, max(0, gesture.translation(in: space).x * sign / width))
-        let velocity = gesture.velocity(in: space).x * sign / width
+        guard let host = gesture.view ?? owner.view else { return }
+        let space = host.window ?? host
+        let width = max(1, host.bounds.width)
+        let regularWidth = host.traitCollection.horizontalSizeClass == .regular
+        let fraction = SumiBookMotion.backSwipeProgress(travel: gesture.translation(in: space).x * sign, width: width, regularWidth: regularWidth)
+        let velocity = gesture.velocity(in: space).x * sign / SumiBookMotion.backSwipeDistance(width: width, regularWidth: regularWidth)
         switch gesture.state {
         case .began:
             isPinching = false
@@ -255,7 +257,7 @@ final class SumiBookTransition: NSObject, UIViewControllerTransitioningDelegate,
         case .changed:
             interactiveFraction = fraction; animator?.updateInteractive(fraction: fraction)
         case .ended, .cancelled, .failed:
-            let complete = gesture.state == .ended && SumiBookMotion.completesBackSwipe(travel: gesture.translation(in: space).x * sign, velocity: gesture.velocity(in: space).x * sign, width: width)
+            let complete = gesture.state == .ended && SumiBookMotion.completesBackSwipe(travel: gesture.translation(in: space).x * sign, velocity: gesture.velocity(in: space).x * sign, width: width, regularWidth: regularWidth)
             pendingEnd = (complete, velocity)
             animator?.endInteractive(completing: complete, velocity: velocity)
         default: break

@@ -36,6 +36,10 @@ struct SumiReaderToolbarTests {
         let glass = try #require(descendants(toolbar, type: UIVisualEffectView.self)
             .first { $0.accessibilityIdentifier == "Sumi.Reader.Scrubber.Glass" })
         #expect(glass.effect is UIGlassEffect)
+        #expect((glass.effect as? UIGlassEffect)?.tintColor == HonbakoPalette.glassTintUIColor)
+        let positionBadge = try #require(scrubber.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
+        #expect(!(positionBadge is UIVisualEffectView), "The page badge is a stable dune surface, with no glass refraction")
+        #expect(positionBadge.backgroundColor == HonbakoPalette.scrubberUIColor)
         #expect(descendants(scrubber, type: UIVisualEffectView.self)
             .filter { $0.accessibilityIdentifier != "Sumi.Reader.PagePosition" && !($0 is SumiScrubHoverGlassView) }
             .allSatisfy { $0.effect == nil || $0.isHidden })

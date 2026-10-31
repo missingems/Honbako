@@ -1,0 +1,17 @@
+{
+  "build": 70,
+  "changes": [
+    "Book tilt changed from -10 degrees to +10 degrees clockwise",
+    "Centered book enlarged by 6%"
+  ],
+  "artwork": "Same original manga cover with native outlined \u6f2b glyph",
+  "appearances": [
+    "light",
+    "dark",
+    "tinted"
+  ],
+  "source_capture_screenshots": "Build69 UI retained unchanged",
+  "validation": "PASS:1024x1024 opaque RGB in all3 appearances; final signed archive exported and uploaded to App Store Connect",
+  "TestFlightStatus": "Testing",
+  "externalTestingVerified": true
+}

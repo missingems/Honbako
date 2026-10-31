@@ -1,0 +1,167 @@
+{
+  "owner": "AppStore/film (Claude session). The website session reads this file and doesn’t edit it.",
+  "date": "2026-10-31",
+  "summary": "The 45-second film now uses the app’s paper, card, ink and dune palette, the canonical app icon as its mark, and the ChatGPT, Claude and Grok App Store icons where it names AI apps. Copy, type and every feature and subscription disclosure are unchanged; one Pro tag was added for the Remote MCP server.",
+  "source": {
+    "film": "src/film.js",
+    "page": "src/index.html (background #F5F0E6)",
+    "shot_list": "shots.json",
+    "readme": "README.md",
+    "score": "tools/music.py (docstring only; the audio is unchanged)",
+    "assets": "tools/prepare-assets.mjs now also copies the provider icons into assets/captures/",
+    "status_file": "tools/brand-status.py writes this file"
+  },
+  "applied": {
+    "palette": {
+      "paper": "#F5F0E6",
+      "card": "#FFFCF6",
+      "ink": "#15140F",
+      "accent": "#806344",
+      "accent_use": "Feature labels, section numbers in the running head, HONBAKO PRO tags, the title and end-card rules, leader dots, the taps and the AI’s mark on the page.",
+      "grain": "Paper grain is centred on #F5F0E6, so it adds texture without darkening the paper (centre pixel #F6F0E7).",
+      "shadows": "Warm rgba(60,45,25) shadows and vignette, matching the website demo."
+    },
+    "logo": {
+      "title_page": "App icon, 280 px portrait / 236 px landscape, in the iOS corner shape with a hairline and soft shadow, above HONBAKO 本箱, a dune rule and “The manga reader with MCP built in.”",
+      "end_card": "App icon, 220 / 184 px, above HONBAKO, a dune rule, “Your manga. Your AI.” and “A little company on every page.”",
+      "seal": "A small vermilion 本箱 seal (56 / 48 px) is stamped under the title line as a secondary editorial mark. It no longer appears on the end card.",
+      "icon_matches_canonical": true
+    },
+    "providers": {
+      "where": "Section 02 (Your AI), 22.9–24.95 s, under “Bring your own AI.”",
+      "shown": [
+        "ChatGPT",
+        "Claude",
+        "Grok"
+      ],
+      "basis": "These are the AI apps covered by the app’s own MCP client guide (HonbakoMCPClientGuideView).",
+      "icons": "AppStore/design-assets/provider-icons/{chatgpt,claude,grok}.png, unaltered; provenance in sources.json",
+      "icons_match_design_assets": {
+        "chatgpt": true,
+        "claude": true,
+        "grok": true
+      },
+      "pro": "Cloud AI apps connect through the Remote MCP server, which is Honbako Pro (HonbakoPlanComparisonView), so the row carries a HONBAKO PRO tag and “Remote MCP, for cloud AI apps.”",
+      "no_affiliation": "“Names and icons belong to their owners. Honbako isn’t affiliated with them.” In landscape it sits under the row; in portrait it sits above the footnote, clear of the device."
+    },
+    "kept": [
+      "Baskerville headlines, Courier New labels, Hiragino Mincho for Japanese.",
+      "All copy, including “The manga reader with MCP built in.” No “first”.",
+      "Pro tags on Japanese reading help and the Duo cover display; the end card’s “Some features require Honbako Pro. Compatible AI-provider account required.”",
+      "The AI-provider-account, requests-sync-while-open, camera and “Honbako doesn’t provide manga” footnotes.",
+      "“Illustrative demonstration” on the AI chat cards."
+    ],
+    "not_tagged_on_purpose": "The local MCP server, iCloud sync and the Resume widget are free in the plan comparison, so the MCP SERVER block and “Your place syncs with iCloud.” carry no Pro tag."
+  },
+  "render": {
+    "films": [
+      {
+        "file": "renders/honbako-film-1920x1080.mp4",
+        "bytes": 52391589,
+        "size": [
+          1920,
+          1080
+        ],
+        "fps": "60/1",
+        "frames": 2700,
+        "duration_s": 45.0,
+        "video": "h264",
+        "audio": "aac"
+      },
+      {
+        "file": "renders/honbako-film-1080x1920.mp4",
+        "bytes": 47489662,
+        "size": [
+          1080,
+          1920
+        ],
+        "fps": "60/1",
+        "frames": 2700,
+        "duration_s": 45.0,
+        "video": "h264",
+        "audio": "aac"
+      }
+    ],
+    "previews": [
+      {
+        "file": "renders/preview/honbako-film-1920x1080-preview.mp4",
+        "bytes": 12777052,
+        "size": [
+          1920,
+          1080
+        ],
+        "fps": "60/1",
+        "frames": 2700,
+        "duration_s": 45.0,
+        "video": "h264",
+        "audio": "aac"
+      },
+      {
+        "file": "renders/preview/honbako-film-1080x1920-preview.mp4",
+        "bytes": 12859217,
+        "size": [
+          1080,
+          1920
+        ],
+        "fps": "60/1",
+        "frames": 2700,
+        "duration_s": 45.0,
+        "video": "h264",
+        "audio": "aac"
+      }
+    ],
+    "posters": [
+      {
+        "file": "renders/poster-1920x1080.png",
+        "bytes": 3639822
+      },
+      {
+        "file": "renders/poster-1080x1920.png",
+        "bytes": 3578293
+      }
+    ],
+    "storyboard": {
+      "file": "renders/storyboard.jpg",
+      "bytes": 260130
+    },
+    "rebuild": "npm run render && npm run poster && npm run storyboard (previews: ffmpeg at 2.5 Mb/s from the masters)"
+  },
+  "recoverable": {
+    "previous_cut_source": "src/treatise-mono/ (film.js, index.html, shots.json)",
+    "previous_cut_renders": "renders/treatise-mono/ (both films, posters, storyboard, previews)",
+    "product_cut": "src/product-cut/ and renders/product-cut/",
+    "how": "Copy a backup’s film.js and index.html over src/ and run npm run render."
+  },
+  "remaining_conflicts": [
+    {
+      "item": "AI chat card mark",
+      "state": "The illustrative chat card keeps a neutral YOUR AI mark, not a provider icon.",
+      "why": "The chat text was written for the film. A provider logo on it would suggest that provider wrote it."
+    },
+    {
+      "item": "Manga in the film",
+      "state": "The film uses ブラックジャックによろしく by 佐藤秀峰, credited on screen and on the end card. The website and shared demo use only the original sample story 星を待つ駅 (Wataobi).",
+      "why": "User decision for the film. Don’t reuse film frames on the website."
+    },
+    {
+      "item": "Muted text colour",
+      "state": "Film footnotes use #45423B; the site tokens list #78746B as muted.",
+      "why": "#78746B is about 4.2:1 on the paper, under 4.5:1 for 17 px mono. The film uses #78746B only for faint marks."
+    },
+    {
+      "item": "Device finish",
+      "state": "The film and the website demo both show the iPhone Duo model in its Dark finish.",
+      "why": "Not a conflict today; noted in case the site’s art direction changes."
+    },
+    {
+      "item": "“Made for iPhone Duo.” wording",
+      "state": "Unchanged; whether to use “Designed for iPhone Duo.” is still the user’s call.",
+      "why": "Copy choice, not branding."
+    }
+  ],
+  "not_done": [
+    "Nothing is committed to git.",
+    "No changes to the app, the website or App Store Connect; Apple review stays on hold.",
+    "The score was not re-rendered (only its docstring changed) and hasn’t been auditioned by ear."
+  ]
+}

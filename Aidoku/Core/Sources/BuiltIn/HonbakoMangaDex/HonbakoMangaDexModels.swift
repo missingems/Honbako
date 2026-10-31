@@ -114,14 +114,14 @@ enum HonbakoMangaDexAPI {
             return [attributes.publishAt, attributes.readableAt].compactMap(timestamp).allSatisfy { $0 <= date }
         }
 
-        func chapter() -> AidokuRunner.Chapter {
+        func chapter(at date: Date = .now) -> AidokuRunner.Chapter {
             .init(key: id, title: attributes.title,
                 chapterNumber: attributes.chapter.flatMap(Float.init),
                 volumeNumber: attributes.volume.flatMap(Float.init),
                 dateUploaded: timestamp(attributes.publishAt),
                 scanlators: relationships?.filter { $0.type == "scanlation_group" }.compactMap { $0.attributes?.name },
                 url: URL(string: "https://mangadex.org/chapter/\(id)"),
-                language: canonicalLanguage(attributes.translatedLanguage))
+                language: canonicalLanguage(attributes.translatedLanguage), locked: !isReadable(at: date))
         }
     }
 
@@ -138,10 +138,11 @@ enum HonbakoMangaDexAPI {
         func pages() throws -> [AidokuRunner.Page] {
             guard result == "ok", baseUrl.scheme?.lowercased() == "https", baseUrl.host != nil,
                   baseUrl.user == nil, baseUrl.password == nil, baseUrl.query == nil, baseUrl.fragment == nil,
-                  safePathComponent(chapter.hash), !chapter.data.isEmpty, chapter.data.count <= 512,
+                  safePathComponent(chapter.hash), chapter.data.count <= 512,
                   chapter.data.allSatisfy(safePathComponent) else {
                 throw HonbakoMangaDexError.invalidResponse
             }
+            guard !chapter.data.isEmpty else { throw HonbakoMangaDexError.unavailableChapter }
             return chapter.data.map { file in
                 let url = baseUrl.appendingPathComponent("data")
                     .appendingPathComponent(chapter.hash).appendingPathComponent(file)

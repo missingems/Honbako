@@ -1,0 +1,50 @@
+[
+  {
+    "device": "iphone",
+    "locale": "en-US",
+    "test": "testEnglish",
+    "result": "AppStore/review/build75/native-public75-20261031/iphone-en-US.xcresult"
+  },
+  {
+    "device": "iphone",
+    "locale": "ja",
+    "test": "testJapanese",
+    "result": "AppStore/review/build75/native-public75-20261031/iphone-ja.xcresult"
+  },
+  {
+    "device": "iphone",
+    "locale": "zh-Hans",
+    "test": "testSimplifiedChinese",
+    "result": "AppStore/review/build75/native-public75-20261031/iphone-zh-Hans.xcresult"
+  },
+  {
+    "device": "iphone",
+    "locale": "zh-Hant",
+    "test": "testTraditionalChinese",
+    "result": "AppStore/review/build75/native-public75-20261031/iphone-zh-Hant.xcresult"
+  },
+  {
+    "device": "ipad",
+    "locale": "en-US",
+    "test": "testEnglish",
+    "result": "AppStore/review/build75/native-public75-20261031/ipad-en-US.xcresult"
+  },
+  {
+    "device": "ipad",
+    "locale": "ja",
+    "test": "testJapanese",
+    "result": "AppStore/review/build75/native-public75-20261031/ipad-ja.xcresult"
+  },
+  {
+    "device": "ipad",
+    "locale": "zh-Hans",
+    "test": "testSimplifiedChinese",
+    "result": "AppStore/review/build75/native-public75-20261031/ipad-zh-Hans.xcresult"
+  },
+  {
+    "device": "ipad",
+    "locale": "zh-Hant",
+    "test": "testTraditionalChinese",
+    "result": "AppStore/review/build75/native-public75-20261031/ipad-zh-Hant.xcresult"
+  }
+]

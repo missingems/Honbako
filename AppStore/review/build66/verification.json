@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "build": 66,
+  "theme": {
+    "accent": "Dune; adaptive light/dark and increased contrast",
+    "surfaces": "Cached paper grain in Settings and onboarding",
+    "accessibility": "White primary-button and text/link contrast checks passed"
+  },
+  "icon": {
+    "artwork": "Original vector book derived from onboarding dune-and-ink illustration",
+    "variants": [
+      "light",
+      "dark",
+      "tinted"
+    ],
+    "pixels": [
+      1024,
+      1024
+    ],
+    "color_space": "sRGB",
+    "alpha": false,
+    "compiled_primary_icon": "SumiIcon"
+  },
+  "verification": {
+    "release_build": "PASS",
+    "theme_contrast_tests": "PASS",
+    "settings_light_dark_visuals": "PASS",
+    "widget_light_dark_visuals": "PASS",
+    "native_onboarding_free_exit": "PASS",
+    "onboarding_compact_wide_accessibility_final_safe_area": "PASS",
+    "final_test_result": "Test-HonbakoStoreKitTests-2026.10.30_18-51-39-+0800.xcresult"
+  },
+  "device": {
+    "name": "iPhone Duo",
+    "build": 66,
+    "install": "SUCCESS",
+    "launch": "SUCCESS"
+  },
+  "distribution": {
+    "app_store_submitted": false,
+    "testflight_uploaded": false
+  },
+  "previews": [
+    "icon-dark.png",
+    "icon-light.png",
+    "plans-annual-dune-dark.png",
+    "plans-dune-dark.png",
+    "settings-paper-dark.png",
+    "settings-paper-light.png",
+    "welcome-dune-dark.png",
+    "welcome-dune-light.png",
+    "welcome-dune-wide.png"
+  ]
+}

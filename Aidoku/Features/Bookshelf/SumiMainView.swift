@@ -11,6 +11,8 @@ struct SumiMainView: View {
     let dismissSearch: () -> Void
     let didAddBook: (SumiBook, SumiBookTransitionSource?) async -> Void
     @State private var sourcesPresented = false
+    @State private var welcomePresented = false
+    @AppStorage(HonbakoWelcomeGate.completionKey) private var welcomeCompletedVersion = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -24,6 +26,7 @@ struct SumiMainView: View {
                             search.suspendKeyboard()
                             sourcesPresented = true
                         })
+                        .ignoresSafeArea(.container, edges: .horizontal)
                     }
                     .allowsHitTesting(!search.isPresented && insertion.bookID == nil)
                     .accessibilityHidden(search.isPresented)
@@ -39,9 +42,27 @@ struct SumiMainView: View {
             .animation(reduceMotion ? .easeOut(duration: 0.15) : .smooth(duration: 0.25), value: search.isPresented)
         }
         .sheet(isPresented: $sourcesPresented, onDismiss: refreshSearch) { SumiSourcesView() }
+        .fullScreenCover(isPresented: $welcomePresented) {
+            HonbakoWelcomeView(onFinish: finishWelcome)
+                .interactiveDismissDisabled()
+        }
+        .task { presentWelcomeIfNeeded() }
         .onChange(of: search.isPresented) {
             if !search.isPresented { dismissSearch() }
         }
+    }
+
+    private func presentWelcomeIfNeeded() {
+        // Subscription restoration is independent of this installation's intro.
+        welcomePresented = HonbakoWelcomeGate.shouldPresent(completedVersion: welcomeCompletedVersion,
+            hasPreviewBooks: previewBooks != nil, arguments: ProcessInfo.processInfo.arguments,
+            environment: ProcessInfo.processInfo.environment)
+    }
+
+    private func finishWelcome() {
+        let version = HonbakoWelcomeGate.completionVersion(from: welcomeCompletedVersion, arguments: ProcessInfo.processInfo.arguments)
+        if version != welcomeCompletedVersion { welcomeCompletedVersion = version }
+        welcomePresented = false
     }
 
     private func revealSearch() {

@@ -1,0 +1,16 @@
+{
+  "archive": "/Users/jun/Library/Developer/Xcode/Archives/2026-10-30/Honbako-0.2.0-69.xcarchive",
+  "version": "0.2.0",
+  "build": "69",
+  "bundle": "com.missingems.honbaku",
+  "personalFeatures": "NO",
+  "automaticMangaImport": "NO",
+  "remoteEnvironment": "Automatic verified StoreKit routing",
+  "widgets": "com.missingems.honbaku.widgets",
+  "privacyManifests": [
+    "PrivacyInfo.xcprivacy",
+    "ZIPFoundation_ZIPFoundation.bundle/PrivacyInfo.xcprivacy"
+  ],
+  "icon": "SumiIcon",
+  "status": "Archive verification PASS"
+}

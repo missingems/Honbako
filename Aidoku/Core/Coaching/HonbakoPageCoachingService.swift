@@ -25,6 +25,7 @@ final class HonbakoPageCoachingService: ObservableObject {
 
     private let transport: Transport
     private let connected: @MainActor () -> Bool
+    private let annotationsPermitted: @MainActor () -> Bool
     private let foreground: @MainActor () -> Bool
     private let privateReading: @MainActor () -> Bool
     private let now: @MainActor () -> Date
@@ -51,19 +52,22 @@ final class HonbakoPageCoachingService: ObservableObject {
     convenience init() {
         self.init(transport: { path, method, body in
             try await HonbakoAutomationService.shared.coachingRequest(path: path, method: method, body: body)
-        }, connected: { HonbakoAutomationService.shared.isEnabled && HonbakoAutomationService.shared.sharesReadingPosition },
+        }, connected: { HonbakoAutomationService.shared.isEnabled && HonbakoAutomationService.shared.pageAccessAllowed },
         foreground: { UIApplication.shared.applicationState == .active },
         privateReading: { AppSettings.general.incognitoMode.get() }, now: Date.init,
-        connectionIdentity: { HonbakoAutomationService.shared.coachingConnectionIdentity })
+        connectionIdentity: { HonbakoAutomationService.shared.coachingConnectionIdentity },
+        annotationsPermitted: { HonbakoAutomationService.shared.annotationsAllowed })
     }
 
     init(transport: @escaping Transport, connected: @escaping @MainActor () -> Bool,
          foreground: @escaping @MainActor () -> Bool,
          privateReading: @escaping @MainActor () -> Bool, now: @escaping @MainActor () -> Date,
          connectionIdentity: @escaping @MainActor () -> String?,
-         loadImage: (@MainActor (HonbakoPageCoachingCapture) async -> UIImage?)? = nil) {
+         loadImage: (@MainActor (HonbakoPageCoachingCapture) async -> UIImage?)? = nil,
+         annotationsPermitted: @escaping @MainActor () -> Bool = { true }) {
         self.transport = transport
         self.connected = connected
+        self.annotationsPermitted = annotationsPermitted
         self.foreground = foreground
         self.privateReading = privateReading
         self.now = now
@@ -75,11 +79,12 @@ final class HonbakoPageCoachingService: ObservableObject {
     }
 
     enum CoachingError: LocalizedError {
-        case connectionRequired, privateReading
+        case connectionRequired, privateReading, sessionClosed
         var errorDescription: String? {
             switch self {
             case .connectionRequired: "Connect an assistant in Settings → AI Connections first."
             case .privateReading: "Page coaching is unavailable during private reading."
+            case .sessionClosed: "This page stream was closed."
             }
         }
     }
@@ -167,6 +172,7 @@ final class HonbakoPageCoachingService: ObservableObject {
     /// Called by the small session driver. A page turn immediately hides the
     /// old marks, even while its replacement bitmap is still loading.
     func refreshVisiblePage() {
+        if !annotationsPermitted(), !annotations.isEmpty { annotations = []; notify() }
         guard connected(), let identity = connectionIdentity(), !privateReading() else {
             if isActive { clearAccess() }
             return
@@ -280,6 +286,12 @@ final class HonbakoPageCoachingService: ObservableObject {
                 self.published = true
                 self.statusMessage = "Your assistant can view this page and draw on it."
                 self.notify()
+            } catch CoachingError.sessionClosed {
+                // The server closed this stream (revoked, or replaced after a
+                // restart). Retrying the same session can never succeed, so the
+                // next tick starts a fresh one.
+                guard !Task.isCancelled, self.sessionID == payload.sessionId else { return }
+                self.clearAccess()
             } catch {
                 guard !Task.isCancelled, self.sessionID == payload.sessionId,
                       self.pageGeneration == payload.pageGeneration else { return }
@@ -316,7 +328,7 @@ final class HonbakoPageCoachingService: ObservableObject {
                     return
                 }
                 if HonbakoPageCoachingPolicy.accepts(state, for: reference, after: self.revision, now: self.now()) {
-                    self.annotations = state.annotations
+                    self.annotations = self.annotationsPermitted() ? state.annotations : []
                     self.revision = state.annotationRevision
                     self.notify()
                 }

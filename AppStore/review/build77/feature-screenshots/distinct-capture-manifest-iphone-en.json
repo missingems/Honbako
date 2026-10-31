@@ -1,0 +1,57 @@
+{
+  "build": 77,
+  "shippingReleaseBehaviorChanged": false,
+  "proVerification": "Verified no-charge local SKTestSession purchase",
+  "sample": "Distinct original Honbako sample-story compositions, with hand-illustrated characters commercially licensed from Wataobi",
+  "generatedArtwork": false,
+  "captures": [
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "coaching",
+      "native": "native/en-US/iphone/coaching.png",
+      "sha256": "802b9923b87e67a07e7179def8d6f135cf01b71bc204d4b4e0c8681e96e09d9a",
+      "nativeAttachmentSHA256": "3a66bc68c6c358412e9764c2c8ba0c518ad8d27c811cc4c6b0d9fa3c555c9c0f"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "japanese",
+      "native": "native/en-US/iphone/japanese.png",
+      "sha256": "7bb3a4a403cb4870208362ec4ba2930ce9087adffdb2c7c4482c0f0a7a2544e0",
+      "nativeAttachmentSHA256": "8d4f417a49b2ccecc1ed16b07c7a806fdd4e3ca5ef3b11dc984f0977378782e8"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "reader",
+      "native": "native/en-US/iphone/reader.png",
+      "sha256": "6a4a9c74dca15ddc05224adde3c10813aeaa25f1e0c83696e6071c1ebd0cec59",
+      "nativeAttachmentSHA256": "02b5b973039786fdaa894fb3e71a45967608dbd6c14a0df6a13b5b9db6d4a593"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "native": "native/en-US/iphone/ai-permissions.png",
+      "sha256": "e9d65c319737786569523c737ea12e93a646d1739bd6b9da0f78df981834b3f7",
+      "nativeAttachmentSHA256": "64e9a76fe3bf06029cc76f246cc5e991469f2918a1a76817300193798fdf36e8"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "sources",
+      "native": "native/en-US/iphone/sources.png",
+      "sha256": "86f85d9f5dd725576dd2470c97c29aa3d3c6cb1fc378c42eb9e8699986026ef7",
+      "nativeAttachmentSHA256": "8ca287ecf55be0ca2143fac3285660e978a949b40673f05d2feeaeade25e45da"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "library",
+      "native": "native/en-US/iphone/library.png",
+      "sha256": "4dff5a45f4df5df1510802cea8d82fb95c6eac90980b6aa6986fc97575ed14f6",
+      "nativeAttachmentSHA256": "d22dd677836622fa1113759f8d30c276e0cd56b93883ecb37534c8591e80fa9e"
+    }
+  ]
+}

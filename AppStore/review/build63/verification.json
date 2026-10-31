@@ -1,0 +1,48 @@
+{
+  "build": 63,
+  "phoneInstalled": true,
+  "phoneLaunched": true,
+  "onboardingSupersededByNativeRedesign": true,
+  "serverVersion": "9715f9c9-2107-4c03-8441-bf9a99f83bbf",
+  "temporaryDiagnosticsEnabled": false,
+  "grokConnectionConfirmedByUser": true,
+  "oauthCause": "Grok registers exact HTTPS cloud callback plus http://localhost:8787/callback; the former HTTPS-only validator rejected the loopback callback.",
+  "security": {
+    "pkce": "S256 required",
+    "callbackMatching": "exact",
+    "proEnvironment": "Sandbox",
+    "productionEnrollment": "OFF",
+    "clientSecrets": "hashed at rest"
+  },
+  "pricing": {
+    "monthlyProduct": "com.missingems.honbaku.pro",
+    "monthlyUSD": "2.99",
+    "annualProduct": "com.missingems.honbaku.pro.annual",
+    "annualAppleID": "6828718640",
+    "annualUSD": "28.49",
+    "annualSavingRoundedDown": 20,
+    "currentStorefronts": 175,
+    "futureStorefrontsAddedAutomatically": false,
+    "annualEnglishMetadataSaved": true,
+    "annualReviewScreenshotSaved": true,
+    "annualLevelAlignment": "Blocked by existing review-draft lock; automatic approval review rejected removal without explicit user approval."
+  },
+  "productionPurchaseVerification": {
+    "httpStatus": 401,
+    "activated": false
+  },
+  "tests": {
+    "serverSuitePassed": 85,
+    "additionalExactGrokRegressionPassed": true,
+    "hostedRuntimePassed": true,
+    "appRegression62": 61,
+    "appRegression63": 28,
+    "monthlyAnnualStoreKitPurchaseRefundPassed": true,
+    "nativeOnboardingUITestsPassed": true
+  },
+  "limits": [
+    "Physical 120fps not measured",
+    "Current live Kavita/Suwayomi end-to-end tests not verified",
+    "Additional Chinese subscription metadata was blocked by approval review; English metadata retained"
+  ]
+}

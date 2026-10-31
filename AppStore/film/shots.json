@@ -1,0 +1,190 @@
+{
+  "title": "Honbako",
+  "duration": 45,
+  "fps": 60,
+  "formats": {
+    "landscape": [
+      1920,
+      1080
+    ],
+    "portrait": [
+      1080,
+      1920
+    ]
+  },
+  "manga": {
+    "work": "ブラックジャックによろしく / Give My Regards to Black Jack",
+    "author": "佐藤秀峰 / Shuho Sato",
+    "terms": "https://densho810.com/free/ (secondary use, including commercial, permitted)"
+  },
+  "acts": [
+    {
+      "id": "title",
+      "start": 0,
+      "end": 3.2,
+      "copy": "Honbako / The manga reader with MCP built in.",
+      "shots": [
+        {
+          "id": "0a",
+          "start": 0.0,
+          "end": 3.2,
+          "what": "Title page on the app's paper: the Honbako app icon (AppStore/assets/AppIcon-1024.png, iOS corner shape) settles in at 0.15 s; “Honbako” in SF Pro Display semibold and “The manga reader with MCP built in.”"
+        }
+      ]
+    },
+    {
+      "id": "01-library",
+      "start": 3.2,
+      "end": 13.0,
+      "copy": "All your manga, in one library.",
+      "shots": [
+        {
+          "id": "1a",
+          "start": 2.9,
+          "end": 4.4,
+          "what": "The closed Duo fades in. Headline: All your manga, in one library."
+        },
+        {
+          "id": "1b",
+          "start": 4.4,
+          "end": 6.35,
+          "what": "The hinge opens 0°→180° (the model's own fold clip) to the library."
+        },
+        {
+          "id": "1c",
+          "start": 6.35,
+          "end": 8.75,
+          "what": "The device tips back and turns slightly, screen in place. Import CBZ files and folders from Files."
+        },
+        {
+          "id": "1d",
+          "start": 9.0,
+          "end": 11.0,
+          "what": "Push to Settings → Personal Server. Connect your Komga, Kavita or Suwayomi library."
+        },
+        {
+          "id": "1e",
+          "start": 11.0,
+          "end": 13.0,
+          "what": "Push to Settings → Extensions. Add sources with extensions you choose. Footnote: Honbako doesn’t provide manga. Sources and their content are your responsibility."
+        }
+      ]
+    },
+    {
+      "id": "02-your-ai",
+      "start": 13.0,
+      "end": 25.0,
+      "copy": "Ask your own AI about what you’re reading.",
+      "shots": [
+        {
+          "id": "2a",
+          "start": 13.0,
+          "end": 18.9,
+          "what": "English Vol. 1 pp. 23–24 in the reader. Headline: Ask your own AI about what you’re reading. The reader’s question in a dune bubble; the AI’s recap streams onto a card-paper card marked “Your AI” and “Illustrative demonstration”."
+        },
+        {
+          "id": "2b",
+          "start": 18.75,
+          "end": 21.9,
+          "what": "Second question; the answer card is joined by a dune leader to the panel that honbako_annotate_page marked (real app output), with a dune pulse."
+        },
+        {
+          "id": "2c",
+          "start": 21.9,
+          "end": 25.0,
+          "what": "Settings → MCP Server permissions recording; a tap turns on Read Reading History and Progress. Bring your own AI. Connect the AI app you already use through Honbako’s MCP server. You choose what it can see. ChatGPT, Claude and Grok App Store icons; Honbako Pro capsule: Remote MCP, for cloud AI apps. Names and icons belong to their owners. Honbako isn’t affiliated with them. Footnote: provider account separate; requests sync while Honbako is open; approval for adding books and changing sources."
+        }
+      ]
+    },
+    {
+      "id": "03-japanese",
+      "start": 25.0,
+      "end": 33.0,
+      "copy": "Help with Japanese, right on the page. [Honbako Pro]",
+      "shots": [
+        {
+          "id": "3a",
+          "start": 25.0,
+          "end": 28.6,
+          "what": "Japanese Vol. 7 spread; romaji wipe right-to-left; the camera pushes in. Headline on a card: Help with Japanese, right on the page. [Honbako Pro]. Card: Romaji aligned to each character."
+        },
+        {
+          "id": "3b",
+          "start": 28.4,
+          "end": 32.7,
+          "what": "A tap on 実験台じゃない opens Read This Phrase. Card: Tap a phrase for its reading and pronunciation."
+        }
+      ]
+    },
+    {
+      "id": "04-iphone-duo",
+      "start": 33.0,
+      "end": 40.4,
+      "copy": "Made for iPhone Duo. / Back to your page in one tap.",
+      "shots": [
+        {
+          "id": "4a",
+          "start": 33.0,
+          "end": 35.5,
+          "what": "Headline: Made for iPhone Duo. Page curl recording. Paper-like page turns, one spread at a time."
+        },
+        {
+          "id": "4b",
+          "start": 35.5,
+          "end": 37.7,
+          "what": "The open device turns around to show the cover on the outer display. While you read, the outer display shows the cover. [Honbako Pro] Footnote: the camera is used while you read; nothing is recorded or saved."
+        },
+        {
+          "id": "4c",
+          "start": 37.85,
+          "end": 40.4,
+          "what": "Headline: Back to your page in one tap. Resume widget (sample book). Opens your book at your page. Your place syncs with iCloud."
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "start": 40.4,
+      "end": 45.0,
+      "copy": "Honbako / Your manga. Your AI. / A little company on every page.",
+      "shots": [
+        {
+          "id": "5a",
+          "start": 40.4,
+          "end": 45.0,
+          "what": "The app icon settles in; Honbako, Your manga. Your AI. / A little company on every page. End card: Some features require Honbako Pro. Compatible AI-provider account required. Manga credit."
+        }
+      ]
+    }
+  ],
+  "music": "tools/music.py: single felt-piano notes over a quiet pad in D major on a slow 72 BPM grid, one chord per feature, higher register for the Japanese section, a low octave on the title page and under the end-card icon, held add9 under the end card. About −16 LUFS. No sound effects.",
+  "device": "Apple's iPhone Duo model (V68.usdz from Xcode 27.1's DeviceHub plugin), Dark finish, rendered per frame by tools/duo-render with RealityKit; hinge posed with the model's book_close clip.",
+  "style": {
+    "idea": "Apple-like and quiet: the genuine app UI on the real device leads, with one clear headline and a line or two of supporting copy per moment. On the app's own paper, in the system font and the app's dune palette. No frame, running head, section numbers, registration grid, dimension callouts or scale bar. Smooth eased moves and crossfades only; no shake or glitch. Plain product language.",
+    "paper": "The app's HonbakoPaperStock, ported in src/paper.js (ReaderPaperTexture .light, seed 0xA1D02026; SumiPaperSurface alpha remap; 0.6 over the base). Page #F5F0E6, cards #FFFCF6.",
+    "palette": {
+      "paper": "#F5F0E6",
+      "card": "#FFFCF6",
+      "ink": "#15140F",
+      "dune": "#806344 (Pro capsules, the reader's chat bubble, taps, the leader and the AI's mark on the page)",
+      "muted": "#5C574E (supporting copy and footnotes)",
+      "faint": "#78746B (secondary lines)"
+    },
+    "type": {
+      "headlines": "SF Pro Display, semibold",
+      "copy": "SF Pro Display, regular",
+      "small text": "SF Pro Text",
+      "Japanese": "Hiragino Sans"
+    },
+    "device": "Apple iPhone Duo model (V68.usdz) rendered per frame; in section 01 it tips back and turns slightly. No dimension lines or leaders on the device.",
+    "screens": "Genuine captures and recordings, shown in full colour."
+  },
+  "headlines": [
+    "All your manga, in one library.",
+    "Ask your own AI about what you’re reading.",
+    "Help with Japanese, right on the page. [Honbako Pro]",
+    "Made for iPhone Duo.",
+    "Back to your page in one tap.",
+    "Your manga. Your AI. A little company on every page."
+  ]
+}

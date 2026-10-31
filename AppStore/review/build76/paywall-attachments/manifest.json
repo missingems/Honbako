@@ -1,0 +1,26 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+        "deviceName" : "Honbako Capture iphone-large",
+        "exportedFileName" : "CC4A3B11-BA7C-4B89-BAB3-6A2B93569603.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Public paywall — annual selected — native StoreKit prices and trial_0_7155B245-84A0-40CB-8C10-D9A3CD2761C6.png",
+        "timestamp" : 1793379716.982
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+        "deviceName" : "Honbako Capture iphone-large",
+        "exportedFileName" : "1468F66E-B7D9-479F-BC91-0BB2512C3C1A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Public paywall — monthly selected — native StoreKit prices and trial_0_A9F8877B-7F24-486E-BE44-7B4EF1E5B594.png",
+        "timestamp" : 1793379713.331
+      }
+    ],
+    "testIdentifier" : "HonbakoPublicPaywallScreenshotTests/testPublicMonthlyAndAnnualPaywallScreenshots()",
+    "testIdentifierURL" : "test://com.apple.xcode/Aidoku/SumiUITests/HonbakoPublicPaywallScreenshotTests/testPublicMonthlyAndAnnualPaywallScreenshots"
+  }
+]

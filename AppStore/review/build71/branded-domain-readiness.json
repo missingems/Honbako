@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-30T14:25:50.468Z",
+  "certificateValidationDisabled": false,
+  "checks": [
+    {
+      "origin": "https://mcp.honbako.xyz",
+      "ready": false,
+      "reason": "ENOTFOUND"
+    },
+    {
+      "origin": "https://test-mcp.honbako.xyz",
+      "ready": false,
+      "reason": "ENOTFOUND"
+    }
+  ]
+}

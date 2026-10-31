@@ -1,0 +1,41 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+        "deviceName" : "Honbako Capture iphone-large",
+        "exportedFileName" : "C37BFD0E-33CD-4DAA-B945-4404A8F44EE4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "chapters-confirmed-unavailable-gray_0_BA051E6F-8A85-4F3F-93C4-E55F371070CA.png",
+        "timestamp" : 1793382194.821
+      }
+    ],
+    "testIdentifier" : "SumiReaderChapterPickerDesignTests/testConfirmedUnavailableChaptersRemainListedAndUseGrayTitles()",
+    "testIdentifierURL" : "test://com.apple.xcode/Aidoku/SumiTests/SumiReaderChapterPickerDesignTests/testConfirmedUnavailableChaptersRemainListedAndUseGrayTitles"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+        "deviceName" : "Honbako Capture iphone-large",
+        "exportedFileName" : "86AD5B2C-1AA0-4B3C-ACB2-2F2CB8774B5B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "chapters-current-highlight-dark_0_5BB2B1EB-94F9-4A43-8ED9-406F3ECA07CB.png",
+        "timestamp" : 1793382197.977
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+        "deviceName" : "Honbako Capture iphone-large",
+        "exportedFileName" : "302ABC9B-4291-462B-A591-1A087129C2BA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "chapters-current-highlight-light_0_78D81E3B-03A3-4B17-B6D8-F2321F7836CE.png",
+        "timestamp" : 1793382196.451
+      }
+    ],
+    "testIdentifier" : "SumiReaderChapterPickerDesignTests/testLongChapterListOpensAtTheCurrentReadingChapter()",
+    "testIdentifierURL" : "test://com.apple.xcode/Aidoku/SumiTests/SumiReaderChapterPickerDesignTests/testLongChapterListOpensAtTheCurrentReadingChapter"
+  }
+]

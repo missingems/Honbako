@@ -1,0 +1,132 @@
+{
+  "captureBuild": 75,
+  "captureVersion": "0.1.0",
+  "targetPublicBuild": 76,
+  "targetBuildDifference": "Only unavailable-chapter recovery and source-settings copy differ; the captured available library/reader/chapter states are unchanged. Capture provenance remains75.",
+  "nativeCaptureCount": 24,
+  "framedListingCount": 36,
+  "locales": [
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "devices": [
+    "iphone-medium-required",
+    "iphone-large-optional",
+    "ipad13-required"
+  ],
+  "nativeOrientations": {
+    "iphone": "portrait1320x2868",
+    "ipad_library": "landscape2752x2064",
+    "ipad_reader_chapters": "portrait2064x2752"
+  },
+  "publicFlags": {
+    "HONBAKO_EXTERNAL_SOURCES": "NO",
+    "HONBAKO_PERSONAL_FEATURES": "NO",
+    "HONBAKO_IMPORT_ENGLISH_50": "NO"
+  },
+  "checks": {
+    "all8NativeUITests": "PASS",
+    "allRawAndFinalHashes": "PASS",
+    "frameHashesAndSourceLinkage": "PASS",
+    "finalDimensionsAndRGBJPEG": "PASS",
+    "completeLicensedAppleFrames": "PASS",
+    "currentNativeTitleChapterControls": "PASS",
+    "currentChapterSelectedDateProgressContained": "PASS",
+    "allFourLocaleHeadlineAndNativeContentMatch": "PASS",
+    "darkAppearanceAndSafeEdgeControls": "PASS",
+    "bothContactSheetsVisuallyReviewed": "PASS",
+    "all36FinalHashesAndDimensions": "PASS",
+    "existingLargeAndIpadImagesUnchanged": "PASS; all24 byte-identical",
+    "requiredMediumAndIpadContactSheetVisualReview": "PASS",
+    "all36ContactSheetVisualReview": "PASS"
+  },
+  "testResults": [
+    {
+      "device": "iphone",
+      "locale": "en-US",
+      "test": "testEnglish",
+      "result": "AppStore/review/build75/native-public75-20261031/iphone-en-US.xcresult"
+    },
+    {
+      "device": "iphone",
+      "locale": "ja",
+      "test": "testJapanese",
+      "result": "AppStore/review/build75/native-public75-20261031/iphone-ja.xcresult"
+    },
+    {
+      "device": "iphone",
+      "locale": "zh-Hans",
+      "test": "testSimplifiedChinese",
+      "result": "AppStore/review/build75/native-public75-20261031/iphone-zh-Hans.xcresult"
+    },
+    {
+      "device": "iphone",
+      "locale": "zh-Hant",
+      "test": "testTraditionalChinese",
+      "result": "AppStore/review/build75/native-public75-20261031/iphone-zh-Hant.xcresult"
+    },
+    {
+      "device": "ipad",
+      "locale": "en-US",
+      "test": "testEnglish",
+      "result": "AppStore/review/build75/native-public75-20261031/ipad-en-US.xcresult"
+    },
+    {
+      "device": "ipad",
+      "locale": "ja",
+      "test": "testJapanese",
+      "result": "AppStore/review/build75/native-public75-20261031/ipad-ja.xcresult"
+    },
+    {
+      "device": "ipad",
+      "locale": "zh-Hans",
+      "test": "testSimplifiedChinese",
+      "result": "AppStore/review/build75/native-public75-20261031/ipad-zh-Hans.xcresult"
+    },
+    {
+      "device": "ipad",
+      "locale": "zh-Hant",
+      "test": "testTraditionalChinese",
+      "result": "AppStore/review/build75/native-public75-20261031/ipad-zh-Hant.xcresult"
+    }
+  ],
+  "uiFabricated": false,
+  "newImageGenerationUsed": false,
+  "underlyingOriginalPortfolioArt": "Existing generated2026-10-28; retained provenance in original-covers/manifest.json",
+  "uploadedToAppStoreConnect": false,
+  "proofs": [
+    "screenshot-proofs/store-design-proper-frames.jpg",
+    "screenshot-proofs/store-design-all-locales-v2.jpg",
+    "screenshot-proofs/store-design-medium-proper-frames.jpg",
+    "screenshot-proofs/store-design-required-medium-ipad.jpg",
+    "screenshot-proofs/store-design-all-locales-all-sizes.jpg"
+  ],
+  "rawManifestSHA256": "4c44397cf53bd5702d50218fbbf6f29578f78661d98a19df64a8c0caf79f5e4b",
+  "finalManifestSHA256": "52964c7ab7532bbf0d793fd9a5e5ba663aff4e65449b4673011805fac43968d2",
+  "outputDimensions": {
+    "iphone-medium": [
+      1206,
+      2622
+    ],
+    "iphone": [
+      1320,
+      2868
+    ],
+    "ipad": [
+      2064,
+      2752
+    ]
+  },
+  "requiredSlots": [
+    "iPhone Dynamic Island medium",
+    "iPad13-inch"
+  ],
+  "optionalSlots": [
+    "iPhone Dynamic Island large"
+  ],
+  "mediumComposition": "12 medium-size marketing canvases reuse the unchanged genuine Large capture within its matching complete Large Apple frame. The whole framed product is uniformly scaled; the native UI is not independently stretched, cropped or repainted. Native capture remains75/Large1320x2868.",
+  "requirementCorrection": "The earlier Large-only reading omitted the current Required device sizes paragraph. Official lines407–413 and live ASC require Medium iPhone +13-inch iPad. Medium must be populated with fresh images.",
+  "supersededOrientationAudit": "Earlier visual pass missed4sideways iPad library images. Corrected by fresh portrait76captures; see ../build76/screenshot-orientation-verification.json. Original75rawfiles preserved for evidence."
+}

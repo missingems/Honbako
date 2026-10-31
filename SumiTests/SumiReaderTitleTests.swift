@@ -1,20 +1,50 @@
 @testable import Sumi
 import Testing
+import AidokuRunner
 import UIKit
 
 @MainActor
 struct SumiReaderTitleTests {
-    @Test("The book title appears with controls and remains a noninteractive accessible heading")
-    func titlePresentation() {
-        let title = SumiReaderTitleView(title: "One Punch Man")
-        #expect(title.isHidden)
-        #expect(!title.isUserInteractionEnabled)
-        #expect(title.accessibilityLabel == "One Punch Man")
-        #expect(title.accessibilityTraits.contains(.header))
-        title.setVisible(true, animated: false)
-        #expect(title.isVisible && !title.isHidden && title.alpha == 1)
-        title.setVisible(false, animated: false)
-        #expect(!title.isVisible && title.isHidden && title.alpha == 0)
+    @Test("Reader uses the native manga navigation title and chapter subtitle")
+    func nativeNavigationTitle() {
+        let reader = ReaderViewController(source: nil,
+            manga: AidokuRunner.Manga(sourceKey: "title-test", key: "one", title: "One Punch Man"),
+            chapter: .init(key: "first", title: "The Hero", chapterNumber: 1))
+        reader.loadNavbarTitle()
+        #expect(reader.navigationItem.title == "One Punch Man")
+        #expect(reader.navigationItem.titleView == nil, "UIKit owns the title layout rather than a floating custom view")
+        if #available(iOS 26.0, *) { #expect(reader.navigationItem.subtitle == "Chapter 1") }
+        reader.chapter = .init(key: "second", title: "The next chapter", chapterNumber: 2.5)
+        reader.loadNavbarTitle()
+        #expect(reader.navigationItem.title == "One Punch Man")
+        if #available(iOS 26.0, *) { #expect(reader.navigationItem.subtitle == "Chapter 2.5") }
+    }
+
+    #if HONBAKO_EXTERNAL_SOURCES
+    @Test("An automatic readable edition explicitly identifies the actual chapter language in the native subtitle")
+    func automaticEditionSubtitle() {
+        let reader = ReaderViewController(source: nil,
+            manga: AidokuRunner.Manga(sourceKey: "title-test", key: "fallback", title: "Fixture"),
+            chapter: .init(key: "az-first", chapterNumber: 1, language: "az"))
+        reader.sumiAutomaticOpeningLanguage = "az"
+        reader.loadNavbarTitle()
+        if #available(iOS 26.0, *) {
+            #expect(reader.navigationItem.subtitle == "Chapter 1 · \(SourceLanguage.displayName(for: "az"))")
+        }
+        reader.sumiAutomaticOpeningLanguage = nil
+        reader.loadNavbarTitle()
+        if #available(iOS 26.0, *) { #expect(reader.navigationItem.subtitle == "Chapter 1") }
+    }
+    #endif
+
+    @Test("Sources without chapter numbers retain their named chapter as the native subtitle")
+    func namedChapterSubtitle() {
+        let reader = ReaderViewController(source: nil,
+            manga: AidokuRunner.Manga(sourceKey: "title-test", key: "two", title: "Our Manga"),
+            chapter: .init(key: "one", title: "A quiet beginning"))
+        reader.loadNavbarTitle()
+        #expect(reader.navigationItem.title == "Our Manga")
+        if #available(iOS 26.0, *) { #expect(reader.navigationItem.subtitle == "A quiet beginning") }
     }
 
     @Test("The closed display title respects the physical status rail and camera")

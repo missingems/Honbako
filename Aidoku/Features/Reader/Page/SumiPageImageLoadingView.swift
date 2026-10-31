@@ -47,7 +47,7 @@ final class SumiPageImageLoadingView: UIView {
         configuration.cornerStyle = .capsule
         configuration.contentInsets = .init(top: 12, leading: 20, bottom: 12, trailing: 20)
         retryButton.configuration = configuration
-        retryButton.tintColor = .systemBlue
+        retryButton.tintColor = HonbakoPalette.accentUIColor
         retryButton.titleLabel?.adjustsFontForContentSizeCategory = true
         retryButton.accessibilityIdentifier = "Sumi.Reader.Page.Retry"
         retryButton.addAction(UIAction { [weak self] _ in

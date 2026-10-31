@@ -28,6 +28,7 @@ final class HonbakoCoverDisplayModel: ObservableObject {
 
     @Published private(set) var image: UIImage?
     @Published private(set) var title = ""
+    @Published private(set) var pose = HonbakoCoverDisplayPose(orientation: .portrait)
     private(set) var status = Status()
     private var bookID: MangaIdentifier?
     private var imageTask: Task<Void, Never>?
@@ -92,6 +93,12 @@ final class HonbakoCoverDisplayModel: ObservableObject {
         status.hingePresent = present
         status.hingeOpen = open
         record("hingeChanged")
+    }
+
+    func setScenePose(orientation: UIInterfaceOrientation) {
+        let pose = HonbakoCoverDisplayPose(orientation: orientation)
+        guard self.pose != pose else { return }
+        self.pose = pose
     }
 
     func setSceneConnected(_ connected: Bool, role: String, size: CGSize? = nil) {

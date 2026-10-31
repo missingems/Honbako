@@ -1,0 +1,389 @@
+{
+  "build": 77,
+  "version": "0.2.0",
+  "appearance": "Dark",
+  "externalSources": true,
+  "configuration": "Debug simulator; owned sample content only",
+  "proVerification": "No-charge SKTestSession purchase, verified by app StoreKit entitlement listener",
+  "count": 36,
+  "captures": [
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "coaching",
+      "file": "native/en-US/iphone/coaching.png",
+      "sha256": "6b8691681d701a4444d838693c137d66e539fa38935727c9a2a39deb1f85df6b",
+      "nativeAttachmentSHA256": "7620e8ce95d6203d2016e00fa0ad02f1a466aeed3d667e384ca0f2bf28149b8b",
+      "timestamp": 1793407269.858,
+      "annotationContent": "Locally supplied illustrative MCP response using original Bookshop artwork; unchanged native annotation renderer"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "coaching",
+      "file": "native/ja/iphone/coaching.png",
+      "sha256": "a259260dbc2a50e2da3f0eb36d0dafc5960b81e20430f6e602faccb8d20aa2fa",
+      "nativeAttachmentSHA256": "eea4adae81b08b11d0111f18cd1f5a0fc44229b1e34013799e5bfff46981febd",
+      "timestamp": 1793407280.315,
+      "annotationContent": "Locally supplied illustrative MCP response using original Bookshop artwork; unchanged native annotation renderer"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "coaching",
+      "file": "native/zh-Hans/iphone/coaching.png",
+      "sha256": "2c0e2296848475f5e0c4ce0043886854dba7982096a9069ea5ef7effe53b8ee5",
+      "nativeAttachmentSHA256": "7ccf07666b40a192625bb9f00c1c1542e8f7d76884c04b72aaef5c189c6432ed",
+      "timestamp": 1793407290.681,
+      "annotationContent": "Locally supplied illustrative MCP response using original Bookshop artwork; unchanged native annotation renderer"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "coaching",
+      "file": "native/zh-Hant/iphone/coaching.png",
+      "sha256": "212f85c5c8e2487977f9914a85fcf6c3efb65a8f96af553cd950ce67e0876014",
+      "nativeAttachmentSHA256": "cf56c1370afb79a315490e5af65378375a423b41a8cf4defcb2103d5684191ae",
+      "timestamp": 1793407301.134,
+      "annotationContent": "Locally supplied illustrative MCP response using original Bookshop artwork; unchanged native annotation renderer"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "japanese",
+      "file": "native/en-US/iphone/japanese.png",
+      "sha256": "262d8c83048146f544c7a23e89cafeb1cbbd9c4399b7d27572c229c20a809d3b",
+      "nativeAttachmentSHA256": "8f794e7b77a3522d03fae462d2a330b91631e7e5f0240ee2584f0c4ded79bddd",
+      "timestamp": 1793407365.529,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "reader-controls",
+      "file": "native/en-US/iphone/reader-controls.png",
+      "sha256": "3665ae96eca29706813955b991cece8421b06c395b4e21f5f7e72b1b2c5e165c",
+      "nativeAttachmentSHA256": "67d56fafd7ce2792930a0ae7caf68d881b3618076d02c84680584e73167c1e93",
+      "timestamp": 1793407343.991,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "reader",
+      "file": "native/en-US/iphone/reader.png",
+      "sha256": "23295b89a603317dfaf62396456d09813391e3bae0bb78b7ad6efec0facbbe87",
+      "nativeAttachmentSHA256": "fdae521f7649a30dd41f51fc0526c8bab806274ef14598d4d0b630d6b3989355",
+      "timestamp": 1793407893.888,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Bundled original Bookshop story; edition explicitly matches storefront language"
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "file": "native/en-US/iphone/ai-permissions.png",
+      "sha256": "58caee01d3eb2eeee8a27733d4ffb530fa8aaf145cc4919ee3d9e6befe6dbac0",
+      "nativeAttachmentSHA256": "324a66c3584d386006d5e4a6fd364eee9bc7f15ddf9fb7a0b412ebd1047d570e",
+      "timestamp": 1793407325.935,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "ai-connect",
+      "file": "native/en-US/iphone/ai-connect.png",
+      "sha256": "5025f11fdcbbb4d29dce4f6e77fef849f4c82650178cfa0397510163bb14e856",
+      "nativeAttachmentSHA256": "6205ffd5f6e14258666c8ca38a7f2adbcda5ec73c01f7ea9c9122bab5d7b59da",
+      "timestamp": 1793407322.059,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "extensions",
+      "file": "native/en-US/iphone/extensions.png",
+      "sha256": "2139474bfae67574b0c4660c9d6c0b9b459c0492682f9030b4d4b64d098be981",
+      "nativeAttachmentSHA256": "6a024ec48c5ff073151a4588eaea89514879f5a8b2e188005f9c15dd1b61dcd0",
+      "timestamp": 1793407315.831,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "sources",
+      "file": "native/en-US/iphone/sources.png",
+      "sha256": "d59526f5515805078e1b9e6055ef60114351748a4092655041add63a117be67f",
+      "nativeAttachmentSHA256": "7c6645d255d2408ce95d702119ccef2185dedf5aef6a429b02942428c35b018e",
+      "timestamp": 1793407312.559,
+      "annotationContent": null
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "state": "library",
+      "file": "native/en-US/iphone/library.png",
+      "sha256": "9f4a4627385ca16364dea33ae379c127c616634a83e8b60ce027232ddc0e5c79",
+      "nativeAttachmentSHA256": "3b33362d4a89835c23a22584badf6bc22d41fb492a61ccf48055cabe6d9aca5d",
+      "timestamp": 1793407902.985,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Owned local original-art collection"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "japanese",
+      "file": "native/ja/iphone/japanese.png",
+      "sha256": "262d8c83048146f544c7a23e89cafeb1cbbd9c4399b7d27572c229c20a809d3b",
+      "nativeAttachmentSHA256": "8f794e7b77a3522d03fae462d2a330b91631e7e5f0240ee2584f0c4ded79bddd",
+      "timestamp": 1793407426.727,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "reader-controls",
+      "file": "native/ja/iphone/reader-controls.png",
+      "sha256": "bfbcada6a6984ae40ff14792bbf9a3903b3355fea6831ae95ffe041d61bfc387",
+      "nativeAttachmentSHA256": "88e3cac898211017b57739ccfada83c3848c83c8a9a24065aaa4192dff6bd3de",
+      "timestamp": 1793407409.77,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "reader",
+      "file": "native/ja/iphone/reader.png",
+      "sha256": "dc7d5656b99b58c4518638a629e2205b84b00b3d84f9884a24cd45777b605e6d",
+      "nativeAttachmentSHA256": "2f8aa08f3687cacf41160b39127226927cb6d0885e6ca28a5294cea6edee8fa1",
+      "timestamp": 1793407929.441,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Bundled original Bookshop story; edition explicitly matches storefront language"
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "file": "native/ja/iphone/ai-permissions.png",
+      "sha256": "2137b0f0bfb2336ade15d422675f90528356b1b1dffeb10122670b107d1bc1a9",
+      "nativeAttachmentSHA256": "9fe6d22b6aea18ecbe8c18a91c846d905d4a514d6363e037c1fc8816d87125a8",
+      "timestamp": 1793407390.803,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "ai-connect",
+      "file": "native/ja/iphone/ai-connect.png",
+      "sha256": "79a5397be230ae76b0f99bec88412811ef5d8a9bef5ed251459be2226d94808f",
+      "nativeAttachmentSHA256": "aae343a9e59579e4c3ccbb832fd5ece41953837f32856b57ad882b80d1c93fd9",
+      "timestamp": 1793407386.886,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "extensions",
+      "file": "native/ja/iphone/extensions.png",
+      "sha256": "1e181854a2f4c21e66d16c2074029ed673c4acc959283af6ee38fcbc2c7f6fa3",
+      "nativeAttachmentSHA256": "ef886ba5a146ba74a28be1f41e521c18bc0466ddf5f7618067939afa418d9c3c",
+      "timestamp": 1793407380.83,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "sources",
+      "file": "native/ja/iphone/sources.png",
+      "sha256": "dc3ddd1edd64ffbb03b0d5652ab713f35b0694b641223df876efb3bed2058c9d",
+      "nativeAttachmentSHA256": "085cbd8501e1ff330e5b67aef724e23cd985dad625375aaa9f947e8d10c4479a",
+      "timestamp": 1793407377.583,
+      "annotationContent": null
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "state": "library",
+      "file": "native/ja/iphone/library.png",
+      "sha256": "ddf113f8881e80ff1816df48e0cebc48637235ecdda4ab66a4c5e4d2b5deb775",
+      "nativeAttachmentSHA256": "37e458a92b23c745a1bf76c72104e10fbbf9a389bcce34c9400bdcf750ba415b",
+      "timestamp": 1793407938.541,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Owned local original-art collection"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "japanese",
+      "file": "native/zh-Hans/iphone/japanese.png",
+      "sha256": "262d8c83048146f544c7a23e89cafeb1cbbd9c4399b7d27572c229c20a809d3b",
+      "nativeAttachmentSHA256": "8f794e7b77a3522d03fae462d2a330b91631e7e5f0240ee2584f0c4ded79bddd",
+      "timestamp": 1793407492.122,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "reader-controls",
+      "file": "native/zh-Hans/iphone/reader-controls.png",
+      "sha256": "e5b7f28b882aa25545fd5222771f9ba4bf30d2a4f8af79291dae8f4075294350",
+      "nativeAttachmentSHA256": "69b8c7512b38f86855935193e72fc8a0f14c14b50cb0fe25e44d5f25f7249e83",
+      "timestamp": 1793407470.929,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "reader",
+      "file": "native/zh-Hans/iphone/reader.png",
+      "sha256": "a610309a858641e988fe9e95f43e20affc32a41ef047761c5f199a7345dabb9a",
+      "nativeAttachmentSHA256": "8085e2c15f647ee728daf75bcb1e7396854a8d7ada8c82d7df2a1db42570b406",
+      "timestamp": 1793407965.577,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Bundled original Bookshop story; edition explicitly matches storefront language"
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "file": "native/zh-Hans/iphone/ai-permissions.png",
+      "sha256": "2c6c1dec4571278f3566718a3714dfd2f5cbab2d5f037a5fb34d93aabb309156",
+      "nativeAttachmentSHA256": "480d5107527cf17d2e5c2dab5c2a18113b116fe7559b9b5d26d28ac4426fdf9e",
+      "timestamp": 1793407452.604,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "ai-connect",
+      "file": "native/zh-Hans/iphone/ai-connect.png",
+      "sha256": "2f33c8fea727fb3322ebcc63bb9179f3dee25cfd58b2d326cf72a17889b3f19c",
+      "nativeAttachmentSHA256": "6e9e9cb5e7a7d6969b4375bb851bdf3403888c19fa5b090f54daecf457d58d96",
+      "timestamp": 1793407448.731,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "extensions",
+      "file": "native/zh-Hans/iphone/extensions.png",
+      "sha256": "743d598dc56e63829170446640ceaf9715b985af6688e320d52e7bd34337fdd8",
+      "nativeAttachmentSHA256": "556f9b91c96027b0eae6e87b57845588506baea9db2896cbce94b87ddb822440",
+      "timestamp": 1793407442.67,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "sources",
+      "file": "native/zh-Hans/iphone/sources.png",
+      "sha256": "e8f8c9d39386c4c19e07e1ec480e8866de144e7be7d11372a459549551bf7020",
+      "nativeAttachmentSHA256": "e1011579415cedbec58abc752fad56ee4b34e3f967315b02d5d6b80ab3a92d91",
+      "timestamp": 1793407439.345,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "state": "library",
+      "file": "native/zh-Hans/iphone/library.png",
+      "sha256": "198509d9efa47bbada3a612df35fa164f034e25aad43c2edde029fb634c8e6e9",
+      "nativeAttachmentSHA256": "2cc0648e60830c3893cbc5990b864301db12702ef102cb247716ceb434a7de7b",
+      "timestamp": 1793407974.699,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Owned local original-art collection"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "japanese",
+      "file": "native/zh-Hant/iphone/japanese.png",
+      "sha256": "262d8c83048146f544c7a23e89cafeb1cbbd9c4399b7d27572c229c20a809d3b",
+      "nativeAttachmentSHA256": "8f794e7b77a3522d03fae462d2a330b91631e7e5f0240ee2584f0c4ded79bddd",
+      "timestamp": 1793407556.708,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "reader-controls",
+      "file": "native/zh-Hant/iphone/reader-controls.png",
+      "sha256": "5a124961eeeb292fb3b12559857bf86bc9eed4c30eb7844b50199610bd549bed",
+      "nativeAttachmentSHA256": "ccfd60709739b2b1430db02f7aab72265a230447b3db65bb8dd2cdfbb9101b80",
+      "timestamp": 1793407535.579,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "reader",
+      "file": "native/zh-Hant/iphone/reader.png",
+      "sha256": "999f3e1004bab78d696c60e4eb7081d736208aa91fcb979466427503ec093e21",
+      "nativeAttachmentSHA256": "40423cbbdb34024fd12b1b118f891c5ebb1529a0e43f054bf83cc536da7c9da1",
+      "timestamp": 1793408007.361,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Bundled original Bookshop story; edition explicitly matches storefront language"
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "ai-permissions",
+      "file": "native/zh-Hant/iphone/ai-permissions.png",
+      "sha256": "e0481299428a23d233c8b8a5bb5a9fe9830fa5cadbc2064e71e88c9dbf67700d",
+      "nativeAttachmentSHA256": "ec9004d7a3dee53e2a68e3f59b4a60d27bf4bfcd107fbadfd844b9c09bc494a0",
+      "timestamp": 1793407517.219,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "ai-connect",
+      "file": "native/zh-Hant/iphone/ai-connect.png",
+      "sha256": "0fcc253ca158d7426b06ba5eca79a63605771460d5cfbc24ed7002751eae5ee8",
+      "nativeAttachmentSHA256": "8e2e96c0f08b5d9e9c1cb04284e492b632806a941beb94d9f25511795bb19db4",
+      "timestamp": 1793407513.345,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "extensions",
+      "file": "native/zh-Hant/iphone/extensions.png",
+      "sha256": "971d4500d997ca1d992fa71f74fce1490a2f08f71da2632d71ab9db73f9729a8",
+      "nativeAttachmentSHA256": "d912c2f8a7317fb8f3ba70d1e4aa1ece40ef32292b15e9d252666cc99f73f202",
+      "timestamp": 1793407507.27,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "sources",
+      "file": "native/zh-Hant/iphone/sources.png",
+      "sha256": "ae0263be531a493e00aa2175512e095314d651bbd01b0b59d5b45c20a3806c89",
+      "nativeAttachmentSHA256": "3725e72a4330db9c368de048e159e8db852673ae516db30fdaa43a957c14bd7a",
+      "timestamp": 1793407504.026,
+      "annotationContent": null
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "state": "library",
+      "file": "native/zh-Hant/iphone/library.png",
+      "sha256": "93f1d429dabac17512a3c3e320b9ab92b4e5d1fe875d12d121d2e3e23aa66655",
+      "nativeAttachmentSHA256": "96f22e4ac07c543a6df97e6979c81aa6bb32ed7ad51668b792205e92fc9be903",
+      "timestamp": 1793408016.462,
+      "languageConfirmed": true,
+      "captureRun": "HonbakoStoryScreenshotTests",
+      "content": "Owned local original-art collection"
+    }
+  ],
+  "storyLanguageAudit": "All four story editions selected explicitly; gallery scrolled to real local original-art books",
+  "passedCaptureChecks": 12
+}

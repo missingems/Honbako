@@ -1,8 +1,9 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { randomBytes, randomInt, randomUUID, createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { snapshot as snapshotSchema, searchResult, addResult } from './schema.js';
+import { snapshot as snapshotSchema, searchResult, addResult, removeResult } from './schema.js';
 import { BridgeError } from './errors.js';
+import { historyResult, sourceCatalogResult, sourceChangeResult } from './management-schema.js';
 import { CoachingSessions } from './coaching.js';
 export { BridgeError } from './errors.js';
 
@@ -21,8 +22,11 @@ export async function atomicWrite(file, data) {
   try { await directory.sync(); } finally { await directory.close(); }
 }
 const key = value => JSON.stringify([value.sourceId, value.mangaId]);
+// Jobs that change the person's library or sources run only after an explicit phone approval.
+const approvalKinds = new Set(['library.add', 'library.remove', 'sources.change']);
 const terminal = new Set(['completed', 'failed', 'rejected', 'cancelled']);
 const clone = value => structuredClone(value);
+const deviceHistoryDisabled = (data, id) => data.devices.find(d => d.id === id)?.snapshot?.readingHistoryAccess !== true;
 export class BridgeStore {
   static async open(directory, { clock = Date.now } = {}) {
     await fs.mkdir(directory, { recursive: true, mode: 0o700 });
@@ -92,13 +96,13 @@ export class BridgeStore {
   }
   async publishCoaching(id, payload) {
     await this.mutate(data => { this.device(data, id).lastSeen = this.now(); });
-    this.device(this.data, id); const result = this.coaching.publish(id, payload); await this.coachingPersistence; return result;
+    this.permission(this.device(this.data, id), 'pageRead'); const result = this.coaching.publish(id, payload); await this.coachingPersistence; return result;
   }
   deviceCoaching(id) { const device = this.device(this.data, id); return this.coaching.status(id, this.freshness(device)); }
   pauseCoaching(id, payload) { this.device(this.data, id); return this.coaching.pause(id, payload); }
   async revokeCoaching(id, payload) { this.device(this.data, id); const result = this.coaching.revoke(id, payload); await this.coachingPersistence; return result; }
-  coachingPage(args) { const device = this.device(this.data, args.deviceId); return this.coaching.page(device.id, this.freshness(device)); }
-  annotatePage(args) { const device = this.device(this.data, args.deviceId); return this.coaching.annotate(device.id, args); }
+  coachingPage(args) { const device = this.device(this.data, args.deviceId); this.permission(device, 'pageRead'); return this.coaching.page(device.id, this.freshness(device)); }
+  annotatePage(args) { const device = this.device(this.data, args.deviceId); this.permission(device, 'pageRead'); this.permission(device, 'annotationsWrite'); return this.coaching.annotate(device.id, args); }
   async mutate(change) {
     const work = this.tail.then(async () => {
       const draft = clone(this.data);
@@ -153,6 +157,7 @@ export class BridgeStore {
       workflow: 'Open Honbako on the paired device to sync state and process jobs. Library additions require approval on the phone.' };
   }
   readingContext(args) {
+    this.permission(this.device(this.data, args.deviceId), 'readingRead');
     const device = this.device(this.data, args.deviceId), freshness = this.freshness(device);
     const reading = device.snapshot?.reading ?? null;
     const active = Boolean(reading?.active && freshness.connected && freshness.snapshotFresh);
@@ -163,11 +168,13 @@ export class BridgeStore {
         instruction: 'Do not reveal events beyond this chapter and visible page. Only metadata is available; no full text or page images are supplied.' } : null };
   }
   librarySearch(args) {
+    this.permission(this.device(this.data, args.deviceId), 'libraryRead');
     const device = this.device(this.data, args.deviceId), query = args.query.toLocaleLowerCase();
     const matches = (device.snapshot?.library ?? []).filter(book => book.title.toLocaleLowerCase().includes(query)).slice(0, args.limit);
     return { deviceId: device.id, ...this.freshness(device), matches, libraryTruncated: device.snapshot?.libraryTruncated ?? false };
   }
   listSources(args) {
+    this.permission(this.device(this.data, args.deviceId), 'libraryRead');
     const device = this.device(this.data, args.deviceId);
     return { deviceId: device.id, ...this.freshness(device), sources: device.snapshot?.sources ?? [], sourcesTruncated: device.snapshot?.sourcesTruncated ?? false };
   }
@@ -186,6 +193,17 @@ export class BridgeStore {
       const device = this.device(data, id);
       if (device.snapshot && Date.parse(snapshot.generatedAt) < Date.parse(device.snapshot.generatedAt))
         return { ok: true, accepted: false, reason: 'older_snapshot', receivedAt: device.snapshotReceivedAt };
+      if (snapshot.permissions?.pageRead === false) this.writeCoachingRecord(id, null);
+      else if (snapshot.permissions?.annotationsWrite === false) {
+        const coaching = this.coachingRecord(id);
+        if (coaching?.annotations?.length) this.writeCoachingRecord(id, { ...coaching, annotations: [], annotationRevision: coaching.annotationRevision + 1 });
+      }
+      if (snapshot.permissions?.libraryRead === false) {
+        data.jobs = data.jobs.filter(job => job.deviceId !== id || !['catalog.search', 'sources.catalog'].includes(job.kind));
+      }
+      if (snapshot.readingHistoryAccess !== true) {
+        data.jobs = data.jobs.filter(job => job.deviceId !== id || job.kind !== 'history.read');
+      }
       device.snapshot = snapshot; device.snapshotReceivedAt = this.now(); device.lastSeen = this.now();
       return { ok: true, accepted: true, receivedAt: device.snapshotReceivedAt };
     });
@@ -214,9 +232,41 @@ export class BridgeStore {
     }
     return this.publicJob(job);
   }
+  permission(device, name) {
+    if (device.snapshot?.permissions?.[name] === false) throw new BridgeError(403, 'permission_disabled', 'This capability is disabled in Honbako MCP permissions');
+  }
+  requireCapability(device, capability) {
+    if (!device.snapshot?.automationCapabilities?.includes(capability))
+      throw new BridgeError(409, 'update_app', 'Open an updated Honbako app and wait for it to sync before using this tool');
+  }
+  async readingHistory(args) {
+    return this.mutate(data => {
+      const device = this.device(data, args.deviceId); this.requireCapability(device, 'reading.history'); this.permission(device, 'readingRead');
+      if (device.snapshot?.readingHistoryAccess !== true) throw new BridgeError(403, 'reading_access_disabled', 'Enable Reading Access in Honbako before requesting history');
+      return this.createJob(data, device, 'history.read', { offset: args.offset, limit: args.limit, before: args.before ?? this.now() });
+    });
+  }
+  async sourceCatalog(args) {
+    return this.mutate(data => {
+      const device = this.device(data, args.deviceId); this.requireCapability(device, 'sources.manage'); this.permission(device, 'libraryRead');
+      return this.createJob(data, device, 'sources.catalog', { offset: args.offset, limit: args.limit });
+    });
+  }
+  async manageSources(args) {
+    return this.mutate(data => {
+      const device = this.device(data, args.deviceId); this.requireCapability(device, 'sources.manage'); this.permission(device, 'sourcesWrite');
+      const existing = data.jobs.find(j => j.deviceId === device.id && j.kind === 'sources.change' && j.idempotencyKey === args.idempotencyKey);
+      if (existing) {
+        if (JSON.stringify(existing.payload.change) !== JSON.stringify(args.change)) throw new BridgeError(409, 'idempotency_conflict', 'This key already belongs to a different source change');
+        return this.publicJob(existing);
+      }
+      return this.createJob(data, device, 'sources.change', { change: args.change, idempotencyKey: args.idempotencyKey }, args.idempotencyKey);
+    });
+  }
   async searchCatalog(args) {
     return this.mutate(data => {
       const device = this.device(data, args.deviceId);
+      this.permission(device, 'libraryRead');
       const sources = (device.snapshot?.sources ?? []).filter(source => source.supportsSearch);
       const ids = args.sourceIds ?? sources.map(source => source.id);
       if (ids.length > 20) throw new BridgeError(400, 'choose_sources', 'Choose up to 20 connected source IDs for one catalog search');
@@ -228,6 +278,7 @@ export class BridgeStore {
   async addToLibrary(args) {
     return this.mutate(data => {
       const device = this.device(data, args.deviceId);
+      this.permission(device, 'libraryWrite');
       const items = [...new Map(args.items.map(item => [key(item), item])).values()];
       const existing = data.jobs.find(job => job.deviceId === device.id && job.kind === 'library.add' && job.idempotencyKey === args.idempotencyKey);
       if (existing) {
@@ -242,6 +293,22 @@ export class BridgeStore {
       if (items.some(item => !(device.snapshot?.sources ?? []).some(source => source.id === item.sourceId)))
         throw new BridgeError(400, 'source_not_connected', 'The selected source is no longer connected');
       return this.createJob(data, device, 'library.add', { items, idempotencyKey: args.idempotencyKey }, args.idempotencyKey);
+    });
+  }
+  async removeFromLibrary(args) {
+    return this.mutate(data => {
+      const device = this.device(data, args.deviceId);
+      this.requireCapability(device, 'library.remove'); this.permission(device, 'libraryWrite');
+      const items = [...new Map(args.items.map(item => [key(item), item])).values()];
+      const existing = data.jobs.find(job => job.deviceId === device.id && job.kind === 'library.remove' && job.idempotencyKey === args.idempotencyKey);
+      if (existing) {
+        if (JSON.stringify(existing.payload.items.map(key).sort()) !== JSON.stringify(items.map(key).sort()))
+          throw new BridgeError(409, 'idempotency_conflict', 'This idempotency key was already used for different books');
+        return this.publicJob(existing);
+      }
+      const saved = new Set((device.snapshot?.library ?? []).map(key));
+      if (items.some(item => !saved.has(key(item)))) throw new BridgeError(400, 'not_in_library', 'Use honbako_search_library and remove only exact saved title IDs');
+      return this.createJob(data, device, 'library.remove', { items, idempotencyKey: args.idempotencyKey }, args.idempotencyKey);
     });
   }
   job(args) {
@@ -270,18 +337,35 @@ export class BridgeStore {
         if (job.status === payload.status) return { ok: true, job: this.publicJob(job) };
         throw new BridgeError(409, 'job_terminal', 'Job is already finished or cancelled');
       }
-      if (payload.approvalGranted && (job.kind !== 'library.add' || payload.status !== 'awaitingApproval'))
-        throw new BridgeError(400, 'invalid_approval', 'Approval can only claim a pending library addition');
-      if (job.kind === 'library.add' && payload.status === 'completed' && !job.executionClaimed)
-        throw new BridgeError(409, 'approval_required', 'Approve the addition on the phone before executing it');
+      if (payload.approvalGranted && (!approvalKinds.has(job.kind) || payload.status !== 'awaitingApproval'))
+        throw new BridgeError(400, 'invalid_approval', 'Approval can only claim a pending library or source change');
+      if (approvalKinds.has(job.kind) && payload.status === 'completed' && !job.executionClaimed)
+        throw new BridgeError(409, 'approval_required', 'Approve the change on the phone before executing it');
       if (payload.status === 'completed') {
-        const result = job.kind === 'catalog.search' ? searchResult.parse(payload.result) : addResult.parse(payload.result);
+        const device = this.device(data, deviceId);
+        if (['library.add', 'library.remove'].includes(job.kind)) this.permission(device, 'libraryWrite');
+        if (job.kind === 'sources.change') this.permission(device, 'sourcesWrite');
+        const validators = { 'catalog.search': searchResult, 'library.add': addResult, 'library.remove': removeResult, 'history.read': historyResult,
+          'sources.catalog': sourceCatalogResult, 'sources.change': sourceChangeResult };
+        const result = validators[job.kind].parse(payload.result);
+        if (job.kind === 'history.read' && (deviceHistoryDisabled(data, deviceId) || result.entries.length > job.payload.limit || result.before !== job.payload.before))
+          throw new BridgeError(403, 'reading_access_disabled', 'History access is disabled or this page is outside the request');
+        if (job.kind === 'sources.catalog' && result.sources.length > job.payload.limit) throw new BridgeError(400, 'result_out_of_scope', 'Source page exceeds requested limit');
+        if (job.kind === 'sources.change' && JSON.stringify(result.change) !== JSON.stringify(job.payload.change))
+          throw new BridgeError(400, 'result_out_of_scope', 'Source result must match the approved change');
         if (job.kind === 'catalog.search' && (result.matches.length > job.payload.limit || result.matches.some(match => !job.payload.sourceIds.includes(match.sourceId))))
           throw new BridgeError(400, 'result_out_of_scope', 'Search results must belong to the requested connected sources');
         if (job.kind === 'library.add' && [...result.added, ...result.alreadyPresent].some(item => !job.payload.items.some(asked => key(asked) === key(item))))
           throw new BridgeError(400, 'result_out_of_scope', 'Addition results must belong to the approved job');
         if (job.kind === 'library.add') {
           const accounted = [...result.added, ...result.alreadyPresent].map(key);
+          if (new Set(accounted).size !== accounted.length || job.payload.items.some(item => !accounted.includes(key(item))))
+            throw new BridgeError(400, 'incomplete_result', 'Every approved book must be accounted for exactly once before completion');
+        }
+        if (job.kind === 'library.remove') {
+          const accounted = [...result.removed, ...result.notPresent].map(key);
+          if (accounted.some(item => !job.payload.items.some(asked => key(asked) === item)))
+            throw new BridgeError(400, 'result_out_of_scope', 'Removal results must belong to the approved job');
           if (new Set(accounted).size !== accounted.length || job.payload.items.some(item => !accounted.includes(key(item))))
             throw new BridgeError(400, 'incomplete_result', 'Every approved book must be accounted for exactly once before completion');
         }

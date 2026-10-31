@@ -1,0 +1,303 @@
+{
+  "auditDate": "2026-10-31",
+  "targetPublicVersion": "0.1.0",
+  "targetPublicBuild": 76,
+  "currentScreenshotBuild": 75,
+  "currentImagesVerified": 36,
+  "currentImages": [
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "file": "01-library.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "file": "02-reader.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone",
+      "file": "03-chapters.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone-medium",
+      "file": "01-library.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone-medium",
+      "file": "02-reader.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "en-US",
+      "device": "iphone-medium",
+      "file": "03-chapters.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "en-US",
+      "device": "ipad",
+      "file": "01-library.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "en-US",
+      "device": "ipad",
+      "file": "02-reader.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "en-US",
+      "device": "ipad",
+      "file": "03-chapters.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "file": "01-library.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "file": "02-reader.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "ja",
+      "device": "iphone",
+      "file": "03-chapters.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "ja",
+      "device": "iphone-medium",
+      "file": "01-library.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "ja",
+      "device": "iphone-medium",
+      "file": "02-reader.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "ja",
+      "device": "iphone-medium",
+      "file": "03-chapters.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "file": "01-library.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "file": "02-reader.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "ja",
+      "device": "ipad",
+      "file": "03-chapters.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "file": "01-library.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "file": "02-reader.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "file": "03-chapters.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone-medium",
+      "file": "01-library.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone-medium",
+      "file": "02-reader.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "iphone-medium",
+      "file": "03-chapters.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "file": "01-library.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "file": "02-reader.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "file": "03-chapters.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "file": "01-library.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "file": "02-reader.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone",
+      "file": "03-chapters.jpg",
+      "width": 1320,
+      "height": 2868
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone-medium",
+      "file": "01-library.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone-medium",
+      "file": "02-reader.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "iphone-medium",
+      "file": "03-chapters.jpg",
+      "width": 1206,
+      "height": 2622
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "file": "01-library.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "file": "02-reader.jpg",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "locale": "zh-Hant",
+      "device": "ipad",
+      "file": "03-chapters.jpg",
+      "width": 2064,
+      "height": 2752
+    }
+  ],
+  "requiredRefresh": false,
+  "newCaptureDimensions": {
+    "iphoneNative": [
+      1320,
+      2868
+    ],
+    "iphoneMediumCanvas": [
+      1206,
+      2622
+    ],
+    "ipadCanvas": [
+      2064,
+      2752
+    ]
+  },
+  "publicFlags": {
+    "HONBAKO_EXTERNAL_SOURCES": "NO",
+    "HONBAKO_PERSONAL_FEATURES": "NO",
+    "HONBAKO_IMPORT_ENGLISH_50": "NO"
+  },
+  "metadataDescriptionsUpdated": [
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "reviewNotesFile": "app-review-notes-prepared.txt",
+  "reviewNotesCharacters": 3243,
+  "runner": "scripts/capture_honbako_submission.py",
+  "newScreenshotCaptureExecutedByAudit": false,
+  "appStoreConnectMutatedByAudit": false,
+  "newImageGeneration": false,
+  "existingArtworkProvenance": "AppStore/original-covers/manifest.json (generated2026-10-28; no new generation)",
+  "remaining": [
+    "Root replaces required Medium iPhone and13-inch iPad images in all4locales; optional Large images can also be updated, never leave required Medium empty",
+    "Captureandinspectcurrentpublic76monthly/annualIAPreviewimages",
+    "Finalizeprivate reviewer-server accessafterstrictpublicHTTPS/connectorchecks",
+    "Selectprocessedpublic76andverifyactualASCsubmissionstate"
+  ],
+  "nativeCaptureStatus": "8 native tests PASS /24 genuine source captures /36 framed marketing outputs",
+  "captureExecutedBy": "Parentreleasecoordinator",
+  "auditVerifiedFreshCapture": true
+}

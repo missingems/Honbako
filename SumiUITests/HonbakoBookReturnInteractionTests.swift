@@ -4,9 +4,19 @@ import XCTest
 final class HonbakoBookReturnInteractionTests: XCTestCase {
     @MainActor
     func testShortLandscapeBackCanCancelThenLandInTheUnchangedLibrarySlot() throws {
+        try checkShortReturn(orientation: .landscapeLeft, wide: true)
+    }
+
+    @MainActor
+    func testShortCompactBackCanCancelThenLandInTheUnchangedLibrarySlot() throws {
+        try checkShortReturn(orientation: .portrait, wide: false)
+    }
+
+    @MainActor
+    private func checkShortReturn(orientation: UIDeviceOrientation, wide: Bool) throws {
         continueAfterFailure = false
         let previous = XCUIDevice.shared.orientation
-        XCUIDevice.shared.orientation = .landscapeLeft
+        XCUIDevice.shared.orientation = orientation
         let app = XCUIApplication(bundleIdentifier: "com.missingems.honbaku")
         app.launchArguments = ["--sumi-grid-check", "-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-AppleInterfaceStyle", "Dark"]
         app.launch()
@@ -16,7 +26,7 @@ final class HonbakoBookReturnInteractionTests: XCTestCase {
         let book = app.buttons["Sumi.Grid.Book.sumi-grid-preview:book-001"]
         XCTAssertTrue(book.waitForExistence(timeout: 10))
         let initialWindow = app.windows.element(boundBy: 0)
-        XCTAssertTrue(wait { initialWindow.frame.width > initialWindow.frame.height && !book.frame.isEmpty })
+        XCTAssertTrue(wait { (initialWindow.frame.width > initialWindow.frame.height) == wide && !book.frame.isEmpty })
         let origin = book.frame
         book.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         let reader = item("Sumi.DirectReader", app)
@@ -24,7 +34,7 @@ final class HonbakoBookReturnInteractionTests: XCTestCase {
         XCTAssertTrue(app.buttons["SumiReader.Close"].waitForExistence(timeout: 8))
         let position = reader.value as? String
         let window = try XCTUnwrap(app.windows.allElementsBoundByIndex.first {
-            $0.isHittable && $0.frame.intersects(reader.frame) && $0.frame.width > $0.frame.height
+            $0.isHittable && $0.frame.intersects(reader.frame) && ($0.frame.width > $0.frame.height) == wide
         })
         let edge = window.coordinate(withNormalizedOffset: CGVector(dx: 0.005, dy: 0.55))
         // Hold the partially closed stage so its real compositor frames are
@@ -34,8 +44,15 @@ final class HonbakoBookReturnInteractionTests: XCTestCase {
                    withVelocity: .slow, thenHoldForDuration: 1)
         XCTAssertTrue(wait { app.buttons["SumiReader.Close"].isHittable })
         XCTAssertEqual(reader.value as? String, position)
+        if wide {
+            edge.press(forDuration: 0.08,
+                       thenDragTo: edge.withOffset(CGVector(dx: 60, dy: 0)),
+                       withVelocity: .slow, thenHoldForDuration: 1)
+            XCTAssertTrue(wait { app.buttons["SumiReader.Close"].isHittable })
+            XCTAssertEqual(reader.value as? String, position)
+        }
         edge.press(forDuration: 0.08,
-                   thenDragTo: edge.withOffset(CGVector(dx: 90, dy: 0)),
+                   thenDragTo: edge.withOffset(CGVector(dx: wide ? 180 : 60, dy: 0)),
                    withVelocity: .slow, thenHoldForDuration: 1)
         XCTAssertTrue(wait { !reader.exists })
         XCTAssertTrue(book.waitForExistence(timeout: 8))
@@ -45,7 +62,7 @@ final class HonbakoBookReturnInteractionTests: XCTestCase {
         XCTAssertEqual(returned.width, origin.width, accuracy: 1)
         XCTAssertEqual(returned.height, origin.height, accuracy: 1)
         let attachment = XCTAttachment(screenshot: window.screenshot())
-        attachment.name = "Library after cancelled and completed landscape return"
+        attachment.name = "Library after cancelled and completed short return"
         attachment.lifetime = .keepAlways
         add(attachment)
         book.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()

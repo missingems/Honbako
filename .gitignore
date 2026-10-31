@@ -34,3 +34,10 @@ __pycache__/
 work/
 output/
 outputs/
+
+# Private device diagnostics and intermediate screenshot captures
+/AppStore/downloads/
+/AppStore/screenshot-captures/
+
+# Local pairing-preservation audit evidence
+AppStore/review/build69/private-owner-*.json

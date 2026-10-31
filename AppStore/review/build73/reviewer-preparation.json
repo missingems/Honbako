@@ -1,0 +1,102 @@
+{
+  "prepared": true,
+  "public_deployment": true,
+  "provider_protocol_probes": "passed",
+  "actual_native_adapter_harness": "passed_all_three_provider_cases",
+  "mcp_new_reviewer_workspace": "pending_real_Apple_verified_entitlement_and_reviewer_OAuth",
+  "public_hosting": "three_original_sample_HTTPS_hosts_verified",
+  "fixture_ports": {
+    "komga": 39101,
+    "kavita": 39102,
+    "suwayomi_backend_private": 39103,
+    "suwayomi_gateway": 39104
+  },
+  "original_samples": {
+    "komga": "Your Collections",
+    "kavita": "Read Your Way",
+    "suwayomi": "Search & Delete",
+    "mcp": "The Bookshop Between Pages"
+  },
+  "sources": {
+    "komga_install": "https://komga.org/docs/installation/jar/",
+    "komga_release": "https://github.com/gotson/komga/releases/tag/1.29.2",
+    "kavita_install": "https://wiki.kavitareader.com/installation/native/",
+    "kavita_release": "https://github.com/Kareadita/Kavita/releases/tag/v0.9.1.4",
+    "suwayomi_release": "https://github.com/Suwayomi/Suwayomi-Server/releases/tag/v2.4.2366",
+    "suwayomi_config": "https://github.com/Suwayomi/Suwayomi-Server/wiki/Configuring-Suwayomi%E2%80%90Server",
+    "render_free": "https://render.com/docs/free",
+    "oracle_free": "https://www.oracle.com/cloud/free/",
+    "oracle_constraints": "https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm",
+    "cloudflare_tunnel": "https://developers.cloudflare.com/tunnel/",
+    "cloudflare_containers": "https://developers.cloudflare.com/workers/platform/pricing/",
+    "apple_review": "https://developer.apple.com/app-store/review/guidelines/",
+    "apple_testflight": "https://developer.apple.com/documentation/storekit/testing-at-all-stages-of-development-with-xcode-and-the-sandbox",
+    "aws_free": "https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier.html",
+    "aws_eligible_instances": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/LaunchingAndUsingInstances.html"
+  },
+  "selected_hosting": "AWS_Free_account_plan_separate_VM_only",
+  "mac_public_tunnel": "prohibited_by_user",
+  "vm_bundle": "honbako-review-vm-bundle.tar.gz",
+  "vm_deployment": "public_three_original_providers_passed_HTTPS_auth_pages_negative_checks_reboot_and_proxy_restart",
+  "ubuntu_version": "24.04 LTS",
+  "architectures": [
+    "arm64",
+    "amd64"
+  ],
+  "minimum_vcpu": 2,
+  "minimum_memory_gb": 4,
+  "preferred_memory_gb": 8,
+  "proposed_hostnames": [
+    "komga-review.honbako.xyz",
+    "kavita-review.honbako.xyz",
+    "suwayomi-review.honbako.xyz"
+  ],
+  "oracle_current_always_free": {
+    "a1_total_ocpus": 2,
+    "total_memory_gb": 12,
+    "ocpu_hours_month": 1500,
+    "memory_gb_hours_month": 9000,
+    "home_region_required": true,
+    "capacity_not_guaranteed": true,
+    "idle_reclamation_possible": true,
+    "old_4_ocpu_24gb_not_assumed": true,
+    "selected": false
+  },
+  "local_services": "stopped_gracefully_after_validation",
+  "vm_bundle_validation": {
+    "secret_scan_passed": true,
+    "static_shell_python_checks_passed": true,
+    "two_rebuilds_byte_identical": true,
+    "ubuntu_install_not_executed": false,
+    "ubuntu24_04_amd64_install_and_clean_reboot_passed": true
+  },
+  "aws_preparation": {
+    "account_signup": "pending_owner",
+    "resources_created": true,
+    "paid_upgrade_authorized": false,
+    "candidate": "c7i-flex.large",
+    "candidate_vcpu": 2,
+    "candidate_memory_gib": 4,
+    "ubuntu": "24.04 LTS AMD64",
+    "root_gb": 30,
+    "root_type": "gp3",
+    "eligible_in_new_account_Free_Plan_officially_verified": true,
+    "credit_plan_ends": "six_months_or_credit_exhaustion_whichever_first",
+    "initial_credit_usd": 100,
+    "additional_credit_not_guaranteed_usd": 100,
+    "linux_memory_validation": "passed original-only fixture probes and clean reboot; no OOM; ~2282MiB available after probes",
+    "checklist": "Tools/reviewer-fixtures/vm/AWS-checklist.md",
+    "price_examples": "Tools/reviewer-fixtures/vm/AWS-pricing-example.json",
+    "selected_region": "ap-southeast-2",
+    "launch_draft_ami": "ami-0c4c0d31978150116",
+    "account_plan_owner_console_verified": "Free",
+    "owner_console_credit_balance_usd": 100,
+    "private_upload_runbook": "Tools/reviewer-fixtures/vm/SSH-upload.md",
+    "private_probe_helper": "Tools/reviewer-fixtures/vm/verify-private.sh",
+    "instance_id": "i-0299f26e77bac1374",
+    "private_probe_proof": "reviewer-vm-private-preflight.json",
+    "public_ingress": "80/443 enabled by parent; owner-IP SSH preserved"
+  },
+  "public_provider_preflight": "reviewer-vm-https-preflight.json",
+  "https_native_adapter_tests": "pending_parent_coordinated_test_run"
+}

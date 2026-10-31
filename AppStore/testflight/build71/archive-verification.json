@@ -1,0 +1,15 @@
+{
+  "build": 71,
+  "version": "0.2.0",
+  "archive": "/Users/jun/Library/Developer/Xcode/Archives/2026-10-30/Honbako-0.2.0-71.xcarchive",
+  "status": "PASS",
+  "appAndWidgetVersionsMatch": true,
+  "privateProUnlock": false,
+  "automaticMangaImport": false,
+  "icon": "SumiIcon",
+  "remoteEnvironment": "Automatic",
+  "privacyManifests": [
+    "PrivacyInfo.xcprivacy",
+    "ZIPFoundation_ZIPFoundation.bundle/PrivacyInfo.xcprivacy"
+  ]
+}

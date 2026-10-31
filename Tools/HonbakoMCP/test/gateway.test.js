@@ -170,7 +170,7 @@ test('stateless official MCP client discovers tools through the restricted gatew
   await client.connect(new StreamableHTTPClientTransport(new URL(`${f.url}/mcp`), {
     requestInit: { headers: { Authorization: `Bearer ${grokToken}` } }
   }));
-  assert.equal((await client.listTools()).tools.length, 10);
+  assert.equal((await client.listTools()).tools.length, 14);
   const status = await client.callTool({ name: 'honbako_get_status', arguments: {} });
   assert.ok(!status.isError);
   assert.deepEqual(status.structuredContent.devices, []);

@@ -1,5 +1,5 @@
 {
-  "verified_against_apple_on": "2026-10-27",
+  "verified_against_apple_on": "2026-10-31",
   "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications",
   "formats": [
     "jpeg",
@@ -17,26 +17,51 @@
   ],
   "sets": {
     "iphone": {
-      "required": true,
+      "required": false,
       "accepted_dimensions": [
         [
-          1206,
-          2622
+          1320,
+          2868
         ],
         [
-          2622,
-          1206
+          2868,
+          1320
         ],
         [
-          1179,
-          2556
+          1260,
+          2736
         ],
         [
-          2556,
-          1179
+          2736,
+          1260
+        ],
+        [
+          1290,
+          2796
+        ],
+        [
+          2796,
+          1290
+        ],
+        [
+          1284,
+          2778
+        ],
+        [
+          2778,
+          1284
+        ],
+        [
+          1242,
+          2688
+        ],
+        [
+          2688,
+          1242
         ]
       ],
-      "suggested_device": "iPhone 18 Pro"
+      "suggested_device": "iPhone 18 Pro Max",
+      "slot": "iPhone with Dynamic Island (large display), optional additional set"
     },
     "ipad": {
       "required": true,
@@ -87,6 +112,29 @@
         ]
       ],
       "suggested_device": "iPhone Duo open"
+    },
+    "iphone-medium": {
+      "required": true,
+      "accepted_dimensions": [
+        [
+          1206,
+          2622
+        ],
+        [
+          2622,
+          1206
+        ],
+        [
+          1179,
+          2556
+        ],
+        [
+          2556,
+          1179
+        ]
+      ],
+      "suggested_device": "iPhone with Dynamic Island (medium display)",
+      "composition_note": "1206\u00d72622 marketing canvas, whole matching Pro Max frame uniformly scaled with genuine Large native capture; no independent UI stretch/crop/redraw; capture build75 preserved"
     }
   },
   "shot_list": [
@@ -106,5 +154,9 @@
       "content": "Actual latest-first chapter list with release dates and reading progress."
     }
   ],
-  "duo_future_requirement": "Apple states Duo screenshots become required from April 2027 for apps built against iOS27.1 or later."
+  "duo_future_requirement": "Apple states Duo screenshots become required from April 2027 for apps built against iOS27.1 or later.",
+  "active_version": "0.2.0",
+  "active_build": 77,
+  "active_capture_provenance": "screenshots/capture-provenance.json",
+  "marketing_screenshots_per_slot": 6
 }

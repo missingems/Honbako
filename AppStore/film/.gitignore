@@ -1,0 +1,6 @@
+# Rendered output, frame caches and manga page captures stay local.
+renders/
+review/
+work/
+assets/
+node_modules/

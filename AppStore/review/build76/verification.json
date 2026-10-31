@@ -1,0 +1,58 @@
+{
+  "build": 76,
+  "version": "0.1.0",
+  "status": "REMOVED_AT_USER_REQUEST_REPLACED_BY_020_BUILD77",
+  "submissionAuthorized": true,
+  "submissionCondition": "All reviewer hostnames resolve and real provider/MCP review paths work; screenshots current; sanity checks pass. Keep manual release.",
+  "serverLaunchApproved": true,
+  "certificateAgreementApproved": "https://letsencrypt.org/documents/LE-SA-v1.8-July-06-2026.pdf",
+  "awsInstance": "i-0299f26e77bac1374",
+  "awsRegion": "ap-southeast-2",
+  "reviewerIPv4": "13.239.2.223",
+  "publicProviderHosts": [
+    "komga-review.honbako.xyz",
+    "kavita-review.honbako.xyz",
+    "suwayomi-review.honbako.xyz"
+  ],
+  "gates": {
+    "DNS": "PASS",
+    "privateProviderChecks": "PASS_INCLUDING_REBOOT",
+    "HTTPS": "PASS_ALL_THREE_PUBLIC_TLS_AND_22_PAGES",
+    "chapterFallback": "PASS_NEW_RESOLVER_AND_GRAY_ROW_TESTS",
+    "publicSanity": "PASS_54_TESTS_12_SUITES_PLUS_2_CHAPTER_DESIGN_TESTS",
+    "screenshots": "PASS_AFTER_ORIENTATION_CORRECTION_4_IPAD_LIBRARY_IMAGES_RECAPTURED_76_OTHER32_UNCHANGED",
+    "IAPReviewImages": "PASS_76_MONTHLY_AND_ANNUAL_UPLOADED_AND_SAVED",
+    "ASCListing": "PASS_36_SCREENSHOTS_FOUR_LOCALES_AND_DESCRIPTIONS_SAVED",
+    "liveNativeAdapters": "PASS_3_REAL_HTTPS_PROVIDER_CASES",
+    "StoreKitPurchases": "PASS_MONTHLY_ANNUAL_REFUND_AND_TRIAL_ELIGIBILITY",
+    "archive": "PASS_PUBLIC_FLAGS_WIDGET_SIGNATURE_NO_STOREKIT_FIXTURE",
+    "buildSelection": "76_SELECTED_AND_SAVED",
+    "reviewNotes": "PRIVATE_76_NOTES_SAVED_WITH_RESTRICTED_SAMPLE_LOGINS",
+    "subscriptionDraft": "PASS_GROUP_MONTHLY_ANNUAL_AT_SAME_LEVEL_ALL_IN_EXISTING_DRAFT",
+    "actualASCPrices": "PASS_US_2.99_MONTH_WITH_ONE_WEEK_TRIAL_28.49_YEAR_WITH_ONE_MONTH_TRIAL",
+    "localizedSubscriptionCopy": "PASS_OLD_PAID_ICLOUD_CLAIM_REMOVED_FROM_MONTHLY_ZH_HANS_ZH_HANT_JA",
+    "appleValidation": "PASS_4_ITEMS_SUBMITTED_AND_WAITING_FOR_REVIEW",
+    "ContentRights": "OWNER_CONFIRMED_YES_SAVED",
+    "finalPublicHosts": "PASS_DNS_TLS_PROTECTED_CATALOGS_AND_MCP_DISCOVERY",
+    "uploadedOrientation": "PASS_ALL4_LOCALES_NATIVE_APPLE_PREVIEWS_INDIVIDUALLY_INSPECTED"
+  },
+  "sourceScreenshotBuild": 75,
+  "supersededCandidates": [
+    29,
+    75
+  ],
+  "submissionID": "5e2fbbce-2d57-44fe-8dca-5d5c5a6249d4",
+  "submittedAtDisplayed": "Oct31,2026 at7:47AM",
+  "manualRelease": true,
+  "submittedItems": [
+    "iOS0.1.0 build76",
+    "Honbako Pro subscription group",
+    "Honbako Pro Monthly",
+    "Honbako Pro Annual"
+  ],
+  "sourceScreenshotBuilds": [
+    75,
+    76
+  ],
+  "replacementSubmissionID": "95cd35ab-c67b-4890-a865-a7c57be9f404"
+}

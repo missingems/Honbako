@@ -15,29 +15,33 @@ struct HonbakoAutomationEndpointMoveView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    LabeledContent("Current Companion", value: service.endpoint)
-                    TextField("https://your-companion.example", text: $endpoint)
-                        .keyboardType(.URL)
-                        .textContentType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .focused($focused)
-                        .disabled(service.isMovingConnection)
-                        .accessibilityLabel("New HTTPS Companion Address")
-                        .accessibilityIdentifier("Honbako.Automation.Move.Endpoint")
-                        .onSubmit(move)
-                } footer: {
-                    Text("Use the HTTPS address of the companion that already has your paired device and pending requests. Your hosted companion stores shared library metadata and any reading position you enable. Existing approvals and reading settings stay intact.")
-                }
-                if attemptedMove, let error = service.errorMessage {
+                Group {
                     Section {
-                        Text(error).foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                            .accessibilityIdentifier("Honbako.Automation.Move.Error")
+                        LabeledContent("Current Companion", value: service.endpoint)
+                        TextField("https://your-companion.example", text: $endpoint)
+                            .keyboardType(.URL)
+                            .textContentType(.URL)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .focused($focused)
+                            .disabled(service.isMovingConnection)
+                            .accessibilityLabel("New HTTPS Companion Address")
+                            .accessibilityIdentifier("Honbako.Automation.Move.Endpoint")
+                            .onSubmit(move)
+                    } footer: {
+                        Text("Use the HTTPS address of the companion that already has your paired device and pending requests. Your hosted companion stores shared library metadata and any reading position you enable. Existing approvals and reading settings stay intact.")
+                    }
+                    if attemptedMove, let error = service.errorMessage {
+                        Section {
+                            Text(error).foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                                .accessibilityIdentifier("Honbako.Automation.Move.Error")
+                        }
                     }
                 }
+                .honbakoPaperRows()
             }
+            .honbakoPaperListBackground()
             .accessibilityIdentifier("Honbako.Automation.Move.Form")
             .navigationTitle("Move Connection")
             .navigationBarTitleDisplayMode(.inline)

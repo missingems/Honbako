@@ -50,9 +50,10 @@ struct HonbakoJapaneseAnnotationStabilityTests {
         let after = try #require(wordChips(overlay).first)
         #expect(after === before)
         #expect(after.frame == frame)
-        #expect(after.layer.borderWidth == 0, "Reading labels use native material without a forced accent outline")
+        #expect(after.layer.borderWidth == 0, "Reading labels have no accent outline")
         let title = try #require(after.subviews.compactMap { $0 as? UILabel }.first)
-        #expect(title.textColor == UIColor.label)
+        #expect(title.textColor == UIColor.black)
+        #expect(after.subviews.allSatisfy { !($0 is UIVisualEffectView) }, "Romaji is plain text on the original artwork")
         #expect(await fixture.probe.calls == 1)
     }
 
@@ -68,7 +69,7 @@ struct HonbakoJapaneseAnnotationStabilityTests {
         let initialFontSize = title.font.pointSize
         let initialHeight = chip.bounds.height
         #expect(initialFontSize < UIFont.preferredFont(forTextStyle: .caption1).pointSize)
-        #expect(chip.alpha == 1 && title.alpha == 1, "Only the material is translucent; romaji must remain legible")
+        #expect(chip.alpha == 1 && title.alpha == 1, "Plain romaji must remain legible")
         #expect(chip.bounds.width >= title.intrinsicContentSize.width)
         #expect(chip.bounds.height >= title.intrinsicContentSize.height)
 
@@ -84,7 +85,43 @@ struct HonbakoJapaneseAnnotationStabilityTests {
         #expect(await fixture.probe.calls == 1, "Changing text size must not rescan the artwork")
     }
 
-    private func makeFixture() async throws -> AnnotationFixture {
+    @Test("Individual kana labels follow horizontal and vertical glyphs without material or theme tint")
+    func plainCharacterLabelsFollowPageAxisAndInk() async throws {
+        for direction in [HonbakoJapaneseRegion.Direction.horizontal, .vertical] {
+            for ink in [HonbakoJapaneseInk.black, .white] {
+                let fixture = try await makeFixture(direction: direction, ink: ink)
+                defer { fixture.close() }
+                fixture.overlay.traitOverrides.userInterfaceStyle = ink == .black ? .dark : .light
+                let chips = wordChips(fixture.overlay).sorted { $0.accessibilityIdentifier! < $1.accessibilityIdentifier! }
+                #expect(chips.count == 3)
+                let labels = chips.compactMap { $0.subviews.compactMap { $0 as? UILabel }.first }
+                #expect(labels.map(\.text) == ["ma", "shi", "ta"])
+                #expect(labels.allSatisfy { $0.textColor == (ink == .black ? UIColor.black : UIColor.white) })
+                #expect(chips.allSatisfy { $0.subviews.allSatisfy { !($0 is UIVisualEffectView) } })
+                for (index, chip) in chips.enumerated() {
+                    let anchor = characterBox(index: index, direction: direction)
+                    let rect = try #require(HonbakoJapaneseGeometry.rect(for: anchor, in: fixture.overlay.bounds))
+                    if direction == .vertical {
+                        #expect(chip.frame.minX > rect.maxX)
+                        #expect(abs(chip.frame.midY - rect.midY) < 0.1)
+                    } else {
+                        #expect(chip.frame.maxY < rect.minY)
+                        #expect(abs(chip.frame.midX - rect.midX) < 0.1)
+                    }
+                }
+            }
+        }
+    }
+
+    private func characterBox(index: Int, direction: HonbakoJapaneseRegion.Direction) -> CGRect {
+        if direction == .vertical {
+            return CGRect(x: 0.5, y: 0.2 + Double(index) * 0.1, width: 0.1, height: 0.08)
+        }
+        return CGRect(x: 0.2 + Double(index) * 0.1, y: 0.3, width: 0.08, height: 0.1)
+    }
+
+    private func makeFixture(direction: HonbakoJapaneseRegion.Direction = .horizontal,
+                             ink: HonbakoJapaneseInk = .black) async throws -> AnnotationFixture {
         let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
             .first { $0.activationState == .foregroundActive })
         let previousKeyWindow = scene.keyWindow
@@ -93,11 +130,16 @@ struct HonbakoJapaneseAnnotationStabilityTests {
         let root = UIViewController()
         window.rootViewController = root
         root.view.backgroundColor = .white
-        let word = try #require(HonbakoJapaneseText.reading(for: "きょう").words.first)
-        let box = CGRect(x: 0.2, y: 0.3, width: 0.3, height: 0.1)
+        let word = HonbakoJapaneseWord(id: 0, text: "ました", reading: "ました", romaji: "mashita",
+            readingIsEstimated: false, range: NSRange(location: 0, length: 3))
+        let box = (0..<3).map { characterBox(index: $0, direction: direction) }.reduce(CGRect.null) { $0.union($1) }
+        let characters = HonbakoJapaneseCharacterReadings.units(for: word).enumerated().map { index, character in
+            HonbakoJapaneseCharacterRegion(character: character,
+                boundingBox: characterBox(index: index, direction: direction), ink: ink)
+        }
         let region = HonbakoJapaneseRegion(id: 1, text: word.text, reading: word.reading,
             romaji: word.romaji, confidence: 1, readingIsEstimated: false,
-            direction: .horizontal, boundingBox: box, words: [.init(word: word, boundingBox: box)])
+            direction: direction, boundingBox: box, words: [.init(word: word, boundingBox: box)], characters: characters)
         let probe = AnnotationRecognitionProbe(region: region)
         let store = HonbakoInlineJapaneseRecognitionStore(recognizer: { _ in await probe.recognize() })
         let overlay = HonbakoInlineJapaneseOverlayView(recognitionStore: store)

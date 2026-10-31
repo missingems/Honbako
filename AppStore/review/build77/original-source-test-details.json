@@ -1,0 +1,88 @@
+{
+  "devices": [
+    {
+      "architecture": "arm64",
+      "deviceId": "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+      "deviceName": "Honbako Capture iphone-large",
+      "modelName": "iPhone 18 Pro Max",
+      "osBuildNumber": "24A434",
+      "osVersion": "27.0",
+      "platform": "iOS Simulator"
+    }
+  ],
+  "testNodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "duration": "0.055s",
+                  "durationInSeconds": 0.05458700656890869,
+                  "name": "testAIXImportSearchAndRead()",
+                  "nodeIdentifier": "HonbakoOriginalExternalSourceTests/testAIXImportSearchAndRead()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalExternalSourceTests/testAIXImportSearchAndRead",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                },
+                {
+                  "duration": "0.55s",
+                  "durationInSeconds": 0.5535140037536621,
+                  "name": "testExportOriginalComicAssets()",
+                  "nodeIdentifier": "HonbakoOriginalExternalSourceTests/testExportOriginalComicAssets()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalExternalSourceTests/testExportOriginalComicAssets",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                },
+                {
+                  "duration": "0.018s",
+                  "durationInSeconds": 0.01830005645751953,
+                  "name": "testUnknownIdentifiersAndOversizedQueriesFailSafely()",
+                  "nodeIdentifier": "HonbakoOriginalExternalSourceTests/testUnknownIdentifiersAndOversizedQueriesFailSafely()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalExternalSourceTests/testUnknownIdentifiersAndOversizedQueriesFailSafely",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                }
+              ],
+              "name": "HonbakoOriginalExternalSourceTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalExternalSourceTests",
+              "nodeType": "Test Suite",
+              "result": "Passed"
+            },
+            {
+              "children": [
+                {
+                  "duration": "3s",
+                  "durationInSeconds": 3.8849440813064575,
+                  "name": "testHostedListInstallsAndServesOnlyOriginalContent()",
+                  "nodeIdentifier": "HonbakoOriginalHostedSourceTests/testHostedListInstallsAndServesOnlyOriginalContent()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalHostedSourceTests/testHostedListInstallsAndServesOnlyOriginalContent",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                }
+              ],
+              "name": "HonbakoOriginalHostedSourceTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests/HonbakoOriginalHostedSourceTests",
+              "nodeType": "Test Suite",
+              "result": "Passed"
+            }
+          ],
+          "name": "SumiTests",
+          "nodeIdentifierURL": "test://com.apple.xcode/Aidoku/SumiTests",
+          "nodeType": "Unit test bundle",
+          "result": "Passed"
+        }
+      ],
+      "name": "Honbako",
+      "nodeType": "Test Plan",
+      "result": "Passed"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Test Scheme Action"
+    }
+  ]
+}

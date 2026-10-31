@@ -1,1 +1,19 @@
-Build 26: Page-turn haptics return to the original Build 22 behavior. Check horizontal manga with the bottom scrubber and vertical manga with a vertical side scrubber; verify RTL/LTR order and 3pt page-preview corners. Rotate the reader while the optional outer cover stays portrait, with dimmer artwork, subtle paper grain and sharper covers. Close and retry unavailable sources. No manga is automatically imported. This private beta has Pro unlocked; no purchase is required. Also check notch-safe library and reader layouts, the populated screenshot library, and the six-page original tutorial about adding your own files and source lists.
+Honbako 0.2.0 (71)
+
+New in build 71: gentler 5-degree manga icon; Widgets entry removed from Settings while widgets remain available. A fresh install shows onboarding even after restoring Pro; completed installations retain their progress and active members see subscription management.
+
+Japanese guidance: small plain romaji follows individual characters, above horizontal text or beside vertical text, matching the page ink without a blurred background. Combined kana sounds and inseparable contextual kanji readings remain linked. Tap for word pronunciation/translation; check that controls and rotation do not slide the annotations.
+
+Reader: tap a page to show the native manga title and chapter subtitle. Turn pages, drag the darker dune page strip, close/reopen a book, and rotate between compact and wide layouts. Open Chapters: the current chapter should be visible and highlighted.
+
+Library: import your own CBZ/ZIP comics or connect your personal Komga, Kavita or Suwayomi server. External-source builds support Extensions and Extension repositories. No third-party manga catalog or provider package is installed automatically. The five original illustrated guides work offline.
+
+AI addresses: production https://mcp.honbako.xyz/remote/mcp; TestFlight https://test-mcp.honbako.xyz/remote/mcp. Existing AI connections keep their working address and authorization. Add a new OAuth connection to use a branded address; do not copy credentials between addresses.
+
+AI companion: Settings → MCP Server → Remote connects using an active Apple-verified Pro purchase. Add the displayed MCP URL in an AI provider that supports remote MCP, then approve the connection in Honbako. Test library/history access, current-page explanations or annotations, and approved library/source changes. Access toggles and disconnect must take effect. TestFlight purchases use the isolated Sandbox service; production purchases use the production service. Local MCP remains available free.
+
+Pro: eligible accounts can try the monthly plan for one week or the annual plan for one month, with Apple showing the actual local renewal price. Active members see Manage Subscription instead of another purchase offer. Completed onboarding should not reappear.
+
+Widgets: Free includes a title-free cover and Resume action; Pro adds reading time and chapter updates. iCloud library/progress sync is free. Downloads stay on the device. Japanese reading guidance applies to Japanese source chapters. Cover mode on iPhone Duo uses the camera scene accessory without recording photos/video or using the microphone.
+
+Please report the book/source, chapter/page, device orientation and steps for any loading or page-turn issue. Remove private information from screenshots and never send passwords.

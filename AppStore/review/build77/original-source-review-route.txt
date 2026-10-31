@@ -1,0 +1,18 @@
+FIRST-PARTY EXTENSION REVIEW ROUTE — Honbako 0.2.0 (77)
+
+No account, Pro purchase, third-party catalog or third-party provider is required for this sample. It supplies only Honbako's original six-page English tutorial story. Repository addition and extension installation are separate user actions; neither is preinstalled automatically.
+
+1. Complete onboarding with Free and Continue. Open library Settings → Extensions → Extension repositories → Add repository.
+2. Enter https://missingems.github.io/Honbako/sources/index.json and tap Add.
+3. Open Honbako Original Sources, then tap Install beside Honbako Originals v1.
+4. Return to Settings. Under Included in Search, ensure Honbako Originals is enabled.
+5. Close Settings, tap Search, and search for Bookshop. Select The Bookshop Between Pages — Online Edition (the external edition, not the bundled offline guide).
+6. Add it to Library. Open Chapter 1 / first-chapter and read all six pages. Each original 1024×1536 page is served over HTTPS from missingems.github.io/Honbako/originals/bookshop/. No sign-in is required. Close and reopen to test saved progress.
+
+CURRENT TERMINOLOGY
+Use Extensions, Extension repositories, Add repository and Install. Older build30 instructions saying Source Lists or Import Source File are obsolete. The alternate package-import action is now Settings → Extensions → Install extension file, but the repository route above exercises the hosted installation path.
+
+SAFETY / PROVENANCE
+The repository has exactly one source, en.honbako-originals, version1, safe content rating. Package SHA256: 441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec. Its local fixture and hosted bytes match. The 0.9.0 minimum refers to the reader engine, independently of the public 0.2.0 product version; build77 embeds SourceEngineVersion0.9.0. Original story/artwork already included in Honbako is reused; no third-party comic pages are supplied.
+
+Native verification outcome is recorded separately in original-source-native-verification.json. HTTP checks are in original-source-http.json. This file does not claim a completed manual reviewer UI session.

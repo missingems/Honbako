@@ -50,6 +50,9 @@ final class HonbakoAutomationConnectionTests: XCTestCase {
             let keyboardDone = app.keyboards.buttons.matching(NSPredicate(format: "label IN %@", ["Return", "Go", "Done"])).firstMatch
             if keyboardDone.exists, keyboardDone.isHittable { keyboardDone.tap() }
             try tap(app.buttons["Honbako.Automation.Connect"], in: app)
+            let consent = app.alerts["Share with Your AI?"].buttons["Continue"]
+            try require(consent.waitForExistence(timeout: 5), "Pairing must ask before sharing with an AI")
+            consent.tap()
             try require(app.buttons["Honbako.Automation.Disconnect"].waitForExistence(timeout: 25),
                         "Pairing through the real form must connect the app")
             let paired = try await eventually("The paired device must appear through MCP") {
@@ -223,13 +226,14 @@ final class HonbakoAutomationConnectionTests: XCTestCase {
     private func openConnections(_ app: XCUIApplication) throws {
         try tap(app.buttons["Honbako.Library.Settings"], in: app)
         try tap(item("Honbako.Automation", app), in: app)
+        try tap(item("Honbako.MCP.Local", app), in: app)
         try require(item("Honbako.Automation.Status", app).waitForExistence(timeout: 5), "MCP Server must present its native form")
     }
 
     @MainActor
     private func closeSettings(_ app: XCUIApplication) throws {
         let connectionsBar = app.navigationBars["MCP Server"]
-        if connectionsBar.exists {
+        for _ in 0..<2 where connectionsBar.exists {
             // Scope to the pushed view: an unscoped Settings button can resolve
             // to the library gear that remains underneath this modal sheet.
             let namedBack = connectionsBar.buttons["Back"].firstMatch

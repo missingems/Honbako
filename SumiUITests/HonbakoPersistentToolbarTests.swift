@@ -59,6 +59,24 @@ final class HonbakoPersistentToolbarTests: XCTestCase {
         XCTAssertTrue(mcp.isHittable)
         mcp.tap()
         XCTAssertTrue(app.navigationBars["MCP Server"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.textFields["Honbako.Automation.Endpoint"].exists)
+        XCTAssertFalse(app.secureTextFields["Honbako.Automation.Code"].exists)
+        let enableMCP = app.switches["Honbako.MCP.Enable"]
+        XCTAssertTrue(enableMCP.exists)
+        XCTAssertTrue(enableMCP.isEnabled, "An unavailable remote service must not leave a silently disabled switch")
+        let remoteStatus = app.staticTexts["Honbako.MCP.RemoteStatus"]
+        XCTAssertTrue(remoteStatus.waitForExistence(timeout: 5))
+        enableMCP.tap()
+        XCTAssertEqual(enableMCP.value as? String, "0", "A failed availability check cannot claim an active server")
+        XCTAssertTrue(enableMCP.isEnabled)
+        XCTAssertFalse(app.navigationBars["Honbako Pro"].exists, "Do not sell hosting while the service is unavailable")
+        let retry = app.buttons["Honbako.MCP.Retry"]
+        XCTAssertTrue(retry.isHittable)
+        retry.tap()
+        XCTAssertTrue(enableMCP.isEnabled)
+        XCTAssertTrue(remoteStatus.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "Honbako.MCP.Local").firstMatch.exists)
+        attach(app, "Remote setup status with usable MCP switch and retry")
         let grok = app.descendants(matching: .any).matching(identifier: "Honbako.MCP.Guide.grok").firstMatch
         for _ in 0..<6 {
             if grok.exists, grok.isHittable { break }
@@ -73,7 +91,8 @@ final class HonbakoPersistentToolbarTests: XCTestCase {
         goBack(app, title: "Grok / Grok Bot")
         app.descendants(matching: .any).matching(identifier: "Honbako.MCP.Guide.chatgpt").firstMatch.tap()
         XCTAssertTrue(app.navigationBars["ChatGPT"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["OAuth support needed"].exists)
+        XCTAssertFalse(app.staticTexts["OAuth support needed"].exists)
+        XCTAssertTrue(app.staticTexts["Connection Details"].exists)
         goBack(app, title: "ChatGPT")
         app.descendants(matching: .any).matching(identifier: "Honbako.MCP.Guide.claude").firstMatch.tap()
         XCTAssertTrue(app.navigationBars["Claude"].waitForExistence(timeout: 5))
@@ -167,7 +186,8 @@ final class HonbakoPersistentToolbarTests: XCTestCase {
         if let window {
             XCTAssertGreaterThan(settings.frame.midX, window.frame.midX)
             XCTAssertGreaterThan(settings.frame.midY, window.frame.minY + window.frame.height * 0.65)
-            XCTAssertLessThanOrEqual(settings.frame.maxX, window.frame.maxX)
+            XCTAssertEqual(settings.frame.maxX, window.frame.maxX - 16, accuracy: 2,
+                "Bottom controls stay at the display edge instead of reserving the vertical sidebar’s empty strip")
             XCTAssertLessThanOrEqual(settings.frame.maxY, window.frame.maxY)
             let grid = app.descendants(matching: .any).matching(identifier: "Sumi.Grid").firstMatch
             XCTAssertEqual(grid.frame.minX, window.frame.minX, accuracy: 1)

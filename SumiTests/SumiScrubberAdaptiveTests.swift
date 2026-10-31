@@ -112,7 +112,8 @@ struct SumiScrubberAdaptiveTests {
         scrubber.cancelPreview()
         scrubber.sidebarEdge = .left
         scrubber.layoutIfNeeded()
-        let badge = try #require(descendants(scrubber, type: UIVisualEffectView.self).first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
+        let badge = try #require(scrubber.subviews.first { $0.accessibilityIdentifier == "Sumi.Reader.PagePosition" })
+        #expect(!(badge is UIVisualEffectView))
         #expect(badge.frame.minX >= scrubber.bounds.maxX)
     }
 

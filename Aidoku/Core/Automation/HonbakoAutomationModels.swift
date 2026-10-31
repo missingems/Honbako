@@ -47,9 +47,12 @@ enum HonbakoAutomationModels {
         let reading: Reading?
         var libraryTruncated = false
         var sourcesTruncated = false
+        var readingHistoryAccess: Bool?
+        var automationCapabilities: [String]?
+        var permissions: [String: Bool]?
 
         private enum CodingKeys: String, CodingKey {
-            case schemaVersion, generatedAt, library, sources, reading, libraryTruncated, sourcesTruncated
+            case schemaVersion, generatedAt, library, sources, reading, libraryTruncated, sourcesTruncated, readingHistoryAccess, automationCapabilities, permissions
         }
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -61,6 +64,9 @@ enum HonbakoAutomationModels {
             else { try container.encodeNil(forKey: .reading) }
             try container.encode(libraryTruncated, forKey: .libraryTruncated)
             try container.encode(sourcesTruncated, forKey: .sourcesTruncated)
+            try container.encodeIfPresent(readingHistoryAccess, forKey: .readingHistoryAccess)
+            try container.encodeIfPresent(automationCapabilities, forKey: .automationCapabilities)
+            try container.encodeIfPresent(permissions, forKey: .permissions)
         }
     }
     struct Payload: Codable, Equatable, Sendable {
@@ -69,6 +75,9 @@ enum HonbakoAutomationModels {
         var limit: Int?
         var items: [Item]?
         var idempotencyKey: String?
+        var offset: Int?
+        var before: String?
+        var change: HonbakoAutomationManagement.Change?
     }
     struct Job: Codable, Identifiable, Equatable, Sendable {
         let id: String
@@ -92,16 +101,28 @@ enum HonbakoAutomationModels {
         let added: [Match]
         let alreadyPresent: [Match]
     }
+    struct RemoveResult: Codable, Sendable {
+        let removed: [Match]
+        let notPresent: [Match]
+    }
     struct Approval: Identifiable {
         let job: Job
         let items: [Match]
         var id: String { job.id }
+        var title: String { job.payload.change?.title ?? (isRemoval ? "Remove \(items.count) Books" : "Add \(items.count) Books") }
+        var isSourceChange: Bool { job.kind == "sources.change" }
+        var isRemoval: Bool { job.kind == "library.remove" }
+        var detail: String? { job.payload.change.flatMap { $0.sourceId ?? $0.repositoryURL } }
     }
     struct JobUpdate: Codable, Sendable {
         let status: String
         var result: HonbakoAutomationJSON?
         var error: String?
         var approvalGranted: Bool?
+        var isHistoryResult: Bool {
+            if case .object(let fields) = result, case .string("saved_chapter_history") = fields["coverage"] { return true }
+            return false
+        }
     }
     struct ImportReceipt: Codable {
         let requested: [Item]

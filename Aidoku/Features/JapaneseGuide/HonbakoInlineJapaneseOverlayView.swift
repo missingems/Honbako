@@ -210,7 +210,7 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
         // The reader image itself can cross the fold; the little controls cannot.
         occupied.append(contentsOf: exclusions)
         let font = Self.annotationFont(compatibleWith: traitCollection)
-        let gap = UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 3, compatibleWith: traitCollection)
+        let gap = UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 1.5, compatibleWith: traitCollection)
         for region in regions {
             guard let box = boxes[region.id] else { continue }
             let phrase = makeButton(region: region, word: nil, title: nil)
@@ -222,19 +222,32 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
                     return (anchored.id, rect)
                 }
             ))
+            // Lexical words retain translation targets. Visible readings use
+            // exact character/mora anchors, with no newly invented geometry.
+            let characters = region.characters.isEmpty ? region.words.compactMap { item -> HonbakoJapaneseCharacterRegion? in
+                guard let romaji = item.word.romaji else { return nil }
+                return .init(character: .init(wordID: item.word.id, text: item.word.text, romaji: romaji,
+                    range: item.word.range), boundingBox: item.boundingBox, ink: .black)
+            } : region.characters
+            let characterFrames = HonbakoJapaneseOverlayLayout.distinctWordFrames(Dictionary(uniqueKeysWithValues:
+                characters.compactMap { item -> (Int, CGRect)? in
+                    guard let normalized = item.boundingBox,
+                          let frame = HonbakoJapaneseGeometry.rect(for: normalized, in: bounds) else { return nil }
+                    return (item.id, frame)
+                }))
             var chosen: [Int: CGRect] = [:]
             for side in HonbakoJapaneseOverlaySide.preferred(for: region.direction) {
                 var proposed: [Int: CGRect] = [:]
                 var localOccupied = occupied
-                for anchored in region.words {
-                    guard let wordBox = wordFrames[anchored.id], let romaji = anchored.word.romaji, !romaji.isEmpty else { continue }
+                for item in characters {
+                    guard let characterBox = characterFrames[item.id] else { continue }
                     let size = HonbakoJapaneseAnnotationStyle.labelSize(
-                        for: romaji, font: font, direction: region.direction, wordBox: wordBox)
+                        for: item.character.romaji, font: font, direction: region.direction, wordBox: characterBox)
                     guard let frame = HonbakoJapaneseOverlayLayout.wordChipFrame(
-                        for: wordBox, in: bounds, size: size, direction: region.direction,
+                        for: characterBox, in: bounds, size: size, direction: region.direction,
                         containingTextBox: box, side: side, spacing: gap, avoiding: localOccupied
                     ) else { continue }
-                    proposed[anchored.id] = frame
+                    proposed[item.id] = frame
                     localOccupied.append(frame)
                 }
                 if proposed.count > chosen.count { chosen = proposed }
@@ -244,11 +257,16 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
                 guard let frame = wordFrames[anchored.id] else { continue }
                 let target = makeButton(region: region, word: anchored.word, title: nil)
                 target.frame = frame
-                if let chip = chosen[anchored.id], let romaji = anchored.word.romaji {
+                if characters.contains(where: { $0.character.wordID == anchored.id && chosen[$0.id] != nil }) {
                     target.isAccessibilityElement = false
-                    let button = makeButton(region: region, word: anchored.word, title: romaji)
-                    button.frame = chip
                 }
+            }
+            for item in characters {
+                guard let frame = chosen[item.id],
+                      let word = region.words.first(where: { $0.id == item.character.wordID })?.word else { continue }
+                let button = makeButton(region: region, word: word, title: item.character.romaji,
+                    annotationID: item.id, ink: item.ink, sourceText: item.character.text)
+                button.frame = frame
             }
         }
         let currentIDs = Set(buttons.compactMap(\.accessibilityIdentifier))
@@ -259,13 +277,15 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
         bringSubviewToFront(spinner)
     }
 
-    private func makeButton(region: HonbakoJapaneseRegion, word: HonbakoJapaneseWord?, title: String?) -> HonbakoInlineJapaneseWordButton {
+    private func makeButton(
+        region: HonbakoJapaneseRegion, word: HonbakoJapaneseWord?, title: String?,
+        annotationID: Int? = nil, ink: HonbakoJapaneseInk = .black, sourceText: String? = nil
+    ) -> HonbakoInlineJapaneseWordButton {
         let identifier: String
         if let word {
             let kind = title == nil ? "WordTarget" : "Word"
-            identifier = "Honbako.Reader.Japanese.\(kind).\(region.id).\(word.id)"
+            identifier = "Honbako.Reader.Japanese.\(kind).\(region.id).\(annotationID ?? word.id)"
         } else { identifier = "Honbako.Reader.Japanese.Phrase.\(region.id)" }
-        let isNew = buttonsByID[identifier] == nil
         let button = buttonsByID[identifier] ?? HonbakoInlineJapaneseWordButton(frame: .zero)
         buttonsByID[identifier] = button
         button.accessibilityIdentifier = identifier
@@ -273,22 +293,17 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
         button.isExclusiveTouch = false
         button.accessibilityHint = String(localized: "Hear the pronunciation or reveal a translation")
         if let word {
-            button.accessibilityLabel = [word.text, word.romaji].compactMap { $0 }.joined(separator: ", ")
-            button.accessibilityValue = word.romaji
+            button.accessibilityLabel = [sourceText ?? word.text, title ?? word.romaji].compactMap { $0 }.joined(separator: ", ")
+            button.accessibilityValue = title ?? word.romaji
         } else {
             button.accessibilityLabel = region.text
         }
         button.titleLabel.text = title
-        if title != nil, isNew {
-            let material = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-            material.isUserInteractionEnabled = false
-            material.layer.cornerRadius = 10
-            material.clipsToBounds = true
-            material.frame = button.bounds
-            material.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            button.insertSubview(material, at: 0)
-            button.layer.cornerRadius = 10
-            button.clipsToBounds = true
+        if ink == .black { button.titleLabel.textColor = .black }
+        else if ink == .white { button.titleLabel.textColor = .white }
+        else {
+            button.titleLabel.textColor = UIColor(red: CGFloat(ink.red) / 255, green: CGFloat(ink.green) / 255,
+                                                  blue: CGFloat(ink.blue) / 255, alpha: 1)
         }
         button.activate = { [weak self, weak button] in
             guard let self, let button, let select = self.onSelect, self.canRecognize, !self.isHidden else { return false }
@@ -336,7 +351,7 @@ final class HonbakoInlineJapaneseOverlayView: UIView {
 
     fileprivate static func annotationFont(compatibleWith traits: UITraitCollection) -> UIFont {
         UIFontMetrics(forTextStyle: .caption2).scaledFont(
-            for: .systemFont(ofSize: 10), compatibleWith: traits)
+            for: .systemFont(ofSize: 8), compatibleWith: traits)
     }
 
     fileprivate static func withoutInheritedAnimations(_ changes: () -> Void) {
@@ -410,7 +425,7 @@ private final class HonbakoInlineJapaneseWordButton: UIView {
         accessibilityTraits = .button
         titleLabel.font = HonbakoInlineJapaneseOverlayView.annotationFont(compatibleWith: traitCollection)
         titleLabel.adjustsFontForContentSizeCategory = true
-        titleLabel.textColor = .label
+        titleLabel.textColor = .black
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
         titleLabel.lineBreakMode = .byCharWrapping
@@ -429,14 +444,7 @@ private final class HonbakoInlineJapaneseWordButton: UIView {
         HonbakoInlineJapaneseOverlayView.withoutInheritedAnimations {
             let font = HonbakoInlineJapaneseOverlayView.annotationFont(compatibleWith: traitCollection)
             if titleLabel.font != font { titleLabel.font = font }
-            titleLabel.frame = bounds.insetBy(dx: 4, dy: 3)
-            if titleLabel.text != nil {
-                let radius = min(bounds.width, bounds.height) / 2
-                layer.cornerRadius = radius
-                for material in subviews.compactMap({ $0 as? UIVisualEffectView }) {
-                    material.layer.cornerRadius = radius
-                }
-            }
+            titleLabel.frame = bounds
         }
     }
 

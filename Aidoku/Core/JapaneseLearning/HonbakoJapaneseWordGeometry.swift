@@ -49,6 +49,26 @@ enum HonbakoJapaneseWordGeometry {
         return clipped.dropFirst().reduce(clipped[0]) { $0.union($1) }
     }
 
+    /// Exact character boxes must be distinct too. Vision can return the same
+    /// entire line for every requested glyph; suppress these rather than place
+    /// multiple unrelated pronunciations at the same position.
+    static func validatedCharacterBoxes(_ boxes: [CGRect?], in parentBox: CGRect) -> [CGRect?] {
+        boxes.enumerated().map { index, proposed in
+            guard let box = proposed,
+                  let normalized = HonbakoJapaneseGeometry.rect(for: box, in: CGRect(x: 0, y: 0, width: 1, height: 1)) else { return nil }
+            let clipped = normalized.intersection(parentBox)
+            guard !clipped.isNull, !clipped.isEmpty,
+                  clipped.width * clipped.height >= box.width * box.height * 0.9 else { return nil }
+            if boxes.count > 1 {
+                guard !nearlyEqual(clipped, parentBox),
+                      !boxes.enumerated().contains(where: { otherIndex, other in
+                          index != otherIndex && other.map { nearlyEqual(clipped, $0) } == true
+                      }) else { return nil }
+            }
+            return clipped
+        }
+    }
+
     private static func nearlyEqual(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
         let tolerance: CGFloat = 0.0005
         return abs(lhs.minX - rhs.minX) < tolerance && abs(lhs.minY - rhs.minY) < tolerance

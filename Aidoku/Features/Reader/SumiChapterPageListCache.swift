@@ -57,7 +57,7 @@ actor SumiChapterPageListCache {
                load: @escaping @Sendable () async throws -> [AidokuRunner.Page]) async throws -> [AidokuRunner.Page] {
         try Task.checkCancellation()
         entries = entries.filter { $0.value.expires > now }
-        if forceRefresh { invalidate(key) }
+        if forceRefresh { await invalidate(key) }
         if let cached = entries[key] { return cached.pages }
         let flight: Flight
         if let active = flights[key] {
@@ -72,7 +72,8 @@ actor SumiChapterPageListCache {
         }
         do {
             let pages = try await flight.task.value
-            if flights[key]?.id == flight.id {
+            let ownsFlight = flights[key]?.id == flight.id
+            if ownsFlight {
                 flights[key] = nil
                 if let cost = Self.cost(of: pages) {
                     entries[key] = Entry(pages: pages, source: source, expires: now.addingTimeInterval(lifetime),
@@ -80,20 +81,30 @@ actor SumiChapterPageListCache {
                     while entries.count > maximumEntries || entries.values.reduce(0, { $0 + $1.cost }) > maximumCost {
                         guard let oldest = entries.min(by: { $0.value.stored < $1.value.stored })?.key else { break }
                         entries[oldest] = nil
+                        await HonbakoChapterAvailability.shared.clear(oldest)
                     }
                 }
             }
             try Task.checkCancellation()
+            if ownsFlight {
+                await HonbakoChapterAvailability.shared.record(pages.isEmpty ? .unavailable : .available, for: key,
+                    expires: pages.isEmpty ? now.addingTimeInterval(300) : entries[key]?.expires ?? now)
+            }
             return pages
         } catch {
-            if flights[key]?.id == flight.id { flights[key] = nil }
+            let ownsFlight = flights[key]?.id == flight.id
+            if ownsFlight { flights[key] = nil }
+            if ownsFlight, !Task.isCancelled, HonbakoChapterAvailability.confirmsUnavailable(error) {
+                await HonbakoChapterAvailability.shared.record(.unavailable, for: key, expires: now.addingTimeInterval(300))
+            }
             throw error
         }
     }
 
-    func invalidate(_ key: Key) {
+    func invalidate(_ key: Key) async {
         entries[key] = nil
         flights.removeValue(forKey: key)?.task.cancel()
+        await HonbakoChapterAvailability.shared.clear(key)
     }
 
     private static func cost(of pages: [AidokuRunner.Page]) -> Int? {

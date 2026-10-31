@@ -1,0 +1,47 @@
+[
+  {
+    "provider": "ChatGPT",
+    "appID": 6448311069,
+    "officialAppName": "ChatGPT",
+    "seller": "OpenAI OpCo, LLC",
+    "source": "https://apps.apple.com/us/app/chatgpt/id6448311069?uo=4",
+    "assetURL": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/72/2d/27/722d272a-9d6f-d186-8a92-6a884107df8f/AppIcon-0-0-1x_U007epad-0-0-0-1-0-85-220.png/512x512bb.jpg",
+    "sha256": "6f46c17248b231a8680a3120e91b4a7100e545f2006ef07a9e270128ed35fffb",
+    "dimensions": [
+      512,
+      512
+    ],
+    "format": "JPEG",
+    "treatment": "Unchanged original colours and proportions; uniform scaling and system-style app-icon corner mask"
+  },
+  {
+    "provider": "Grok",
+    "appID": 6670324846,
+    "officialAppName": "Grok AI",
+    "seller": "X Corp.",
+    "source": "https://apps.apple.com/us/app/grok-ai/id6670324846?uo=4",
+    "assetURL": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/95/ab/e5/95abe584-d6a4-96b0-94f4-cbfd1e77240e/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-0-85-220.png/512x512bb.jpg",
+    "sha256": "ad8036ebc21af47e8e562c666b90cd538f3477d6d902e07b5d985d2899e5f5c8",
+    "dimensions": [
+      512,
+      512
+    ],
+    "format": "JPEG",
+    "treatment": "Unchanged original colours and proportions; uniform scaling and system-style app-icon corner mask"
+  },
+  {
+    "provider": "Claude",
+    "appID": 6473753684,
+    "officialAppName": "Claude by Anthropic",
+    "seller": "Anthropic PBC",
+    "source": "https://apps.apple.com/us/app/claude-by-anthropic/id6473753684?uo=4",
+    "assetURL": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/17/fd/d0/17fdd0a1-91b9-7620-18bc-be0c75a0e400/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+    "sha256": "bfe477f1192ca7b5d12e52c380eb95bca57cf6a88afaafc08d3d790bc64e9f57",
+    "dimensions": [
+      512,
+      512
+    ],
+    "format": "JPEG",
+    "treatment": "Unchanged original colours and proportions; uniform scaling and system-style app-icon corner mask"
+  }
+]

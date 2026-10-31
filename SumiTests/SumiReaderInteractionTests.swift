@@ -44,9 +44,28 @@ struct SumiReaderInteractionTests {
         #expect(SumiPageTurnIntent.shouldComplete(progress: 0.30, velocity: 0, distance: 450))
         #expect(SumiPageTurnIntent.shouldComplete(progress: 0.08, velocity: 280, distance: 450))
         #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.05, velocity: 800, distance: 100))
-        #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.10, velocity: 0, distance: 450))
+        #expect(SumiPageTurnIntent.shouldComplete(progress: 0.10, velocity: 0, distance: 450))
         #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.55, velocity: -200, distance: 450))
         #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.25, velocity: 0, distance: 900, translation: 24))
         #expect(SumiPageTurnIntent.shouldComplete(progress: 0.25, velocity: 0, distance: 900, translation: 68))
+    }
+
+    @Test("A forty-point steady pull finishes on wide leaves while a short nudge stays reversible")
+    func responsiveTurnTravel() {
+        for distance: CGFloat in [360, 450, 900, 1200] {
+            #expect(SumiPageTurnIntent.shouldComplete(progress: 40 / distance, velocity: 0, distance: distance, translation: 40))
+            #expect(!SumiPageTurnIntent.shouldComplete(progress: 12 / distance, velocity: 0, distance: distance, translation: 12))
+            #expect(SumiPageTurnIntent.shouldComplete(progress: 20 / distance, velocity: 200, distance: distance, translation: 20))
+            #expect(!SumiPageTurnIntent.shouldComplete(progress: 40 / distance, velocity: -200, distance: distance, translation: 40))
+            #expect(!SumiPageTurnIntent.shouldComplete(progress: 0.6, velocity: 0, distance: distance, translation: 0))
+        }
+    }
+
+    @Test("Released paper settles quickly enough for the next turn, including cancelled nudges")
+    func responsiveRelease() {
+        #expect(SumiPageTurnIntent.releaseDuration(remaining: 1, velocity: 0) <= 0.32)
+        #expect(SumiPageTurnIntent.releaseDuration(remaining: 0.1, velocity: 0) <= 0.12)
+        #expect(SumiPageTurnIntent.releaseDuration(remaining: 1, velocity: 1000)
+                < SumiPageTurnIntent.releaseDuration(remaining: 1, velocity: 0))
     }
 }

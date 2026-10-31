@@ -800,7 +800,7 @@
 "CLOSE_READER" = "リーダーを閉じる";
 "TOGGLE_PAGE_OFFSET" = "ページオフセットを切り替え";
 "BACKGROUND_REFRESH_TEXT" = "手動でライブラリの更新を開始した場合、アプリがバックグラウンドになっても更新を完了できるようにします。";
-"LEGACY_SOURCE_LIST_WARNING_INFO" = "現在レガシー形式のソースリストが設定されています。この形式は非推奨であり、将来のバージョンのAidokuでは動作しなくなります。現在は引き続き利用できますが、代替のリストを見つけて「設定 > ソースリスト」で設定することをお勧めします。";
+"LEGACY_SOURCE_LIST_WARNING_INFO" = "現在レガシー形式のソースリストが設定されています。この形式は非推奨であり、将来のバージョンのHonbakoでは動作しなくなります。現在は引き続き利用できますが、代替のリストを見つけて「設定 > ソースリスト」で設定することをお勧めします。";
 "ABOUT_DICTIONARIES_TEXT" = "Yomitan辞書はZIPファイルからインポートできます。辞書の有効/無効の切り替えや、ドラッグによる並べ替えが可能です。";
 "LOOKUP_GESTURE_LONG_PRESS_INFO" = "指を離すとポップアップが表示されます。有効にするとページのクイックアクションが無効になります。";
 "DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO" = "有効にすると、選択した言語としてマークされている章のみがOCR処理されます。インポート済みの辞書がある言語のみを選択することをお勧めします。";
@@ -1288,3 +1288,8 @@
 
 // Japanese reading help stays on the live manga page.
 "Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "漫画に単語ごとのローマ字を表示します。単語をタップして発音や翻訳を確認できます。";
+
+/* Honbako creator credit */
+"Created by @nsjunxiu" = "制作：@nsjunxiu";
+
+"Support Email" = "サポートメール";

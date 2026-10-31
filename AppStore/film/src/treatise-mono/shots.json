@@ -1,0 +1,185 @@
+{
+  "title": "Honbako",
+  "duration": 45,
+  "fps": 60,
+  "formats": {
+    "landscape": [
+      1920,
+      1080
+    ],
+    "portrait": [
+      1080,
+      1920
+    ]
+  },
+  "manga": {
+    "work": "ブラックジャックによろしく / Give My Regards to Black Jack",
+    "author": "佐藤秀峰 / Shuho Sato",
+    "terms": "https://densho810.com/free/ (secondary use, including commercial, permitted)"
+  },
+  "acts": [
+    {
+      "id": "title",
+      "start": 0,
+      "end": 3.2,
+      "copy": "HONBAKO / 本箱 / The manga reader with MCP built in.",
+      "shots": [
+        {
+          "id": "0a",
+          "start": 0.0,
+          "end": 3.2,
+          "what": "Title page: HONBAKO, 本箱 and “The manga reader with MCP built in.”; the vermilion 本箱 seal is stamped at 1.45 s (lands slightly large and settles, no shake)."
+        }
+      ]
+    },
+    {
+      "id": "01-library",
+      "start": 3.2,
+      "end": 13.0,
+      "copy": "01 — LIBRARY: All your manga, in one library.",
+      "shots": [
+        {
+          "id": "1a",
+          "start": 2.9,
+          "end": 4.4,
+          "what": "Closed Duo fades in with dimension lines: 84.1 mm × 117.8 mm."
+        },
+        {
+          "id": "1b",
+          "start": 4.4,
+          "end": 6.35,
+          "what": "The hinge opens 0°→180° (the model's own fold clip) to the library; dimension line 164.6 mm."
+        },
+        {
+          "id": "1c",
+          "start": 6.35,
+          "end": 8.75,
+          "what": "Axonometric view: the device tips back and turns slightly, with the screen in place. Leaders: INNER DISPLAY 7.6 in; IPHONE DUO 164.6 × 117.8 mm open. LOCAL FILES — Import CBZ files and folders from Files."
+        },
+        {
+          "id": "1d",
+          "start": 9.0,
+          "end": 11.0,
+          "what": "Push to Settings → Personal Server. PERSONAL SERVER — Connect your Komga, Kavita or Suwayomi library."
+        },
+        {
+          "id": "1e",
+          "start": 11.0,
+          "end": 13.0,
+          "what": "Push to Settings → Extensions. EXTENSIONS — Add sources with extensions you choose. Footnote: Honbako doesn’t provide manga. Sources and their content are your responsibility."
+        }
+      ]
+    },
+    {
+      "id": "02-your-ai",
+      "start": 13.0,
+      "end": 25.0,
+      "copy": "02 — YOUR AI: Ask your own AI about what you’re reading.",
+      "shots": [
+        {
+          "id": "2a",
+          "start": 13.0,
+          "end": 18.9,
+          "what": "English Vol. 1 pp. 23–24 in the reader. IN YOUR AI APP: user asks for a recap; AI card streams the recap, labelled ILLUSTRATIVE DEMONSTRATION."
+        },
+        {
+          "id": "2b",
+          "start": 18.75,
+          "end": 21.9,
+          "what": "Second question; the answer card is joined by a leader to the panel that honbako_annotate_page marked (real app output), ANNOTATED BY YOUR AI, with a vermilion pulse."
+        },
+        {
+          "id": "2c",
+          "start": 21.9,
+          "end": 25.0,
+          "what": "Settings → MCP Server permissions recording; a tap turns on Read Reading History and Progress. MCP SERVER — Bring your own AI. Connect the AI app you already use through Honbako’s MCP server. You choose what it can see. Footnote: provider account separate; requests sync while Honbako is open; approval for adding books and changing sources."
+        }
+      ]
+    },
+    {
+      "id": "03-japanese",
+      "start": 25.0,
+      "end": 33.0,
+      "copy": "03 — JAPANESE: Help with Japanese, right on the page. [HONBAKO PRO]",
+      "shots": [
+        {
+          "id": "3a",
+          "start": 25.0,
+          "end": 28.6,
+          "what": "Japanese Vol. 7 spread; romaji wipe right-to-left; camera pushes in with a scale bar measuring 10 mm of the device at the current zoom. ROMAJI — Romaji aligned to each character."
+        },
+        {
+          "id": "3b",
+          "start": 28.4,
+          "end": 32.7,
+          "what": "A tap on 実験台じゃない opens Read This Phrase. READ THIS PHRASE — Tap a phrase for its reading and pronunciation."
+        }
+      ]
+    },
+    {
+      "id": "04-iphone-duo",
+      "start": 33.0,
+      "end": 40.4,
+      "copy": "04 — IPHONE DUO: Made for iPhone Duo. / Back to your page in one tap.",
+      "shots": [
+        {
+          "id": "4a",
+          "start": 33.0,
+          "end": 35.5,
+          "what": "Page curl recording. PAGE TURNS — Paper-like page turns, one spread at a time."
+        },
+        {
+          "id": "4b",
+          "start": 35.5,
+          "end": 37.7,
+          "what": "The open device turns around to show the cover on the outer display. COVER DISPLAY — While you read, the outer display shows the cover [HONBAKO PRO]. Footnote: camera use, nothing recorded."
+        },
+        {
+          "id": "4c",
+          "start": 37.85,
+          "end": 40.4,
+          "what": "Resume widget (sample book). RESUME WIDGET — Opens your book at your page. Your place syncs with iCloud."
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "start": 40.4,
+      "end": 45.0,
+      "copy": "HONBAKO / Your manga. Your AI. / A little company on every page.",
+      "shots": [
+        {
+          "id": "5a",
+          "start": 40.4,
+          "end": 45.0,
+          "what": "The seal is stamped again; end card: Some features require Honbako Pro. Compatible AI-provider account required. Manga credit."
+        }
+      ]
+    }
+  ],
+  "music": "tools/music.py: single felt-piano notes over a quiet pad in D major on a slow 72 BPM grid, one chord per feature, higher register for the Japanese section, a low octave under each seal stamp, held add9 under the end card. About −16 LUFS. No sound effects.",
+  "device": "Apple's iPhone Duo model (V68.usdz from Xcode 27.1's DeviceHub plugin), Dark finish, rendered per frame by tools/duo-render with RealityKit; hinge posed with the model's book_close clip.",
+  "style": {
+    "idea": "Paper and ink with one vermilion seal: a title page, four sections with labelled features, and an end card. Inspired by monochrome technical-book films; no handheld shake, no glitch or decay effects. Smooth eased moves and crossfades only. Copy is plain product language.",
+    "palette": {
+      "paper": "#ECEAE3",
+      "ink": "#15140F",
+      "seal": "#C23B22 (vermilion, used only for marks: the 本箱 seal, taps, and the place the AI marks on the page)"
+    },
+    "type": {
+      "headlines": "Baskerville",
+      "labels and footnotes": "Courier New",
+      "Japanese": "Hiragino Mincho"
+    },
+    "device": "Apple iPhone Duo model (V68.usdz) rendered per frame; in section 01 it tips back 50° and turns 16° into an axonometric view, with leaders labelled INNER DISPLAY (7.6 in) and IPHONE DUO (164.6 × 117.8 mm open). Dimension lines use Apple's published measurements.",
+    "screens": "Genuine captures, shown in full colour; only the world around them is paper and ink."
+  },
+  "headlines": [
+    "All your manga, in one library.",
+    "Ask your own AI about what you’re reading.",
+    "Help with Japanese, right on the page. [HONBAKO PRO]",
+    "Made for iPhone Duo.",
+    "Back to your page in one tap.",
+    "Your manga. Your AI. A little company on every page."
+  ]
+}

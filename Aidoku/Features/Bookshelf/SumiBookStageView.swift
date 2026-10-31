@@ -16,6 +16,7 @@ final class SumiBookStageView: UIView {
     private(set) var completedProgress: CGFloat?
     private(set) var completedSourceFrame: CGRect?
     private var visibleBookFrame = CGRect.zero
+    private var lastAccessibilityPercent: Int?
 
     init(frame: CGRect, cover: UIImage?, spread: UIImage, paired: Bool, closedPose _: SumiGridBookPose? = nil, centeredClose: Bool = false) throws {
         self.paired = paired
@@ -93,7 +94,11 @@ final class SumiBookStageView: UIView {
         completedFrames += 1
         completedProgress = requested
         completedSourceFrame = source
-        accessibilityValue = "\(Int(requested * 100)) percent"
+        let percent = Int(requested * 100)
+        if lastAccessibilityPercent != percent {
+            lastAccessibilityPercent = percent
+            accessibilityValue = "\(percent) percent"
+        }
         return true
     }
 

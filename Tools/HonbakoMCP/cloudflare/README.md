@@ -6,6 +6,8 @@ No deployment is performed by the test suite or these files. Use only an existin
 
 ## Current deployment checkpoint — 30 October 2026
 
+The isolated managed Sandbox beta is now active at `https://honbako-mcp-pro-preview.jun-19c.workers.dev/remote`; its AI endpoint is `/remote/mcp`. Explicit Sandbox build60 is installed and the owner confirmed the Duo connected. Production paid enrollment remains disabled. See the activated-beta checkpoint below for the verified versions and credential separation.
+
 The public service is deployed at `https://honbako-mcp.jun-19c.workers.dev`; AI clients use `/mcp`, while the phone uses the base address. The signed-in account’s dashboard confirmed Workers Free before deployment, with no plan upgrade. The private admin Worker has no public route.
 
 The stopped Mac companion’s final snapshot was imported and compared exactly: two existing device identities, 68 jobs, and no pending jobs. The original Grok credential hash and absolute expiry were restored unchanged. The user reported updating Grok’s endpoint. **The phone cutover remains unverified:** its hosted snapshot still predates import, and the phone reported that destination verification failed. Keep the original pairing and old local writer stopped while diagnosing; do not disconnect/re-pair or overwrite hosted state with the old backup. Build 52 adds sanitized HTTP/network diagnostics to identify the failure.
@@ -94,3 +96,66 @@ Agent tools:
 Local page bytes never enter state.json, snapshots, library jobs, or migration exports. A separate0600 coaching-tombstones.json contains only closed session UUID metadata, so a Mac bridge restart loses images and returns reason restart; old in-flight publishes cannot reopen that consent. The connected foreground reader automatically opens a new stream after a restart. Hosted bytes use a separate bounded SQLite table, one current image per device and at most8 active images per owner; Connection streams have no sharing expiry; disconnection or revocation erases their image and drafts. Durable Object alarms retain fixed-expiry cleanup for older timed clients. Closed-session tombstones contain no image or title. Forgetting a device clears its coaching row too. Existing Grok credential expiry/revocation still gates both tools.
 
 MCP carries tool calls and results, not a voice call or an LLM subscription. The connected voice agent must actually invoke the image/drawing tools. The protocol and local official SDK tests support image blocks; Grok Bot voice-mode ingestion of those blocks must be verified separately with an owned fixture before promising hands-free visual coaching.
+
+
+## Per-user remote MCP with Pro — deployed, enrollment disabled
+
+The new `/remote` routes are separate from the existing private owner pilot. They remain disabled unless `REMOTE_MCP_ENABLED=YES` and the required bindings/secrets are configured. Existing owner state, Grok grant and original expiry are unchanged. The prepared production config adds the per-user storage bindings with public enrollment explicitly disabled; that code/storage deployment was approved and completed on 30 October 2026, with public enrollment still disabled. `wrangler.remote.jsonc` is the separate Sandbox beta configuration described below; do not use it as a production migration command.
+
+The iOS flow is **Enable MCP Server → Connect Your AI → approve access**. The app creates a private installation identity in Keychain and sends a verified StoreKit JWS to the fixed Honbako service. No server-address or pairing-code fields are used for managed remote enrollment. Local Mac connections remain free through the existing companion screen; their setup is not automatic in this change.
+
+The server uses Apple’s official App Store Server Library 3.1.0 with Apple Root CA G3, certificate/signature/online revocation verification, the exact bundle/product/environment and a fresh App Store Server API subscription status. A locally cached `hasPro`, personal-build flag, test receipt, expired purchase or revoked purchase cannot grant production hosting. Subscription checks are cached for at most 15 minutes and never beyond purchase expiry. Apple service outages fail closed when that verification lease expires. Production and Sandbox must be separate deployments/identities; never switch a production namespace to Sandbox.
+
+Required deployment secrets are `APP_STORE_PRIVATE_KEY`, `APP_STORE_KEY_ID`, `APP_STORE_ISSUER_ID` (an authorized Apple In-App Purchase/App Store Server API key) and an independent random `REMOTE_ROUTING_KEY`. The default environment is Production. Do not put credentials in the repository, app bundle, logs or browser/chat text. Apple’s dependency initializes randomness on import, so the server imports it lazily inside a request handler for Workers compatibility.
+
+A private workspace belongs to an installation credential, not to a client-supplied account ID or a shared secret. Restoring the same purchase on another device creates a separate empty workspace; this implementation does not merge different users’ libraries or promise cross-device workspace synchronization. Purchase allocation is capped at five installations; the private keychain identity survives normal disconnect/reconnect. Rotating the routing secret requires re-enrollment with the same installation identity and valid purchase proof. Existing workspace data remains isolated.
+
+AI clients use OAuth authorization-code flow with exact registered HTTPS callbacks, `resource` audience checking, S256 PKCE, a five-minute pending request, an original-browser cookie, explicit phone approval, single-use codes, 15-minute access tokens and rotating refresh tokens. Reuse of a recently spent refresh token revokes its token family. Route MACs reject arbitrary namespace IDs before allocating objects. Each workspace allows up to 16 AI connections and 2,000 MCP calls per day / 120 per minute. Ordinary HTTP/phone limits and body/response bounds still apply. This is a personal-use service, not unlimited model hosting.
+
+Connected assistants retain no access after a successful phone disconnect. The disconnect removes shared snapshots, jobs, images and annotations; minimal hashed installation/purchase binding records remain to prevent takeover and excessive registrations. Failed offline disconnects cannot confirm server deletion. There is no automatic 30-day deletion policy in this implementation. Before public release, complete reliable offline deletion/revocation recovery and user-facing connection management, update App Store privacy disclosures for hosted retention, configure real Apple credentials, verify a real purchase and refund, and test each provider’s actual OAuth connector. Unit/local-runtime tests are not a claim that Grok voice has consumed an image or that ChatGPT/Claude provider approval has completed.
+
+The current phone transport still polls jobs and annotations; it has not been load-tested for 10,000 active users. Replace idle polling with event-driven delivery and measure CPU, row writes and concurrency before assigning a 10,000-user hosting budget. The user’s existing free-only hosting constraint remains in force; no paid plan or App Store subscription price was changed.
+
+Verification: `npm test`, `npm run check`, and the local-only `integration-remote-workerd.js` using the same installed Wrangler path as `integration-workerd.js`. The integration harness creates fixture-only identities in local workerd, checks OAuth + all ten tools + isolation + restart + refresh + disconnect, and removes its own temporary runtime files. Its fixture entry is generated only in a temporary directory and is never a deployed entrypoint.
+
+
+### Apple credential setup — 30 October 2026
+
+The owner-supplied replacement purchase key is securely backed up outside the repository with owner-only permissions. Its private key, key ID, issuer ID and a separate routing secret are configured as encrypted secrets on the existing `honbako-mcp` worker. The temporary upload file was removed. No private key is in the app, repository, command arguments or logs.
+
+A bounded, read-only TEST-notification history query authenticated successfully against Apple Sandbox (HTTP 200). Production returns HTTP 401. App Store Connect confirms Honbako 0.1.0 is `PREPARE_FOR_SUBMISSION`; Apple's commerce engineer states production API access remains locked until a production release: https://developer.apple.com/forums/thread/806452 . No sandbox fallback was added to the production paid-access gate.
+
+Automatic approval review rejected deploying the prepared code and new storage bindings to the existing live worker because this production change could disrupt the private pilot without explicit deployment approval. Secret configuration succeeded, but the new code/storage deployment and private cloud-side verification remain pending. Public managed enrollment remains off. Existing device identities, migration fingerprint and original Grok expiry/revocation were checked before and after secret configuration and remained unchanged. The private local admin facade was stopped afterward. Workers remains on Free; no price, billing upgrade or new assistant grant was made.
+
+The prepared `verify-apple` action is reachable only through the account-owned private admin binding plus the existing owner credential; it has no public HTTP route. It returns sanitized authentication status only. Local workerd tests verify wrong-owner rejection, missing-key failure and preservation of the original bridge workflow. `verify-apple-key.js` is a local read-only preflight that never prints keys, signed authorization tokens or notification contents.
+
+
+### Approved deployment verification — 30 October 2026
+
+After explicit deployment approval, the production worker and private admin update were deployed. The current main worker version is `49a77e49-9b5b-4102-8325-1ac1985a3f7b`; the private admin version is `fd9a9cfa-06c7-4066-805e-2e4f5852d1d8`. The existing owner namespace remains intact and two additive per-user namespaces are bound. `REMOTE_MCP_ENABLED` remains `NO`.
+
+Live private checks from Cloudflare authenticate successfully with Apple Sandbox (HTTP 200). Production returns the expected pre-release HTTP 401. The official Apple SDK retains all certificate, signature and OCSP verification. Its `node-fetch` dependency is mapped to a small native Workers transport for compatibility, with bounded requests, manual redirect rejection, and the legacy binary `buffer()` interface needed by OCSP. No certificate check was disabled. Local workerd fixtures verify signed outbound Apple requests and binary OCSP transport in addition to OAuth/tenant isolation; 70 Node checks pass.
+
+After deployment, the same two device identities, migration fingerprint, Grok expiry and revocation state were preserved. The existing authenticated MCP client successfully initializes, lists all ten tools and reads its two-device status without receiving a new credential. Public enrollment returns 503, unauthenticated MCP returns 401 and public administrator routes remain 404. The private admin service still has no public route. The temporary local admin facade was stopped after verification. Workers remains on Free, and no subscription price or billing plan was changed.
+
+
+### Isolated remote beta prepared — 30 October 2026
+
+Apple’s read-only test-history preflight still authenticates in Sandbox (200), while Production returns401 and Honbako remains Prepare for Submission. The deployed production endpoint still returns503 because its enrollment switch remains off.
+
+The separate `wrangler.remote.jsonc` now prepares `honbako-mcp-pro-preview` with Sandbox verification and fresh SQLite workspace/OAuth namespaces. It has no owner-pilot binding and exposes no legacy pairing, legacy MCP, or administrator routes. `remote-beta.js` fails closed unless the configured Apple environment is exactly Sandbox. This is a prepared deployment, not evidence that it has been published or enabled.
+
+Builds explicitly setting `HONBAKO_REMOTE_MCP_ENVIRONMENT=Sandbox` select the fixed beta origin and an independent Keychain installation identity. Other builds default to the production origin and preserve its original identity account. Beta and production transactions are never accepted interchangeably. A real Apple-verified active Sandbox Pro transaction is still required; a personal-build flag, Xcode test transaction, or cached entitlement cannot grant hosting.
+
+Cloudflare’s dashboard was rechecked: Workers Free is the current plan. Activating the separate beta and uploading its four server secrets require the final activation approval; do not modify the existing production worker, production routing key, owner state, or Grok grant. The beta uses the existing Apple verification key and a new independent routing key. Do not add a production-to-Sandbox fallback.
+
+To build the prepared phone beta, use the existing Honbako scheme and shared DerivedData with `HONBAKO_REMOTE_MCP_ENVIRONMENT=Sandbox`, `HONBAKO_PERSONAL_FEATURES=NO`, and build60. After approved activation, verify capability discovery, OAuth metadata, public-admin rejection, unsigned purchase rejection, and a real Apple Sandbox subscription on the phone. Local-runtime fixtures are not proof of a real purchase or a completed Grok connection.
+
+
+### Isolated beta activated with approval — 30 October 2026
+
+After the owner explicitly approved beta activation, `honbako-mcp-pro-preview` was deployed and its four secrets were configured through encrypted Workers secrets. Its active version is `d1ed1c64-59f7-4fb3-b8ea-494eb2033f83` at100%. It accepts Sandbox only, has separate SQLite namespaces and a separate routing key, and has no owner-pilot binding. The original production worker remains on `49a77e49-9b5b-4102-8325-1ac1985a3f7b` at100%, with managed production enrollment still off. Workers Free was reverified in the dashboard; no plan upgrade or price change was made.
+
+Live checks: beta capabilities200, OAuth discovery200 with S256 PKCE, unauthenticated MCP401 with the beta resource metadata URL, public admin404, legacy MCP404, unsigned purchase enrollment402, and original production enrollment503. The checked-in beta entry exposes no fixture or admin endpoints. The owner confirmed successful Enable MCP Server enrollment on Duo after signed build60 was installed and launched. No receipt, installation credential or purchase identity was read into chat or printed by the Mac assistant. An actual AI connector authorization remains a separate phone-approved step; no assistant grant was created or extended during deployment.
+
+Recovery details are stored outside the repository under the owner's private HonbakoMCP hosted/beta directory. Reuse its routing credential on redeployments; never rotate it, move beta storage into production, or migrate a namespace between Sandbox and Production as an incidental update.

@@ -1,0 +1,39 @@
+{
+  "build": 77,
+  "version": "0.2.0",
+  "status": "TESTING",
+  "testResults": {
+    "SwiftTesting": "41 tests in 9 suites passed",
+    "chapterMenuUI": "2 tests passed",
+    "liveJujutsuKaisen": {
+      "englishUnavailable": 5,
+      "fallbackLanguage": "az",
+      "chapter": 1,
+      "firstPageHTTP": 200,
+      "decodedPixels": [
+        6250,
+        9375
+      ],
+      "imageGETs": 1,
+      "libraryOrHistoryWrites": false
+    }
+  },
+  "notes": "The automatic alternate-language route is external-source beta only. Public 0.1.0 build76 includes generic available-chapter recovery.",
+  "releaseTargets": [
+    "62779950-dd24-41b0-b52e-759a2e36187f",
+    "35a4de15-d47e-42b8-9957-16a610dd26bb"
+  ],
+  "archive": "~/Library/Developer/Xcode/Archives/2026-10-31/Honbako-0.2.0-77.xcarchive",
+  "upload": "PASS_EXPORT_SUCCEEDED",
+  "deviceInstall": "PASS_INSTALLED_WITH_LIBRARY_PRESERVED",
+  "TestFlightGroups": {
+    "external": "Testing",
+    "internal": "Ready to Test"
+  },
+  "deviceLaunch": "Not verified: launch request stalled and was stopped cleanly; installation succeeded",
+  "uploadedAt": "2026-10-31T01:49:39+08:00",
+  "visualChapterMenu": "PASS_ROOT_INSPECTED_GRAY_DISABLED_CHAPTERS_AND_CURRENT_HIGHLIGHT",
+  "appleBuildID": "f8e6488d-df4f-49f0-840f-d214e9664fe4",
+  "publicJoinURL": "https://testflight.apple.com/join/1PwJ2Bja",
+  "groupsLimitsChanged": false
+}

@@ -9,6 +9,8 @@ import UIKit
 final class SumiGridPreviewFixtures {
     static let sourceKey = "sumi-grid-preview"
     static var isEnabled: Bool { ProcessInfo.processInfo.arguments.contains("--sumi-grid-check") }
+    nonisolated static var usesOwnedMarketingSample: Bool { ProcessInfo.processInfo.arguments.contains("--honbako-owned-marketing-sample") }
+    nonisolated static var usesLicensedMarketingSample: Bool { ProcessInfo.processInfo.arguments.contains("--honbako-licensed-marketing-sample") }
     private static weak var active: SumiGridPreviewFixtures?
     let books: [SumiBook]
     private let directory: URL
@@ -37,9 +39,27 @@ final class SumiGridPreviewFixtures {
         directory = fixtureDirectory
         failedPageURL = fixtureDirectory.appendingPathComponent("retry-page-\(UUID().uuidString).png")
         try? FileManager.default.createDirectory(at: fixtureDirectory, withIntermediateDirectories: true)
+        if Self.usesLicensedMarketingSample, let sample = HonbakoLicensedMarketingSample.load() {
+            books = sample.books.map { entry in
+                var manga = AidokuRunner.Manga(sourceKey: Self.sourceKey, key: entry.key,
+                    title: "\(entry.japaneseTitle) \(entry.volume)")
+                manga.cover = sample.directory.appendingPathComponent(entry.cover).absoluteString
+                manga.authors = [sample.author]
+                manga.viewer = .rightToLeft
+                var chapter = AidokuRunner.Chapter(key: "chapter-1", title: "第1話", chapterNumber: 1)
+                chapter.language = "ja"
+                manga.chapters = [chapter]
+                return SumiBook(manga: manga)
+            }
+            positions = [:]
+            Self.active = self
+            return
+        }
+        if Self.usesOwnedMarketingSample { positions["book-002"] = ("chapter-1", 1) }
         books = (1...100).map { number in
             let key = String(format: "book-%03d", number)
-            let title = String(format: "Fixture Manga %03d", number)
+            let title = Self.usesOwnedMarketingSample && number == 2
+                ? String(localized: "Tutorial.Story.Title") : String(format: "Fixture Manga %03d", number)
             let coverURL = fixtureDirectory.appendingPathComponent("\(key).png")
             if !FileManager.default.fileExists(atPath: coverURL.path) {
                 try? Self.cover(number: number, title: title).pngData()?.write(to: coverURL)
@@ -94,7 +114,8 @@ final class SumiGridPreviewFixtures {
             return SumiChapterSnapshot(
                 id: ChapterIdentifier(sourceKey: Self.sourceKey, mangaKey: book.manga.key, chapterKey: chapter.key),
                 chapter: chapter, completed: number < readChapter,
-                currentPage: current ? position?.page : nil, totalPages: 8,
+                currentPage: current ? position?.page : nil,
+                totalPages: Self.usesLicensedMarketingSample ? HonbakoLicensedMarketingSample.load()?.books.first(where: { $0.key == book.manga.key })?.pages.count ?? 0 : 8,
                 isCurrent: current, canRead: true
             )
         }
@@ -112,7 +133,24 @@ final class SumiGridPreviewFixtures {
 
     static func generatedPages(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) -> [Page]? {
         guard isEnabled, manga.sourceKey == sourceKey else { return nil }
+        if usesLicensedMarketingSample, let sample = HonbakoLicensedMarketingSample.load(),
+           let book = sample.books.first(where: { $0.key == manga.key }) {
+            return book.pages.enumerated().compactMap { index, name in
+                guard let image = UIImage(contentsOfFile: sample.directory.appendingPathComponent(name).path) else { return nil }
+                return Page(sourceId: sourceKey, chapterId: chapter.id, index: index, image: image)
+            }
+        }
         let chapterNumber = Int(chapter.chapterNumber ?? 1)
+        // Capture-only content, not a different reader: render the same bundled
+        // original story through the existing page/coaching pipeline.
+        if usesOwnedMarketingSample,
+           let originals = try? HonbakoTutorialManga.pages(for: .init(key: "en-first-chapter")) {
+            return originals.enumerated().compactMap { index, original in
+                guard case .url(let url, _) = original.content,
+                      let image = UIImage(contentsOfFile: url.path) else { return nil }
+                return Page(sourceId: sourceKey, chapterId: chapter.id, index: index, image: image)
+            }
+        }
         return (1...8).map { page in
             if ProcessInfo.processInfo.arguments.contains("--honbako-page-failure-check"),
                manga.key == "book-002", chapter.key == "chapter-2", page == 4,

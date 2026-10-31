@@ -10,6 +10,7 @@ import SwiftUI
 struct ExternalSourceTableCell: View {
     let source: SourceInfo
     var subtitle: String?
+    var installTitleKey: String = "BUTTON_GET"
 
     var onInstall: (() -> Void)?
     var onGet: (() async -> Bool)?
@@ -58,7 +59,7 @@ struct ExternalSourceTableCell: View {
 
             Spacer(minLength: 0)
 
-            GetButton {
+            GetButton(titleKey: installTitleKey) {
                 if let onGet {
                     return await onGet()
                 } else {

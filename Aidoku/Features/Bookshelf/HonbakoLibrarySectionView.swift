@@ -12,7 +12,7 @@ struct HonbakoLibrarySectionView: View {
         ForEach(books) { book in
             SumiGridCoverTile(book: book, openBook: openBook,
                 registerAnchor: { anchor in registerAnchor?(book.presentation.id, anchor) })
-                .overlay(alignment: .topTrailing) {
+                .overlay(alignment: .bottomTrailing) {
                     if book.unreadChapterCount > 0 {
                         Text(book.unreadChapterCount, format: .number)
                             .font(.caption.bold()).padding(.horizontal, 7).padding(.vertical, 4)

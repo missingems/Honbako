@@ -15,24 +15,31 @@ struct LocalSetupView: View {
     #endif
 
     private var localFilesDescription: String {
-        let description = NSLocalizedString("LOCAL_FILES_INFO")
         #if SUMI
-        return description.replacingOccurrences(of: "Aidoku", with: "Honbako")
+        return String(localized: "Read your own comics stored on this iPhone. Import CBZ or ZIP archives from the Files app in Settings → Import from Files. You can also copy comics from a Mac using Finder file sharing.")
         #else
-        return description
+        return NSLocalizedString("LOCAL_FILES_INFO")
         #endif
     }
 
     var body: some View {
         List {
-            Section {
-                SettingHeaderView(
-                    icon: .raw(Image(.local)),
-                    title: NSLocalizedString("LOCAL_FILES"),
-                    subtitle: localFilesDescription
-                )
+            Group {
+                Section {
+                    SettingHeaderView(
+                        icon: .raw(Image(.local)),
+                        title: NSLocalizedString("LOCAL_FILES"),
+                        subtitle: localFilesDescription
+                    )
+                }
             }
+            #if SUMI
+            .honbakoPaperRows()
+            #endif
         }
+        #if SUMI
+        .honbakoPaperListBackground()
+        #endif
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if #available(iOS 26.0, *) {

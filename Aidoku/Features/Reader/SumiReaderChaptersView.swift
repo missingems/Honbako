@@ -12,11 +12,13 @@ struct SumiReaderChaptersView: View {
     let setJapaneseLearning: ((Bool) -> Void)?
     private let offersJapaneseLearning: Bool
     @State private var japaneseLearningEnabled: Bool
+    @ObservedObject private var pro = HonbakoProStore.shared
     let canRead: (AidokuRunner.Chapter) -> Bool
     let select: (AidokuRunner.Chapter, Bool) -> Void
     let close: () -> Void
 
     @StateObject private var chapterState = HonbakoReaderChapterState()
+    @ObservedObject private var availability = HonbakoChapterAvailability.shared
     @State private var requestedPro: HonbakoProFeature?
     @State private var showingEarlierPrompt = false
     @State private var pendingChapter: AidokuRunner.Chapter?
@@ -32,6 +34,7 @@ struct SumiReaderChaptersView: View {
     @State private var discoveringLanguages = false
     @State private var languageDiscoveryFailed = false
     @State private var languageDiscoveryRetry = 0
+    @State private var scrolledToCurrentChapter = false
 
     init(chapters: [AidokuRunner.Chapter], currentKey: String,
          currentPage: Int = 0, currentTotalPages: Int = 0,
@@ -81,77 +84,117 @@ struct SumiReaderChaptersView: View {
 
     private var currentLanguage: String { SumiChapterLanguage.normalized(currentChapter?.language) ?? "" }
 
+    private var currentScrollTarget: String? {
+        !loading && visibleChapters.contains(where: { $0.key == currentKey }) ? currentKey : nil
+    }
+
     var body: some View {
         NavigationStack {
-            List {
-                if offersJapaneseLearning {
-                    Section {
-                        Toggle("Romaji on Page", isOn: $japaneseLearningEnabled)
-                            .tint(Color(uiColor: .systemGreen))
-                            .accessibilityIdentifier("Honbako.Reader.Japanese.ToggleInChapters")
-                            .disabled(committing)
-                            .onChange(of: japaneseLearningEnabled) { _, enabled in setJapaneseLearning?(enabled) }
-                    } footer: {
-                        Text("Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation.")
+            ScrollViewReader { scroll in
+                List {
+                    if let manga, HonbakoDeviceModel.isPhoneDuo {
+                        Section {
+                            HonbakoMangaCoverModeControl(mangaID: manga.identifier,
+                                requestPro: { requestedPro = .coverDisplay })
+                                .disabled(committing)
+                        } footer: {
+                            Text("Choose whether this manga appears on the outer display while you read. Cover mode requires Honbako Pro and uses the camera. No photos or video are recorded or saved.")
+                        }
                     }
-                }
-                languageSection
-                if let manga, let current = chapters.first(where: { $0.key == currentKey }) {
-                    HonbakoReaderActionsView(manga: manga, chapter: current,
-                        chapters: SumiChapterLanguage.filter(chapters, language: currentLanguage), sourceAvailable: source != nil,
-                        chapterState: chapterState, requestPro: { requestedPro = $0 })
-                        .disabled(committing)
-                }
-                if let languageNotice, !loading {
-                    Section {
-                        Text(languageNotice).foregroundStyle(.secondary)
-                    }
-                }
-                if loading {
-                    Section {
-                        ProgressView("Finding Chapters in \(SourceLanguage.displayName(for: selectedLanguage))…")
-                    }
-                } else if let errorMessage {
-                    Section {
-                        Text(errorMessage).foregroundStyle(.secondary)
-                        Button("Try Again") { retry += 1 }
-                    }
-                } else if visibleChapters.isEmpty {
-                    ContentUnavailableView("No Chapters", systemImage: "book.closed",
-                        description: Text("This source has no chapters in this language."))
-                } else {
-                    Section {
-                        ForEach(visibleChapters, id: \.key) { chapter in
-                            HStack(spacing: 12) {
-                                Button { Task { await choose(chapter, resumingTranslation: false) } } label: {
-                                    chapterLabel(chapter)
+                    if offersJapaneseLearning {
+                        Section {
+                            Toggle("Romaji on Page", isOn: Binding(
+                                get: { japaneseLearningEnabled && pro.hasPro && HonbakoProStore.cachedHasPro },
+                                set: { enabled in
+                                    guard !enabled || (pro.hasPro && HonbakoProStore.cachedHasPro) else { requestedPro = .japaneseGuide; return }
+                                    japaneseLearningEnabled = enabled
+                                    setJapaneseLearning?(enabled)
                                 }
-                                .buttonStyle(.plain)
-                                .disabled(!canRead(chapter) || committing)
-                                .accessibilityIdentifier("Sumi.Reader.Chapter.\(chapter.key)")
-                                if manga?.sourceKey != HonbakoTutorialManga.sourceKey { chapterDownloadMenu(chapter) }
+                            ))
+                                .tint(Color(uiColor: .systemGreen))
+                                .accessibilityIdentifier("Honbako.Reader.Japanese.ToggleInChapters")
+                                .disabled(committing)
+                                .onChange(of: pro.hasPro) { _, enabled in
+                                    guard !enabled else { return }
+                                    japaneseLearningEnabled = false
+                                    setJapaneseLearning?(false)
+                                }
+                        } footer: {
+                            Text("Read character-aligned romaji directly on the manga. Tap for pronunciation and translation.")
+                        }
+                    }
+                    languageSection
+                    if let manga, let current = chapters.first(where: { $0.key == currentKey }) {
+                        HonbakoReaderActionsView(manga: manga, chapter: current,
+                            chapters: SumiChapterLanguage.filter(chapters, language: currentLanguage), sourceAvailable: source != nil,
+                            chapterState: chapterState, requestPro: { requestedPro = $0 })
+                            .disabled(committing)
+                    }
+                    if let languageNotice, !loading {
+                        Section {
+                            Text(languageNotice).foregroundStyle(.secondary)
+                        }
+                    }
+                    if loading {
+                        Section {
+                            ProgressView("Finding Chapters in \(SourceLanguage.displayName(for: selectedLanguage))…")
+                        }
+                    } else if let errorMessage {
+                        Section {
+                            Text(errorMessage).foregroundStyle(.secondary)
+                            Button("Try Again") { retry += 1 }
+                        }
+                    } else if visibleChapters.isEmpty {
+                        ContentUnavailableView("No Chapters", systemImage: "book.closed",
+                            description: Text("This source has no chapters in this language."))
+                    } else {
+                        Section {
+                            ForEach(visibleChapters, id: \.key) { chapter in
+                                HStack(spacing: 12) {
+                                    Button { Task { await choose(chapter, resumingTranslation: false) } } label: {
+                                        chapterLabel(chapter)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!isReadable(chapter) || committing)
+                                    .accessibilityIdentifier("Sumi.Reader.Chapter.\(chapter.key)")
+                                    .accessibilityAddTraits(chapter.key == currentKey ? .isSelected : [])
+                                    .accessibilityValue(confirmedUnavailable(chapter) ? String(localized: "Unavailable")
+                                        : chapter.key == currentKey ? String(localized: "Currently reading") : "")
+                                    if manga?.sourceKey != HonbakoTutorialManga.sourceKey { chapterDownloadMenu(chapter) }
+                                }
+                                .id(chapter.key)
+                                .listRowBackground(chapter.key == currentKey
+                                    ? HonbakoPalette.accent.opacity(0.16) : Color(uiColor: .secondarySystemGroupedBackground))
                             }
                         }
                     }
                 }
-            }
-            .scrollContentBackground(.hidden)
-            .background(Color(uiColor: .systemGroupedBackground))
-            .accessibilityIdentifier("Sumi.Reader.Chapters")
-            .navigationTitle("Chapters")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color(uiColor: .systemGroupedBackground), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done", systemImage: "xmark", action: close).disabled(committing)
+                .scrollContentBackground(.hidden)
+                .background(Color(uiColor: .systemGroupedBackground))
+                .accessibilityIdentifier("Sumi.Reader.Chapters")
+                .navigationTitle("Chapters")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(Color(uiColor: .systemGroupedBackground), for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done", systemImage: "xmark", action: close).disabled(committing)
+                    }
                 }
-            }
-            .task(id: "\(selectedLanguage)|\(retry)") { await loadLanguage() }
-            .task(id: languageDiscoveryRetry) { await loadAvailableLanguages() }
-            .task(id: chapters.map(\.key)) {
-                await chapterState.configure(manga: manga, chapters: chapters, currentKey: currentKey,
-                    currentPage: currentPage, currentTotal: currentTotalPages)
+                .task(id: currentScrollTarget) {
+                    guard let target = currentScrollTarget, !scrolledToCurrentChapter else { return }
+                    // Wait for the native List to register the loaded row IDs.
+                    await Task.yield()
+                    guard !Task.isCancelled else { return }
+                    scroll.scrollTo(target, anchor: .center)
+                    scrolledToCurrentChapter = true
+                }
+                .task(id: "\(selectedLanguage)|\(retry)") { await loadLanguage() }
+                .task(id: languageDiscoveryRetry) { await loadAvailableLanguages() }
+                .task(id: chapters.map(\.key)) {
+                    await chapterState.configure(manga: manga, chapters: chapters, currentKey: currentKey,
+                        currentPage: currentPage, currentTotal: currentTotalPages)
+                }
             }
         }
         // Present from the stable picker host, not a reusable List section.
@@ -164,8 +207,21 @@ struct SumiReaderChaptersView: View {
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .presentationBackground(Color(uiColor: .systemGroupedBackground))
-        .tint(.primary)
+        .tint(HonbakoPalette.accent)
         .interactiveDismissDisabled(committing)
+    }
+
+    private func confirmedUnavailable(_ chapter: AidokuRunner.Chapter) -> Bool {
+        if let manga {
+            let id = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            if DownloadManager.shared.getDownloadStatus(for: id) == .finished { return false }
+            if let source, availability.isUnavailable(source: source, manga: manga, chapter: chapter) { return true }
+        }
+        return chapter.locked
+    }
+
+    private func isReadable(_ chapter: AidokuRunner.Chapter) -> Bool {
+        canRead(chapter) && !confirmedUnavailable(chapter)
     }
 
     private func chapterLabel(_ chapter: AidokuRunner.Chapter) -> some View {
@@ -173,7 +229,7 @@ struct SumiReaderChaptersView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(chapter.chapterNumber.map { String(localized: "Chapter \(String(format: "%g", Double($0)))") }
                     ?? chapter.title ?? String(localized: "Chapter"))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(confirmedUnavailable(chapter) ? Color.secondary : Color.primary)
                 if chapter.chapterNumber != nil, let title = chapter.title, !title.isEmpty {
                     Text(title).font(.subheadline).foregroundStyle(.secondary)
                 }
@@ -193,8 +249,8 @@ struct SumiReaderChaptersView: View {
                 .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            if !canRead(chapter) { Image(systemName: "lock").foregroundStyle(.secondary) }
-            else if chapter.key == currentKey { Image(systemName: "checkmark").foregroundStyle(.primary) }
+            if !isReadable(chapter) { Image(systemName: "lock").foregroundStyle(.secondary) }
+            else if chapter.key == currentKey { Image(systemName: "checkmark.circle.fill").foregroundStyle(HonbakoPalette.accent) }
             else if chapterState.reading[chapter.key]?.completed == true {
                 Image(systemName: "checkmark.circle").foregroundStyle(.secondary)
             }
@@ -223,7 +279,7 @@ struct SumiReaderChaptersView: View {
                        systemImage: status == .failed ? "arrow.clockwise" : "arrow.down.circle") {
                     downloadChapter(chapter)
                 }
-                .disabled(source == nil || chapter.locked)
+                .disabled(source == nil || chapter.locked || confirmedUnavailable(chapter))
             }
         } label: {
             VStack(spacing: 3) {
@@ -335,13 +391,14 @@ struct SumiReaderChaptersView: View {
                 let fetched = try await SumiLanguageChapterLoader.load(source: source, manga: manga, language: language)
                 try Task.checkCancellation()
                 guard selectedLanguage == language else { return }
+                availability.clear(sourceKey: source.key, mangaKey: manga.key)
                 chapters = SumiChapterLanguage.merge(chapters, with: fetched)
             }
             try Task.checkCancellation()
             guard selectedLanguage == language else { return }
             loading = false
             guard language != currentLanguage, let currentChapter, !visibleChapters.isEmpty else { return }
-            let readable = chapters.filter(canRead)
+            let readable = chapters.filter(isReadable)
             if let translated = SumiChapterLanguage.equivalent(to: currentChapter, in: readable, language: language) {
                 await choose(translated, resumingTranslation: true)
             } else {
@@ -357,7 +414,7 @@ struct SumiReaderChaptersView: View {
 
     private func choose(_ chapter: AidokuRunner.Chapter, resumingTranslation: Bool,
                         considerEarlier: Bool = true) async {
-        guard !committing else { return }
+        guard !committing, isReadable(chapter) else { return }
         committing = true
         defer { committing = false }
         do {

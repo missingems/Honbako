@@ -140,7 +140,7 @@ struct SumiSpotlightSearchView: View {
                         y: top - (reduceMotion ? 0 : 24 * (1 - presentation.revealProgress)))
             }
         }
-        .tint(.primary)
+        .tint(HonbakoPalette.accent)
         .sheet(isPresented: $sourcesPresented) { SumiSourcesView() }
         .onChange(of: presentation.query) { search() }
         .onChange(of: presentation.isPresented) {

@@ -1,0 +1,35 @@
+REVIEW PROVIDER INSTRUCTIONS — PUBLIC HTTPS VERIFIED
+Put dedicated reviewer passwords only in private review information; never use fixture administrator credentials. Passwords are intentionally absent from this source file. A fresh reviewer-owned MCP entitlement/OAuth flow remains to be verified separately.
+
+CONTENT
+All samples are original Honbako content. No third-party manga catalog or rights are required for these tests.
+
+KOMGA
+1. Open Settings > Sources > Personal Server, then add Komga.
+2. Enter https://komga-review.honbako.xyz and its dedicated reader credentials from the private review information.
+3. Search for Your Collections, add it to Library, and open Chapter 1.
+4. Read its 5 images including the original cover; close at page 3 and reopen to verify resume.
+
+KAVITA
+1. Add https://kavita-review.honbako.xyz using its dedicated non-admin reader credentials.
+2. Search for Read Your Way, add it, and read Chapter 1 (5 images including cover).
+3. Check both the cover and every chapter page, then resume after closing.
+
+SUWAYOMI
+1. Add https://suwayomi-review.honbako.xyz and dedicated review gateway credentials.
+2. This endpoint is a bounded read-only gateway in front of a real Suwayomi 2.4.2366 instance. It serves only the original sample; reviewers do not receive server administration or extension installation access.
+3. Search for Search & Delete, add it, and read Chapter 1 (5 images including cover).
+
+MCP — REVIEWER'S OWN WORKSPACE
+1. Keep the Komga review connection above configured. Its separate original-sample library contains The Bookshop Between Pages (one chapter, cover plus 6 story pages).
+2. In the reviewer's own fresh installation, use Apple's genuine no-charge Sandbox purchase flow to activate Pro, then open Settings > MCP Server, select Remote, and enable Connect Remotely. Confirm Apple labels the transaction as a test purchase. There is no shared test unlock code or shared owner account. Xcode-local StoreKit transactions do not unlock remote access; there is no entitlement bypass.
+3. The app routes verified Sandbox and Production purchases to different hosted services. Copy the MCP URL actually shown by this installation. Verified Sandbox purchases use https://test-mcp.honbako.xyz/remote/mcp; production purchases use https://mcp.honbako.xyz/remote/mcp. Use the app-shown URL as authoritative, and do not reuse another user's old connector or credential.
+4. Add Honbako in a supported AI provider with OAuth. Open the authorization link in Honbako and approve this reviewer connection. AI-provider availability may depend on the reviewer's account/plan.
+For this original-content coaching exercise, enable MCP Permissions: Read Library and Sources, Read Reading History and Progress, View Manga Pages, Add Books, and Annotate Manga Pages. Keep Honbako open to sync changes and process requests. Leave Manage Sources off unless testing an explicitly approved source change.
+5. Ask: “Find The Bookshop Between Pages in my Komga collection and add it to my Honbako library.” Approve the proposed addition on the phone.
+6. Open its chapter and advance to page 3. Ask the AI what is being read; verify title, chapter and current page match. Ask for a spoiler-limited recap, then a simple annotation on that original page.
+7. Verify the drawing arrives on the same page. Change pages and confirm the old-page drawing is not applied to the new page.
+8. Revoke that AI connection and verify further access is denied. Do not disconnect another person's device or share any owner/admin grant.
+
+CURRENT VERIFICATION
+Local real-provider catalog/chapter/image checks pass (22images total). Restricted reader accounts and negative Suwayomi gateway scope checks pass. Actual native source-adapter tests pass for all3providers, including authentication, search, chapter enumeration, all5original page hashes, and cover decoding. All three public HTTPS endpoints now pass strict certificate/hostname validation, unauthenticated and wrong-password rejection, exact hashes for all 22 original page images, and restricted administrative/gateway checks. Provider ports are externally closed; TLS and all pages survived a clean VM reboot and proxy restart. Real native-adapter tests against HTTPS and iPhone-cellular checks remain pending. A fresh Apple-verified reviewer MCP workspace/OAuth flow also remains pending; do not describe it as completed or reuse an owner's grant.

@@ -20,7 +20,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
                 glass.isHidden = true
                 rail.insertSubview(collection, belowSubview: lens)
             } else {
-                glass.effect = SumiReaderToolbar.makeGlassEffect()
+                glass.effect = SumiReaderToolbar.makeGlassEffect(tintColor: HonbakoPalette.glassTintUIColor)
                 glass.isHidden = false
                 glass.contentView.addSubview(collection)
             }
@@ -63,17 +63,14 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             cancelPreview(); collection.reloadData(); setNeedsLayout()
         }
     }
-    private let glass = UIVisualEffectView(effect: SumiReaderToolbar.makeGlassEffect())
+    private let glass = UIVisualEffectView(effect: SumiReaderToolbar.makeGlassEffect(tintColor: HonbakoPalette.glassTintUIColor))
     private let rail = UIView()
     private let floatingOverlay = UIView()
     private let lens = SumiScrubberLensView()
     private let flow = SumiFilmstripLayout()
     private lazy var collection = UICollectionView(frame: .zero, collectionViewLayout: flow)
     private let edgeFade = CAGradientLayer()
-    private let positionGlass = UIVisualEffectView(effect: {
-        let effect = UIGlassEffect(style: .regular)
-        return effect
-    }())
+    private let positionBadge = UIView()
     private let pageLabel = UILabel()
     private let preview = SumiSpreadThumbnailView()
     private let hoverGlass = SumiScrubHoverGlassView()
@@ -132,18 +129,18 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         glass.contentView.addSubview(collection)
         lens.accessibilityIdentifier = "Sumi.Reader.SelectedSpread"
         rail.addSubview(lens)
-        positionGlass.contentView.backgroundColor = .clear
-        positionGlass.layer.cornerRadius = 15; positionGlass.clipsToBounds = true
-        positionGlass.isUserInteractionEnabled = false
-        positionGlass.accessibilityIdentifier = "Sumi.Reader.PagePosition"
-        pageLabel.textColor = .label
+        positionBadge.backgroundColor = HonbakoPalette.scrubberUIColor
+        positionBadge.layer.cornerRadius = 15; positionBadge.clipsToBounds = true
+        positionBadge.isUserInteractionEnabled = false
+        positionBadge.accessibilityIdentifier = "Sumi.Reader.PagePosition"
+        pageLabel.textColor = .white
         pageLabel.font = .preferredFont(forTextStyle: .caption1)
         pageLabel.adjustsFontForContentSizeCategory = true; pageLabel.textAlignment = .center
         pageLabel.accessibilityCustomActions = [
             UIAccessibilityCustomAction(name: String(localized: "Previous spread")) { [weak self] _ in self?.accessibilityMove(-1) ?? false },
             UIAccessibilityCustomAction(name: String(localized: "Next spread")) { [weak self] _ in self?.accessibilityMove(1) ?? false }
         ]
-        positionGlass.contentView.addSubview(pageLabel); addSubview(positionGlass)
+        positionBadge.addSubview(pageLabel); addSubview(positionBadge)
         preview.accessibilityIdentifier = "Sumi.Reader.ScrubPreview"
         preview.isHidden = true
         preview.layer.shadowColor = UIColor.black.cgColor; preview.layer.shadowOpacity = 0.38
@@ -201,7 +198,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
             floatingOverlay.removeFromSuperview()
             parent = self
         }
-        for view in [positionGlass, preview] where view.superview !== parent {
+        for view in [positionBadge, preview] where view.superview !== parent {
             view.removeFromSuperview(); parent.addSubview(view)
         }
     }
@@ -210,7 +207,7 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
         return convert(point, to: parent)
     }
     private func overlayFrame(_ frame: CGRect) -> CGRect {
-        guard let parent = positionGlass.superview, parent !== self else { return frame }
+        guard let parent = positionBadge.superview, parent !== self else { return frame }
         return convert(frame, to: parent)
     }
 
@@ -311,8 +308,8 @@ final class SumiPageScrubber: UIControl, UICollectionViewDataSource, UICollectio
                 y: (lifted ? hoverCenter.y - preview.bounds.height / 2 - hoverOutset : lensFrame.minY) - labelHeight - SumiScrubberMetrics.badgeGap,
                 width: width, height: labelHeight)
         }
-        positionGlass.frame = fittedOverlayFrame(overlayFrame(labelFrame), preservesAspect: false)
-        pageLabel.frame = positionGlass.bounds.insetBy(dx: 8, dy: 4)
+        positionBadge.frame = fittedOverlayFrame(overlayFrame(labelFrame), preservesAspect: false)
+        pageLabel.frame = positionBadge.bounds.insetBy(dx: 8, dy: 4)
         updateVisibleSelection()
     }
 

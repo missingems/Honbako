@@ -35,10 +35,11 @@ struct HonbakoJapaneseRegion: Identifiable, Equatable, Sendable {
     /// Relative to the oriented page image: origin is top-left and each axis is 0...1.
     let boundingBox: CGRect
     let words: [HonbakoJapaneseWordRegion]
+    let characters: [HonbakoJapaneseCharacterRegion]
 
     init(id: Int, text: String, reading: String?, romaji: String?, confidence: Float,
          readingIsEstimated: Bool, direction: Direction, boundingBox: CGRect,
-         words: [HonbakoJapaneseWordRegion] = []) {
+         words: [HonbakoJapaneseWordRegion] = [], characters: [HonbakoJapaneseCharacterRegion] = []) {
         self.id = id
         self.text = text
         self.reading = reading
@@ -48,5 +49,6 @@ struct HonbakoJapaneseRegion: Identifiable, Equatable, Sendable {
         self.direction = direction
         self.boundingBox = boundingBox
         self.words = words
+        self.characters = characters
     }
 }

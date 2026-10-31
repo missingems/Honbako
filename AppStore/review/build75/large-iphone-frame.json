@@ -1,0 +1,24 @@
+{
+  "frame": "/Users/jun/Documents/Codex/2026-10-24/help-me-clone-x20/work/honbako/apple-frames/iphone-large.png",
+  "source": "https://devimages-cdn.apple.com/design/resources/download/Bezel-iPhone-18.dmg",
+  "license": "Owner explicitly accepted Apple Design Resources License 20230621 on 2026-10-28",
+  "sha256": "6cb9e72efb88c172710d0388f63f51fad883c86895ee382fb402559c0315343d",
+  "frame_size": [
+    1470,
+    3000
+  ],
+  "screen_box": [
+    75,
+    66,
+    1320,
+    2868
+  ],
+  "raw_capture_size": [
+    1320,
+    2868
+  ],
+  "device": "iPhone 18 Pro Max",
+  "simulator_udid": "5BA61F93-11A7-4F62-9E6A-0A513C557E08",
+  "ui_fabricated": false,
+  "new_image_generation": false
+}

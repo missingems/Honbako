@@ -27,7 +27,7 @@
 "COPY" = "Copy";
 "WARNING" = "Warning";
 "ENABLE_PERMISSION" = "Enable Permission";
-"PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Aidoku access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Honbako access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
 "CONTENT" = "Content";
 "%@_EXPERIMENTAL" = "%@ (Experimental)";
 
@@ -221,7 +221,7 @@
 // Local Source
 "LOCAL_FILES" = "Local Files";
 "LOCAL_FILES_TAGLINE" = "Read from local files";
-"LOCAL_FILES_INFO" = "The local files source allows you to upload and manage your own reading library directly within Aidoku.";
+"LOCAL_FILES_INFO" = "The local files source allows you to upload and manage your own reading library directly within Honbako.";
 "LOCAL_FILES_SETUP" = "Local Files Setup";
 "IMPORT" = "Import";
 "IMPORT_FILE" = "Import File";
@@ -453,7 +453,7 @@
 "ICLOUD_SYNC" = "iCloud Sync";
 "ICLOUD_SYNC_ENABLE" = "Sync Library and Reading Progress";
 "ICLOUD_SYNC_SCOPE" = "Your library, categories, and reading progress sync through your private iCloud library. Downloads stay on this device. Install the same source extensions on your other devices.";
-"ICLOUD_SYNC_RESTART_REQUIRED" = "Restart Aidoku to apply this change. Your local library is kept.";
+"ICLOUD_SYNC_RESTART_REQUIRED" = "Restart Honbako to apply this change. Your local library is kept.";
 "ICLOUD_SYNC_STATUS" = "Status";
 "ICLOUD_SYNC_CHECKING" = "Checking iCloud Account…";
 "ICLOUD_SYNC_ENABLED" = "Sync enabled";
@@ -463,7 +463,7 @@
 "ICLOUD_SYNC_OFF" = "Sync is off for this app session";
 "ICLOUD_SYNC_CHECK_ACCOUNT" = "Check iCloud Account";
 "ICLOUD_SYNC_SCHEDULE_INFO" = "iCloud syncs automatically when the system allows. Changes remain saved on this device while offline. Checking your account does not force a sync.";
-"ICLOUD_SYNC_REQUIREMENTS" = "Use the same Apple Account and this build on your other devices. This build has its own private iCloud library, separate from the official Aidoku app.";
+"ICLOUD_SYNC_REQUIREMENTS" = "Use the same Apple Account on your other devices to keep your library in sync.";
 "ICLOUD_SYNC_CONFIGURATION_ERROR" = "This build cannot access its iCloud library. Check its iCloud signing configuration.";
 "ICLOUD_SYNC_WAITING_NETWORK" = "Waiting for iCloud or an internet connection. Your changes remain saved on this device.";
 "ICLOUD_SYNC_STORAGE_FULL" = "Your iCloud storage is full. Free some space to continue syncing.";
@@ -510,7 +510,7 @@
 "BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
 "NEW_CHAPTER_NOTIFICATIONS" = "New Chapter Notifications";
 "NEW_CHAPTER_NOTIFICATIONS_TEXT" = "Get alerts for new chapters in your saved library after a successful update. Skip, category, and Wi-Fi rules apply. iOS controls background update timing, so alerts may not arrive immediately.";
-"NEW_CHAPTER_NOTIFICATIONS_DENIED_TEXT" = "Allow notifications for Aidoku in iPhone Settings to receive new chapter alerts.";
+"NEW_CHAPTER_NOTIFICATIONS_DENIED_TEXT" = "Allow notifications for Honbako in iPhone Settings to receive new chapter alerts.";
 "1_NEW_CHAPTER_AVAILABLE" = "New chapter available";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d new chapters available";
 "NEW_CHAPTERS_AVAILABLE" = "New Chapters Available";
@@ -564,7 +564,7 @@
 "COPY_URL" = "Copy URL";
 "LEGACY_SOURCE_LIST" = "Legacy Source List";
 "LEGACY_SOURCE_LIST_WARNING" = "Warning: Legacy Source List";
-"LEGACY_SOURCE_LIST_WARNING_INFO" = "You currently have a legacy source list configured. This format is outdated and will stop working in a future version of Aidoku. While it will still work for now, it is recommended that you find a replacement and configure it in Settings > Source Lists.";
+"LEGACY_SOURCE_LIST_WARNING_INFO" = "You currently have a legacy source list configured. This format is outdated and will stop working in a future version of Honbako. While it will still work for now, it is recommended that you find a replacement and configure it in Settings > Source Lists.";
 
 // Upscaling
 "UPSCALING" = "Upscaling";
@@ -1249,15 +1249,15 @@
 "Honbako.CollectionGuide.Local.Footer" = "You can also open a CBZ or ZIP from Files in Honbako after setting up Local Files.";
 "Honbako.CollectionGuide.Server.Title" = "Your Personal Server";
 "Honbako.CollectionGuide.Server.Body" = "Connect your existing Komga, Kavita, or Suwayomi library. Enter the server address and use its sign-in options. Your server must be reachable from this device.";
-"Honbako.CollectionGuide.Sources.Title" = "A Provider Connection";
-"Honbako.CollectionGuide.Sources.Body" = "Add a compatible source list link supplied by your provider. Open the list and install the sources you want to use.";
-"Honbako.CollectionGuide.Sources.Footer" = "Import Source File accepts a compatible .aix connection file. Use Local Files for your CBZ or ZIP comics.";
+"Honbako.CollectionGuide.Sources.Title" = "Extensions";
+"Honbako.CollectionGuide.Sources.Body" = "Add a compatible extension repository, then install the extensions for the sources you want to use.";
+"Honbako.CollectionGuide.Sources.Footer" = "Install extension file accepts a compatible .aix file. Use Import from Files for CBZ or ZIP comics.";
 "Honbako.CollectionGuide.Search.Title" = "Find and Save Your Books";
 "Honbako.CollectionGuide.Search.Body" = "In Settings, turn on your connection under Included in Search. Tap Done, then use Search in the top toolbar to find a title.";
 "Honbako.CollectionGuide.Save.Body" = "Tap Add beside a result to keep it on your shelf. Open its cover to read; Resume returns to your saved page.";
 "Honbako.CollectionGuide.Settings.Subtitle" = "Bring comics from Files or connect your own library.";
 
-"Honbako.ExternalBeta.Footer" = "External-sources beta. Add a source list or source package to connect a provider. No connections are added automatically.";
+"Honbako.ExternalBeta.Footer" = "Extensions provide manga sources. Add an extension repository or install a compatible .aix extension. Nothing is installed automatically.";
 "Honbako.ExternalBeta.Intro" = "Start with the original tutorial, then add your own files, a personal server, or a provider connection.";
 
 /* Library empty and hidden-finished states. */
@@ -1374,3 +1374,8 @@
 
 // Japanese reading help stays on the live manga page.
 "Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation." = "Read word-by-word romaji directly on the manga. Tap a word for pronunciation and translation.";
+
+/* Honbako creator credit */
+"Created by @nsjunxiu" = "Created by @nsjunxiu";
+
+"Support Email" = "Support Email";

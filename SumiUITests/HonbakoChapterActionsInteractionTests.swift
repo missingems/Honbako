@@ -118,7 +118,7 @@ final class HonbakoChapterActionsInteractionTests: XCTestCase {
 
     @MainActor
     private func openChapters(in app: XCUIApplication) throws -> XCUIElement {
-        XCTAssertTrue(item("Sumi.Reader.Title", app).waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Sumi.Reader.Navigation"].waitForExistence(timeout: 10))
         let button = app.buttons["Sumi.Reader.ChaptersButton"]
         XCTAssertTrue(button.waitForExistence(timeout: 10))
         centerTap(button)

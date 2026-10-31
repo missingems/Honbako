@@ -1,0 +1,17 @@
+Honbako 0.1.0 (75) is a personal-collection manga reader for iPhone and iPad. This public build imports CBZ/ZIP comics and connects the user's Komga, Kavita or Suwayomi server. No third-party catalog, extension repository installation or .aix import is included. Five original illustrated guides work offline without an account.
+
+REVIEW ROUTE
+1. Complete Honbako → AI companion → Plans onboarding. Choose Free and Continue; no purchase is required. Open The Bookshop Between Pages. Swipe pages, tap for native title/chapter controls, rotate, scrub to another page and open Chapters. The current chapter is highlighted. Close/reopen to resume.
+2. Library Settings → Import from Files accepts authorized CBZ/ZIP comics from Files, including iCloud Drive. Confirm the import, search for the title and read it. Search is the circular button beside Settings. Imported files stay local.
+3. Settings → Personal Server offers Komga, Kavita and Suwayomi. Use each review server's private access information to search, add and read its original sample book. Test an incorrect password and then sign in correctly. These are personal collections, not a supplied third-party manga catalog.
+4. Settings → iCloud Sync is free. Library, bookmarks, reading position and safe connection details sync privately. Passwords, tokens, downloads, imported files and extension binaries stay local; restored servers may need local sign-in.
+5. Settings → Honbako Pro compares Free, monthly and annual plans. StoreKit supplies localized prices and eligible trials (U.S. monthly base US$2.99; eligible monthly trial one week, annual one month). Use Apple's permitted review purchase environment. No beta entitlement bypass exists. Restore Purchases checks existing subscriptions. Active members see Manage Subscription instead of another purchase offer.
+6. Pro adds chapter downloads/alerts, Japanese on-page romaji/pronunciation/translation, Cover Mode and extra reading/update widgets. Downloads/alerts depend on the user's server and iOS permissions/background refresh. Japanese guidance requires a Japanese chapter and may need system language resources. Free includes the last-read Resume widget and iCloud sync.
+7. Optional AI: Settings → MCP Server offers free Local and Pro Remote. Add the displayed MCP URL to a compatible provider and approve OAuth in Honbako. An Apple-verified entitlement selects its matching service; test purchases are isolated from Production. Test library/history and allowed page context/annotations, then disconnect to revoke access. The user supplies their AI account; provider support varies.
+
+Optional iPhone Duo Cover Mode requires camera permission for Apple's video-only display accessory. No photos/video are recorded, no microphone is attached and no camera frames go to the developer. Capture stops when hidden, closed, folded or backgrounded.
+
+Screenshots show genuine local imports of original one-page cover-art portfolios; these are not bundled story titles or a supplied catalog. Reader/Chapters show the original tutorial. English, Japanese, Simplified Chinese and Traditional Chinese interfaces are available.
+
+Support: https://missingems.github.io/Honbako/support/
+Privacy: https://missingems.github.io/Honbako/privacy/

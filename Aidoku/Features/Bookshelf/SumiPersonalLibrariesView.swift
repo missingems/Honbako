@@ -4,12 +4,16 @@ import SwiftUI
 struct SumiPersonalLibrariesView: View {
     var body: some View {
         List {
-            Section {
-                NavigationLink("Komga") { KomgaSetupView() }
-                NavigationLink("Kavita") { KavitaSetupView() }
-                NavigationLink("Suwayomi") { SuwayomiSetupView() }
-            } footer: { Text("Honbako.CollectionGuide.Server.Body") }
+            Group {
+                Section {
+                    NavigationLink("Komga") { KomgaSetupView() }
+                    NavigationLink("Kavita") { KavitaSetupView() }
+                    NavigationLink("Suwayomi") { SuwayomiSetupView() }
+                } footer: { Text("Honbako.CollectionGuide.Server.Body") }
+            }
+            .honbakoPaperRows()
         }
+        .honbakoPaperListBackground()
         .navigationTitle("Personal Server")
         .navigationBarTitleDisplayMode(.inline)
     }

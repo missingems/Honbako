@@ -1,5 +1,11 @@
 # Privacy and release data-flow review
 
+## Current build69 release status — 30 October 2026
+
+Production managed MCP is deployed with strict Production purchase verification; the isolated Sandbox service remains separate. Verified StoreKit transaction environments select the matching service automatically. Production Apple API access still returns401 before the first App Store release, while Sandbox200 succeeds. No fallback between purchase environments was added.
+
+The published privacy policy now describes shared library/source/search and all-reading-history requests, persistent current-page/annotation content, bounded jobs, connected-disconnect deletion, indefinite minimal hashed ownership records, and a private contact. App Store Connect now declares eight retained-data types for App Functionality, linked to the installation/workspace, with tracking set to No. See build69/privacy-draft.json and the published UI proof for the exact categories. The older audit/checkpoints below describe earlier builds and are retained as history.
+
 Engineering audit: updated 28 October 2026. This is preparation for the owner's declarations, not a published privacy policy or a legal attestation.
 
 | Flow | Evidence in this checkout | Submission implication |
@@ -20,3 +26,10 @@ The manifest sets tracking to false based on the audited implementation. It deli
 The in-app Privacy Information sheet describes these current flows. `web-drafts` contains localized support drafts with the authorized feedback email, plus policy drafts whose operator identity, privacy contact, retention details, and public policy URL still require owner review. These drafts have not been approved or published as policy. A real policy URL is still required in App Store Connect and must be linked in the final subscription presentation.
 
 The existing `ITSAppUsesNonExemptEncryption=NO` build setting is not a new export determination. Apple documents an exemption path for encryption limited to Apple operating-system facilities, but the owner must review the final engine/dependency/source behavior and markets before confirming the answer. See [Apple export-compliance table](https://developer.apple.com/help/app-store-connect/reference/export-compliance-documentation-for-encryption/).
+
+
+## Remote MCP release preparation — 30 October 2026
+
+The new optional hosted service retains shared library/reading metadata, the latest shared page and annotations, queued work, installation credentials/hashes, and purchase identifiers for subscription checks. The earlier “Data Not Collected” answer must be reassessed and updated before a public build enables hosted enrollment. The policy source and in-app privacy information now describe this flow, provider processing and disconnect deletion. These edits have not been published and the live App Store privacy answer has not been changed.
+
+The per-user remote route remains disabled pending App Store Server API credentials, verification with a real purchase, provider OAuth acceptance and deployment review. Existing local and private pilot connections are preserved. No billing plan or subscription price changed.

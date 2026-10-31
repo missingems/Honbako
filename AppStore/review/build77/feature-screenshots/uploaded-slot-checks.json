@@ -1,0 +1,62 @@
+[
+  {
+    "locale": "en-US",
+    "device": "iphone-medium",
+    "count": 6
+  },
+  {
+    "locale": "en-US",
+    "device": "iphone",
+    "count": 6
+  },
+  {
+    "locale": "en-US",
+    "device": "ipad",
+    "count": 6
+  },
+  {
+    "locale": "ja",
+    "device": "ipad",
+    "count": 6
+  },
+  {
+    "locale": "ja",
+    "device": "iphone-medium",
+    "count": 6
+  },
+  {
+    "locale": "ja",
+    "device": "iphone",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hans",
+    "device": "iphone-medium",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hans",
+    "device": "iphone",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hans",
+    "device": "ipad",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hant",
+    "device": "ipad",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hant",
+    "device": "iphone-medium",
+    "count": 6
+  },
+  {
+    "locale": "zh-Hant",
+    "device": "iphone",
+    "count": 6
+  }
+]

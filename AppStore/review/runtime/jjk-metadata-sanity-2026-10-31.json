@@ -1,0 +1,217 @@
+{
+  "checkedAt": "2026-10-30T17:18:11.016183+00:00",
+  "titleID": "c52b2ce3-7f95-469c-96b0-479524fb7a1a",
+  "title": "Jujutsu Kaisen",
+  "defaultSourceLanguage": "en",
+  "englishFeedURL": "https://api.mangadex.org/manga/c52b2ce3-7f95-469c-96b0-479524fb7a1a/feed?contentRating%5B%5D=safe&contentRating%5B%5D=suggestive&limit=500&offset=0&includeEmptyPages=1&includeExternalUrl=1&includeUnavailable=1&includeFutureUpdates=0&includeFuturePublishAt=0&order%5Bvolume%5D=desc&order%5Bchapter%5D=desc&translatedLanguage%5B%5D=en",
+  "englishTotal": 5,
+  "englishReadableByMetadata": 0,
+  "englishOldestRows": [
+    {
+      "id": "a1477730-c9e2-4b34-b9f9-d28d7de7b8e5",
+      "chapter": "1",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "a7297785-1fe6-4e7a-9e38-497c087fc660",
+      "chapter": "2",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "b46a9067-c81d-4f00-8313-81f3a15b0fa0",
+      "chapter": "3",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "1a6e2671-7147-4f33-ad85-25324b5416cc",
+      "chapter": "4",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "de4ae70d-6eb4-4078-9916-b5e2c0e377e9",
+      "chapter": "271",
+      "volume": null,
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    }
+  ],
+  "englishNewestRows": [
+    {
+      "id": "a7297785-1fe6-4e7a-9e38-497c087fc660",
+      "chapter": "2",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "b46a9067-c81d-4f00-8313-81f3a15b0fa0",
+      "chapter": "3",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "1a6e2671-7147-4f33-ad85-25324b5416cc",
+      "chapter": "4",
+      "volume": "1",
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    },
+    {
+      "id": "de4ae70d-6eb4-4078-9916-b5e2c0e377e9",
+      "chapter": "271",
+      "volume": null,
+      "language": "en",
+      "pages": 0,
+      "unavailableReasons": [
+        "empty",
+        "external_only"
+      ]
+    }
+  ],
+  "anyLanguageReadableFeedURL": "https://api.mangadex.org/manga/c52b2ce3-7f95-469c-96b0-479524fb7a1a/feed?contentRating%5B%5D=safe&contentRating%5B%5D=suggestive&limit=10&offset=0&includeEmptyPages=0&includeExternalUrl=0&includeUnavailable=0&includeFutureUpdates=0&includeFuturePublishAt=0&order%5Bvolume%5D=asc&order%5Bchapter%5D=asc",
+  "anyLanguageReadableTotal": 23,
+  "anyLanguageOldestReadableSamples": [
+    {
+      "id": "34e6778d-289d-4df4-8361-87237e77df4a",
+      "chapter": "1",
+      "volume": "1",
+      "language": "az",
+      "pages": 55,
+      "unavailableReasons": []
+    },
+    {
+      "id": "9dc9ee10-8af6-48fc-bebe-fc02d52674a0",
+      "chapter": "2",
+      "volume": "1",
+      "language": "az",
+      "pages": 26,
+      "unavailableReasons": []
+    },
+    {
+      "id": "0d221942-15c5-4997-955d-bc3fd6a550a9",
+      "chapter": "3",
+      "volume": "1",
+      "language": "az",
+      "pages": 24,
+      "unavailableReasons": []
+    },
+    {
+      "id": "ac70643a-9b32-4e31-a5f2-8e690c50611c",
+      "chapter": "4",
+      "volume": "1",
+      "language": "az",
+      "pages": 20,
+      "unavailableReasons": []
+    },
+    {
+      "id": "26be09fc-db7f-442f-91ce-2175e32447f2",
+      "chapter": "5",
+      "volume": "1",
+      "language": "az",
+      "pages": 20,
+      "unavailableReasons": []
+    },
+    {
+      "id": "901ab49d-1ad9-4808-abbe-6b2b26022590",
+      "chapter": "6",
+      "volume": "1",
+      "language": "az",
+      "pages": 20,
+      "unavailableReasons": []
+    },
+    {
+      "id": "96518b0e-3e55-4b01-9e15-4cd1afede9b7",
+      "chapter": "7",
+      "volume": "1",
+      "language": "az",
+      "pages": 23,
+      "unavailableReasons": []
+    },
+    {
+      "id": "8bfe6a97-9d9e-47e9-ae47-d144bc06c2f3",
+      "chapter": "63",
+      "volume": "8",
+      "language": "hu",
+      "pages": 19,
+      "unavailableReasons": []
+    },
+    {
+      "id": "1f5299d0-9a94-4d40-93a2-35df61c31920",
+      "chapter": "181",
+      "volume": "21",
+      "language": "kk",
+      "pages": 29,
+      "unavailableReasons": []
+    },
+    {
+      "id": "e0bfbf87-71e5-46e9-8494-329d046bb08f",
+      "chapter": "182",
+      "volume": "21",
+      "language": "kk",
+      "pages": 19,
+      "unavailableReasons": []
+    }
+  ],
+  "otherLanguageManifestProof": {
+    "chapter": {
+      "id": "34e6778d-289d-4df4-8361-87237e77df4a",
+      "chapter": "1",
+      "volume": "1",
+      "language": "az",
+      "pages": 55,
+      "unavailableReasons": []
+    },
+    "pageListURL": "https://api.mangadex.org/at-home/server/34e6778d-289d-4df4-8361-87237e77df4a?forcePort443=true",
+    "result": "ok",
+    "pageCount": 55,
+    "cdnHost": "cmdxd98sb0x3yprd.mangadex.network",
+    "firstPageHEAD": {
+      "httpStatus": "200",
+      "contentType": "image/png",
+      "contentLength": "1816007",
+      "bodyDownloaded": false
+    }
+  },
+  "currentBuild76Conclusion": "Default English yields zero internally readable chapters. Five confirmed empty/external-only entries gray correctly; same-language-only fallback cannot reach the verified Azerbaijani chapter. Cross-language fallback is needed when no explicit per-book edition is selected."
+}

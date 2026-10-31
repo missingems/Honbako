@@ -1,0 +1,53 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "honbako-mcp-pro-preview",
+  "main": "remote-beta.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "PUBLIC_ORIGIN": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
+    "REMOTE_MCP_ENABLED": "YES",
+    "APP_STORE_ENVIRONMENT": "Sandbox",
+    "REMOTE_ORIGIN_ALIASES": [
+      "https://test-mcp.honbako.xyz"
+    ]
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "HONBAKO_WORKSPACE",
+        "class_name": "HonbakoWorkspace"
+      },
+      {
+        "name": "HONBAKO_AUTH",
+        "class_name": "HonbakoAuthorization"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-remote-beta",
+      "new_sqlite_classes": [
+        "HonbakoWorkspace",
+        "HonbakoAuthorization"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": false
+  },
+  "account_id": "19cc8706f23e127305e14dfd41191162",
+  "alias": {
+    "node-fetch": "./remote/native-fetch.js"
+  },
+  "routes": [
+    {
+      "pattern": "test-mcp.honbako.xyz",
+      "custom_domain": true
+    }
+  ]
+}

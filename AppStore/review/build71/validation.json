@@ -1,0 +1,155 @@
+{
+  "build": 71,
+  "status": "Relevant cases passed across the listed runs; earlier UI harness failures are superseded, not hidden. Xcode automatically pruned some older result bundles.",
+  "runs": {
+    "storeKitAndCharacters": {
+      "resultBundle": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_21-51-37-+0800.xcresult",
+      "resultBundleRetained": false,
+      "caseEvidence": [
+        "✔ Test \"Kana readings follow individual source characters and preserve source offsets\" passed after 0.004 seconds.",
+        "✔ Test \"Combined kana, small tsu and prolonged vowels preserve real pronunciation\" passed after 0.001 seconds.",
+        "✔ Test \"A corrected single-character reading wins without guessing particle pronunciation\" passed after 0.002 seconds.",
+        "✔ Test \"Kanji use contextual spans rather than fabricated per-kanji readings\" passed after 0.001 seconds.",
+        "✔ Test \"Normalization never moves OCR anchors across emoji, halfwidth or combining marks\" passed after 0.001 seconds.",
+        "✔ Test \"Both text axes use real distinct character boxes, never repeated line geometry\" passed after 0.001 seconds.",
+        "✔ Test \"The original page exposes genuine Vision character anchors for inline kana readings\" passed after 0.866 seconds.",
+        "​✔ Test \"Verified monthly and annual StoreKit purchases unlock Pro, and refund removes the entitlement\" with 2 test cases passed after 0.305 seconds.",
+        "✔ Test \"Apple trial metadata is used only for eligible subscribers and cannot be claimed twice within the Pro group\" passed after 0.067 seconds.",
+        "✔ Test \"Normal installs see the welcome once, including existing installs without the new completion key\" passed after 0.001 seconds.",
+        "✔ Test \"A fresh installation shows the intro after its local completion record is removed\" passed after 0.001 seconds.",
+        "✔ Test \"Unrelated fixtures and test hosts never acquire a blocking welcome presentation\" passed after 0.001 seconds.",
+        "✔ Test \"Explicit onboarding preview works with an already-completed fixture without persisting completion\" passed after 0.001 seconds.",
+        "✔ Test run with 13 tests in 3 suites passed after 1.254 seconds.",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testChineseChapterCannotStartJapaneseAnnotationsEvenWithRecognizableJapaneseArtwork]' passed (16.478 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testJapaneseGuideStartsOffAndFreeEnableShowsProWithoutLeavingTheBook]' failed (25.845 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testRomajiIsOnTheMangaAndWordPopupKeepsReadingPosition]' failed (24.670 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testScrollingReaderShowsWordsAndReturnsFromPopupWithoutMoving]' failed (24.543 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testTappingTheMangaKeepsAnnotationsAnchoredWhenChromeChanges]' failed (24.645 seconds)."
+      ]
+    },
+    "identityAndPurchases": {
+      "resultBundle": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_22-04-29-+0800.xcresult",
+      "resultBundleRetained": true,
+      "caseEvidence": [
+        "✔ Test \"An AI approval link carries only a request ID and cannot replace the server or auto-approve\" passed after 0.001 seconds.",
+        "✔ Test \"Automatic setup distinguishes the managed service from arbitrary or legacy endpoints\" passed after 0.001 seconds.",
+        "✔ Test \"Both branded and original addresses retain the same environment-specific installation identity\" passed after 0.001 seconds.",
+        "✔ Test \"Unknown hosts and modified managed addresses never acquire a managed identity or preferred alias\" passed after 0.001 seconds.",
+        "✔ Test \"Verified Apple environments route hosting without build flags or namespace mixing\" passed after 0.001 seconds.",
+        "​✔ Test \"Verified monthly and annual StoreKit purchases unlock Pro, and refund removes the entitlement\" with 2 test cases passed after 0.348 seconds.",
+        "✔ Test \"Apple trial metadata is used only for eligible subscribers and cannot be claimed twice within the Pro group\" passed after 0.067 seconds.",
+        "✔ Test \"Normal installs see the welcome once, including existing installs without the new completion key\" passed after 0.001 seconds.",
+        "✔ Test \"A fresh installation shows the intro after its local completion record is removed\" passed after 0.001 seconds.",
+        "✔ Test \"Unrelated fixtures and test hosts never acquire a blocking welcome presentation\" passed after 0.001 seconds.",
+        "✔ Test \"Explicit onboarding preview works with an already-completed fixture without persisting completion\" passed after 0.001 seconds.",
+        "✔ Test run with 11 tests in 3 suites passed after 0.422 seconds.",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testScrollingReaderShowsWordsAndReturnsFromPopupWithoutMoving]' failed (37.772 seconds)."
+      ]
+    },
+    "japaneseUI": {
+      "resultBundle": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_21-57-20-+0800.xcresult",
+      "resultBundleRetained": false,
+      "caseEvidence": [
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testChineseChapterCannotStartJapaneseAnnotationsEvenWithRecognizableJapaneseArtwork]' passed (17.014 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testJapaneseGuideStartsOffAndFreeEnableShowsProWithoutLeavingTheBook]' passed (25.069 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testRomajiIsOnTheMangaAndWordPopupKeepsReadingPosition]' passed (64.913 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testScrollingReaderShowsWordsAndReturnsFromPopupWithoutMoving]' failed (20.423 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testTappingTheMangaKeepsAnnotationsAnchoredWhenChromeChanges]' passed (65.356 seconds)."
+      ]
+    },
+    "japaneseScrolling": {
+      "resultBundle": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_22-07-52-+0800.xcresult",
+      "resultBundleRetained": true,
+      "caseEvidence": [
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testScrollingReaderShowsWordsAndReturnsFromPopupWithoutMoving]' passed (30.504 seconds)."
+      ]
+    },
+    "welcomeAndSupportingJapanese": {
+      "resultBundle": "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_21-46-13-+0800.xcresult",
+      "resultBundleRetained": false,
+      "caseEvidence": [
+        "Test Case '-[SumiTests.HonbakoWelcomeDesignTests testSubscribersSeeManagementAndFreeUsersSeeOffers]' passed (3.383 seconds).",
+        "✔ Test \"Image relayout inside a chrome animation keeps existing labels and never slides their geometry\" passed after 0.057 seconds.",
+        "✔ Test \"Repeated visible-page and chrome layout passes keep label identity and do not rescan or tint them blue\" passed after 0.024 seconds.",
+        "✔ Test \"Compact annotation text stays opaque and grows without clipping at accessibility sizes\" passed after 0.040 seconds.",
+        "✔ Test \"Individual kana labels follow horizontal and vertical glyphs without material or theme tint\" passed after 0.110 seconds.",
+        "✔ Test \"Kana readings follow individual source characters and preserve source offsets\" passed after 0.001 seconds.",
+        "✔ Test \"Combined kana, small tsu and prolonged vowels preserve real pronunciation\" passed after 0.001 seconds.",
+        "✔ Test \"A corrected single-character reading wins without guessing particle pronunciation\" passed after 0.002 seconds.",
+        "✔ Test \"Kanji use contextual spans rather than fabricated per-kanji readings\" passed after 0.001 seconds.",
+        "✔ Test \"Normalization never moves OCR anchors across emoji, halfwidth or combining marks\" passed after 0.001 seconds.",
+        "✔ Test \"Both text axes use real distinct character boxes, never repeated line geometry\" passed after 0.001 seconds.",
+        "✔ Test \"The original page exposes genuine Vision character anchors for inline kana readings\" passed after 0.821 seconds.",
+        "✔ Test \"Plain annotations follow black or white page ink, independently of interface appearance\" passed after 0.002 seconds.",
+        "✔ Test \"Japanese chapter tags enable annotations even on a multilingual catalog\" passed after 0.001 seconds.",
+        "✔ Test \"Chinese and other explicit chapter languages override a Japanese source\" passed after 0.001 seconds.",
+        "✔ Test \"A chapter without language metadata needs an unambiguously Japanese source\" passed after 0.001 seconds.",
+        "✔ Test \"Mixed language strings and malformed Japanese tags are not language evidence\" passed after 0.001 seconds.",
+        "✔ Test \"Only the known original Japanese practice page bypasses a localized guide's language\" passed after 0.001 seconds.",
+        "✔ Test \"Chapter loading overwrites untrusted flags and retains eligibility with the preloaded chapter\" passed after 0.001 seconds.",
+        "✔ Test \"A multilingual source's first advertised language cannot enable an unknown chapter\" passed after 0.001 seconds.",
+        "✔ Test \"The localized guide annotates its original practice bitmap and none of the surrounding guide pages\" passed after 0.001 seconds.",
+        "✔ Test \"Free access cannot activate live Japanese guidance, even with eligible artwork and a saved request\" passed after 0.001 seconds.",
+        "✔ Test \"Purchasing Pro never enables annotations for Chinese or an unselected guide\" passed after 0.001 seconds.",
+        "✔ Test \"Pro revocation stops requested Japanese overlays and a new reader starts with guidance off\" passed after 0.001 seconds.",
+        "✔ Test \"Paper snapshots contain manga artwork without live Japanese labels\" passed after 0.001 seconds.",
+        "✔ Test \"Nested capture restores host state and leaves another reader alone\" passed after 0.001 seconds.",
+        "✔ Test \"A clearly vertical page column overrides an incorrect horizontal Vision direction\" passed after 0.001 seconds.",
+        "✔ Test \"Direction inference uses image pixels after orientation, independently of the viewport\" passed after 0.001 seconds.",
+        "✔ Test \"Vertical words prefer upright readings on the right while horizontal words keep the upper row\" passed after 0.001 seconds.",
+        "✔ Test \"Right-to-left columns retain their own word alignment without crossing neighboring Japanese\" passed after 0.001 seconds.",
+        "✔ Test \"A page edge or neighboring column uses the clear left side without rotating or covering text\" passed after 0.001 seconds.",
+        "✔ Test \"Long vertical readings wrap upright in a compact column instead of becoming a wide ribbon\" passed after 0.001 seconds.",
+        "✔ Test \"Accurate character rectangles can recover a vertical word without dividing the phrase\" passed after 0.001 seconds.",
+        "✔ Test \"Kana-only dialogue gets Japanese words instead of one long romaji string\" passed after 0.001 seconds.",
+        "✔ Test \"Terminal punctuation does not split the common word あした into syllables\" passed after 0.002 seconds.",
+        "✔ Test \"Punctuation-only kanji context never substitutes Chinese pinyin for Japanese word readings\" passed after 0.002 seconds.",
+        "✔ Test \"Original UTF-16 ranges survive emoji, half-width kana, combining dakuten and supplementary kanji\" passed after 0.005 seconds.",
+        "✔ Test \"Empty and non-Japanese inputs do not create fake Japanese words\" passed after 0.001 seconds.",
+        "✔ Test \"Whole-line or duplicated word geometry remains unanchored instead of guessing\" passed after 0.002 seconds.",
+        "✔ Test \"The original practice page has distinct genuine Vision anchors for each dialogue word\" passed after 0.704 seconds.",
+        "​✔ Test \"Verified monthly and annual StoreKit purchases unlock Pro, and refund removes the entitlement\" with 2 test cases passed after 0.290 seconds.",
+        "✘ Test \"Apple trial metadata is used only for eligible subscribers and cannot be claimed twice within the Pro group\" recorded an issue at HonbakoStoreKitIntegrationTests.swift:167:9: Expectation failed: !eligibleForAnotherTrial",
+        "✘ Test \"Apple trial metadata is used only for eligible subscribers and cannot be claimed twice within the Pro group\" recorded an issue at HonbakoStoreKitIntegrationTests.swift:171:9: Expectation failed: store.introductoryTrials.isEmpty",
+        "✘ Test \"Apple trial metadata is used only for eligible subscribers and cannot be claimed twice within the Pro group\" failed after 10.127 seconds with 2 issues.",
+        "✔ Test \"Normal installs see the welcome once, including existing installs without the new completion key\" passed after 0.001 seconds.",
+        "✔ Test \"A fresh installation shows the intro after its local completion record is removed\" passed after 0.001 seconds.",
+        "✔ Test \"Unrelated fixtures and test hosts never acquire a blocking welcome presentation\" passed after 0.001 seconds.",
+        "✔ Test \"Explicit onboarding preview works with an already-completed fixture without persisting completion\" passed after 0.001 seconds.",
+        "✘ Test run with 45 tests in 10 suites failed after 12.216 seconds with 2 issues.",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testChineseChapterCannotStartJapaneseAnnotationsEvenWithRecognizableJapaneseArtwork]' passed (16.900 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testJapaneseGuideStartsOffAndFreeEnableShowsProWithoutLeavingTheBook]' failed (21.585 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testRomajiIsOnTheMangaAndWordPopupKeepsReadingPosition]' failed (20.438 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testScrollingReaderShowsWordsAndReturnsFromPopupWithoutMoving]' failed (20.456 seconds).",
+        "Test Case '-[SumiUITests.HonbakoJapaneseGuideInteractionTests testTappingTheMangaKeepsAnnotationsAnchoredWhenChromeChanges]' failed (20.301 seconds).",
+        "Test Case '-[SumiUITests.HonbakoWelcomeTests testThreeWelcomePagesAndFreeExit]' passed (31.430 seconds)."
+      ]
+    }
+  },
+  "supersededFailures": [
+    "Floating point exact rectangle comparison corrected to coordinate tolerance",
+    "Offscreen chapter switch and whole-row taps corrected to target its visible native child control",
+    "Repeated Webtoon fixture labels corrected to verify actual page progress while retaining popup position/frame assertions"
+  ],
+  "freshInstall": {
+    "passed": true,
+    "evidence": "fresh-install-welcome.png",
+    "method": "Uninstall and reinstall only on disposable simulator 04492D57-7FB3-47FD-8A03-75CE5A4A40FE; ordinary launch with no onboarding-preview or fixture arguments."
+  },
+  "serverRegression": {
+    "passed": 91,
+    "failed": 0,
+    "skipped": 0
+  },
+  "serverOriginRuntime": {
+    "passed": true,
+    "environments": [
+      "Sandbox",
+      "Production"
+    ]
+  },
+  "remaining": [
+    "New domain registry delegation and managed certificate validation",
+    "Apple processing and release to existing TestFlight groups"
+  ]
+}

@@ -49,6 +49,9 @@ class ReaderPageView: UIView {
     private var renderedImageFrame: CGRect = .zero
     private var schedulesPageSizingUpdate = false
     private var imageTask: ImageTask?
+    #if SUMI
+    private let sumiImageFetch = SumiPageImageFetch()
+    #endif
     private var sourceId: String?
     private var shouldShowLiveTextButton = false
     @available(iOS 16.0, *)
@@ -561,6 +564,7 @@ extension ReaderPageView {
         #if SUMI
         let generation = sumiLoadGeneration
         #endif
+        #if !SUMI
         imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
@@ -569,6 +573,7 @@ extension ReaderPageView {
             },
             completion: { _ in }
         )
+        #endif
         // hide progress view when task completes
         defer {
             #if SUMI
@@ -582,10 +587,14 @@ extension ReaderPageView {
             #endif
         }
         do {
-            let response = try await imageTask?.response
-            guard let response else {
-                return false
+            #if SUMI
+            let response = try await sumiImageFetch.response(for: request) { [weak self] task in
+                self?.imageTask = task
             }
+            #else
+            let response = try await imageTask?.response
+            guard let response else { return false }
+            #endif
             #if SUMI
             guard generation == sumiLoadGeneration, !Task.isCancelled else { return false }
             #endif
@@ -888,6 +897,7 @@ extension ReaderPageView {
         progressView.isHidden = true
         if image == nil {
             sumiLoadGeneration += 1
+            sumiImageFetch.cancel()
             imageTask?.cancel()
             imageTask = nil
             completion?(false)

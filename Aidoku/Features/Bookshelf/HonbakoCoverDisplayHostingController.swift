@@ -1,7 +1,7 @@
 #if SUMI
 import SwiftUI
 
-/// The cover follows its own scene orientation and crops to fill the display.
+/// The accessory accepts scene rotation while its print counter-rotates to portrait.
 final class HonbakoCoverDisplayHostingController: UIHostingController<HonbakoCoverDisplayView> {
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .all }
     override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation { .portrait }

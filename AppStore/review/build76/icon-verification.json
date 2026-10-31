@@ -1,0 +1,8 @@
+{
+  "build": 76,
+  "primaryIconName": "SumiIcon",
+  "archiveCompiledIcon": "Verified 本箱 from the compiled archive PNG after decoding iOS PNG optimizations",
+  "ASCIncludedAssetsAppIcon": "Verified visually 本箱 in build76 Included Assets > App Icon",
+  "ASCAppRecordThumbnail": "Still displays historical 漫 thumbnail; record thumbnail differs from build-specific icon",
+  "reviewSubmissionChanged": false
+}

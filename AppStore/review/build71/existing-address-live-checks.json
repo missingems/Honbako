@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-30T14:08:09.616Z",
+  "checks": [
+    {
+      "origin": "https://honbako-mcp.jun-19c.workers.dev",
+      "path": "/remote/capabilities",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp.jun-19c.workers.dev",
+      "path": "/.well-known/oauth-authorization-server/remote",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp.jun-19c.workers.dev",
+      "path": "/.well-known/oauth-protected-resource/remote/mcp",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp.jun-19c.workers.dev",
+      "path": "/remote/mcp",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
+      "path": "/remote/capabilities",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
+      "path": "/.well-known/oauth-authorization-server/remote",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
+      "path": "/.well-known/oauth-protected-resource/remote/mcp",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "origin": "https://honbako-mcp-pro-preview.jun-19c.workers.dev",
+      "path": "/remote/mcp",
+      "status": 401,
+      "passed": true
+    }
+  ]
+}

@@ -41,6 +41,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var pageLoadTask: Task<Void, Never>?
     private var pageLoadGeneration = 0
     private var imageTask: ImageTask?
+    #if SUMI
+    @MainActor private var sumiImageFetch: SumiPageImageFetch?
+    #endif
     private var imageProcessingTask: Task<UIImage?, Never>?
 
     private var shouldShowLiveTextButton = false
@@ -462,8 +465,16 @@ extension ReaderWebtoonPageNode {
         pageLoadTask?.cancel()
         pageLoadTask = nil
 
+        #if SUMI
+        let cancelledTask = imageTask
+        #endif
         imageTask?.cancel()
         imageTask = nil
+        #if SUMI
+        if let cancelledTask {
+            Task { @MainActor [weak self] in self?.sumiImageFetch?.cancel(task: cancelledTask) }
+        }
+        #endif
 
         imageProcessingTask?.cancel()
         imageProcessingTask = nil
@@ -564,6 +575,10 @@ extension ReaderWebtoonPageNode {
         // Store the exact request, including a refreshed MangaDex page host.
         self.currentImageRequest = request
 
+        #if SUMI
+        let fetch = sumiImageFetch ?? SumiPageImageFetch()
+        sumiImageFetch = fetch
+        #else
         let imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
@@ -577,10 +592,17 @@ extension ReaderWebtoonPageNode {
             completion: { _ in }
         )
         self.imageTask = imageTask
+        #endif
         defer { if pageLoadGeneration == generation { self.imageTask = nil } }
 
         do {
+            #if SUMI
+            let response = try await fetch.response(for: request) { [weak self] task in
+                self?.imageTask = task
+            }
+            #else
             let response = try await imageTask.response
+            #endif
             guard generation == pageLoadGeneration, !Task.isCancelled else { return }
             #if SUMI
             sumiJapaneseAnimatedImage = response.container.type == .gif

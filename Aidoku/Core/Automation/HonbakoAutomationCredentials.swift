@@ -28,6 +28,29 @@ enum HonbakoAutomationCredentials {
             guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { throw Failure.unavailable }
         } else if status != errSecSuccess { throw Failure.unavailable }
     }
+    static func remoteIdentity(endpoint: URL = HonbakoRemoteMCP.endpoint) throws -> HonbakoRemoteMCPIdentity {
+        guard let account = HonbakoRemoteMCP.identityAccount(for: endpoint) else { throw Failure.unavailable }
+        var item = query
+        item[kSecAttrAccount as String] = account
+        var lookup = item
+        lookup[kSecReturnData as String] = true
+        lookup[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(lookup as CFDictionary, &result)
+        if status == errSecSuccess {
+            guard let data = result as? Data,
+                  let identity = try? JSONDecoder().decode(HonbakoRemoteMCPIdentity.self, from: data) else {
+                throw Failure.unavailable
+            }
+            return identity
+        }
+        guard status == errSecItemNotFound else { throw Failure.unavailable }
+        let identity = try HonbakoRemoteMCPIdentity.create()
+        item[kSecValueData as String] = try JSONEncoder().encode(identity)
+        item[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { throw Failure.unavailable }
+        return identity
+    }
     static func clear() { SecItemDelete(query as CFDictionary) }
     private enum Failure: Error { case unavailable }
 }

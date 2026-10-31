@@ -118,6 +118,18 @@ import Testing
         }
     }
 
+    @Test("Removing books follows the same bounded selection rules as adding them")
+    func removePayloadRequiresExplicitBoundedSelection() throws {
+        let item = Models.Item(sourceId: "en.example", mangaId: "/manga/123")
+        try HonbakoAutomationPolicy.validate(job(kind: "library.remove", payload: .init(items: [item], idempotencyKey: "remove_1")))
+        for payload: Models.Payload in [.init(items: [item]), .init(items: [item, item], idempotencyKey: "remove_1"),
+                                        .init(query: "rain", items: [item], idempotencyKey: "remove_1")] {
+            #expect(throws: HonbakoAutomationPolicy.Failure.self) {
+                try HonbakoAutomationPolicy.validate(job(kind: "library.remove", payload: payload))
+            }
+        }
+    }
+
     @Test("Adding books requires a bounded distinct selection and a safe idempotency key")
     func addPayloadRequiresExplicitBoundedSelection() throws {
         let item = Models.Item(sourceId: "en.example", mangaId: "/manga/123")

@@ -1,1 +1,28 @@
-A personal manga reader for iPhone and iPad, with an original illustrated tutorial and support for your own files or personal libraries.
+Your manga, with your own AI companion.
+
+Bring your collection to Honbako. Import CBZ or ZIP comics from Files, including iCloud Drive, or connect your personal Komga, Kavita or Suwayomi server. Add compatible extensions from repositories you choose. No third-party manga catalog is included; use content you own or have permission to access.
+
+Turn pages in portrait or landscape, preview a page before you jump, and return to your saved reading position. Open Chapters to find your current chapter highlighted, with reading progress and available translations together.
+
+Connect a compatible AI provider through MCP. With the access you allow, your companion can look up your library and reading history, help manage manga and sources, explain the current page, give a recap, or send annotations back to your manga. Use your own AI account; AI responses and supported connections depend on your provider.
+
+Included for free:
+• Your personal manga library and reading controls
+• iCloud library and reading-progress sync
+• Connection through a self-hosted local MCP server
+• A Home Screen widget to resume your last manga
+• Personal servers, file imports and compatible extension repositories
+
+Honbako Pro adds:
+• Hosted remote MCP, so your Mac can stay off
+• Japanese reading tools with on-page romaji, pronunciation and translation
+• Cover Mode on iPhone Duo, including a choice for each manga
+• Offline downloads and new-chapter alerts
+• Reading-time and chapter-update widgets
+
+Downloads require permission from the content provider. Chapter alerts depend on the source and iOS background refresh, so delivery times vary. Content and available translations depend on your collection.
+
+Pro is available as a monthly or annual auto-renewing subscription. The App Store shows your localized price and any free trial you are eligible for before you confirm. Subscriptions renew automatically unless canceled in your Apple Account. Manage or cancel your plan from Honbako's Manage Subscription screen.
+
+Privacy Policy: https://missingems.github.io/Honbako/privacy/
+Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/

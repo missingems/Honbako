@@ -73,6 +73,29 @@ enum HonbakoTutorialManga {
             status: .completed, contentRating: .safe, viewer: .rightToLeft, updateStrategy: .never, chapters: chapters)
     }
 
+    /// CloudKit can restore a generated cover URL from another app container.
+    /// Resolve only our allowlisted bundled cover paths; never transplant a
+    /// user file path or write this device's absolute path back into CloudKit.
+    static func restoredCoverURL(for manga: AidokuRunner.Manga) throws -> URL? {
+        guard manga.sourceKey == sourceKey, let value = manga.cover, let url = URL(string: value), url.isFileURL,
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.user == nil, components.password == nil, components.query == nil, components.fragment == nil,
+              components.host == nil || components.host == "" || components.host == "localhost" else { return nil }
+        let parts = url.pathComponents
+        guard parts.contains("Library"), parts.contains("Application Support"), parts.last == "cover.png",
+              parts.count >= 4, let language = parts.dropLast().last, languages.contains(language) else { return nil }
+        if manga.key == mangaKey,
+           Array(parts.suffix(4)) == ["HonbakoTutorial", "v3", language, "cover.png"] {
+            return try renderedFile(art: "HonbakoTutorialCoverArt", language: language,
+                title: "Tutorial.Story.Title", body: "Tutorial.Story.CoverSubtitle", file: "cover.png", cover: true)
+        }
+        if let guide = HonbakoGuideBook(rawValue: manga.key),
+           Array(parts.suffix(5)) == ["HonbakoGuides", "v5", guide.rawValue, language, "cover.png"] {
+            return try HonbakoGuideRenderer.file(guide: guide, page: nil, language: language)
+        }
+        return nil
+    }
+
     static func pages(for chapter: AidokuRunner.Chapter) throws -> [AidokuRunner.Page] {
         guard let language = languages.first(where: { chapter.key == "\($0)-first-chapter" }) else {
             throw URLError(.resourceUnavailable)

@@ -1,3 +1,4 @@
+import CoreImage
 import ImageIO
 import UIKit
 import Vision
@@ -22,7 +23,18 @@ enum HonbakoJapaneseTextRecognizer {
         let worker = Task.detached(priority: .userInitiated) {
             try Task.checkCancellation()
             guard let cgImage = image.cgImage else { throw RecognitionError.unsupportedImage }
-            let analysisImage = downsample(cgImage)
+            let downsampled = downsample(cgImage)
+            let analysisImage: CGImage
+            if image.imageOrientation == .up {
+                analysisImage = downsampled
+            } else {
+                let oriented = CIImage(cgImage: downsampled).oriented(orientation(image.imageOrientation))
+                guard let normalized = CIContext().createCGImage(oriented, from: oriented.extent) else {
+                    throw RecognitionError.unsupportedImage
+                }
+                analysisImage = normalized
+            }
+            let inkSampler = HonbakoJapaneseInkSampler(image: analysisImage)
             var request = RecognizeTextRequest()
             guard request.supportedRecognitionLanguages.contains(where: { $0.languageCode?.identifier == "ja" }) else {
                 throw RecognitionError.unsupportedLanguage
@@ -32,15 +44,8 @@ enum HonbakoJapaneseTextRecognizer {
             request.automaticallyDetectsLanguage = false
             request.usesLanguageCorrection = true
             request.minimumTextHeightFraction = 0.003
-            let imageOrientation = orientation(image.imageOrientation)
-            let imageSize: CGSize
-            switch imageOrientation {
-                case .left, .right, .leftMirrored, .rightMirrored:
-                    imageSize = CGSize(width: analysisImage.height, height: analysisImage.width)
-                default:
-                    imageSize = CGSize(width: analysisImage.width, height: analysisImage.height)
-            }
-            let observations = try await request.perform(on: analysisImage, orientation: imageOrientation)
+            let imageSize = CGSize(width: analysisImage.width, height: analysisImage.height)
+            let observations = try await request.perform(on: analysisImage, orientation: .up)
             try Task.checkCancellation()
             var regions = observations.compactMap { observation -> HonbakoJapaneseRegion? in
                 guard let candidate = observation.topCandidates(1).first,
@@ -63,7 +68,8 @@ enum HonbakoJapaneseTextRecognizer {
                 return .init(id: 0, text: text.text, reading: text.reading, romaji: text.romaji,
                              confidence: candidate.confidence, readingIsEstimated: text.readingIsEstimated,
                              direction: direction, boundingBox: box,
-                             words: wordRegions(for: text, candidate: candidate, parentBox: box, direction: direction))
+                             words: wordRegions(for: text, candidate: candidate, parentBox: box, direction: direction),
+                             characters: characterRegions(for: text, candidate: candidate, parentBox: box, inkSampler: inkSampler))
             }
             let primarilyVertical = regions.filter { $0.direction == .vertical }.count > regions.count / 2
             regions.sort { lhs, rhs in
@@ -79,7 +85,7 @@ enum HonbakoJapaneseTextRecognizer {
                 HonbakoJapaneseRegion(
                     id: index + 1, text: region.text, reading: region.reading, romaji: region.romaji,
                     confidence: region.confidence, readingIsEstimated: region.readingIsEstimated,
-                    direction: region.direction, boundingBox: region.boundingBox, words: region.words
+                    direction: region.direction, boundingBox: region.boundingBox, words: region.words, characters: region.characters
                 )
             }
         }
@@ -128,6 +134,28 @@ enum HonbakoJapaneseTextRecognizer {
                          boundingBox: HonbakoJapaneseWordGeometry.characterUnion(characterBoxes, in: parentBox))
         }
         return HonbakoJapaneseWordGeometry.validated(recovered, in: parentBox)
+    }
+
+    private static func characterRegions(
+        for reading: HonbakoJapaneseReading,
+        candidate: RecognizedText,
+        parentBox: CGRect,
+        inkSampler: HonbakoJapaneseInkSampler?
+    ) -> [HonbakoJapaneseCharacterRegion] {
+        let original = candidate.string
+        guard let textRange = original.range(of: reading.text) else { return [] }
+        let offset = NSRange(textRange, in: original).location
+        let characters = reading.words.flatMap { HonbakoJapaneseCharacterReadings.units(for: $0) }
+        let boxes = characters.map { character -> CGRect? in
+            guard let range = Range(NSRange(location: offset + character.range.location,
+                                            length: character.range.length), in: original),
+                  let rectangle = candidate.boundingBox(for: range) else { return nil }
+            return HonbakoJapaneseGeometry.topLeftBox(fromVision: rectangle.boundingBox.cgRect)
+        }
+        let validated = HonbakoJapaneseWordGeometry.validatedCharacterBoxes(boxes, in: parentBox)
+        return zip(characters, validated).map { character, box in
+            .init(character: character, boundingBox: box, ink: box.flatMap { inkSampler?.ink(in: $0) } ?? .black)
+        }
     }
 
     private static func downsample(_ image: CGImage) -> CGImage {

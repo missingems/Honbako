@@ -1,0 +1,122 @@
+{
+  "status": "PASS",
+  "publicVersion": "0.2.0",
+  "build": 77,
+  "actualSimulatorAppMetadata": {
+    "CFBundleVersion": "77",
+    "CFBundleShortVersionString": "0.2.0",
+    "SourceEngineVersion": "0.9.0",
+    "HonbakoExternalSources": "YES",
+    "HonbakoPersonalFeatures": "NO",
+    "HonbakoImportEnglish50": "NO"
+  },
+  "sourceConfigurationMatchesUploaded77": true,
+  "appCodeChanges": false,
+  "buildsRun": "One build-for-testing in existing Aidoku-Codex DerivedData; no archive or upload",
+  "nativeTests": {
+    "executed": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "methods": [
+      "HonbakoOriginalExternalSourceTests.testAIXImportSearchAndRead",
+      "HonbakoOriginalExternalSourceTests.testExportOriginalComicAssets",
+      "HonbakoOriginalExternalSourceTests.testUnknownIdentifiersAndOversizedQueriesFailSafely",
+      "HonbakoOriginalHostedSourceTests.testHostedListInstallsAndServesOnlyOriginalContent"
+    ]
+  },
+  "verifiedPipeline": [
+    "Fetch and decode live original repository; exactly one source",
+    "Adding repository does not auto-install an extension",
+    "Download and install exact pinned live .aix package",
+    "Search Bookshop, one original online edition, one first chapter, six pages",
+    "Fetch cover plus all six hosted pages over strict HTTPS; HTTP200 and exact byte-count/SHA256/1024\u00d71536 checks",
+    "Reload persisted installed source",
+    "Unknown identifiers and oversized queries reject safely"
+  ],
+  "hostedAssetEvidence": [
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/cover.png",
+      "HTTP": 200,
+      "sha256": "e8030e88b72c0721367ac76f04824aee5ad35674bfa22a9edba0991949af8b6a",
+      "bytes": 2985951,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-1.png",
+      "HTTP": 200,
+      "sha256": "aa6dff3be49c8d08a990e90aafdf1391d7823f519a7cb1b29cdecc84caafcb3c",
+      "bytes": 3092024,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-2.png",
+      "HTTP": 200,
+      "sha256": "010dec8ec6339eaa982b8ab49115faa81132b25e48ab46c39555cc138e759a99",
+      "bytes": 3297025,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-3.png",
+      "HTTP": 200,
+      "sha256": "b794c497416da31a5c7689671dcddb69c8fd0c023a6e20c64d57f86f08a89823",
+      "bytes": 3304435,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-4.png",
+      "HTTP": 200,
+      "sha256": "15ffb82d63a6955a283821abb760524c86e88ccd205c10191026256c1b113101",
+      "bytes": 2968637,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-5.png",
+      "HTTP": 200,
+      "sha256": "bdceb699041bc319db09c36a01a52521898ef1c9e45d47ac8c9ae6408fa84a93",
+      "bytes": 3300832,
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "url": "https://missingems.github.io/Honbako/originals/bookshop/page-6.png",
+      "HTTP": 200,
+      "sha256": "1a26ac9f45fcb558de90d7de5f574555ccbb21d06228f14329d83667da5efbc1",
+      "bytes": 3310111,
+      "width": 1024,
+      "height": 1536
+    }
+  ],
+  "packageSHA256": "441aaa915ad9af95d86e9ebed99328d04c75e1793c37bc8b47594457c3517bec",
+  "repositoryHTTPReport": "original-source-http.json",
+  "reviewRoute": "original-source-review-route.txt",
+  "manualFullUITapTestClaimed": false,
+  "metadataCandidates": {
+    "en-US": {
+      "path": "AppStore/review/build77/metadata/en-US/description.txt",
+      "characters": 2265,
+      "sha256": "f9dd06b4b00ae5c48dba97713a5fba1a8faabc9a4c1dd5d02a56aa0bc7a83c6f"
+    },
+    "ja": {
+      "path": "AppStore/review/build77/metadata/ja/description.txt",
+      "characters": 1192,
+      "sha256": "1ea7d095c27dd602e1673e30ad4f4a77c430c02b5bb7f36a1171d8935472c150"
+    },
+    "zh-Hans": {
+      "path": "AppStore/review/build77/metadata/zh-Hans/description.txt",
+      "characters": 894,
+      "sha256": "8647dc6945fb7605e544fa4be8c844f2034bd9704bc320089c87955fbfd7bce5"
+    },
+    "zh-Hant": {
+      "path": "AppStore/review/build77/metadata/zh-Hant/description.txt",
+      "characters": 913,
+      "sha256": "66366b496d2f251b9943370017db57e158184a9e88e4fb23cfd31d318ff8885d"
+    }
+  },
+  "transientResultBundle": "Removed after preserving successful summaries and details; asset exports already exist as licensed original fixtures"
+}

@@ -4,7 +4,12 @@ import UIKit
 
 /// Hosts the full-bleed collection and owns direct book presentation.
 final class SumiGridViewController: UIViewController {
-    private let store = SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
+    private let store: SumiLibraryStore = {
+        #if DEBUG
+        if let fixture = SumiLibraryLaunchFixture.makeStoreIfRequested() { return fixture }
+        #endif
+        return SumiLibraryStore(tutorialInstaller: { await HonbakoTutorialManga.ensureInstalled() })
+    }()
     private let opening = SumiGridOpeningState()
     private let search = SumiSearchPresentation()
     private let insertion = SumiLibraryInsertionState()
@@ -88,6 +93,55 @@ final class SumiGridViewController: UIViewController {
         search.query = ""
         search.dismiss()
         store.cancelSearch()
+    }
+
+    func openWidgetURL(_ url: URL) {
+        guard url.scheme == "honbako", url.host == "widget" else { return }
+        loadViewIfNeeded()
+        if let reader = presentedViewController as? SumiDirectReaderController {
+            if let target = HonbakoWidgetSnapshot.resumeTarget(from: url),
+               let manga = reader.readerViewController?.manga,
+               manga.sourceKey == target.source, manga.key == target.manga { return }
+            Task { @MainActor [weak self, weak reader] in
+                await reader?.readerViewController?.updateReadPosition()
+                self?.dismiss(animated: false) { [weak self] in self?.openWidgetURL(url) }
+            }
+            return
+        }
+        if presentedViewController != nil {
+            dismiss(animated: false) { [weak self] in self?.openWidgetURL(url) }
+            return
+        }
+        if loadingController != nil {
+            cancelOpeningAttempt()
+            removeStagedReader()
+            removeLoading()
+        }
+        if url.path == "/pro" {
+            guard presentedViewController == nil else { return }
+            present(UIHostingController(rootView: HonbakoProView(feature: .widgets)), animated: true)
+            return
+        }
+        guard let target = HonbakoWidgetSnapshot.resumeTarget(from: url) else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard await store.refreshForReturn() else {
+                let alert = UIAlertController(title: String(localized: "Library Unavailable"),
+                    message: String(localized: "Your library couldn’t be loaded. Open Honbako and try again."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                if presentedViewController == nil { present(alert, animated: true) }
+                return
+            }
+            guard let book = store.library.first(where: { $0.id.sourceKey == target.source && $0.id.mangaKey == target.manga }) else {
+                let alert = UIAlertController(title: String(localized: "Manga Unavailable"),
+                    message: String(localized: "This manga is no longer in your library."), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+                if presentedViewController == nil { present(alert, animated: true) }
+                return
+            }
+            guard presentedViewController == nil, loadingController == nil else { return }
+            openBook(book, source: nil)
+        }
     }
 
     private func openBook(_ book: SumiBook, source: SumiBookTransitionSource?) {
@@ -225,6 +279,9 @@ final class SumiGridViewController: UIViewController {
             let reader = ReaderViewController(source: position.source, manga: position.manga,
                                               chapter: position.chapter, startPage: position.startPage)
             reader.sumiIsPreparingOpening = true
+            #if HONBAKO_EXTERNAL_SOURCES
+            reader.sumiAutomaticOpeningLanguage = selection.automaticLanguage
+            #endif
             // Unread books open on real artwork. Chapters live in the reader sidebar.
             let presentation = SumiDirectReaderController(content: reader)
             stage(presentation)

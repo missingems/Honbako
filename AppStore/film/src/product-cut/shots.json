@@ -1,0 +1,169 @@
+{
+  "title": "Honbako — Your manga. Your AI.",
+  "duration": 45,
+  "fps": 60,
+  "formats": {
+    "landscape": [
+      1920,
+      1080
+    ],
+    "portrait": [
+      1080,
+      1920
+    ]
+  },
+  "manga": {
+    "work": "ブラックジャックによろしく / Give My Regards to Black Jack",
+    "author": "佐藤秀峰 / Shuho Sato",
+    "terms": "https://densho810.com/free/ (secondary use, including commercial, permitted)"
+  },
+  "acts": [
+    {
+      "id": "open",
+      "start": 0,
+      "end": 5,
+      "copy": "Every story deserves a little company.",
+      "shots": [
+        {
+          "id": "1a",
+          "start": 0.0,
+          "end": 2.6,
+          "what": "Closed Duo on warm paper, outer display asleep (dark glass). Cover display runs only while the device is open, so the closed device does not show the cover. Line fades in."
+        },
+        {
+          "id": "1b",
+          "start": 2.6,
+          "end": 5.0,
+          "what": "The hinge opens 0°→180° (the model's own fold clip) to the inner display: library shelf of Black Jack volumes (genuine)."
+        }
+      ]
+    },
+    {
+      "id": "yours",
+      "start": 5,
+      "end": 13,
+      "copy": "Your files. Your server. Your manga.",
+      "shots": [
+        {
+          "id": "2a",
+          "start": 5.0,
+          "end": 7.6,
+          "what": "Library grid with the imported CBZ volumes. Phrase 1: Your files."
+        },
+        {
+          "id": "2b",
+          "start": 7.6,
+          "end": 10.0,
+          "what": "Settings → Personal Server (Komga, Kavita, Suwayomi). Phrase 2: Your server."
+        },
+        {
+          "id": "2c",
+          "start": 10.0,
+          "end": 13.0,
+          "what": "Extensions screen. Phrase 3: Your manga. Footnote: Add sources with extensions you choose. Honbako doesn’t provide manga; sources and their content are your responsibility."
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "start": 13,
+      "end": 25,
+      "copy": "Bring your own AI.",
+      "shots": [
+        {
+          "id": "3a",
+          "start": 13.0,
+          "end": 15.2,
+          "what": "Reader on EN Vol. 1, pp. 23–24 (genuine). Chat column labelled “In your AI app”: “Remind me where I left off.”"
+        },
+        {
+          "id": "3b",
+          "start": 15.2,
+          "end": 18.6,
+          "what": "Spoiler-aware recap of pp. 1–22 that stops before p. 23. Written for the film; tagged “Illustrative demonstration”."
+        },
+        {
+          "id": "3c",
+          "start": 18.6,
+          "end": 21.8,
+          "what": "“Who’s the doctor in the middle panel?” → explanation (illustrative); camera pushes in on the genuine honbako_annotate_page box and label (real MCP call against this page)."
+        },
+        {
+          "id": "3d",
+          "start": 21.8,
+          "end": 25.0,
+          "what": "MCP Server permissions (genuine recording; the Read Reading History switch flips at 23.2 s, tap ripple added). Headline: Bring your own AI. “You choose what it can see.” Footnote: AI-provider account separate from Honbako; requests sync while Honbako is open; adding books and changing sources need approval."
+        }
+      ]
+    },
+    {
+      "id": "japanese",
+      "start": 25,
+      "end": 33,
+      "copy": "A little Japanese. Every page.",
+      "pro": true,
+      "shots": [
+        {
+          "id": "4a",
+          "start": 25.0,
+          "end": 28.4,
+          "what": "Japanese Vol. 7 spread; right-to-left wipe from romaji off to on (two genuine captures), push in on the right page’s dialogue until the page fills the frame."
+        },
+        {
+          "id": "4b",
+          "start": 28.4,
+          "end": 31.4,
+          "what": "Tap on 実験台じゃない → Read This Phrase panel with readings and per-word romaji (genuine). No translation shown: the Simulator can’t run Apple Translation."
+        },
+        {
+          "id": "4c",
+          "start": 31.4,
+          "end": 33.0,
+          "what": "Pull back to the whole spread."
+        }
+      ]
+    },
+    {
+      "id": "continuity",
+      "start": 33,
+      "end": 40,
+      "copy": "Turn the page. Your cover, on the outside. Pick up where you left off.",
+      "shots": [
+        {
+          "id": "5a",
+          "start": 33.0,
+          "end": 35.4,
+          "what": "Page curl (genuine screen recording, no sound effect)."
+        },
+        {
+          "id": "5b",
+          "start": 35.4,
+          "end": 37.6,
+          "what": "The open Duo turns around (180° about its vertical axis; the real model's back, cameras and outer display) to show the outer display with the Vol. 1 cover (genuine outer capture). Changed from the original plan to fold closed: Honbako shows the cover while you read with the device open, not when folded. Pro tag. Footnote: uses the camera while you read; no photos or video are recorded or saved."
+        },
+        {
+          "id": "5c",
+          "start": 37.6,
+          "end": 40.0,
+          "what": "Resume widget (genuine build 68 capture; shows the app’s own sample story) + “Your place syncs with iCloud”. No claim of access while the app is closed."
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "start": 40,
+      "end": 45,
+      "copy": "Your manga. Your AI.",
+      "shots": [
+        {
+          "id": "6a",
+          "start": 40.0,
+          "end": 45.0,
+          "what": "Icon + Honbako 本箱 wordmark, tagline, legal note: Some features require Honbako Pro. Compatible AI-provider account required. Manga credit."
+        }
+      ]
+    }
+  ],
+  "music": "tools/music.py: procedural felt piano and pad, D major, 84 BPM, seed 810, −14.9 LUFS, no sound effects.",
+  "device": "Apple's iPhone Duo model (V68.usdz from Xcode 27.1's DeviceHub plugin), Dark finish, rendered per frame by tools/duo-render with RealityKit; hinge posed with the model's book_close clip."
+}

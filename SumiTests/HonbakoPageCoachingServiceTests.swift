@@ -20,6 +20,18 @@ import UIKit
         #expect(fixture.service.currentPage?.page.page == 1)
     }
 
+    @Test("A stream the server closed starts a fresh session instead of retrying the dead one")
+    func closedStreamStartsFreshSession() async throws {
+        let fixture = CoachingServiceFixture()
+        defer { fixture.close() }
+        fixture.probe.closeNextPost = true
+        try fixture.start()
+        try await coachingEventually { fixture.probe.uploads.count == 2 }
+        let first = fixture.probe.uploads[0].sessionId, second = fixture.probe.uploads[1].sessionId
+        #expect(first != second, "A closed session can never accept another page")
+        try await coachingEventually { fixture.service.currentPage?.sessionId == second }
+    }
+
     @Test("Privacy, disconnection and a different companion are rechecked after image loading")
     func permissionChangeDuringLoadCannotUpload() async throws {
         for change in [CoachingPermissionChange.privateReading, .differentConnection, .disconnected] {
@@ -288,6 +300,7 @@ private final class CoachingWireProbe {
     var holdPosts = false
     var holdGets = false
     var failRevokes = false
+    var closeNextPost = false
     var inactiveReason: String?
     var imageLoads = 0
     var uploads: [Models.Publish] = []
@@ -325,6 +338,10 @@ private final class CoachingWireProbe {
             let payload = try JSONDecoder().decode(Models.Publish.self, from: body)
             let index = uploads.count
             uploads.append(payload)
+            if closeNextPost {
+                closeNextPost = false
+                throw HonbakoPageCoachingService.CoachingError.sessionClosed
+            }
             if holdPosts { return await withCheckedContinuation { postWaiters[index] = (payload, $0) } }
             return acknowledgement(payload)
         }

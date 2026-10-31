@@ -103,6 +103,27 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         return result
     }
 
+    #if HONBAKO_EXTERNAL_SOURCES
+    /// A bounded recovery query after every default-edition candidate is confirmed
+    /// missing. No language preference is changed and no page images are fetched.
+    func readableAlternativeChapters(for manga: AidokuRunner.Manga) async throws -> [AidokuRunner.Chapter] {
+        try validateIdentifier(manga.key)
+        let parameters = contentParameters() + [
+            URLQueryItem(name: "limit", value: "100"), .init(name: "offset", value: "0"),
+            .init(name: "includeEmptyPages", value: "0"), .init(name: "includeExternalUrl", value: "0"),
+            .init(name: "includeUnavailable", value: "0"), .init(name: "includeFutureUpdates", value: "0"),
+            .init(name: "includeFuturePublishAt", value: "0"), .init(name: "includes[]", value: "scanlation_group"),
+            .init(name: "order[volume]", value: "asc"), .init(name: "order[chapter]", value: "asc")]
+        let response: HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> =
+            try await request("/manga/\(manga.key)/feed", parameters)
+        guard response.result == "ok" else { throw HonbakoMangaDexError.invalidResponse }
+        var seen: Set<String> = []
+        return response.data.prefix(100)
+            .filter { UUID(uuidString: $0.id) != nil && $0.isReadable(at: now()) && seen.insert($0.id).inserted }
+            .reversed().map { $0.chapter(at: now()) }
+    }
+    #endif
+
     /// Language is explicit and local to this call; source preferences are never changed.
     func chapters(for manga: AidokuRunner.Manga, language: String) async throws -> [AidokuRunner.Chapter] {
         let language = HonbakoMangaDexAPI.canonicalLanguage(language)
@@ -128,8 +149,8 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         var results: [AidokuRunner.Chapter] = []
         var seen: Set<String> = []
         while true {
-            let response = try await feed(mangaKey: manga.key, languages: languages, limit: 500, offset: offset)
-            results += response.data.filter { $0.isReadable(at: .now) && seen.insert($0.id).inserted }.map { $0.chapter() }
+            let response = try await feed(mangaKey: manga.key, languages: languages, limit: 500, offset: offset, includeUnavailable: true)
+            results += response.data.filter { UUID(uuidString: $0.id) != nil && seen.insert($0.id).inserted }.map { $0.chapter() }
             let next = response.offset + response.data.count
             if next >= response.total { break }
             guard !response.data.isEmpty, next > offset, next < 10_000 else { throw HonbakoMangaDexError.tooManyChapters }
@@ -207,14 +228,14 @@ actor HonbakoMangaDexRunner: AidokuRunner.Runner {
         return delivery
     }
 
-    private func feed(mangaKey: String, languages: [String], limit: Int, offset: Int)
+    private func feed(mangaKey: String, languages: [String], limit: Int, offset: Int, includeUnavailable: Bool = false)
         async throws -> HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> {
         try validateIdentifier(mangaKey)
         var parameters = contentParameters() + [
             URLQueryItem(name: "limit", value: String(limit)), .init(name: "offset", value: String(offset)),
-            .init(name: "includeEmptyPages", value: "0"), .init(name: "includeExternalUrl", value: "0"),
+            .init(name: "includeEmptyPages", value: includeUnavailable ? "1" : "0"), .init(name: "includeExternalUrl", value: includeUnavailable ? "1" : "0"),
             .init(name: "includeFutureUpdates", value: "0"), .init(name: "includeFuturePublishAt", value: "0"),
-            .init(name: "includeUnavailable", value: "0"), .init(name: "includes[]", value: "scanlation_group"),
+            .init(name: "includeUnavailable", value: includeUnavailable ? "1" : "0"), .init(name: "includes[]", value: "scanlation_group"),
             .init(name: "order[volume]", value: "desc"), .init(name: "order[chapter]", value: "desc")]
         parameters += languages.map { .init(name: "translatedLanguage[]", value: HonbakoMangaDexAPI.apiLanguage($0)) }
         let response: HonbakoMangaDexAPI.Collection<HonbakoMangaDexAPI.Chapter> =

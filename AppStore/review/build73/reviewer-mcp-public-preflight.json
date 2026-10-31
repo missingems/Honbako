@@ -1,0 +1,22 @@
+{
+  "production": {
+    "host": "mcp.honbako.xyz",
+    "strict_tls": true,
+    "authenticated_workspace_created": false,
+    "capabilities_status": 200,
+    "available": true,
+    "tls_completed": true,
+    "oauth_metadata_status": 200,
+    "issuer_matches_expected": true
+  },
+  "sandbox": {
+    "host": "test-mcp.honbako.xyz",
+    "strict_tls": true,
+    "authenticated_workspace_created": false,
+    "capabilities_status": 200,
+    "available": true,
+    "tls_completed": true,
+    "oauth_metadata_status": 200,
+    "issuer_matches_expected": true
+  }
+}

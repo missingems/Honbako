@@ -79,7 +79,7 @@ import UIKit
             direction: .vertical, wordBox: box)
         let horizontal = HonbakoJapaneseAnnotationStyle.labelSize(for: "arigatougozaimasu", font: font,
             direction: .horizontal, wordBox: box)
-        #expect(vertical.width <= font.pointSize * 5 + 8)
+        #expect(vertical.width <= font.pointSize * 5 + 2)
         #expect(vertical.width < horizontal.width)
         #expect(vertical.height > horizontal.height)
         let label = UILabel()
@@ -87,11 +87,11 @@ import UIKit
         label.text = "arigatougozaimasu"
         label.numberOfLines = 0
         label.lineBreakMode = .byCharWrapping
-        let measured = label.sizeThatFits(CGSize(width: vertical.width - 8, height: .greatestFiniteMagnitude))
-        #expect(measured.height <= vertical.height - 6)
+        let measured = label.sizeThatFits(CGSize(width: vertical.width - 2, height: .greatestFiniteMagnitude))
+        #expect(measured.height <= vertical.height - 2)
         let short = HonbakoJapaneseAnnotationStyle.labelSize(for: "kyou", font: font,
             direction: .vertical, wordBox: box)
-        #expect(short.height == 20)
+        #expect(short.height == ceil(font.lineHeight) + 2)
     }
 
     @Test("Accurate character rectangles can recover a vertical word without dividing the phrase")

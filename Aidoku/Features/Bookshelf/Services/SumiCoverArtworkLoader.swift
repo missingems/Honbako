@@ -5,9 +5,9 @@ import Foundation
 import Nuke
 import UIKit
 
-/// Catalog batches and visible tiles share the exact source-modified request
-/// and processing key. Warm images can be installed synchronously when a new
-/// section appears, rather than fading in one cover at a time.
+/// Catalog prewarming and NukeUI tiles share the same source-modified request.
+/// A bounded decoded-cover cache survives reader-page cache churn; a warm tile
+/// can show its print synchronously when it scrolls back into view.
 @MainActor
 final class SumiCoverArtworkLoader {
     typealias Loader = @MainActor @Sendable (SumiBook) async -> Void
@@ -21,14 +21,16 @@ final class SumiCoverArtworkLoader {
         let source: ObjectIdentifier?
         let version: Int
         let preferences: Int
-        let variant = "original-1024-unlit-print-v2"
+        let generation: Int
+        let variant = "original-640-unlit-print-v3"
 
-        init(book: SumiBook, source: AidokuRunner.Source?) {
+        init(book: SumiBook, source: AidokuRunner.Source?, preferences: Int, generation: Int) {
             id = book.id
             cover = book.coverURL
             self.source = source.map(ObjectIdentifier.init)
             version = source?.version ?? 0
-            preferences = SumiSearchSourcePreferences.fingerprint(sourceKey: book.sourceKey)
+            self.preferences = preferences
+            self.generation = generation
         }
     }
 
@@ -69,6 +71,13 @@ final class SumiCoverArtworkLoader {
         var watchdog: Task<Void, Never>?
     }
 
+    private final class CacheKey: NSObject {
+        let key: Key
+        init(_ key: Key) { self.key = key }
+        override var hash: Int { key.hashValue }
+        override func isEqual(_ object: Any?) -> Bool { (object as? CacheKey)?.key == key }
+    }
+
     private struct RequestEntry {
         let request: ImageRequest
         // Retain the instance while its ObjectIdentifier keys this request.
@@ -85,6 +94,13 @@ final class SumiCoverArtworkLoader {
     private var resolvedSources: [String: AidokuRunner.Source] = [:]
     private var sourceGenerations: [String: Int] = [:]
     private var observer: AnyCancellable?
+    private var memoryObserver: AnyCancellable?
+    private var preferencesObserver: AnyCancellable?
+    private var preferenceFingerprints: [String: Int] = [:]
+    // Reader pages share Nuke's main cache and can evict an entire grid while a
+    // book is open. Keep a bounded decoded grid edition independently so return
+    // and back-scrolling can use the same bitmap without another decode.
+    private let decodedCovers = NSCache<CacheKey, UIImage>()
     private var cohort: Cohort?
     private var imageTasks: [Key: ImageTask] = [:]
     private var cancelledImageTasks: Set<Key> = []
@@ -94,21 +110,41 @@ final class SumiCoverArtworkLoader {
         self.concurrency = max(1, concurrency)
         self.timeout = timeout
         self.loader = loader
+        decodedCovers.totalCostLimit = min(192 * 1024 * 1024, Int(ProcessInfo.processInfo.physicalMemory / 32))
+        decodedCovers.countLimit = 256
+        memoryObserver = NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in self?.releaseDecodedCoversForMemoryPressure() }
+            }
+        preferencesObserver = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in self?.invalidateChangedPreferences() }
+            }
         observer = NotificationCenter.default.publisher(for: .sourceUnloaded).sink { [weak self] notification in
             guard let sourceKey = notification.object as? String else { return }
             Task { @MainActor [weak self] in self?.remove(sourceKey: sourceKey) }
         }
     }
 
+    /// Memory pressure may release decoded copies; library refreshes never do.
+    func releaseDecodedCoversForMemoryPressure() {
+        decodedCovers.removeAllObjects()
+    }
+
     func cachedCover(for book: SumiBook) -> UIImage? {
-        guard cohort?.jobs[book.id] == nil else { return nil }
-        return rawCachedCover(for: book)?.image
+        rawCachedCover(for: book)?.image
     }
 
     private func rawCachedCover(for book: SumiBook) -> LoadedCover? {
-        let key = Key(book: book, source: currentSource(for: book.sourceKey))
-        guard let request = requests[key]?.request else { return nil }
-        guard let image = ImagePipeline.shared.cache.cachedImage(for: request, caches: [.memory])?.image else { return nil }
+        let key = key(for: book)
+        let image: UIImage
+        if let retained = decodedCovers.object(forKey: CacheKey(key)) { image = retained }
+        else {
+            guard let request = requests[key]?.request,
+                  let cached = ImagePipeline.shared.cache.cachedImage(for: request, caches: [.memory])?.image else { return nil }
+            image = cached
+            retainDecodedCover(image, for: key)
+        }
         return LoadedCover(key: key, image: image, generation: sourceGenerations[book.sourceKey, default: 0])
     }
 
@@ -117,7 +153,7 @@ final class SumiCoverArtworkLoader {
     }
 
     private func usesFailurePlaceholder(for book: SumiBook) -> Bool {
-        let key = Key(book: book, source: currentSource(for: book.sourceKey))
+        let key = key(for: book)
         return placeholders[key].map { $0 > .now } ?? false
     }
 
@@ -178,20 +214,72 @@ final class SumiCoverArtworkLoader {
         return Task.isCancelled ? nil : image
     }
 
-    private func loadCoverEntry(for book: SumiBook, source providedSource: AidokuRunner.Source? = nil) async -> LoadedCover? {
+    /// NukeUI and explicit prewarming use one stable source-modified request.
+    /// Reusing this request also avoids asking a source to regenerate headers
+    /// every time SwiftUI recreates a previously visited tile.
+    func coverRequest(for book: SumiBook, source providedSource: AidokuRunner.Source? = nil) async -> ImageRequest? {
         guard let coverURL = book.coverURL, !Task.isCancelled else { return nil }
         let url = Self.highQualityCoverURL(coverURL)
         let generation = sourceGenerations[book.sourceKey, default: 0]
         let source: AidokuRunner.Source?
         if let providedSource { source = providedSource }
-        else if let loaded = SourceStore.shared.source(for: book.sourceKey) { source = loaded }
+        else if let current = currentSource(for: book.sourceKey) { source = current }
         else { source = await SourceManager.shared.source(for: book.sourceKey) }
-        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
-        // A restored external-catalog entry must not fetch its remote cover
-        // after that connection has been excluded from the collection reader.
-        guard source != nil || url.isFileURL || url.toAidokuFileUrl() != nil else { return nil }
+        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0],
+              source != nil || url.isFileURL || url.toAidokuFileUrl() != nil
+                || Self.permitsUnconfiguredSourceCover(url) else { return nil }
         if let source { resolvedSources[book.sourceKey] = source }
-        let key = Key(book: book, source: source)
+        let key = key(for: book, source: source)
+        for previous in requests.keys where previous.id == key.id && previous != key {
+            decodedCovers.removeObject(forKey: CacheKey(previous))
+            requests[previous] = nil
+        }
+        if let existing = requests[key] { return existing.request }
+        let urlRequest: URLRequest
+        if let local = url.toAidokuFileUrl() { urlRequest = URLRequest(url: local) }
+        else if let source { urlRequest = await source.getModifiedImageRequest(url: url, context: nil) }
+        else { urlRequest = URLRequest(url: url) }
+        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
+        var processors: [ImageProcessing] = []
+        if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
+        // Enough physical pixels for the library's compact tiles without the
+        // decoded-memory churn of a 1024px edition for every book.
+        processors.append(DownsampleProcessor(width: 640, scaleFactor: 1))
+        var request = ImageRequest(urlRequest: urlRequest, processors: processors,
+            userInfo: [.processesKey: source?.features.processesCovers ?? false])
+        // Scope processed images to this source instance/preferences/generation.
+        // The opaque hash contains no raw headers or credentials. Encoded bytes
+        // retain the existing shared disk-cache policy.
+        request.imageID = "Honbako.library-cover.\(key.hashValue)"
+        requests[key] = RequestEntry(request: request, source: source, stored: .now)
+        trim()
+        return request
+    }
+
+    func retainVisibleCover(_ image: UIImage, for book: SumiBook, request: ImageRequest) {
+        let key = key(for: book)
+        guard let current = requests[key]?.request,
+              ImagePipeline.shared.cache.makeImageCacheKey(for: current) == ImagePipeline.shared.cache.makeImageCacheKey(for: request) else { return }
+        retainDecodedCover(image, for: key)
+        placeholders[key] = nil
+    }
+
+    private func retainDecodedCover(_ image: UIImage, for key: Key) {
+        let cost = image.cgImage.map { $0.bytesPerRow * $0.height }
+            ?? Int(image.size.width * image.size.height * image.scale * image.scale * 4)
+        decodedCovers.setObject(image, forKey: CacheKey(key), cost: cost)
+    }
+
+    func recordVisibleFailure(for book: SumiBook) {
+        placeholders[key(for: book)] = Date.now.addingTimeInterval(10)
+    }
+
+    func isInFailureCooldown(for book: SumiBook) -> Bool { usesFailurePlaceholder(for: book) }
+
+    private func loadCoverEntry(for book: SumiBook, source providedSource: AidokuRunner.Source? = nil) async -> LoadedCover? {
+        guard let request = await coverRequest(for: book, source: providedSource) else { return nil }
+        let generation = sourceGenerations[book.sourceKey, default: 0]
+        let key = key(for: book)
         while active.contains(key) || active.count >= concurrency {
             do { try await Task.sleep(for: .milliseconds(20)) }
             catch { return nil }
@@ -203,20 +291,6 @@ final class SumiCoverArtworkLoader {
         guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
         active.insert(key)
         defer { active.remove(key) }
-        let urlRequest: URLRequest
-        if let local = url.toAidokuFileUrl() { urlRequest = URLRequest(url: local) }
-        else if let source { urlRequest = await source.getModifiedImageRequest(url: url, context: nil) }
-        else { urlRequest = URLRequest(url: url) }
-        guard !Task.isCancelled, generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
-        // Original artwork remains sharp when lifted from a 3x grid. Bound the
-        // decoded image in physical pixels; the processor never upscales it.
-        var processors: [ImageProcessing] = []
-        if let source, source.features.processesCovers { processors.append(CoverInterceptorProcessor(source: source)) }
-        processors.append(DownsampleProcessor(width: 1024, scaleFactor: 1))
-        let request = ImageRequest(urlRequest: urlRequest, processors: processors,
-            userInfo: [.processesKey: source?.features.processesCovers ?? false])
-        requests[key] = RequestEntry(request: request, source: source, stored: .now)
-        trim()
         let imageTask = ImagePipeline.shared.imageTask(with: request)
         imageTasks[key] = imageTask
         cancelledImageTasks.remove(key)
@@ -224,13 +298,13 @@ final class SumiCoverArtworkLoader {
         let image = try? await imageTask.image
         guard !Task.isCancelled, !cancelledImageTasks.contains(key),
               generation == sourceGenerations[book.sourceKey, default: 0] else { return nil }
-        if image == nil { placeholders[key] = Date.now.addingTimeInterval(10) }
-        else { placeholders[key] = nil }
+        if let image { retainDecodedCover(image, for: key); placeholders[key] = nil }
+        else { placeholders[key] = Date.now.addingTimeInterval(10) }
         return image.map { LoadedCover(key: key, image: $0, generation: generation) }
     }
 
-    /// Visible grid/search covers join the same cohort instead of independently
-    /// repainting as their individual requests finish.
+    /// Compatibility prewarm for callers that explicitly request a cohort.
+    /// Visible NukeUI tiles do not wait for other covers in that cohort.
     func requestVisibleCover(for book: SumiBook) {
         guard book.coverURL != nil, !usesPreparedPlaceholder(for: book) else { return }
         _ = enqueue([book], lease: nil)
@@ -243,7 +317,7 @@ final class SumiCoverArtworkLoader {
 
     private func isCurrent(_ entry: LoadedCover, for book: SumiBook) -> Bool {
         entry.generation == sourceGenerations[book.sourceKey, default: 0]
-            && entry.key == Key(book: book, source: currentSource(for: book.sourceKey))
+            && entry.key == key(for: book)
     }
 
     private func enqueue(_ books: [SumiBook], lease: UUID?) -> Cohort {
@@ -255,7 +329,7 @@ final class SumiCoverArtworkLoader {
         for book in books.prefix(cohortLimit) where seen.insert(book.id).inserted {
             incoming.append(book.id)
             let generation = sourceGenerations[book.sourceKey, default: 0]
-            let preferences = SumiSearchSourcePreferences.fingerprint(sourceKey: book.sourceKey)
+            let preferences = preferenceFingerprint(for: book.sourceKey)
             if let old = batch.jobs[book.id], old.book.coverURL == book.coverURL,
                old.generation == generation, old.preferences == preferences { continue }
             if batch.jobs[book.id] != nil { cancelImageTasks(for: [book.id]) }
@@ -294,7 +368,7 @@ final class SumiCoverArtworkLoader {
                 for (id, ticket) in batch.running {
                     guard let job = batch.jobs[id], job.ticket == ticket,
                           job.generation == sourceGenerations[job.book.sourceKey, default: 0] else { continue }
-                    let key = Key(book: job.book, source: currentSource(for: job.book.sourceKey))
+                    let key = key(for: job.book)
                     placeholders[key] = Date.now.addingTimeInterval(10)
                 }
                 batch.task?.cancel()
@@ -375,6 +449,27 @@ final class SumiCoverArtworkLoader {
         }
     }
 
+    /// Library records can arrive from iCloud before their source is restored.
+    /// Public HTTPS artwork needs no extension or server login; personal-server
+    /// addresses still wait for their configured source and modified request.
+    static func permitsUnconfiguredSourceCover(_ url: URL) -> Bool {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              components.scheme?.lowercased() == "https", components.user == nil, components.password == nil,
+              components.port == nil || components.port == 443,
+              let value = components.host?.lowercased() else { return false }
+        let credentialFields: Set<String> = ["token", "access_token", "auth_token", "api_key", "apikey", "auth", "authorization", "password", "secret", "session", "sessionid", "jwt"]
+        guard !(components.queryItems ?? []).contains(where: {
+            credentialFields.contains($0.name.lowercased().replacingOccurrences(of: "-", with: "_"))
+        }) else { return false }
+        let host = value.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        guard host.contains("."), !host.contains(":"),
+              !host.allSatisfy({ $0.isNumber || $0 == "." }),
+              !["localhost", "local", "lan", "internal", "home", "home.arpa"].contains(where: {
+                  host == $0 || host.hasSuffix(".\($0)")
+              }) else { return false }
+        return true
+    }
+
     /// Older saved MangaDex entries retain a thumbnail URL. Upgrade only its
     /// documented uploads path; every other provider keeps its exact URL and
     /// still receives its own source-modified headers below.
@@ -398,6 +493,31 @@ final class SumiCoverArtworkLoader {
         return await loadCoverEntry(for: book)
     }
 
+    /// A cheap identity check for reused tiles; preferences are re-read once per
+    /// source when defaults change, never copied/serialized for every tile update.
+    func coverIdentity(for book: SumiBook) -> AnyHashable { AnyHashable(key(for: book)) }
+
+    private func key(for book: SumiBook, source: AidokuRunner.Source? = nil) -> Key {
+        Key(book: book, source: source ?? currentSource(for: book.sourceKey),
+            preferences: preferenceFingerprint(for: book.sourceKey), generation: sourceGenerations[book.sourceKey, default: 0])
+    }
+
+    private func preferenceFingerprint(for sourceKey: String) -> Int {
+        if let existing = preferenceFingerprints[sourceKey] { return existing }
+        let value = SumiSearchSourcePreferences.fingerprint(sourceKey: sourceKey)
+        preferenceFingerprints[sourceKey] = value
+        return value
+    }
+
+    private func invalidateChangedPreferences() {
+        for (sourceKey, previous) in preferenceFingerprints {
+            let current = SumiSearchSourcePreferences.fingerprint(sourceKey: sourceKey)
+            guard current != previous else { continue }
+            remove(sourceKey: sourceKey)
+            preferenceFingerprints[sourceKey] = current
+        }
+    }
+
     private func currentSource(for sourceKey: String) -> AidokuRunner.Source? {
         SourceStore.shared.source(for: sourceKey) ?? resolvedSources[sourceKey]
     }
@@ -415,6 +535,7 @@ final class SumiCoverArtworkLoader {
             if batch.jobs.isEmpty { batch.task?.cancel() }
         }
         resolvedSources[sourceKey] = nil
+        for key in requests.keys where key.id.sourceKey == sourceKey { decodedCovers.removeObject(forKey: CacheKey(key)) }
         requests = requests.filter { $0.key.id.sourceKey != sourceKey }
         placeholders = placeholders.filter { $0.key.id.sourceKey != sourceKey }
     }
@@ -424,6 +545,7 @@ final class SumiCoverArtworkLoader {
         while requests.count > 256 {
             guard let oldest = requests.min(by: { $0.value.stored < $1.value.stored })?.key else { break }
             requests[oldest] = nil
+            decodedCovers.removeObject(forKey: CacheKey(oldest))
         }
         let retainedKeys = Set(requests.keys.map(\.id.sourceKey))
         let activeKeys = Set(active.map(\.id.sourceKey))

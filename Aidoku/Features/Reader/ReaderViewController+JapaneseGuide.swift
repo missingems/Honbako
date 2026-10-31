@@ -8,9 +8,22 @@ extension ReaderViewController {
                 mangaKey: manga.key, chapterKey: chapter.key)
     }
 
+    var sumiJapaneseLearningPolicy: HonbakoJapaneseLearningPolicy {
+        .init(requested: sumiJapaneseLearningEnabled, languageEligible: sumiJapaneseLearningAvailable,
+            hasPro: HonbakoProStore.cachedHasPro)
+    }
+
+    func sumiJapaneseProAccessChanged() {
+        if !HonbakoProStore.cachedHasPro {
+            sumiJapaneseLearningEnabled = false
+            sumiDismissJapanesePhrase(resumeAutoScroll: false)
+        }
+        sumiConfigureJapaneseLearning()
+    }
+
     func sumiConfigureJapaneseLearning() {
         guard let imageReader = reader as? HonbakoJapaneseReader else { return }
-        let enabled = sumiJapaneseLearningEnabled && sumiJapaneseLearningAvailable
+        let enabled = sumiJapaneseLearningPolicy.enabled
         imageReader.configureJapaneseLearning(enabled: enabled) { [weak self] region, wordID, anchor in
             self?.sumiShowJapanesePhrase(region: region, wordID: wordID, windowAnchor: anchor)
         }
@@ -18,20 +31,20 @@ extension ReaderViewController {
     }
 
     func sumiSetJapaneseLearningEnabled(_ enabled: Bool) {
-        sumiJapaneseLearningEnabled = enabled
-        if !enabled { sumiDismissJapanesePhrase(resumeAutoScroll: true) }
+        sumiJapaneseLearningEnabled = enabled && HonbakoProStore.cachedHasPro
+        if !sumiJapaneseLearningEnabled { sumiDismissJapanesePhrase(resumeAutoScroll: true) }
         sumiConfigureJapaneseLearning()
     }
 
     func sumiSetJapaneseLearningActive(_ active: Bool) {
         sumiJapaneseLearningActive = active
         if !active { sumiDismissJapanesePhrase(resumeAutoScroll: false) }
-        (reader as? HonbakoJapaneseReader)?.setJapaneseLearningActive(active && sumiJapaneseLearningAvailable)
+        (reader as? HonbakoJapaneseReader)?.setJapaneseLearningActive(active && sumiJapaneseLearningPolicy.enabled)
     }
 
     /// The page remains mounted; only the selected phrase uses a native presentation.
     private func sumiShowJapanesePhrase(region: HonbakoJapaneseRegion, wordID: Int?, windowAnchor: CGRect) {
-        guard sumiJapaneseLearningEnabled, sumiJapaneseLearningActive, sumiJapaneseLearningAvailable,
+        guard sumiJapaneseLearningPolicy.enabled, sumiJapaneseLearningActive,
               presentedViewController == nil, view.window != nil,
               view.window?.windowScene?.activationState == .foregroundActive else { return }
         let scrollingReader = reader as? ReaderWebtoonViewController
@@ -48,7 +61,7 @@ extension ReaderViewController {
                 sumiJapanesePhraseViewport = nil
                 sumiJapanesePopupOwnsAutoScroll = false
             }
-            if isCurrent, shouldResume, sumiJapaneseLearningActive,
+            if isCurrent, shouldResume, sumiJapaneseLearningActive, sumiJapaneseLearningPolicy.enabled,
                viewIfLoaded?.window != nil, view.window?.windowScene?.activationState == .foregroundActive {
                 scrollingReader?.resumeAutoScroll()
             }

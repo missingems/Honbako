@@ -1,0 +1,24 @@
+{
+  "verified_at": "2026-10-30",
+  "komga": {
+    "version": "1.29.2",
+    "release": "https://github.com/gotson/komga/releases/tag/1.29.2",
+    "url": "https://github.com/gotson/komga/releases/download/1.29.2/komga-1.29.2.jar",
+    "filename": "komga-1.29.2.jar",
+    "sha256": "42fcaac29cbd00199c5c16f1b25882bd5a7cebc695d761f04f4532d08a22063f"
+  },
+  "kavita": {
+    "version": "0.9.1.4",
+    "release": "https://github.com/Kareadita/Kavita/releases/tag/v0.9.1.4",
+    "url": "https://github.com/Kareadita/Kavita/releases/download/v0.9.1.4/kavita-osx-arm64.tar.gz",
+    "filename": "kavita-osx-arm64.tar.gz",
+    "sha256": "cde8ca6f3d331d35bd7fb828a2bda39a5e361913ab3f1913c73361b644ac386e"
+  },
+  "suwayomi": {
+    "version": "2.4.2366",
+    "release": "https://github.com/Suwayomi/Suwayomi-Server/releases/tag/v2.4.2366",
+    "url": "https://github.com/Suwayomi/Suwayomi-Server/releases/download/v2.4.2366/Suwayomi-Server-v2.4.2366.jar",
+    "filename": "Suwayomi-Server-v2.4.2366.jar",
+    "sha256": "af9feb20af9d7ebe9e30769e6c6ebc7fc7ab1c447388d42e0280b1da5fe07bfd"
+  }
+}

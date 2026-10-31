@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "build": 70,
+  "changes": {
+    "tilt": "10 degrees clockwise, opposite build69",
+    "scale": "6% larger",
+    "variants": [
+      "light",
+      "dark",
+      "tinted"
+    ]
+  },
+  "archive": "/Users/jun/Library/Developer/Xcode/Archives/2026-10-30/Honbako-0.2.0-70.xcarchive",
+  "archiveAndUpload": "PASS",
+  "TestFlight": {
+    "status": "Testing",
+    "groups": [
+      "Honbako Internal",
+      "External Sources Beta"
+    ],
+    "externalVerified": true,
+    "publicLink": "https://testflight.apple.com/join/1PwJ2Bja",
+    "buildURL": "https://appstoreconnect.apple.com/teams/7fcc516d-bf3f-4188-95c1-a087bd1df80b/apps/6827059668/testflight/ios/ecb0d676-be42-405a-b26a-adff96ed28b1",
+    "newTestersInvited": false
+  },
+  "scope": "Icon only. Reader UI, screenshots and MCP services are unchanged from build69.",
+  "proof": "../../review/build70/external-testing.png"
+}

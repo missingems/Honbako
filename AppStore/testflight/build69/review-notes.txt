@@ -1,0 +1,14 @@
+Honbako 0.2.0 (69) is a personal manga reader. It includes five original illustrated guides and requires no app account for local reading. No third-party manga catalog, manga or source package is preinstalled.
+
+1. Complete onboarding with Free. Open The Bookshop Between Pages. Tap for native title/chapter controls, turn pages and scrub. Chapters opens at the highlighted current chapter. Close and reopen to test saved progress.
+2. Settings → Import from Files accepts CBZ/ZIP. Personal Server supports user-owned Komga, Kavita and Suwayomi libraries. Settings → Extensions supports explicit extension/repository installation in this external-source beta. Users supply their own authorized content.
+3. Free includes local reading, local MCP, iCloud library/progress sync and Continue Reading widgets. Pro adds remote MCP, Japanese reading guidance, Duo cover display, downloads/alerts and additional widgets. Prices and eligible introductory trials come from StoreKit. Restore Purchases is below plan choices. Active members open Apple subscription management.
+4. Use only Apple's permitted no-charge Sandbox purchase for testing. Remote enrollment requires a valid active Apple-verified subscription; local Xcode receipts, cached access flags and personal builds cannot unlock hosting. Verified Sandbox purchases route to an isolated Sandbox service; Production receipts route to production. There is no environment fallback.
+5. Settings → MCP Server → Remote needs no host, pairing code or AI API key. Add the displayed MCP URL in a compatible AI provider, authenticate via phone consent, then test allowed library/history/page access and queued library/source changes. Honbako does not include or charge for an AI model. Existing pairings stay on their original endpoint. Disconnect while connected revokes AI credentials and deletes shared workspace content; minimal hashed ownership/purchase records remain.
+6. Optional iPhone Duo cover mode requires camera permission for Apple's video-only accessory. No photo/video recording, microphone or camera-frame upload is attached. Japanese romaji overlays apply to Japanese chapters; tap words for reading/translation.
+
+First-party external-source sample, with original content only: https://missingems.github.io/Honbako/sources/index.json
+Support: https://missingems.github.io/Honbako/support/
+Privacy: https://missingems.github.io/Honbako/privacy/
+
+Store screenshots use genuine imported original-art local portfolios plus bundled guides. Portfolio samples are not bundled narrative manga. Current screenshots are native dark-mode build69 captures inside licensed Apple frames.

@@ -1,0 +1,47 @@
+{
+  "build": 69,
+  "nativeCaptureCount": 24,
+  "framedListingCount": 24,
+  "locales": [
+    "en-US",
+    "ja",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "devices": [
+    "iphone",
+    "ipad"
+  ],
+  "nativeOrientations": {
+    "iphone": "portrait1206x2622",
+    "ipad_library": "landscape2752x2064",
+    "ipad_reader_chapters": "portrait2064x2752"
+  },
+  "checks": {
+    "all8NativeUITests": "PASS",
+    "nativeReaderTitleAndChapterSubtitle": "PASS",
+    "currentChapterVisibleAndSelected": "PASS",
+    "originalLocalCoverLoading": "PASS; native aidoku-image portable URLs",
+    "allRawAndFinalHashes": "PASS",
+    "finalDimensionsAndRGBJPEG": "PASS",
+    "fullLicensedAppleFrames": "PASS",
+    "contactSheetVisualReview": "PASS"
+  },
+  "testResults": [
+    "Test-Honbako-2026.10.30_20-06-00-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-07-15-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-07-55-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-08-36-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-09-34-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-10-19-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-11-03-+0800.xcresult",
+    "Test-Honbako-2026.10.30_20-11-46-+0800.xcresult"
+  ],
+  "uiFabricated": false,
+  "newImageGenerationUsed": false,
+  "uploadedToAppStoreConnect": false,
+  "proofs": [
+    "screenshot-proofs/store-design-proper-frames.jpg",
+    "screenshot-proofs/store-design-all-locales-v2.jpg"
+  ]
+}

@@ -116,7 +116,7 @@ test('official HTTP SDK supports catalog results, phone approval, addition and i
   const f = await fixture(t), phone = await f.pair();
   await f.request('POST', '/api/device/state', phone.deviceToken, state());
   const { client, job: search } = await finishSearch(f, phone);
-  assert.equal((await client.listTools()).tools.length, 10);
+  assert.equal((await client.listTools()).tools.length, 14);
   assert.equal(output(await tool(client, 'honbako_get_job', { jobId: search.id })).result.matches[0].title, 'Original Moon');
   assert.equal((await tool(client, 'honbako_add_to_library', { items: [{ sourceId: 'own-source', mangaId: 'invented' }], idempotencyKey: 'never-invent-ids' })).isError, true);
   const args = { items: [{ sourceId: 'own-source', mangaId: 'moon-2' }], idempotencyKey: 'stable-retry-1' };
@@ -136,6 +136,32 @@ test('official HTTP SDK supports catalog results, phone approval, addition and i
   assert.equal(output(await tool(client, 'honbako_cancel_job', { jobId: finished.id })).status, 'completed');
   const persisted = JSON.parse(await fs.readFile(path.join(f.folder, 'state.json'), 'utf8'));
   assert.equal(persisted.jobs.find(job => job.id === finished.id).status, 'completed');
+});
+
+test('removal needs an updated phone, exact saved IDs, phone approval and a complete result', async t => {
+  const f = await fixture(t), phone = await f.pair(), client = await f.connect();
+  const remove = { items: [{ sourceId: 'own-source', mangaId: 'book-1' }], idempotencyKey: 'remove-1' };
+  await f.request('POST', '/api/device/state', phone.deviceToken, state());
+  const outdated = await tool(client, 'honbako_remove_from_library', remove);
+  assert.equal(outdated.isError, true); assert.match(outdated.content[0].text, /update_app/);
+  await f.request('POST', '/api/device/state', phone.deviceToken, { ...state(), generatedAt: new Date(baseTime + 1).toISOString(), automationCapabilities: ['library.remove'] });
+  const unsaved = await tool(client, 'honbako_remove_from_library', { items: [{ sourceId: 'own-source', mangaId: 'not-saved' }], idempotencyKey: 'remove-2' });
+  assert.equal(unsaved.isError, true); assert.match(unsaved.content[0].text, /not_in_library/);
+  const job = output(await tool(client, 'honbako_remove_from_library', remove)); assert.equal(job.status, 'queued');
+  assert.equal(output(await tool(client, 'honbako_remove_from_library', remove)).id, job.id);
+  const route = `/api/device/jobs/${job.id}/status`;
+  const result = { removed: [{ sourceId: 'own-source', mangaId: 'book-1', title: 'Original sample' }], notPresent: [] };
+  assert.equal((await f.request('POST', route, phone.deviceToken, { status: 'completed', result })).status, 409, 'removal needs approval first');
+  assert.equal((await f.request('POST', route, phone.deviceToken, { status: 'awaitingApproval', approvalGranted: true })).status, 200);
+  assert.equal((await f.request('POST', route, phone.deviceToken, { status: 'completed', result: { removed: [], notPresent: [] } })).status, 400);
+  assert.equal((await f.request('POST', route, phone.deviceToken, { status: 'completed',
+    result: { ...result, notPresent: [{ sourceId: 'own-source', mangaId: 'other' }] } })).status, 400);
+  assert.equal((await f.request('POST', route, phone.deviceToken, { status: 'completed', result })).status, 200);
+  assert.deepEqual(output(await tool(client, 'honbako_get_job', { jobId: job.id })).result, result);
+  await f.request('POST', '/api/device/state', phone.deviceToken, { ...state(), generatedAt: new Date(baseTime + 2).toISOString(),
+    automationCapabilities: ['library.remove'], permissions: { libraryWrite: false } });
+  const disabled = await tool(client, 'honbako_remove_from_library', { ...remove, idempotencyKey: 'remove-3' });
+  assert.equal(disabled.isError, true); assert.match(disabled.content[0].text, /permission_disabled/);
 });
 
 test('unclaimed work cancels before execution; devices and jobs remain isolated', async t => {

@@ -1,56 +1,102 @@
 #if SUMI
 import SwiftUI
 
+/// Benefits compare tiers; localized billing choices appear separately below.
 struct HonbakoPlanComparisonView: View {
-    let proPrice: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var features: [(LocalizedStringKey, Bool)] {
+        var rows: [(LocalizedStringKey, Bool)] = [
+            ("Your own collection", true),
+            ("Local MCP server", true),
+            ("iCloud sync", true),
+            ("Resume widget", true)
+        ]
+        #if HONBAKO_EXTERNAL_SOURCES
+        rows.append(("Extension repositories", true))
+        #endif
+        rows += [
+            ("Remote MCP server", false),
+            ("Duo cover mode", false),
+            ("Japanese reading guide", false),
+            ("Downloads and alerts", false),
+            ("Reading time and update widgets", false)
+        ]
+        return rows
+    }
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 16) {
-            GridRow(alignment: .top) {
-                Text("Your Plan").font(.subheadline).foregroundStyle(.secondary)
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Honbako.Plan.Free").font(.headline)
-                    Text("No charge").font(.caption).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Honbako.Plan.Pro").font(.headline).foregroundStyle(.tint)
-                    if let proPrice {
-                        Text(proPrice).font(.subheadline.bold())
-                        Text("per month").font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        Text("Monthly Subscription").font(.caption).foregroundStyle(.secondary)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        header("Free")
+                        header("Pro")
+                    }
+                    ForEach(features.indices, id: \.self) { index in
+                        let (title, free) = features[index]
+                        Divider()
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(title).font(.headline)
+                            HStack {
+                                accessibleInclusion(free, plan: "Free")
+                                accessibleInclusion(true, plan: "Pro")
+                            }
+                        }
+                        .accessibilityElement(children: .combine)
                     }
                 }
-                .frame(maxWidth: .infinity)
+            } else {
+                Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 14) {
+                    GridRow(alignment: .top) {
+                        Text("Included")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        header("Free")
+                        header("Pro")
+                    }
+                    Divider().gridCellColumns(3)
+                    ForEach(features.indices, id: \.self) { index in
+                        let (title, free) = features[index]
+                        GridRow {
+                            Text(title)
+                                .font(.subheadline)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            inclusion(free, plan: "Free")
+                            inclusion(true, plan: "Pro")
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
             }
-            Divider().gridCellUnsizedAxes(.horizontal)
-            feature("Read your collection", free: true, pro: true)
-            feature("Read imported files offline", free: true, pro: true)
-            feature("Download chapters for offline reading", free: false, pro: true)
-            feature("New chapter notifications", free: false, pro: true)
-            feature("iCloud Sync", free: false, pro: true)
-            feature("Honbako.Plan.AdFree", free: true, pro: true)
         }
-        .font(.subheadline)
         .padding(.vertical, 8)
         .accessibilityIdentifier("Honbako.Plan.Comparison")
     }
 
-    private func feature(_ title: LocalizedStringKey, free: Bool, pro: Bool) -> some View {
-        GridRow {
-            Text(title).fixedSize(horizontal: false, vertical: true)
-            availability(free, plan: "Free")
-            availability(pro, plan: "Pro")
-        }
-        .accessibilityElement(children: .combine)
+    private func header(_ name: LocalizedStringKey) -> some View {
+        Text(name)
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .gridColumnAlignment(.center)
     }
 
-    private func availability(_ included: Bool, plan: String) -> some View {
-        Image(systemName: included ? "checkmark" : "minus")
+    private func accessibleInclusion(_ included: Bool, plan: String) -> some View {
+        Label(plan, systemImage: included ? "checkmark" : "minus")
+            .font(.subheadline)
             .foregroundStyle(included ? Color.accentColor : Color.secondary)
-            .frame(maxWidth: .infinity)
-            .accessibilityLabel(included ? String(localized: "Included with \(plan)") : String(localized: "Not included with \(plan)"))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel("\(plan): \(included ? "included" : "not included")")
+    }
+
+    private func inclusion(_ included: Bool, plan: String) -> some View {
+        Image(systemName: included ? "checkmark" : "minus")
+            .font(.body.weight(.semibold))
+            .foregroundStyle(included ? Color.accentColor : Color.secondary)
+            .frame(maxWidth: .infinity, minHeight: 24)
+            .accessibilityLabel("\(plan): \(included ? "included" : "not included")")
     }
 }
 #endif

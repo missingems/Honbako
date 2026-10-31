@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "build": 73,
+  "status": "TESTING",
+  "releaseAuthorized": true,
+  "releaseGates": {
+    "sourceRestore": "PASS: source metadata, policy, reconnect and conflict regressions",
+    "coverRecovery": "PASS: public covers, owned guide rebasing and targeted retry tests",
+    "readerContrast": "PASS: native navigation OCR/contrast, glass controls and reader/library UI checks",
+    "domain": "PASS: 20 strict live HTTPS/discovery/isolation checks across all four origins"
+  },
+  "deviceInstallation": "PASS: build 73 installed and launched on iPhone Duo",
+  "nativeReviewerProviders": {
+    "status": "PASS_LOCAL",
+    "providers": [
+      "Komga",
+      "Kavita",
+      "Suwayomi"
+    ],
+    "checks": [
+      "restricted login",
+      "search",
+      "one chapter per provider",
+      "five exact original pages per provider",
+      "decodable cover"
+    ],
+    "publicHosting": "PENDING_ORACLE_ACCOUNT"
+  },
+  "validationLimitations": [
+    "Live branded OAuth needs a fresh owner-approved AI connection; integration coverage passed locally.",
+    "Two old broad UI tests use stale selectors/offscreen assumptions; focused updated library and reader tests passed.",
+    "Reviewer VM is not deployed; no public reviewer credentials or addresses are ready."
+  ],
+  "archiveVerification": "PASS: app and widget build73, version0.2.0, strict code signature, two privacy manifests; no private Pro unlock or auto import",
+  "upload": "PASS: Apple upload succeeded 2026-10-30T15:45:10Z",
+  "reviewerHostingChoice": "AWS_FREE_PLAN_PENDING_SIGNUP",
+  "buildId": "f9894780-e269-41b7-b715-d131dd0ca893",
+  "whatToTestFile": "AppStore/testflight/build73/WhatToTest.txt",
+  "existingGroups": {
+    "internal": "62779950-dd24-41b0-b52e-759a2e36187f",
+    "external": "35a4de15-d47e-42b8-9957-16a610dd26bb"
+  },
+  "publicLink": "https://testflight.apple.com/join/1PwJ2Bja",
+  "releaseScope": "Existing TestFlight groups only; no public App Store submission, new invitations, older build expiration or VM deployment.",
+  "externalGroupVerifiedTesting": true,
+  "releasedAtUTC": "2026-10-30T15:57:34.234073+00:00",
+  "proofScreenshot": "/Users/jun/.codex/visualizations/2026/10/28/01a18097-8ade-74a2-b761-aada7ad26ae6/honbako73-testflight-live.png",
+  "awsAccountVerification": {
+    "plan": "Free Plan",
+    "initialCreditUSD": 100,
+    "regionObserved": "ap-southeast-2",
+    "instanceCreated": false
+  }
+}

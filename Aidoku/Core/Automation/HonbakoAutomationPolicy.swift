@@ -64,14 +64,31 @@ enum HonbakoAutomationPolicy {
     }
     static func validate(_ job: HonbakoAutomationModels.Job) throws {
         guard validIdentifier(job.id), ["queued", "awaitingApproval"].contains(job.status) else { throw Failure.invalidJob }
+        if !["history.read", "sources.catalog", "sources.change"].contains(job.kind) {
+            guard job.payload.change == nil, job.payload.offset == nil, job.payload.before == nil else { throw Failure.invalidJob }
+        }
         switch job.kind {
+        case "history.read", "sources.catalog":
+            guard (1...100).contains(job.payload.limit ?? 0), (0...2_147_483_646).contains(job.payload.offset ?? -1),
+                  job.payload.items == nil, job.payload.query == nil, job.payload.sourceIds == nil,
+                  job.payload.idempotencyKey == nil, job.payload.change == nil else { throw Failure.invalidJob }
+            if job.kind == "history.read" {
+                guard let before = job.payload.before,
+                      (try? Date(before, strategy: .iso8601)) != nil || (try? Date(before, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true))) != nil
+                else { throw Failure.invalidJob }
+            } else if job.payload.before != nil { throw Failure.invalidJob }
+        case "sources.change":
+            guard let change = job.payload.change, let key = job.payload.idempotencyKey, validIdentifier(key),
+                  job.payload.items == nil, job.payload.query == nil, job.payload.sourceIds == nil,
+                  job.payload.offset == nil, job.payload.before == nil, job.payload.limit == nil else { throw Failure.invalidJob }
+            try change.validate()
         case "catalog.search":
             guard let query = job.payload.query, validText(query, maximum: 300),
                   (1...20).contains(job.payload.limit ?? 20),
                   job.payload.items == nil, job.payload.idempotencyKey == nil,
                   job.payload.sourceIds.map({ !$0.isEmpty && $0.count <= 20 && $0.allSatisfy { validText($0, maximum: 256) } }) ?? true
             else { throw Failure.invalidJob }
-        case "library.add":
+        case "library.add", "library.remove":
             guard let items = job.payload.items, !items.isEmpty, items.count <= 20,
                   items.allSatisfy(validItem), Set(items).count == items.count,
                   let key = job.payload.idempotencyKey, validIdentifier(key),

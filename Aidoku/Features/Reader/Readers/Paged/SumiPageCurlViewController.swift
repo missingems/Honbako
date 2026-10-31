@@ -414,6 +414,10 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                     turnView.beginDragging(at: CGPoint(x: location.x - translation.x, y: location.y - translation.y))
                     hasFingerLift = true
                     paperHaptics.begin(distance: turnDistance, visible: view.window != nil, location: recognizer.location(in: view))
+                    // Recognition already consumed some travel; show it in the
+                    // first frame instead of waiting for another touch sample.
+                    progress = turnView.drag(translation: translation)
+                    turnView.update(progress: progress)
                 }
             case .changed:
                 guard turnView != nil, displayLink == nil else { return }
@@ -436,10 +440,10 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
                 let travel = recognizer.translation(in: view).x * (turnsRightToLeft ? -1 : 1)
                 let committed = SumiPageTurnIntent.shouldComplete(progress: progress, velocity: velocity, distance: turnDistance, translation: travel)
                 releaseFingerLift(velocity: velocity, cancelled: !committed)
-                animate(to: committed ? 1 : 0, velocity: velocity)
+                animate(to: committed ? 1 : 0, velocity: velocity, released: true)
             case .cancelled, .failed:
                 releaseFingerLift(velocity: 0, cancelled: true)
-                if turnView != nil { animate(to: 0, velocity: 0) }
+                if turnView != nil { animate(to: 0, velocity: 0, released: true) }
             default: break
         }
     }
@@ -471,14 +475,16 @@ final class SumiPageCurlViewController: UIPageViewController, UIGestureRecognize
         otherGestureRecognizer is UIPanGestureRecognizer
     }
 
-    private func animate(to target: CGFloat, velocity: CGFloat) {
+    private func animate(to target: CGFloat, velocity: CGFloat, released: Bool = false) {
         guard turnView != nil else { return }
         displayLink?.invalidate()
         animationStart = CACurrentMediaTime()
         animationFrom = progress
         animationTo = target
         let remaining = abs(target - progress)
-        animationDuration = max(0.16, min(0.52, Double(remaining) * 0.48 - min(abs(Double(velocity)) / 18000, 0.12)))
+        animationDuration = released
+            ? SumiPageTurnIntent.releaseDuration(remaining: remaining, velocity: velocity)
+            : max(0.16, min(0.52, Double(remaining) * 0.48 - min(abs(Double(velocity)) / 18000, 0.12)))
         startDisplayLink()
     }
 

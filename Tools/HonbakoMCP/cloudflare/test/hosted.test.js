@@ -62,10 +62,10 @@ test('Grok, owner, pairing and device credentials stay isolated; phone cannot ch
   const second = await pair(core), otherJob = await core.store.mutate(data => core.store.createJob(data, core.store.device(data, phone.deviceId), 'catalog.search', { query: 'one', sourceIds: ['owned'], limit: 1 }));
   assert.equal((await core.fetch(request(`/api/device/jobs/${otherJob.id}/status`, { token: second.deviceToken, body: { status: 'failed', error: 'foreign job' } }))).status, 404);
 });
-test('hosted SDK exposes exactly the eight metadata tools plus two opt-in coaching tools over stateless JSON', async () => {
+test('hosted SDK exposes exactly the library, coaching, history and source-management tools over stateless JSON', async () => {
   const { core } = fixture(), token = await grant(core), r = await core.fetch(request('/mcp', { token, body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }, headers: { 'mcp-protocol-version': '2025-11-25' } }));
-  assert.equal(r.status, 200); const result = await r.json(); assert.equal(result.result.tools.length, 10);
-  assert.deepEqual(result.result.tools.map(x => x.name).sort(), ['honbako_add_to_library', 'honbako_annotate_page', 'honbako_cancel_job', 'honbako_get_coaching_page', 'honbako_get_job', 'honbako_get_reading_context', 'honbako_get_status', 'honbako_list_sources', 'honbako_search_catalog', 'honbako_search_library']);
+  assert.equal(r.status, 200); const result = await r.json(); assert.equal(result.result.tools.length, 14);
+  assert.deepEqual(result.result.tools.map(x => x.name).sort(), ['honbako_add_to_library', 'honbako_annotate_page', 'honbako_cancel_job', 'honbako_get_coaching_page', 'honbako_get_job', 'honbako_get_reading_context', 'honbako_get_reading_history', 'honbako_get_source_catalog', 'honbako_get_status', 'honbako_list_sources', 'honbako_manage_sources', 'honbako_remove_from_library', 'honbako_search_catalog', 'honbako_search_library']);
   assert.equal(r.headers.get('access-control-allow-origin'), null); assert.equal(r.headers.get('cache-control'), 'no-store');
 });
 test('Grok grants have absolute 24h expiry and durable revocation/replacement', async () => {

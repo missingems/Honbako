@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "build": 71,
+  "archive": "/Users/jun/Library/Developer/Xcode/Archives/2026-10-30/Honbako-0.2.0-71.xcarchive",
+  "archiveAndUpload": "PASS",
+  "changes": [
+    "5-degree icon with retained enlargement",
+    "Widgets entry removed from Settings; actual widgets retained",
+    "Fresh-install onboarding independent of restored Pro",
+    "Verified consumed introductory trials are not offered again",
+    "Ink-colored character-aligned Japanese annotations without blurred background",
+    "Branded MCP aliases with strict environment-specific identity preservation"
+  ],
+  "TestFlight": {
+    "buildId": "e1021667-f799-4c18-b968-5ab75ae4009d",
+    "buildURL": "https://appstoreconnect.apple.com/teams/7fcc516d-bf3f-4188-95c1-a087bd1df80b/apps/6827059668/testflight/ios/e1021667-f799-4c18-b968-5ab75ae4009d",
+    "status": "Ready to Submit",
+    "reviewNotesSaved": true,
+    "whatToTestSaved": true,
+    "groups": [],
+    "externalVerified": false,
+    "existingBuild70StillTesting": true,
+    "newTestersInvited": false
+  },
+  "releaseGate": {
+    "status": "SUPERSEDED_DO_NOT_RELEASE",
+    "lastCheck": "2026-10-30T14:25:50Z",
+    "production": "https://mcp.honbako.xyz/remote/mcp",
+    "sandbox": "https://test-mcp.honbako.xyz/remote/mcp",
+    "reason": "New registry delegation is not yet published; public DNS remains ENOTFOUND, managed certificates Pending Validation (TXT).",
+    "existingAddressesLiveChecksPassed": 8,
+    "strictCertificateValidationRetained": true
+  },
+  "workersPlan": "Free; unchanged",
+  "monitorAutomationCreated": true,
+  "monitorAutomationId": "finish-honbako-testflight-71",
+  "monitorIntervalMinutes": 15,
+  "separateDeviceTestBuild": 72,
+  "userReportedBlocker": {
+    "state": "OPEN",
+    "build": 72,
+    "issues": [
+      "iCloud restores library books without source setup, leaving covers missing",
+      "Reader title unreadable over page artwork",
+      "Scrubber dune tint should be translucent"
+    ]
+  },
+  "supersededByBuild": 73
+}

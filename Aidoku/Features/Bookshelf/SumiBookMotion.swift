@@ -13,12 +13,22 @@ enum SumiBookMotion {
         swipe + velocity * 0.2 >= 0.5
     }
 
-    /// Keep the return gesture within thumb reach even on a wide inner display.
-    static func completesBackSwipe(travel: CGFloat, velocity: CGFloat, width: CGFloat) -> Bool {
-        guard travel >= 12 else { return false }
+    /// Compact readers keep a thumb-sized pull; regular-width readers give the
+    /// larger book room to track the same gesture without racing to its cover.
+    static func backSwipeDistance(width: CGFloat, regularWidth: Bool) -> CGFloat {
+        regularWidth ? min(420, max(240, width * 0.36)) : min(160, max(100, width * 0.36))
+    }
+
+    static func backSwipeProgress(travel: CGFloat, width: CGFloat, regularWidth: Bool) -> CGFloat {
+        min(1, max(0, travel / backSwipeDistance(width: width, regularWidth: regularWidth)))
+    }
+
+    static func completesBackSwipe(travel: CGFloat, velocity: CGFloat, width: CGFloat, regularWidth: Bool) -> Bool {
+        guard travel >= (regularWidth ? 24 : 12) else { return false }
         if velocity < -140 { return false }
-        let threshold = min(80, max(36, width * 0.18))
-        return travel + max(0, velocity) * 0.16 >= threshold
+        let threshold = regularWidth ? backSwipeDistance(width: width, regularWidth: true) * 0.4
+            : min(56, max(32, width * 0.12))
+        return travel + max(0, velocity) * 0.12 >= threshold
     }
 
     /// A pinch closes the book itself, never the reader's page scale. A 45%

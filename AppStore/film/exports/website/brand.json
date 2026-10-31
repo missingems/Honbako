@@ -1,0 +1,60 @@
+{
+  "owner": "AppStore/film (Claude session). The website session reads this folder and doesn't edit it.",
+  "demo": {
+    "video": {
+      "mp4": "honbako-duo-page-turn.mp4",
+      "webm": "honbako-duo-page-turn.webm",
+      "size": [
+        1600,
+        1200
+      ],
+      "aspect": "4:3; keep it, with object-fit: contain",
+      "fps": 60,
+      "duration_s": 8.23,
+      "audio": "none",
+      "loop": "seamless: starts and ends on the same still spread (one page turn forward, one back)",
+      "attributes": "autoplay muted loop playsinline, with poster"
+    },
+    "poster": {
+      "png": "honbako-duo-page-turn-poster.png",
+      "jpg": "honbako-duo-page-turn-poster.jpg"
+    },
+    "background": "#F5F0E6, baked into the video; match the slide behind it or put it in a #F5F0E6 frame",
+    "device": "Apple's iPhone Duo model (V68.usdz from Xcode 27.1), rendered open and flat, 1180 px wide at its true 164.6 × 117.8 mm proportions, with the screen flush in the body",
+    "screen": "Genuine simctl recording of the inner display (2852 × 2006): Honbako's native page curl, right to left, in the Honbako Capture duo simulator with --honbako-licensed-marketing-sample",
+    "content": "Original Honbako sample story 星を待つ駅 / After The Last Train, character art by Wataobi (pages 1–4). No Black Jack, no personal library, no account.",
+    "rebuild": "node tools/website-demo.mjs (source recording: assets/source/recordings/sample-curl.mov)"
+  },
+  "palette": {
+    "app": {
+      "paper_light": "#F5F0E6",
+      "card_light": "#FFFCF6",
+      "accent_light": "#806344",
+      "accent_dark": "#CBAA80"
+    },
+    "film_current": {
+      "paper": "#F5F0E6",
+      "card": "#FFFCF6",
+      "ink": "#15140F",
+      "accent": "#806344",
+      "muted": "#45423B (deliberately darker than the site's #78746B, for 17 px mono footnotes)",
+      "seal": "#C23B22, only the small secondary 本箱 seal on the title page",
+      "note": "Aligned with the app on 2026-10-31. Details and remaining conflicts: film-brand-aligned.json."
+    }
+  },
+  "type": {
+    "headlines": "Baskerville (macOS), regular; italic for secondary lines",
+    "labels": "Courier New Bold, uppercase, tracked about 0.15em, for small feature labels",
+    "japanese": "Hiragino Mincho ProN W6 for 本箱",
+    "web_note": "Baskerville and Hiragino Mincho ship only on Apple platforms. For the web, a fallback stack such as Baskerville, 'Libre Baskerville', Georgia, serif keeps the look; check the licence of any webfont before you add it."
+  },
+  "logo": "Use the canonical app icon AppStore/assets/AppIcon-1024.png as the lead mark. The film now uses it on its title page and end card. The film's small drawn 本箱 seal is a secondary editorial mark, not a logo.",
+  "copy_rules": [
+    "Plain feature copy. No 'first' or 'world's first'.",
+    "AI-provider account is separate from Honbako; requests sync while Honbako is open.",
+    "Tag Pro features: Japanese reading help, Duo cover display, Remote MCP server, downloads and alerts, reading-time and update widgets.",
+    "Honbako doesn't provide manga; sources and their content are the user's responsibility.",
+    "Provider names or icons may appear where relevant, with no affiliation claim."
+  ],
+  "film_alignment": "See film-brand-aligned.json for what changed, render status and the conflicts that remain."
+}

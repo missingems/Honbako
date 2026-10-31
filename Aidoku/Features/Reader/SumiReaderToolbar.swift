@@ -44,9 +44,10 @@ final class SumiReaderToolbar: UIView {
     private var visibilityIdentity = UUID()
     private var surfaces: [UIVisualEffectView] { [closeGlass, scrubberGlass, chaptersGlass] }
 
-    static func makeGlassEffect() -> UIGlassEffect {
+    static func makeGlassEffect(tintColor: UIColor? = HonbakoPalette.glassTintUIColor) -> UIGlassEffect {
         let effect = UIGlassEffect(style: .regular)
         effect.isInteractive = true
+        effect.tintColor = tintColor
         return effect
     }
 
@@ -179,7 +180,9 @@ final class SumiReaderToolbar: UIView {
         visibilityAnimator = nil
         if visible { isHidden = false }
         let changes = {
-            for surface in self.surfaces { surface.effect = visible ? Self.makeGlassEffect() : nil }
+            for surface in self.surfaces {
+                surface.effect = visible ? Self.makeGlassEffect(tintColor: HonbakoPalette.glassTintUIColor) : nil
+            }
             self.alpha = visible ? 1 : 0
         }
         guard animated, !UIAccessibility.isReduceMotionEnabled else {

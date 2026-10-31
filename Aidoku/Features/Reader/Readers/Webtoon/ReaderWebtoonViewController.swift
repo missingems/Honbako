@@ -358,8 +358,17 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         scrollNode.insetsLayoutMarginsFromSafeArea = false
 
         if #available(iOS 27.0, *) {
+            #if SUMI
+            scrollView.topEdgeEffect.isHidden = true
+            scrollView.bottomEdgeEffect.isHidden = true
+            scrollView.leftEdgeEffect.isHidden = true
+            scrollView.rightEdgeEffect.isHidden = true
+            collectionNode.view.leftEdgeEffect.isHidden = true
+            collectionNode.view.rightEdgeEffect.isHidden = true
+            #else
             scrollView.topEdgeEffect.style = .soft
             scrollView.bottomEdgeEffect.style = .soft
+            #endif
             collectionNode.view.topEdgeEffect.isHidden = true
             collectionNode.view.bottomEdgeEffect.isHidden = true
         }

@@ -1,0 +1,215 @@
+{
+  "public_deployment": false,
+  "providers": {
+    "komga": {
+      "passed": true,
+      "real_provider": true,
+      "reader_roles": [
+        "PAGE_STREAMING",
+        "USER"
+      ],
+      "books": [
+        {
+          "title": "Your Collections",
+          "chapters": 1,
+          "page_images": [
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 77141,
+              "sha256": "22c6fef4af0f5bc3232428a2108945fca3a39ca715d8438ffde5f48c7dca5dbb"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 83740,
+              "sha256": "7a12f943ddfd42c2df6f537a6174bf585e79e7c2471ae7b92448d3b80fdc900c"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 87665,
+              "sha256": "5866ea9e0c112f409ab229ecb0edca799a0fcf59f49c28fe1227d8c8616c0a1c"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 87018,
+              "sha256": "387c9a1b3e946b0e07c7ba4ba52d773af23406e13a83cf9a3b4ed7f36743f12e"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 93383,
+              "sha256": "2cb4304a7dfa614c336f94de2df59c6d2dee1bb866fdec2e88c079f975ff7365"
+            }
+          ]
+        },
+        {
+          "title": "The Bookshop Between Pages",
+          "chapters": 1,
+          "page_images": [
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 2985951,
+              "sha256": "e8030e88b72c0721367ac76f04824aee5ad35674bfa22a9edba0991949af8b6a"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 3092024,
+              "sha256": "aa6dff3be49c8d08a990e90aafdf1391d7823f519a7cb1b29cdecc84caafcb3c"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 3297025,
+              "sha256": "010dec8ec6339eaa982b8ab49115faa81132b25e48ab46c39555cc138e759a99"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 3304435,
+              "sha256": "b794c497416da31a5c7689671dcddb69c8fd0c023a6e20c64d57f86f08a89823"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 2968637,
+              "sha256": "15ffb82d63a6955a283821abb760524c86e88ccd205c10191026256c1b113101"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 3300832,
+              "sha256": "bdceb699041bc319db09c36a01a52521898ef1c9e45d47ac8c9ae6408fa84a93"
+            },
+            {
+              "status": 200,
+              "mime": "image/png",
+              "bytes": 3310111,
+              "sha256": "1a26ac9f45fcb558de90d7de5f574555ccbb21d06228f14329d83667da5efbc1"
+            }
+          ]
+        }
+      ],
+      "admin_operation_denied": 403
+    },
+    "kavita": {
+      "passed": true,
+      "real_provider": true,
+      "reader_roles": [
+        "Pleb",
+        "Login",
+        "Read Only"
+      ],
+      "title": "Read Your Way",
+      "chapters": 1,
+      "page_images": [
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 79589,
+          "sha256": "346d41d5fb1591eed08ba5891b43960966218bc4c354a53f4ae5dc5186eb5678"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 85598,
+          "sha256": "439f15038be0d70a014d7c201c7418d4245a0bbc1e14f3f3fbe5159f3ccbe4df"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 85527,
+          "sha256": "94602257d974934a153c14c40c9a7af7aa8ca25a349056b352d1669d26fa24bb"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 77383,
+          "sha256": "527a630945f062e6fe7ea1ba7793d8c98068c8dd65ae75cd808851ea48023abb"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 93928,
+          "sha256": "bea3350c0ef43e87f907a00431253beb880f333973ccd7df92165856afaedbf6"
+        }
+      ],
+      "admin_operation_denied": 403
+    },
+    "suwayomi": {
+      "passed": true,
+      "real_provider": true,
+      "restricted_gateway": true,
+      "upstream_admin_credentials_exposed": false,
+      "title": "Search & Delete",
+      "chapters": 1,
+      "page_images": [
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 71540,
+          "sha256": "a0b48534536aa13f882c3cc5a0bb6c9225eb1f945d6194c230e681f173dada62"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 87051,
+          "sha256": "1bde21b20aecf5d35aa70e6375aa43802d815e9b870b636d77e16ce7fe4b1a9e"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 77889,
+          "sha256": "26c970d59e1d43bac11e2dc47ef3b72101a85f02bd9e0c2c7c231035fdddc20b"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 81656,
+          "sha256": "1808d8cf58b387b582e9004294e1e8a240feb76ba9e3b74a50eed0c61412311e"
+        },
+        {
+          "status": 200,
+          "mime": "image/png",
+          "bytes": 78817,
+          "sha256": "fcc4cd5aa09b1a25e1e8361d0a4a5663fccf51632aab95e21cd02425f1859cc9"
+        }
+      ],
+      "negative_scope_checks": {
+        "forged_named_admin_mutation": 403,
+        "unknown_chapter": 403,
+        "unknown_manga": 403,
+        "introspection": 403,
+        "unexpected_second_operation": 403,
+        "arbitrary_filesystem_route": 404,
+        "upstream_settings_route": 404,
+        "unknown_image": 404
+      },
+      "native_app_query_templates_tested": 5
+    }
+  },
+  "native_adapter_integration": {
+    "passed": true,
+    "provider_cases": [
+      "komga",
+      "kavita",
+      "suwayomi"
+    ],
+    "duration_seconds": 1.491,
+    "runtime": "iOS Simulator",
+    "actual_app_source_adapters": true,
+    "checks": [
+      "native_authentication",
+      "catalog_search",
+      "chapter_enumeration",
+      "all_five_original_page_hashes",
+      "cover_decode"
+    ],
+    "opt_in_environment_only": true,
+    "evidence": "Coordinated root test runner reported all three parameterized cases passed."
+  }
+}

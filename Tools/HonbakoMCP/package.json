@@ -4,9 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Local Mac MCP bridge for a paired Honbako device",
-  "engines": { "node": ">=22" },
-  "scripts": { "start": "node src/cli.js serve", "test": "node --test --test-concurrency=1", "check": "node --check src/cli.js && node --check src/server.js && node --check src/store.js && node --check src/mcp.js && node --check src/gateway.js" },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/cli.js serve",
+    "test": "node --test --test-concurrency=1",
+    "check": "node --check src/cli.js && node --check src/server.js && node --check src/store.js && node --check src/mcp.js && node --check src/gateway.js && node --check cloudflare/remote/worker.js && node --check cloudflare/remote/oauth.js && node --check cloudflare/remote/workspace.js && node --check cloudflare/remote/entitlement.js && node --check cloudflare/remote/rpc.js && node --check cloudflare/remote-beta.js"
+  },
   "dependencies": {
+    "@apple/app-store-server-library": "3.1.0",
     "@modelcontextprotocol/client": "2.4.0",
     "@modelcontextprotocol/node": "2.1.2",
     "@modelcontextprotocol/server": "2.4.0",

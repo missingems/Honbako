@@ -1,0 +1,95 @@
+{
+  "build": 64,
+  "version": "0.2.0",
+  "onboarding": {
+    "compact": "Direct native introduction NavigationStack; no step menu or close button",
+    "regular": "Native step sidebar with explicit buttons and detail NavigationStack",
+    "next": "Pinned bottom, native intrinsic large-control height; reduced footer padding",
+    "plans": "Aligned Free/Pro comparison, side-by-side monthly/annual options; accessible layouts preserve whole words and prices",
+    "subscribe": "Native intrinsic large-control height in bottom safeAreaBar on iOS 26+, safeAreaInset fallback; no manual minimum label height",
+    "state": "Navigation history and billing selection retained above adaptive containers",
+    "firstNavigationTitle": "Honbako",
+    "illustrations": "Original blue-and-ink vector art matching onboarding buttons and source icons; shared palette on both introduction pages"
+  },
+  "verification": {
+    "compactVisualLayouts": 7,
+    "compactVisualResult": "passed",
+    "compactNavigationAndPlanSelection": "passed",
+    "iPadSidebarAndRotation": "passed",
+    "duoSafeAreaAndWelcomeFlow": "passed",
+    "allDuoFoldPoses": "not independently verified",
+    "deviceInstallation": "blocked: Apple device tunnel unavailable; user asked to reconnect/unlock",
+    "releaseBuild": "passed with Honbako title and matching blue illustrations; signature verified; build 64",
+    "nextSizeNavigationTest": "passed; 2026.10.30_14-51-32",
+    "subscribeSafeEdgeTests": "7 rendered layouts and full onboarding flow passed; 2026.10.30_16-37-21",
+    "extensionNavigation": "passed; Settings → Extensions → Extension repositories → Add repository; blank URL cannot be added",
+    "automationManagement": "3 tests passed",
+    "brandIllustrationChecks": "7 rendered layouts and full onboarding flow passed; 2026.10.30_17-07-32"
+  },
+  "appStore": {
+    "monthlyUSD": 2.99,
+    "annualUSD": 28.49,
+    "serviceLevel": {
+      "monthly": 1,
+      "annual": 1
+    },
+    "monthlyEnglishDetails": "updated",
+    "annualEnglishDetails": "updated",
+    "reviewScreenshot": "native build 64 plans, local Apple StoreKit configuration",
+    "draftItemsRestored": [
+      "Honbako Pro subscription group",
+      "Honbako Pro Monthly"
+    ],
+    "submitted": false,
+    "annual": "Prepare for Submission",
+    "monthlyReviewImageID": "1360a970-d27d-4276-83e7-bebae3fe7794",
+    "annualReviewImageID": "1c7a3256-cc56-4af1-8758-507508f8b64f",
+    "annualReviewScreenshotPersistedAfterReload": true
+  },
+  "remoteMCP": {
+    "grok2": "user confirmed connected",
+    "diagnostics": "disabled",
+    "realm": "isolated Sandbox beta",
+    "productionEnrollment": "disabled; Apple production verification returned 401"
+  },
+  "testResults": [
+    "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_14-25-06-+0800.xcresult",
+    "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_14-28-37-+0800.xcresult",
+    "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_14-33-38-+0800.xcresult",
+    "/Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Logs/Test/Test-HonbakoStoreKitTests-2026.10.30_14-35-04-+0800.xcresult"
+  ],
+  "currentScreenshots": [
+    "welcome-closed-light.png",
+    "welcome-closed-dark-ai.png",
+    "welcome-plans-iphone-dark.png",
+    "welcome-plans-iphone-dark-bottom-2.png",
+    "welcome-iphone-dark-smaller-next.png",
+    "plans-safe-edge-iphone.png",
+    "plans-safe-edge-bottom-2.png",
+    "extensions.png",
+    "extension-repositories.png",
+    "add-repository.png",
+    "welcome-honbako.png",
+    "welcome-ai-blue.png",
+    "welcome-honbako-light.png"
+  ],
+  "earlierReviewScreenshots": "preserved",
+  "terminology": {
+    "settingsPath": [
+      "Extensions",
+      "Extension repositories",
+      "Add repository"
+    ],
+    "installablePackages": "extensions",
+    "mangaProviders": "sources",
+    "importAction": "Install extension file",
+    "repositoryProtocolsAndCompatibility": "unchanged"
+  },
+  "physicalDeviceInstallation": {
+    "build": "64",
+    "device": "iPhone Duo",
+    "installation": "succeeded",
+    "launch": "succeeded",
+    "date": "2026-10-30"
+  }
+}

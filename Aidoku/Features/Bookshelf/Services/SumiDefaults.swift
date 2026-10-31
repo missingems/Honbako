@@ -3,14 +3,20 @@ import Foundation
 
 /// Sumi has one adaptive reading experience, registered before opening its store.
 enum SumiDefaults {
+    static let freeSyncMigrationKey = "Honbako.iCloud.FreeSyncMigration.v1"
+
     static func register(in defaults: UserDefaults = .standard) {
         SumiLanguagePreferenceScope.removeAbandoned(in: defaults)
-        // Configure the store before it opens. Only a previously verified Pro
-        // entitlement can enable mirroring; fresh installations remain local.
-        defaults.set(HonbakoProStore.cachedHasPro, forKey: "General.icloudSync")
+        // The previous release rewrote this preference from the Pro entitlement.
+        // Migrate that gate once before the store opens; future launches respect
+        // the reader's own sync choice.
+        if !defaults.bool(forKey: freeSyncMigrationKey) {
+            defaults.set(true, forKey: "General.icloudSync")
+            defaults.set(true, forKey: freeSyncMigrationKey)
+        }
         defaults.register(defaults: [
             HonbakoLibraryPreferences.hideFinishedBooksKey: false,
-            "General.icloudSync": false,
+            "General.icloudSync": true,
             "Reader.pageSizing": "fit",
             "Reader.pagedPageLayout": "auto",
             "Reader.readingMode": "auto",

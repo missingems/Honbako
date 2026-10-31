@@ -1,0 +1,129 @@
+Command line invocation:
+    "/Applications/Xcode 27.1 Public.app/Contents/Developer/usr/bin/xcodebuild" test-without-building -xctestrun /Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Build/Products/Honbako_iphonesimulator27.1-arm64.xctestrun -destination "platform=iOS Simulator,id=5BA61F93-11A7-4F62-9E6A-0A513C557E08" -parallel-testing-enabled NO "-only-testing:SumiUITests/HonbakoSubmissionScreenshotTests/testEnglish" -collect-test-diagnostics never -resultBundlePath /Users/jun/Documents/Codex/Honbako/AppStore/review/build75/native-public75-20261031/iphone-en-US.xcresult
+
+Writing result bundle at path:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build75/native-public75-20261031/iphone-en-US.xcresult
+
+2026-10-31 00:22:09.753 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:13.447540+0800 SumiUITests-Runner[4587:313799710] [Default] Running tests...
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-10-31 00:22:13.768.
+Test Suite 'SumiUITests.xctest' started at 2026-10-31 00:22:13.769.
+Test Suite 'HonbakoSubmissionScreenshotTests' started at 2026-10-31 00:22:13.769.
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testEnglish]' started.
+    t =     0.01s Start Test at 2026-10-31 00:22:13.776
+objc[4587]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x1072a4398) and /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x107398310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =     0.18s Set Up
+    t =     0.18s Setting device orientation to Portrait
+    t =     0.18s     Device orientation changed to Portrait
+    t =     0.20s     Wait for com.apple.springboard to idle
+    t =     0.24s Open com.missingems.honbaku
+    t =     0.25s     Launch com.missingems.honbaku
+2026-10-31 00:22:14.210 xcodebuild[4578:313799463] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-10-31 00:22:14.210 xcodebuild[4578:313799463] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-10-31 00:22:14.233 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+    t =     1.05s         Setting up automation session
+    t =     3.09s         Wait for com.missingems.honbaku to idle
+    t =     4.55s Waiting 30.0s for "Sumi.Grid" Any to exist
+    t =     5.59s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Grid" Any`
+    t =     5.59s         Checking existence of `"Sumi.Grid" Any`
+    t =     6.84s Checking `Expect predicate `BLOCKPREDICATE(0x10a788420)` for object "Sumi.Grid" Any`
+    t =     6.84s     Find the "Sumi.Grid" Any
+    t =     6.86s Checking existence of `"Honbako.Library.Header.Popular" Any`
+    t =     7.97s Find the Target Application 'com.missingems.honbaku'
+    t =     8.23s Added attachment named 'en-US-01-library'
+    t =     8.24s Waiting 10.0s for "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button to exist
+    t =     9.25s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button`
+    t =     9.25s         Checking existence of `"Sumi.Grid.Book.honbako.tutorial:first-chapter" Button`
+    t =     9.28s Tap "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button[0.50, 0.50]
+    t =     9.28s     Wait for com.missingems.honbaku to idle
+    t =     9.28s     Find the "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button
+    t =     9.30s     Check for interrupting elements affecting "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button
+    t =     9.32s     Synthesize event
+    t =     9.33s         Find the "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button
+    t =     9.35s         Find the "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button
+    t =     9.37s         Find the "Sumi.Grid.Book.honbako.tutorial:first-chapter" Button
+    t =     9.79s     Wait for com.missingems.honbaku to idle
+    t =    10.27s Waiting 30.0s for "Sumi.DirectReader" Any to exist
+    t =    11.30s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.DirectReader" Any`
+    t =    11.30s         Checking existence of `"Sumi.DirectReader" Any`
+    t =    11.41s         Capturing element debug description
+    t =    12.34s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.DirectReader" Any`
+    t =    12.34s         Checking existence of `"Sumi.DirectReader" Any`
+    t =    12.38s Setting device orientation to Portrait
+    t =    12.38s     Wait for com.missingems.honbaku to idle
+    t =    12.38s Waiting 10.0s for Any (First Match) to exist
+    t =    13.41s     Checking `Expect predicate `existsNoRetry == 1` for object Any (First Match)`
+    t =    13.41s         Checking existence of `Any (First Match)`
+    t =    13.43s Waiting 10.0s for "SumiReader.Close" Button to exist
+    t =    14.46s     Checking `Expect predicate `existsNoRetry == 1` for object "SumiReader.Close" Button`
+    t =    14.46s         Checking existence of `"SumiReader.Close" Button`
+    t =    14.50s Waiting 5.0s for "Sumi.Reader.Navigation" NavigationBar to exist
+    t =    15.53s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Reader.Navigation" NavigationBar`
+    t =    15.54s         Checking existence of `"Sumi.Reader.Navigation" NavigationBar`
+    t =    15.57s Waiting 5.0s for "Sumi.Reader.ThumbnailStrip" Any to exist
+    t =    16.60s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Reader.ThumbnailStrip" Any`
+    t =    16.60s         Checking existence of `"Sumi.Reader.ThumbnailStrip" Any`
+    t =    17.66s Find the Target Application 'com.missingems.honbaku'
+    t =    17.91s Added attachment named 'en-US-02-reader'
+    t =    17.91s Waiting 5.0s for "Sumi.Reader.ChaptersButton" Button to exist
+    t =    18.94s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Reader.ChaptersButton" Button`
+    t =    18.94s         Checking existence of `"Sumi.Reader.ChaptersButton" Button`
+    t =    18.98s Tap "Sumi.Reader.ChaptersButton" Button[0.50, 0.50]
+    t =    18.98s     Wait for com.missingems.honbaku to idle
+    t =    18.98s     Find the "Sumi.Reader.ChaptersButton" Button
+    t =    19.01s     Check for interrupting elements affecting "Sumi.Reader.ChaptersButton" Button
+    t =    19.04s     Synthesize event
+    t =    19.04s         Find the "Sumi.Reader.ChaptersButton" Button
+    t =    19.07s         Find the "Sumi.Reader.ChaptersButton" Button
+    t =    19.10s         Find the "Sumi.Reader.ChaptersButton" Button
+    t =    19.41s     Wait for com.missingems.honbaku to idle
+    t =    20.24s Waiting 10.0s for "Sumi.Reader.Chapters" Any to exist
+    t =    21.26s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Reader.Chapters" Any`
+    t =    21.26s         Checking existence of `"Sumi.Reader.Chapters" Any`
+    t =    21.36s Waiting 10.0s for "Sumi.Reader.Chapter.en-first-chapter" Button to exist
+    t =    22.39s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Reader.Chapter.en-first-chapter" Button`
+    t =    22.39s         Checking existence of `"Sumi.Reader.Chapter.en-first-chapter" Button`
+    t =    22.47s Waiting 5.0s for "Honbako.Reader.BundledOffline" Any to exist
+    t =    23.48s     Checking `Expect predicate `existsNoRetry == 1` for object "Honbako.Reader.BundledOffline" Any`
+    t =    23.48s         Checking existence of `"Honbako.Reader.BundledOffline" Any`
+    t =    23.71s Waiting 5.0s for "Honbako.Reader.Chapter.ReleaseDate.en-first-chapter" Any to exist
+    t =    24.74s     Checking `Expect predicate `existsNoRetry == 1` for object "Honbako.Reader.Chapter.ReleaseDate.en-first-chapter" Any`
+    t =    24.74s         Checking existence of `"Honbako.Reader.Chapter.ReleaseDate.en-first-chapter" Any`
+    t =    24.96s Waiting 5.0s for "Honbako.Reader.Chapter.Progress.en-first-chapter" Any to exist
+    t =    26.00s     Checking `Expect predicate `existsNoRetry == 1` for object "Honbako.Reader.Chapter.Progress.en-first-chapter" Any`
+    t =    26.00s         Checking existence of `"Honbako.Reader.Chapter.Progress.en-first-chapter" Any`
+    t =    27.26s Checking `Expect predicate `BLOCKPREDICATE(0x112d54660)` for object "Honbako.Reader.Chapter.ReleaseDate.en-first-chapter" Any`
+    t =    27.26s     Find the "Honbako.Reader.Chapter.ReleaseDate.en-first-chapter" Any
+    t =    28.51s Checking `Expect predicate `BLOCKPREDICATE(0x112d55890)` for object "Honbako.Reader.Chapter.Progress.en-first-chapter" Any`
+    t =    28.51s     Find the "Honbako.Reader.Chapter.Progress.en-first-chapter" Any
+    t =    28.75s     Find the "Honbako.Reader.Chapter.Progress.en-first-chapter" StaticText
+    t =    28.97s Find the "Sumi.Reader.Chapter.en-first-chapter" Button
+    t =    29.03s Find the "Sumi.Reader.Chapter.en-first-chapter" Button
+    t =    30.09s Find the Target Application 'com.missingems.honbaku'
+    t =    30.25s Added attachment named 'en-US-03-chapters'
+    t =    30.25s Terminate com.missingems.honbaku:4631
+2026-10-31 00:22:44.038 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:44.038 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:44.039 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+    t =    31.31s Tear Down
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testEnglish]' passed (31.412 seconds).
+Test Suite 'HonbakoSubmissionScreenshotTests' passed at 2026-10-31 00:22:45.188.
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.412 (31.419) seconds
+Test Suite 'SumiUITests.xctest' passed at 2026-10-31 00:22:45.188.
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.412 (31.420) seconds
+Test Suite 'Selected tests' passed at 2026-10-31 00:22:45.189.
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.412 (31.421) seconds
+2026-10-31 00:22:45.215 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:45.215 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:45.216 xcodebuild[4578:313799463] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 00:22:45.478 xcodebuild[4578:313799463] [MT] IDETestOperationsObserverDebug: 36.180 elapsed -- Testing started completed.
+2026-10-31 00:22:45.478 xcodebuild[4578:313799463] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-31 00:22:45.478 xcodebuild[4578:313799463] [MT] IDETestOperationsObserverDebug: 36.180 sec, +36.180 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build75/native-public75-20261031/iphone-en-US.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

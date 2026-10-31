@@ -1,14 +1,31 @@
-A personal home for your manga.
+Your manga, with your own AI companion.
 
-Start with the original illustrated tutorial, then bring your own comic files or connect a personal library. Keep books together and return to your saved chapter.
+Bring your collection to Honbako. Import CBZ or ZIP comics from Files, including iCloud Drive, or connect your personal Komga, Kavita or Suwayomi server. Add compatible extensions from repositories you choose. No third-party manga catalog is included; use content you own or have permission to access.
 
-Swipe through portrait pages or turn pages in a landscape book. Preview a page before you jump, choose an available translation, and see chapter dates and reading progress.
+Turn pages in portrait or landscape, preview a page before you jump, and return to your saved reading position. Open Chapters to find your current chapter highlighted, with reading progress and available translations together.
 
-Honbako Pro is a monthly auto-renewing subscription for offline reading, chapter alerts, and iCloud library and progress sync. Alerts depend on the source and iOS background refresh, so delivery times vary. Downloads require permission from the content provider.
+Connect a compatible AI provider through MCP. With the access you allow, your companion can look up your library and reading history, help manage manga and sources, explain the current page, give a recap, or send annotations back to your manga. Use your own AI account; AI responses and supported connections depend on your provider.
 
-No third-party manga catalog is included. Import your own comic files or connect your personal Komga, Kavita or Suwayomi server. External source lists and source packages are not supported. Content and translations depend on your collection.
+Included for free:
+• Your personal manga library and reading controls
+• iCloud sync for your library, reading progress and supported source connection settings
+• Source credentials, extension packages and downloads stay on your device
+• Connection through a self-hosted local MCP server
+• A Home Screen widget to resume your last manga
+• Personal servers, file imports and compatible extension repositories
 
-U.S. monthly price: US$1.99. Local pricing is shown by the App Store.
+Honbako Pro adds:
+• Hosted remote MCP, so your Mac can stay off
+• Japanese reading tools with on-page romaji, pronunciation and translation
+• Cover Mode on iPhone Duo, including a choice for each manga
+• Offline downloads and new-chapter alerts
+• Reading-time and chapter-update widgets
+
+Downloads require permission from the content provider. Chapter alerts depend on the source and iOS background refresh, so delivery times vary. Content and available translations depend on your collection.
+
+Pro is available as a monthly or annual auto-renewing subscription. The App Store shows your localized price and any free trial you are eligible for before you confirm. Subscriptions renew automatically unless canceled in your Apple Account. Manage or cancel your plan from Honbako's Manage Subscription screen.
 
 Privacy Policy: https://missingems.github.io/Honbako/privacy/
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+
+Screenshot sample-story character illustrations: Wataobi (wataokiba.net). The manga examples illustrate app features and are not a bundled catalog.

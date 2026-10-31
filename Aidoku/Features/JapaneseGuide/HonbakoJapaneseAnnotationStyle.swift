@@ -13,7 +13,7 @@ enum HonbakoJapaneseAnnotationStyle {
     ) -> CGSize {
         let measured = (romaji as NSString).size(withAttributes: [.font: font])
         guard direction == .vertical else {
-            return CGSize(width: ceil(measured.width) + 8, height: max(20, ceil(font.lineHeight) + 6))
+            return CGSize(width: ceil(measured.width) + 2, height: ceil(font.lineHeight) + 2)
         }
         // A long reading wraps upright alongside its word instead of stretching
         // over the next text column. The word's measured height controls density.
@@ -25,7 +25,7 @@ enum HonbakoJapaneseAnnotationStyle {
             with: CGSize(width: max(1, width), height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: [.font: font, .paragraphStyle: paragraph], context: nil)
-        return CGSize(width: width + 8, height: max(20, ceil(rect.height) + 6))
+        return CGSize(width: width + 2, height: ceil(rect.height) + 2)
     }
 }
 #endif

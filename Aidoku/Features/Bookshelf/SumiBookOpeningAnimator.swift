@@ -16,6 +16,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
     private var runTo: CGFloat = 1
     private var runVelocity: CGFloat = 0
     private var swipe: CGFloat = 0
+    private var displayedSwipe: CGFloat = 0
     private var interactive = false
     private var interactiveOutcome: Bool?
     private var settling = false
@@ -86,7 +87,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             to.frame = context.finalFrame(for: destination)
             if to.frame.isEmpty { to.frame = container.bounds }
         }
-        to.layoutIfNeeded()
+        if opening || !retainsPresenter { to.layoutIfNeeded() }
         let moving = opening ? to : from
         paper = moving; originalCenter = moving.center; frameSize = container.bounds.size
         backdrop.frame = container.bounds; backdrop.backgroundColor = .white
@@ -128,8 +129,11 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             }
         }
         let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
-        let maximum = Float(container.window?.windowScene?.screen.maximumFramesPerSecond ?? 60)
-        link.preferredFrameRateRange = CAFrameRateRange(minimum: min(60, maximum), maximum: maximum, preferred: maximum)
+        let displayMaximum = container.window?.windowScene?.screen.maximumFramesPerSecond ?? 60
+        let maximum = ProcessInfo.processInfo.isLowPowerModeEnabled ? min(60, displayMaximum) : displayMaximum
+        // One clock owns both finger tracking and settling. Ask ProMotion for
+        // its high-cadence range without creating a second render loop.
+        link.preferredFrameRateRange = ReaderPageTurnCadence.preferredRange(maximumFramesPerSecond: maximum)
         link.add(to: .main, forMode: .common); clock = link
         if interactive { swipe = book.interactiveFraction; settling = false }
     }
@@ -142,7 +146,10 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
 
     func endInteractive(completing: Bool, velocity: CGFloat) {
         guard interactive, !settling else { return }
-        runFrom = swipe; runTo = completing ? 1 : 0; runVelocity = velocity
+        // Preparation/layout can finish after the finger has already moved.
+        // Settle from the last rendered pose, never jump to the input target.
+        runFrom = displayedSwipe; swipe = displayedSwipe
+        runTo = completing ? 1 : 0; runVelocity = velocity
         lastAnimationTimestamp = nil; animationTime = 0; settling = true
         reportInteractiveOutcome(completing)
     }
@@ -239,8 +246,13 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             // throughout the close instead of steering toward a moving target.
             let library = context.view(forKey: opening ? .from : .to)
                 ?? context.viewController(forKey: opening ? .from : .to)?.view
-            library?.setNeedsLayout()
-            library?.layoutIfNeeded()
+            if returnAnchorWaitFrames == 0 {
+                // Preparation has already refreshed the shelf. Flush pending
+                // layout once, then sample it on subsequent compositor frames;
+                // forcing the entire SwiftUI library dirty at 120Hz competes
+                // with the closing print's own display-link work.
+                library?.layoutIfNeeded()
+            }
             returnAnchorWaitFrames += 1
             guard let measured = book.resolvedGridSourceFrame(in: context.containerView) else {
                 if returnAnchorWaitFrames < 30 {
@@ -282,7 +294,7 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
                 animationTime += min(1.0 / 30, max(0, link.targetTimestamp - lastAnimationTimestamp))
             }
             lastAnimationTimestamp = link.targetTimestamp
-            let time = animationTime * (opening && !isCancellingOpening ? 1 : 0.7)
+            let time = animationTime * (opening && !isCancellingOpening ? 1 : 1.2)
             if UIAccessibility.isReduceMotionEnabled {
                 swipe = runFrom + (runTo - runFrom) * min(1, CGFloat(time / 0.18))
             } else {
@@ -292,7 +304,15 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
                 swipe = runTo; trailingFrames += 1
             }
         }
-        let progress = interactive ? 1 - book.closingProgress(for: swipe) : min(1, max(0, swipe))
+        if interactive {
+            if settling { displayedSwipe = swipe }
+            else if ready {
+                let delta = max(0, link.targetTimestamp - link.timestamp)
+                let response = 1 - exp(-delta / 0.025)
+                displayedSwipe += (swipe - displayedSwipe) * response
+            }
+        }
+        let progress = interactive ? 1 - book.closingProgress(for: displayedSwipe) : min(1, max(0, swipe))
         apply(progress: progress, delta: link.targetTimestamp - link.timestamp)
         let returning = returnPose(progress: progress, in: context.containerView)
         let endOpenness = opening && !isCancellingOpening ? progress : returning.openness
@@ -352,8 +372,13 @@ final class SumiBookOpeningAnimator: NSObject, UIViewControllerAnimatedTransitio
             : opening && !isCancellingOpening
             ? SumiBookMotion.paperFrame(source: source, destination: container.bounds, paired: pairedPaper, progress: openness)
             : returning.paperFrame(in: container.bounds, paired: pairedPaper, startingAt: cancellationPaperFrame)
-        paper.transform = CGAffineTransform(scaleX: frame.width / max(1, paper.bounds.width), y: frame.height / max(1, paper.bounds.height))
-        paper.center = CGPoint(x: frame.midX, y: frame.midY)
+        if stage == nil {
+            paper.transform = CGAffineTransform(scaleX: frame.width / max(1, paper.bounds.width), y: frame.height / max(1, paper.bounds.height))
+            paper.center = CGPoint(x: frame.midX, y: frame.midY)
+        }
+        // The stage owns the visible print. Keep the hidden live reader at its
+        // original geometry instead of resizing UIKit bars and page overlays
+        // behind every animation frame. Fallback still moves the live reader.
         backdrop.alpha = stage == nil ? min(1, openness / 0.4) : 0
         if !opening || isCancellingOpening { returnDimming.alpha = returning.gridDimming }
         if let stage {

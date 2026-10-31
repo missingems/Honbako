@@ -34,7 +34,6 @@ class ReaderViewController: BaseObservingViewController {
     private var sumiToolbarRelocation: Task<Void, Never>?
     private var sumiNativeToolbarItem: UIBarButtonItem?
     private var sumiUsesNativeToolbar = false
-    private lazy var sumiReaderTitle = SumiReaderTitleView(title: manga.title ?? "Manga")
     private lazy var sumiReaderToolbar: SumiReaderToolbar = {
         let toolbar = SumiReaderToolbar()
         toolbar.mount(sumiScrubber)
@@ -47,7 +46,7 @@ class ReaderViewController: BaseObservingViewController {
         }
         return toolbar
     }()
-    var sumiJapaneseLearningEnabled = true
+    var sumiJapaneseLearningEnabled = false
     var sumiJapaneseLearningActive = false
     var sumiJapanesePhraseController: UIViewController?
     var sumiJapanesePhraseViewport: CGSize?
@@ -55,6 +54,9 @@ class ReaderViewController: BaseObservingViewController {
     private var sumiIsClosing = false
     var sumiIsPreparingOpening = false
     var sumiOpeningFailureMessage: String?
+    #if HONBAKO_EXTERNAL_SOURCES
+    var sumiAutomaticOpeningLanguage: String?
+    #endif
     private var sumiDidCommitPreparedOpening = false
     private var sumiLastVisiblePages: ClosedRange<Int>?
     private var sumiCompletedChapterID: String?
@@ -169,7 +171,7 @@ class ReaderViewController: BaseObservingViewController {
                        options: [.beginFromCurrentState, .allowUserInteraction]) {
             let visible = self.sumiControlsBeforeClosing ?? true
             self.sumiReaderToolbar.alpha = transitioning || !visible ? 0 : 1
-            self.sumiReaderTitle.alpha = transitioning || !visible ? 0 : 1
+            self.navigationController?.navigationBar.alpha = transitioning || !visible ? 0 : 1
         }
     }
 
@@ -207,7 +209,6 @@ class ReaderViewController: BaseObservingViewController {
         var elements: [Any] = []
         if let reader, reader.isViewLoaded { elements.append(reader.view!) }
         if sumiControlsVisible {
-            elements.append(sumiReaderTitle)
             // A native toolbar is already an accessibility sibling of the
             // content controller. Enumerating it here would expose it twice.
             if !sumiUsesNativeToolbar { elements.append(sumiReaderToolbar) }
@@ -228,6 +229,9 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     private func sumiGoToChapter(_ selected: AidokuRunner.Chapter, resumingTranslation: Bool = false) {
+        #if HONBAKO_EXTERNAL_SOURCES
+        sumiAutomaticOpeningLanguage = nil
+        #endif
         let startPage: Int
         if resumingTranslation {
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: selected.key)
@@ -276,10 +280,13 @@ class ReaderViewController: BaseObservingViewController {
     private func sumiConfigureNativeControls() {
         if navigationItem.leftBarButtonItems?.isEmpty == false { navigationItem.leftBarButtonItems = [] }
         if navigationItem.rightBarButtonItems?.isEmpty == false { navigationItem.rightBarButtonItems = [] }
-        if navigationItem.titleView != nil { navigationItem.titleView = nil }
-        if navigationItem.title != nil { navigationItem.title = nil }
+        loadNavbarTitle()
         guard let navigationController else { return }
-        if !navigationController.isNavigationBarHidden { navigationController.setNavigationBarHidden(true, animated: false) }
+        let hidesNavigation = !sumiControlsVisible || sumiIsClosing || sumiIsPreparingOpening
+        navigationController.navigationBar.accessibilityIdentifier = "Sumi.Reader.Navigation"
+        if navigationController.isNavigationBarHidden != hidesNavigation {
+            navigationController.setNavigationBarHidden(hidesNavigation, animated: false)
+        }
         // Manga direction owns the rail axis. A horizontal manga never moves
         // into a device-provided vertical toolbar.
         let usesNative = sumiUsesVerticalScrubber && sumiSystemToolbarEdge != nil
@@ -358,12 +365,14 @@ class ReaderViewController: BaseObservingViewController {
                 #endif
                 let id = ChapterIdentifier(sourceKey: self.manga.sourceKey, mangaKey: self.manga.key, chapterKey: chapter.key)
                 return DownloadManager.shared.getDownloadStatus(for: id) == .finished
-                    || (source != nil && !chapter.locked)
+                    || (source != nil && !chapter.locked && !(source.map {
+                        HonbakoChapterAvailability.shared.isUnavailable(source: $0, manga: self.manga, chapter: chapter)
+                    } ?? false))
             }, select: { [weak self] chapter, resumingTranslation in
                 self?.dismiss(animated: true) { self?.sumiGoToChapter(chapter, resumingTranslation: resumingTranslation) }
             }, close: { [weak self] in self?.dismiss(animated: true) }
         ))
-        panel.view.tintColor = .label
+        panel.view.tintColor = HonbakoPalette.accentUIColor
         panel.view.backgroundColor = .systemGroupedBackground
         panel.modalPresentationStyle = .popover
         panel.preferredContentSize = CGSize(width: 340, height: 520)
@@ -405,10 +414,6 @@ class ReaderViewController: BaseObservingViewController {
             exclusions = (view.reservedRegions(kind: .division) + view.reservedRegions(kind: .occlusion))
                 .filter(\.isActive).map(\.frame)
         }
-        let titleWidth = view.bounds.inset(by: view.safeAreaInsets).width - 16
-        sumiReaderTitle.frame = SumiReaderTitleLayout.frame(in: view.bounds, safeAreaInsets: view.safeAreaInsets,
-            avoiding: exclusions, size: sumiReaderTitle.preferredSize(availableWidth: titleWidth), side: bottomSide)
-        if sumiControlsVisible { view.bringSubviewToFront(sumiReaderTitle) }
         if sumiUsesNativeToolbar, let nativeToolbar = navigationController?.toolbar {
             // UIKit owns the physical column. Only bound our item's length to
             // its public content area; do not infer the column from safe insets.
@@ -467,7 +472,7 @@ class ReaderViewController: BaseObservingViewController {
         sumiControlsVisible = false
         sumiSetStatusBarHidden(true)
         sumiReaderToolbar.setVisible(false, animated: !UIAccessibility.isReduceMotionEnabled)
-        sumiReaderTitle.setVisible(false, animated: !UIAccessibility.isReduceMotionEnabled)
+        navigationController?.setNavigationBarHidden(true, animated: !UIAccessibility.isReduceMotionEnabled)
         sumiUpdateAccessibilityChildren()
         NotificationCenter.default.post(name: .readerHidingBars, object: nil)
     }
@@ -755,6 +760,10 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.navigationBar.standardAppearance = navigationBarAppearance
         navigationController?.navigationBar.compactAppearance = navigationBarAppearance
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
+        navigationController?.navigationBar.compactScrollEdgeAppearance = navigationBarAppearance
+        #if SUMI
+        SumiReaderNavigationAppearance.apply(to: navigationItem)
+        #endif
         navigationController?.toolbar.standardAppearance = toolbarAppearance
         navigationController?.toolbar.compactAppearance = toolbarAppearance
         navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
@@ -798,7 +807,6 @@ class ReaderViewController: BaseObservingViewController {
         view.addSubview(activityIndicator)
         #if SUMI
         view.addSubview(sumiReaderToolbar)
-        view.addSubview(sumiReaderTitle)
         if #available(iOS 27.1, *) {
             registerForTraitChanges(UITraitCollection.systemTraitsAffectingVerticalBarEdge) {
                 (self: ReaderViewController, _: UITraitCollection) in self.view.setNeedsLayout()
@@ -866,6 +874,11 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     override func observe() {
+        #if SUMI
+        addObserver(forName: HonbakoProStore.entitlementChangedNotification) { [weak self] _ in
+            self?.sumiJapaneseProAccessChanged()
+        }
+        #endif
         addObserver(forName: AppSettings.reader.pageSizing.key) { [weak self] _ in
             self?.pageSizingButton.menu = ReaderPageSizingMenu.makeMenu()
         }
@@ -940,9 +953,9 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] notification in
             guard let self else { return }
             #if SUMI
-            if let scene = notification.object as? UIWindowScene, viewIfLoaded?.window?.windowScene === scene {
-                sumiSetJapaneseLearningActive(false)
-            }
+            guard let scene = notification.object as? UIWindowScene,
+                  viewIfLoaded?.window?.windowScene === scene else { return }
+            sumiSetJapaneseLearningActive(false)
             sumiQueueReadPositionSave()
             #else
             Task {
@@ -961,13 +974,14 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: UIScene.didActivateNotification) { [weak self] notification in
             guard let self else { return }
             #if SUMI
-            self.hideBars()
-            guard !self.sumiIsPreparingOpening else { return }
-            if let activatedScene = notification.object as? UIWindowScene,
-               self.viewIfLoaded?.window?.windowScene === activatedScene {
-                self.sumiSetJapaneseLearningActive(!self.sumiIsClosing)
-                self.sumiPublishAutomationReading()
-            }
+            guard let activatedScene = notification.object as? UIWindowScene,
+                  self.viewIfLoaded?.window?.windowScene === activatedScene,
+                  !self.sumiIsPreparingOpening else { return }
+            // Scene activation restores presentation, not reading intent. In
+            // particular, activating the cover display must not hide this toolbar.
+            self.sumiSetStatusBarHidden(!self.sumiControlsVisible)
+            self.sumiSetJapaneseLearningActive(!self.sumiIsClosing)
+            self.sumiPublishAutomationReading()
             #endif
             if self.sessionStartDate == nil {
                 #if SUMI
@@ -979,6 +993,7 @@ class ReaderViewController: BaseObservingViewController {
                 self.sessionLastInteraction = nil
             }
         }
+        #if !SUMI
         if #available(iOS 26.0, *) {
             addObserver(forName: UIScene.willEnterForegroundNotification) { [weak self] _ in
                 if self?.navigationController?.toolbar.alpha == 0 {
@@ -986,6 +1001,7 @@ class ReaderViewController: BaseObservingViewController {
                 }
             }
         }
+        #endif
         addObserver(forName: "Reader.autoScroll") { [weak self] _ in
             self?.updateAutoScrollButton()
         }
@@ -1325,8 +1341,28 @@ extension ReaderViewController {
 
     func loadNavbarTitle() {
         #if SUMI
-        navigationItem.titleView = nil
-        navigationItem.title = nil
+        if navigationItem.titleView != nil { navigationItem.titleView = nil }
+        if navigationItem.title != manga.title { navigationItem.title = manga.title }
+        if #available(iOS 26.0, *) {
+            let subtitle: String
+            if let number = chapter.chapterNumber {
+                subtitle = String(format: NSLocalizedString("CHAPTER_X"), number)
+            } else if let title = chapter.title, !title.isEmpty {
+                subtitle = title
+            } else if let number = chapter.volumeNumber {
+                subtitle = String(format: NSLocalizedString("VOLUME_X"), number)
+            } else {
+                subtitle = String(localized: "Chapter")
+            }
+            #if HONBAKO_EXTERNAL_SOURCES
+            if sumiAutomaticOpeningLanguage != nil, let language = SumiChapterLanguage.normalized(chapter.language) {
+                let actualEdition = "\(subtitle) · \(SourceLanguage.displayName(for: language))"
+                if navigationItem.subtitle != actualEdition { navigationItem.subtitle = actualEdition }
+                return
+            }
+            #endif
+            if navigationItem.subtitle != subtitle { navigationItem.subtitle = subtitle }
+        }
         return
         #endif
         let volume: String? =
@@ -1616,8 +1652,18 @@ extension ReaderViewController {
         let backgroundColor = ReaderTextTheme.getCurrentBackground()
         let textColor = ReaderTextTheme.getCurrentText()
         let titleColor = themed ? textColor : nil
+        #if SUMI
+        if isTextReader { SumiReaderNavigationAppearance.clear(from: navigationItem) }
+        else { SumiReaderNavigationAppearance.apply(to: navigationItem) }
+        #endif
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
+                #if SUMI
+                if !isTextReader {
+                    SumiReaderNavigationAppearance.configure(appearance)
+                    return
+                }
+                #endif
                 if themed {
                     if #available(iOS 26.0, *), reader is ReaderTextViewController {
                         // text scrolls under the bar, so keep it transparent
@@ -1645,6 +1691,9 @@ extension ReaderViewController {
                 applyTheme(scrollEdge)
                 navigationBar.scrollEdgeAppearance = scrollEdge
             }
+            let compactEdge = navigationBar.compactScrollEdgeAppearance ?? UINavigationBarAppearance()
+            applyTheme(compactEdge)
+            navigationBar.compactScrollEdgeAppearance = compactEdge
         }
         // the two-line title view (volume + chapter) uses plain labels instead
         if let stackView = navigationItem.titleView as? UIStackView {
@@ -2526,9 +2575,8 @@ extension ReaderViewController {
         sumiLayoutReaderControls()
         sumiUpdateAccessibilityChildren()
         if sumiReaderToolbar.superview === view { view.bringSubviewToFront(sumiReaderToolbar) }
-        view.bringSubviewToFront(sumiReaderTitle)
         sumiReaderToolbar.setVisible(true, animated: appearing && !UIAccessibility.isReduceMotionEnabled)
-        sumiReaderTitle.setVisible(true, animated: appearing && !UIAccessibility.isReduceMotionEnabled)
+        navigationController?.navigationBar.alpha = 1
         NotificationCenter.default.post(name: .readerShowingBars, object: nil)
         return
         #else

@@ -42,7 +42,7 @@ struct HonbakoMangaDexRunnerTests {
         #expect(parameters.first(where: { $0.name == "translatedLanguage[]" })?.value == "en")
     }
 
-    @Test("Explicit translations reject external, empty and future chapters without changing source preferences")
+    @Test("Chapter menus retain confirmed external, empty and future entries as unavailable without changing languages")
     func realTranslationChaptersOnly() async throws {
         let name = "Honbako.NativeLanguages.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))
@@ -60,12 +60,54 @@ struct HonbakoMangaDexRunnerTests {
             return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
         let chapters = try await runner.chapters(for: manga(), language: "es-419")
-        #expect(chapters.map(\.key) == [chapterID])
+        #expect(chapters.count == 4)
+        #expect(chapters.first?.key == chapterID)
+        #expect(chapters.first?.locked == false)
+        let unavailableAreLocked = chapters.dropFirst().allSatisfy { $0.locked }
+        #expect(unavailableAreLocked)
         #expect(chapters.first?.language == "es-419")
         #expect(defaults.stringArray(forKey: HonbakoMangaDexRunner.sourceKey + ".languages") == ["en"])
         let parameters = URLComponents(url: try #require(await requests.urls.first), resolvingAgainstBaseURL: false)?.queryItems
         #expect(parameters?.first(where: { $0.name == "translatedLanguage[]" })?.value == "es-la")
     }
+
+    #if HONBAKO_EXTERNAL_SOURCES
+    @Test("Alternative recovery requests one bounded oldest readable feed without changing configured languages")
+    func boundedAlternativeEditionFeed() async throws {
+        let name = "Honbako.AlternativeEdition.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set(["en"], forKey: HonbakoMangaDexRunner.sourceKey + ".languages")
+        let az = chapter(language: "az")
+        let huID = "33333333-3333-4333-8333-333333333333"
+        let data = try collection([az,
+            chapter(id: huID, language: "hu"), az,
+            chapter(id: "44444444-4444-4444-8444-444444444444", pages: 0),
+            chapter(id: "55555555-5555-4555-8555-555555555555", external: "https://publisher.example/chapter"),
+            chapter(id: "66666666-6666-4666-8666-666666666666", publishAt: "2100-01-01T00:00:00Z"),
+            chapter(id: "invalid")], total: 500, offset: 0)
+        let requests = RequestRecorder()
+        let runner = HonbakoMangaDexRunner(defaults: defaults, requestInterval: .zero, transport: { request in
+            await requests.record(request)
+            return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
+        let chapters = try await runner.readableAlternativeChapters(for: manga())
+        #expect(chapters.map(\.key) == [huID, chapterID])
+        #expect(chapters.map(\.language) == ["hu", "az"])
+        let urls = await requests.urls
+        #expect(urls.count == 1, "This recovery must not paginate every translation")
+        let query = URLComponents(url: try #require(urls.first), resolvingAgainstBaseURL: false)?.queryItems ?? []
+        #expect(!query.contains { $0.name == "translatedLanguage[]" })
+        #expect(query.first { $0.name == "limit" }?.value == "100")
+        #expect(query.first { $0.name == "offset" }?.value == "0")
+        for field in ["includeEmptyPages", "includeExternalUrl", "includeUnavailable", "includeFutureUpdates", "includeFuturePublishAt"] {
+            #expect(query.first { $0.name == field }?.value == "0")
+        }
+        #expect(query.first { $0.name == "order[volume]" }?.value == "asc")
+        #expect(query.first { $0.name == "order[chapter]" }?.value == "asc")
+        #expect(defaults.stringArray(forKey: HonbakoMangaDexRunner.sourceKey + ".languages") == ["en"])
+    }
+    #endif
 
     @Test("The official Long Strip format tag preserves vertical reading")
     func longStripUsesVerticalReader() throws {

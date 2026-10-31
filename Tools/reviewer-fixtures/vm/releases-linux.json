@@ -1,0 +1,58 @@
+{
+  "komga": {
+    "version": "1.29.2",
+    "filename": "komga-1.29.2.jar",
+    "url": "https://github.com/gotson/komga/releases/download/1.29.2/komga-1.29.2.jar",
+    "sha256": "42fcaac29cbd00199c5c16f1b25882bd5a7cebc695d761f04f4532d08a22063f"
+  },
+  "suwayomi": {
+    "version": "2.4.2366",
+    "filename": "Suwayomi-Server-v2.4.2366.jar",
+    "url": "https://github.com/Suwayomi/Suwayomi-Server/releases/download/v2.4.2366/Suwayomi-Server-v2.4.2366.jar",
+    "sha256": "af9feb20af9d7ebe9e30769e6c6ebc7fc7ab1c447388d42e0280b1da5fe07bfd"
+  },
+  "kavita": {
+    "version": "0.9.1.4",
+    "arm64": {
+      "filename": "kavita-linux-arm64.tar.gz",
+      "url": "https://github.com/Kareadita/Kavita/releases/download/v0.9.1.4/kavita-linux-arm64.tar.gz",
+      "sha256": "1384aa60c32d4ec35c4d2085cb9ade9d97b3564f3491211c7d35bf4d8b60c740"
+    },
+    "amd64": {
+      "filename": "kavita-linux-x64.tar.gz",
+      "url": "https://github.com/Kareadita/Kavita/releases/download/v0.9.1.4/kavita-linux-x64.tar.gz",
+      "sha256": "609805b394132d5c1ad8ecef312654fd93b6b06af59b4b1d909e75b81a91860b"
+    }
+  },
+  "kavita_email_templates": {
+    "official_repository": "https://github.com/Kareadita/KavitaEmail",
+    "commit": "e980a062d66d15feeddd5003a6a642bb0a3c5616",
+    "assets": {
+      "EmailChange": {
+        "filename": "EmailChange.html",
+        "url": "https://raw.githubusercontent.com/Kareadita/KavitaEmail/e980a062d66d15feeddd5003a6a642bb0a3c5616/KavitaEmail/config/templates/EmailChange.html",
+        "sha256": "6554c56500bd1558f5b2574cffd1fca3b7d4949e616d158dc4cc113f7d170e06"
+      },
+      "EmailConfirm": {
+        "filename": "EmailConfirm.html",
+        "url": "https://raw.githubusercontent.com/Kareadita/KavitaEmail/e980a062d66d15feeddd5003a6a642bb0a3c5616/KavitaEmail/config/templates/EmailConfirm.html",
+        "sha256": "1b7d451a040c218b4a293dbf560617ba4648543965ed94f8a06ac406bd689bca"
+      },
+      "EmailPasswordReset": {
+        "filename": "EmailPasswordReset.html",
+        "url": "https://raw.githubusercontent.com/Kareadita/KavitaEmail/e980a062d66d15feeddd5003a6a642bb0a3c5616/KavitaEmail/config/templates/EmailPasswordReset.html",
+        "sha256": "b922de206688d94ea0a82484303e3b951276fa0e962d804dc13ebf935dfb3565"
+      },
+      "SendToDevice": {
+        "filename": "SendToDevice.html",
+        "url": "https://raw.githubusercontent.com/Kareadita/KavitaEmail/e980a062d66d15feeddd5003a6a642bb0a3c5616/KavitaEmail/config/templates/SendToDevice.html",
+        "sha256": "b3a624152d3ea81f1c812db71d8a56709dafb3873255b115bf3b38689f6db2c6"
+      },
+      "EmailTest": {
+        "filename": "EmailTest.html",
+        "url": "https://raw.githubusercontent.com/Kareadita/KavitaEmail/e980a062d66d15feeddd5003a6a642bb0a3c5616/KavitaEmail/config/templates/EmailTest.html",
+        "sha256": "7ba88bd0979ca1dbc891e47da95e454a1c17891459bab33e9c56234cbbe649f5"
+      }
+    }
+  }
+}

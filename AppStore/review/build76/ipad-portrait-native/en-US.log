@@ -1,0 +1,63 @@
+Command line invocation:
+    "/Applications/Xcode 27.1 Public.app/Contents/Developer/usr/bin/xcodebuild" test-without-building -xctestrun /Users/jun/Library/Developer/Xcode/DerivedData/Aidoku-Codex/Build/Products/HonbakoStoreKitTests_iphonesimulator27.1-arm64.xctestrun -destination "platform=iOS Simulator,id=2894F317-56AD-47E0-965E-62D57B74D995" -parallel-testing-enabled NO "-only-testing:SumiUITests/HonbakoSubmissionScreenshotTests/testIPadPortraitLibraryEnglish" -collect-test-diagnostics never -resultBundlePath /Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/en-US.xcresult
+
+Writing result bundle at path:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/en-US.xcresult
+
+2026-10-31 07:32:15.876 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:17.278538+0800 SumiUITests-Runner[78251:314923801] [Default] Running tests...
+2026-10-31 07:32:17.301400+0800 SumiUITests-Runner[78251:314923801] [UIKit App Config] Update the Info.plist: Launch screens will soon be required.
+objc[78251]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x108498398) and /Library/Developer/CoreSimulator/Volumes/iOS_24A434/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x10858c310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-10-31 07:32:21.553.
+Test Suite 'SumiUITests.xctest' started at 2026-10-31 07:32:21.553.
+Test Suite 'HonbakoSubmissionScreenshotTests' started at 2026-10-31 07:32:21.554.
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testIPadPortraitLibraryEnglish]' started.
+    t =     0.00s Start Test at 2026-10-31 07:32:21.556
+    t =     0.17s Set Up
+    t =     0.17s Setting device orientation to Portrait
+    t =     0.17s     Device orientation changed to Portrait
+    t =     0.19s     Wait for com.apple.springboard to idle
+    t =     0.24s Open com.missingems.honbaku
+    t =     0.24s     Launch com.missingems.honbaku
+2026-10-31 07:32:21.997 xcodebuild[78240:314923575] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-10-31 07:32:21.997 xcodebuild[78240:314923575] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-10-31 07:32:22.011 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+    t =     0.86s         Setting up automation session
+    t =     3.02s         Wait for com.missingems.honbaku to idle
+    t =     4.52s Waiting 30.0s for "Sumi.Grid" Any to exist
+    t =     5.61s     Checking `Expect predicate `existsNoRetry == 1` for object "Sumi.Grid" Any`
+    t =     5.61s         Checking existence of `"Sumi.Grid" Any`
+    t =     6.73s Checking `Expect predicate `BLOCKPREDICATE(0x10826c3c0)` for object "Sumi.Grid" Any`
+    t =     6.73s     Find the "Sumi.Grid" Any
+    t =     6.78s Checking existence of `"Honbako.Library.Header.Popular" Any`
+    t =     8.06s Checking `Expect predicate `BLOCKPREDICATE(0x10826d2c0)` for object "Sumi.Grid" ScrollView`
+    t =     8.06s     Find the Window (First Match)
+    t =     8.08s     Find the Window (First Match)
+    t =     9.08s Find the Target Application 'com.missingems.honbaku'
+    t =     9.65s Added attachment named 'en-US-01-library'
+    t =     9.66s Terminate com.missingems.honbaku:78276
+2026-10-31 07:32:31.241 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:31.241 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:31.242 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+    t =    10.70s Tear Down
+Test Case '-[SumiUITests.HonbakoSubmissionScreenshotTests testIPadPortraitLibraryEnglish]' passed (10.789 seconds).
+Test Suite 'HonbakoSubmissionScreenshotTests' passed at 2026-10-31 07:32:32.347.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.789 (10.793) seconds
+Test Suite 'SumiUITests.xctest' passed at 2026-10-31 07:32:32.348.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.789 (10.795) seconds
+Test Suite 'Selected tests' passed at 2026-10-31 07:32:32.348.
+	 Executed 1 test, with 0 failures (0 unexpected) in 10.789 (10.795) seconds
+2026-10-31 07:32:32.377 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:32.378 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:32.378 xcodebuild[78240:314923575] [MT] IDESchemeActionSDKRecord: operatingSystemBuild = <DVTBuildVersion 24A94232>, error = invalidDigitCount(94232).
+2026-10-31 07:32:32.643 xcodebuild[78240:314923575] [MT] IDETestOperationsObserverDebug: 17.267 elapsed -- Testing started completed.
+2026-10-31 07:32:32.643 xcodebuild[78240:314923575] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-31 07:32:32.643 xcodebuild[78240:314923575] [MT] IDETestOperationsObserverDebug: 17.267 sec, +17.267 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/jun/Documents/Codex/Honbako/AppStore/review/build76/ipad-portrait-native/en-US.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started
