@@ -18,7 +18,15 @@ async function edgeLimited(limiter, key) {
   if (typeof limiter?.limit !== 'function') return false;
   try { return (await limiter.limit({ key })).success === false; } catch { return false; }
 }
-const limited = () => failure(new BridgeError(429, 'rate_limited', 'Too many requests; retry later', { retryAfter: EDGE_PERIOD_SECONDS }));
+/// Marked so a probe can tell the binding's answer from a Durable Object's own limit.
+/// OAuth routes keep RFC 6749 error fields, as the broker's own responses do.
+function limited(oauth = false) {
+  const response = oauth ? reply(429, { error: 'rate_limited', error_description: 'Too many requests; retry later' })
+    : failure(new BridgeError(429, 'rate_limited', 'Too many requests; retry later'));
+  response.headers.set('retry-after', String(EDGE_PERIOD_SECONDS));
+  response.headers.set('x-honbako-limit', 'edge');
+  return response;
+}
 /// A token's third part is its secret, so keys use a digest of it and never the token itself.
 /// Its second part is the workspace, which every device and AI connection of a purchase shares.
 const deviceKey = parts => `d:${parts[2]}:${digest(parts[3]).slice(0, 24)}`;
@@ -42,7 +50,7 @@ export async function remoteFetch(request, env) {
     if (path.startsWith('/remote/oauth/')) {
       const origin = request.headers.get('origin');
       if (origin && origin !== u.origin) throw new BridgeError(403, 'origin_rejected', 'Cross-origin browser requests are not supported');
-      if (await edgeLimited(env.SETUP_RATE_LIMITER, clientAddress(request))) return limited();
+      if (await edgeLimited(env.SETUP_RATE_LIMITER, clientAddress(request))) return limited(true);
       return broker(env).fetch(request);
     }
     if (request.headers.has('origin') || u.search) throw new BridgeError(403, 'origin_rejected', 'This route is for Honbako and authorized AI clients');

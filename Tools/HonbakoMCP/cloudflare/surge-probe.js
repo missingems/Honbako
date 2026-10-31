@@ -27,14 +27,16 @@ async function refuseProduction(target) {
   if (hosts.includes(target.host)) throw new Error(`${target.host} is production; the probe only runs against the test Worker`);
 }
 
-/// Where a 429 came from: Cloudflare's WAF answers with an HTML block page or cf-mitigated,
-/// our Worker with a JSON `rate_limited` error (application or OAuth shape).
+/// Where a 429 came from: Cloudflare's WAF answers with an HTML block page or cf-mitigated; our
+/// Worker with a JSON `rate_limited` error, marked `x-honbako-limit: edge` when a Rate Limiting
+/// binding answered (`edge`) and unmarked when a Durable Object's own limit did (`object`).
 function source(response, text) {
   if (response.status !== 429) return null;
   if (response.headers.has('cf-mitigated') || /text\/html/i.test(response.headers.get('content-type') ?? '')) return 'waf';
-  try { const body = JSON.parse(text); if ((body.error?.code ?? body.error) === 'rate_limited') return 'worker'; } catch {}
+  try { const body = JSON.parse(text); if ((body.error?.code ?? body.error) === 'rate_limited') return response.headers.get('x-honbako-limit') === 'edge' ? 'edge' : 'object'; } catch {}
   return 'other';
 }
+const ours = s => (s.sources429.edge ?? 0) + (s.sources429.object ?? 0);
 function transport({ dispatch, ip }) {
   let sent = 0;
   return {
@@ -88,7 +90,9 @@ async function setupFlood(net, origin, enrollCount, registerCount, firstExpected
   const registrations = results.slice(enrollCount);
   return report('b-setup-flood', `enroll 429 by request ${firstExpected} with Retry-After; registrations ${shared ? 'refused too' : 'under their own limit'}`, results,
     s => s.first429 !== null && s.first429 <= firstExpected && results.slice(s.first429 - 1, enrollCount).every(r => r.status === 429) && s.retryAfter.length > 0
-      && (shared === undefined || registrations.every(r => (r.status === 429) === shared)), { registrations429: registrations.filter(r => r.status === 429).length });
+      && (shared === undefined || registrations.every(r => (r.status === 429) === shared)),
+    // Live, this answers whether the Rate Limiting binding exists on the account's plan.
+    { registrations429: registrations.filter(r => r.status === 429).length, rateLimitBindingSeen: results.some(r => r.source === 'edge') });
 }
 // (c) One device polling at five times the reading pace (about 7 a second).
 async function fastDevice(net, origin, token) {
@@ -100,7 +104,7 @@ async function fastDevice(net, origin, token) {
     await sleep(140);
   }
   return report('c-fast-device', '429 with Retry-After within a minute', results,
-    s => s.first429 !== null && s.first429 <= 300 && s.retryAfter.length > 0 && s.sources429.worker === s.statuses[429]);
+    s => s.first429 !== null && s.first429 <= 300 && s.retryAfter.length > 0 && ours(s) === s.statuses[429]);
 }
 // (d) The normal reading pace for two minutes: page annotations every 0.75 s and jobs every 3 s.
 async function readingPace(net, origin, token, seconds = 120) {

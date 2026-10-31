@@ -55,6 +55,7 @@ test('A flooding device token gets 429 with Retry-After from the Worker, with no
   assert.equal(e.calls.workspace, 150);
   const refused = flood.at(-1);
   assert.equal(refused.headers.get('retry-after'), '60');
+  assert.equal(refused.headers.get('x-honbako-limit'), 'edge');
   assert.equal((await refused.json()).error.code, 'rate_limited');
   // The other device of the same workspace has its own allowance.
   assert.equal((await e.send('/remote/api/device/jobs', { token: pad.deviceToken })).status, 200);
@@ -80,6 +81,8 @@ test('Setup and OAuth floods from one address get 429 before the broker; another
   assert.equal(e.calls.broker, 20);
   for (let i = 0; i < 5; i++) oauth.push(await e.send('/remote/oauth/register', { body: { redirect_uris: ['https://example.com/cb'] } }));
   assert.ok(oauth.every(r => r.status === 429), 'enroll and OAuth share the address allowance');
+  // OAuth clients read RFC 6749 error fields.
+  assert.deepEqual(await oauth[0].json(), { error: 'rate_limited', error_description: 'Too many requests; retry later' });
   assert.equal(e.calls.broker, 20);
   assert.notEqual((await e.send('/remote/oauth/register', { ip: '198.51.100.8', body: {} })).status, 429);
 });
@@ -92,6 +95,7 @@ test('Without the bindings, or when one fails, the workspace’s own limits stil
     for (let i = 0; i < DEVICE_RATE + 5; i++) flood.push(await e.send('/remote/api/device/jobs', { token: phone.deviceToken }));
     assert.deepEqual(statuses(flood), { 200: DEVICE_RATE, 429: 5 });
     const retry = Number(flood.at(-1).headers.get('retry-after'));
+    assert.equal(flood.at(-1).headers.get('x-honbako-limit'), null, 'the workspace answered, not a binding');
     assert.ok(retry >= 1 && retry <= 60, String(retry));
     // Disconnecting is never limited.
     assert.equal((await e.send('/remote/api/device/disconnect', { token: phone.deviceToken, body: {} })).status, 200);
